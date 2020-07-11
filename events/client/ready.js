@@ -4,6 +4,7 @@ const Discord = require("discord.js");
 const connection = require("../../mongodb").initDb;
 const getDb = require("../../mongodb").getDb;
 const fetch = require("node-fetch");
+const randomColor = Math.floor(Math.random() * 16777215).toString(16);
 
 module.exports = async client => {
 	console.log("Ready!");
@@ -54,7 +55,6 @@ module.exports = async client => {
 		})
 			.catch(error => console.error(error));
 	}
-
 	connection(err => {
 		if (err) console.log(err);
 
@@ -96,7 +96,6 @@ module.exports = async client => {
 		const daily = 24 * 60 * 60 * 1000;
 		const hour = 60 * 60 * 1000;
 		const minute = 60 * 1000;
-		const randomColor = Math.floor(Math.random() * 16777215).toString(16);
 
 		setInterval(async () => {
 			db = getDb();
