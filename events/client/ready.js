@@ -1,67 +1,67 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 const Discord = require("discord.js");
-const connection = require("../../mongodb");
+const connection = require("../../mongodb").initDb;
 const getDb = require("../../mongodb").getDb;
 const fetch = require("node-fetch");
 
 module.exports = async client => {
 	console.log("Ready!");
 
-	connection.initDb(err => {
+	function csvJSON(csv) {
+
+		const lines = csv.split("\n");
+		const result = [];
+		const headers = lines[0].split(",");
+
+		for(let i = 1;i < lines.length;i++) {
+			const obj = {};
+			const currentline = lines[i].split(",");
+
+			for(let j = 0;j < headers.length;j++) {
+				obj[headers[j]] = currentline[j];
+			}
+
+			result.push(obj);
+		}
+
+		// return result; //JavaScript object
+		return JSON.parse(JSON.stringify(result)); // JSON
+	}
+
+	async function getData() {
+		const clanData = await fetch("http://services.runescape.com/m=clan-hiscores/members_lite.ws?clanName=Valence");
+		const text = clanData.text();
+		const json = text.then(body => csvJSON(body));
+
+		json.then(res => {
+
+			const newData = [];
+
+			for (data of res) {
+				const regex = /�/g;
+				if ((data.Clanmate).includes("�")) {
+					data.Clanmate = data.Clanmate.replace(regex, " ") || data.Clanmate;
+				}
+				newData.push(data);
+			}
+
+			newData.forEach(e => {
+				e._id = e.Clanmate.toUpperCase();
+			// console.log(e);
+			});
+			collection.insertMany(newData);
+		})
+			.catch(error => console.error(error));
+	}
+
+	connection(err => {
 		if (err) console.log(err);
 
 		let db = getDb();
-
 		db.createCollection("Users");
 		const collection = db.collection("Users");
 
-		function csvJSON(csv) {
-
-			const lines = csv.split("\n");
-			const result = [];
-			const headers = lines[0].split(",");
-
-			for(let i = 1;i < lines.length;i++) {
-				const obj = {};
-				const currentline = lines[i].split(",");
-
-				for(let j = 0;j < headers.length;j++) {
-					obj[headers[j]] = currentline[j];
-				}
-
-				result.push(obj);
-			}
-
-			// return result; //JavaScript object
-			return JSON.parse(JSON.stringify(result)); // JSON
-		}
-
-		async function getData() {
-			const clanData = await fetch("http://services.runescape.com/m=clan-hiscores/members_lite.ws?clanName=Valence");
-			const text = clanData.text();
-			const json = text.then(body => csvJSON(body));
-
-			json.then(res => {
-
-				const newData = [];
-
-				for (data of res) {
-					const regex = /�/g;
-					if ((data.Clanmate).includes("�")) {
-						data.Clanmate = data.Clanmate.replace(regex, " ") || data.Clanmate;
-					}
-					newData.push(data);
-				}
-
-				newData.forEach(e => {
-					e._id = e.Clanmate.toUpperCase();
-				// console.log(e);
-				});
-				collection.insertMany(newData);
-			})
-				.catch(error => console.error(error));
-		}
 		collection.updateMany(
 			{},
 			{ $set:
