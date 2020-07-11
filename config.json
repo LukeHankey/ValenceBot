@@ -1,0 +1,9 @@
+{
+	"prefix": "_",
+	"token": "NjY4MzMwMzk5MDMzODUxOTI0.XoCtjQ.vvveeMTUPiRY3k01DCI-F--gzjk",
+	"mongoClientURI": "mongodb+srv://Guys:1234@cluster0-vowhh.mongodb.net/test",
+	"options": {
+		"useNewUrlParser": true,
+		"useUnifiedTopology" : true
+	}
+}
