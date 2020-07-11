@@ -5,10 +5,6 @@ const assert = require("assert");
 let _db;
 
 module.exports = {
-	getDb: function getDb() {
-		assert.ok(_db, "Db has not been initialized. Please call init first.");
-		return _db;
-	},
 	initDb: function initDb(callback) {
 		if (_db) {
 			console.warn("Trying to init DB again!");
@@ -24,4 +20,9 @@ module.exports = {
 			return callback(null, _db);
 		}
 	},
+	getDb: function getDb() {
+		assert.ok(_db, "Db has not been initialized. Please call init first.");
+		return _db;
+	},
+
 };

@@ -3,7 +3,6 @@
 const Discord = require("discord.js");
 const connection = require("../../mongodb");
 const getDb = require("../../mongodb").getDb;
-const mongo = require("mongodb").MongoClient;
 const fetch = require("node-fetch");
 
 module.exports = async client => {
