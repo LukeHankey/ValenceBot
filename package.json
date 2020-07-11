@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js mongodb.js"
+    "start": "node index.js"
   },
   "author": "Guys",
   "license": "ISC",
