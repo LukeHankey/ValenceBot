@@ -93,7 +93,8 @@ module.exports = async client => {
 					client.channels.cache.get("731324153356877825").send(res.Message);
 				});
 		};
-		const hour = 60 * 60 * 1000;
+		const daily = 24 * hour;
+		const hour = 60 * minute;
 		const minute = 60 * 1000;
 		const randomColor = Math.floor(Math.random() * 16777215).toString(16);
 
@@ -122,6 +123,6 @@ module.exports = async client => {
 					client.channels.cache.get("731324153356877825").send(factEmbed(res.Message));
 					console.log(res.Message);
 				});
-		}, minute);
+		}, hour);
 	});
 };
