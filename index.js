@@ -1,5 +1,5 @@
 const { Client, Collection } = require("discord.js");
-const { token } = require("./config.json");
+require("dotenv").config();
 
 const client = new Client();
 client.commands = new Collection();
@@ -10,4 +10,4 @@ process.on("unhandledRejection", (reason, p) => {
 	console.log("Unhandled Rejection at:", p, "reason:", reason);
 });
 
-client.login(token);
+client.login(process.env.BOT_TOKEN);

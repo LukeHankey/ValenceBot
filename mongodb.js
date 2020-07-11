@@ -14,7 +14,7 @@ module.exports = {
 			console.warn("Trying to init DB again!");
 			return callback(null, _db);
 		}
-		mongo.connect(config.mongoClientURI, config.options, connected);
+		mongo.connect(process.env.MONGOCLIENTURI, config.options, connected);
 		function connected(err, dataBase) {
 			if (err) {
 				return callback(err);
