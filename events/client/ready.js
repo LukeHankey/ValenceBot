@@ -10,61 +10,61 @@ module.exports = async client => {
 
 	connection.initDb(err => {
 		if (err) console.log(err);
-	});
-	let db = getDb();
 
-	db.createCollection("Users");
-	const collection = db.collection("Users");
+		let db = getDb();
 
-	function csvJSON(csv) {
+		db.createCollection("Users");
+		const collection = db.collection("Users");
 
-		const lines = csv.split("\n");
-		const result = [];
-		const headers = lines[0].split(",");
+		function csvJSON(csv) {
 
-		for(let i = 1;i < lines.length;i++) {
-			const obj = {};
-			const currentline = lines[i].split(",");
+			const lines = csv.split("\n");
+			const result = [];
+			const headers = lines[0].split(",");
 
-			for(let j = 0;j < headers.length;j++) {
-				obj[headers[j]] = currentline[j];
+			for(let i = 1;i < lines.length;i++) {
+				const obj = {};
+				const currentline = lines[i].split(",");
+
+				for(let j = 0;j < headers.length;j++) {
+					obj[headers[j]] = currentline[j];
+				}
+
+				result.push(obj);
 			}
 
-			result.push(obj);
+			// return result; //JavaScript object
+			return JSON.parse(JSON.stringify(result)); // JSON
 		}
 
-		// return result; //JavaScript object
-		return JSON.parse(JSON.stringify(result)); // JSON
-	}
+		async function getData() {
+			const clanData = await fetch("http://services.runescape.com/m=clan-hiscores/members_lite.ws?clanName=Valence");
+			const text = clanData.text();
+			const json = text.then(body => csvJSON(body));
 
-	async function getData() {
-		const clanData = await fetch("http://services.runescape.com/m=clan-hiscores/members_lite.ws?clanName=Valence");
-		const text = clanData.text();
-		const json = text.then(body => csvJSON(body));
+			json.then(res => {
 
-		json.then(res => {
+				const newData = [];
 
-			const newData = [];
-
-			for (data of res) {
-				const regex = /�/g;
-				if ((data.Clanmate).includes("�")) {
-					data.Clanmate = data.Clanmate.replace(regex, " ") || data.Clanmate;
+				for (data of res) {
+					const regex = /�/g;
+					if ((data.Clanmate).includes("�")) {
+						data.Clanmate = data.Clanmate.replace(regex, " ") || data.Clanmate;
+					}
+					newData.push(data);
 				}
-				newData.push(data);
-			}
 
-			newData.forEach(e => {
-				e._id = e.Clanmate.toUpperCase();
+				newData.forEach(e => {
+					e._id = e.Clanmate.toUpperCase();
 				// console.log(e);
-			});
-			collection.insertMany(newData);
-		})
-			.catch(error => console.error(error));
-	}
-	collection.updateMany(
-		{},
-		{ $set:
+				});
+				collection.insertMany(newData);
+			})
+				.catch(error => console.error(error));
+		}
+		collection.updateMany(
+			{},
+			{ $set:
 			{ "Caps": 0,
 				"Total Points": 0,
 				"Events": 0,
@@ -76,50 +76,51 @@ module.exports = async client => {
 				"Rank Earned": "",
 				"Donation Points": 0,
 			},
-		},
-		{ upsert: true },
-	);
+			},
+			{ upsert: true },
+		);
 
-	async () => {
-		db = getDb();
-		const vFactsColl = db.collection("Facts");
-		const count = await vFactsColl.stats()
-			.then(res => {
-				return res.count;
-			});
-		const random = Math.floor((Math.random() * count) + 1);
-		vFactsColl.findOne({ number: random })
-			.then(res => {
-				client.channels.cache.get("731324153356877825").send(res.Message);
-			});
-	};
-	const hour = 60 * 60 * 1000;
-	const randomColor = Math.floor(Math.random() * 16777215).toString(16);
-
-	setInterval(async () => {
-		db = getDb();
-		const vFactsColl = db.collection("Facts");
-		const count = await vFactsColl.stats()
-			.then(res => {
-				return res.count;
-			});
-
-		// Change the @Valence Team tag
-		const factEmbed = function(factMessage) {
-			const embed = new Discord.MessageEmbed()
-				.setTitle("**Daily Valence Fact**")
-				.setDescription(factMessage)
-				.setColor(`#${randomColor}`)
-				.addField("**Sent By:**", "<@&685419137530331143>", true)
-				.setTimestamp();
-			return embed;
+		async () => {
+			db = getDb();
+			const vFactsColl = db.collection("Facts");
+			const count = await vFactsColl.stats()
+				.then(res => {
+					return res.count;
+				});
+			const random = Math.floor((Math.random() * count) + 1);
+			vFactsColl.findOne({ number: random })
+				.then(res => {
+					client.channels.cache.get("731324153356877825").send(res.Message);
+				});
 		};
+		const hour = 60 * 60 * 1000;
+		const randomColor = Math.floor(Math.random() * 16777215).toString(16);
 
-		const random = Math.floor((Math.random() * count) + 1);
-		vFactsColl.findOne({ number: random })
-			.then(res => {
-				client.channels.cache.get("731324153356877825").send(factEmbed(res.Message));
-				console.log(res.Message);
-			});
-	}, hour);
+		setInterval(async () => {
+			db = getDb();
+			const vFactsColl = db.collection("Facts");
+			const count = await vFactsColl.stats()
+				.then(res => {
+					return res.count;
+				});
+
+			// Change the @Valence Team tag
+			const factEmbed = function(factMessage) {
+				const embed = new Discord.MessageEmbed()
+					.setTitle("**Daily Valence Fact**")
+					.setDescription(factMessage)
+					.setColor(`#${randomColor}`)
+					.addField("**Sent By:**", "<@&685419137530331143>", true)
+					.setTimestamp();
+				return embed;
+			};
+
+			const random = Math.floor((Math.random() * count) + 1);
+			vFactsColl.findOne({ number: random })
+				.then(res => {
+					client.channels.cache.get("731324153356877825").send(factEmbed(res.Message));
+					console.log(res.Message);
+				});
+		}, hour);
+	});
 };
