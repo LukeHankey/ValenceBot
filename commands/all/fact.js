@@ -36,6 +36,7 @@ module.exports = {
 				if (!args[0]) {
 				message.delete();
 				message.channel.send(factEmbed(res.Message));
+				client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> used the Fact command in <#${message.channel.id}>. https://discordapp.com/channels/${message.guild.id}/${message.channel.id}/${message.channel.lastMessageID} ${code}#${res.number}. ${res.Message}${code}`);
 				console.log(`Fact command used by ${message.author.username} : ${res.Message}`);
 				}
 			});
