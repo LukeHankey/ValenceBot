@@ -51,7 +51,7 @@ module.exports = {
 			for (let i = 0; i < command.usage.length; i++) {
 				const field = { name: `🔹 ${prefix}${cName} ${command.usage[i] || ""}`, value: `${command.description[i]}` };
 				fields.push(field);
-				console.log(field);
+				// console.log(field);
 			}
 
 			message.channel.send(nEmbed(
