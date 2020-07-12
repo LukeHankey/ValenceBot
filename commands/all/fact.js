@@ -30,7 +30,6 @@ module.exports = {
 				message.delete();
 				message.channel.send(factEmbed(res.Message));
 				console.log(`Fact command used by ${message.author.username} : ${res.Message}`);
-				console.log("Test");
 			});
 
 	},
