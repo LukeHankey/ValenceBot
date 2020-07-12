@@ -111,7 +111,7 @@ module.exports = async client => {
 					.setTitle("**Daily Valence Fact**")
 					.setDescription(factMessage)
 					.setColor(`#${randomColor}`)
-					.addField("**Sent By:**", "<@&685419137530331143>", true)
+					.addField("**Sent By:**", "<@&685612946231263232>", true)
 					.setTimestamp();
 				return embed;
 			};
@@ -120,6 +120,7 @@ module.exports = async client => {
 			vFactsColl.findOne({ number: random })
 				.then(res => {
 					client.channels.cache.get("731324153356877825").send(factEmbed(res.Message));
+					client.channels.cache.get("501146013780672523").send(factEmbed(res.Message));
 					console.log(res.Message);
 				});
 		}, minute);
