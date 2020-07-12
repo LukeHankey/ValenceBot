@@ -13,7 +13,8 @@ module.exports = {
 				},
 			],
 			});
-		}
+		console.log();
+	}
 
 		const avatarList = message.mentions.users.map(user => {
 			return `${user.username}'s avatar: <${user.displayAvatarURL({ format: "png", dynamic: true })}>`;

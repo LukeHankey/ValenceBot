@@ -7,7 +7,8 @@ module.exports = {
 	description: ["Displays a random fact about Valence."],
 	aliases: ["f"],
 	usage:  [""],
-	run: async (client, message) => {
+				console.log();
+				run: async (client, message) => {
 		const db = getDb();
 		const vFactsColl = db.collection("Facts");
 		const count = await vFactsColl.stats()

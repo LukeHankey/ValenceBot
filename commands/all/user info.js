@@ -12,6 +12,7 @@ module.exports = {
 		// function capitalize(str) {
 		// 	return str.charAt(0).toUpperCase() + str.slice(1);
 		// } // Capitalization
+		console.log();
 
 		const nEmbed = function(title, description, color = colors.red_dark, thumbnail = "") {
 			const embed = new Discord.MessageEmbed()

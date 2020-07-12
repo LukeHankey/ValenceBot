@@ -15,7 +15,8 @@ module.exports = {
 		}
 		message.channel.bulkDelete(amount, true).catch(err => {
 			console.error(err);
-			message.channel.send("There was an error trying to delete messages in this channel since they are older than 2 weeks!");
+				console.log();
+				message.channel.send("There was an error trying to delete messages in this channel since they are older than 2 weeks!");
 		});
 	},
 };

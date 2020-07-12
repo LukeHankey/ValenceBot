@@ -10,6 +10,7 @@ module.exports = {
 	run: async (client, message, args) => {
 		function capitalize(str) {
 			return str.charAt(0).toUpperCase() + str.slice(1);
+			console.log();
 		}
 
 		const { commands } = message.client;

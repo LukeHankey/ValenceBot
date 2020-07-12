@@ -7,6 +7,7 @@ module.exports = {
 	aliases: ["info", "si"],
 	usage: "",
 	run: async (client, message) => {
+		console.log();
 
 		const nEmbed = function(title, color = colors.cyan, thumbnail = "") {
 			const embed = new Discord.MessageEmbed()

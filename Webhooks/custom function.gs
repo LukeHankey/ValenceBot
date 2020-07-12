@@ -14,6 +14,7 @@ function onOpen() {
 * 
 * @customfunction
 **/
+		console.log();
 
 function webhook(num, messageRange, color) {
   
