@@ -29,9 +29,11 @@ module.exports = {
 
 		vFactsColl.findOne({ number: random })
 			.then(res => {
+				if (!args[0]) {
 				message.delete();
 				message.channel.send(factEmbed(res.Message));
 				console.log(`Fact command used by ${message.author.username} : ${res.Message}`);
+				}
 			});
 
 			if ((args[0] === "add") && !args[1]) {
