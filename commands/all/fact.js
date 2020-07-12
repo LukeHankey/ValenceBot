@@ -11,14 +11,15 @@ module.exports = {
 	run: async (client, message, args) => {
 		const db = getDb();
 		const vFactsColl = db.collection("Facts");
-		const random = Math.floor((Math.random() * count) + 1);
-		const fact = args.slice(1).join(" ");
-		const code = "```";
 
 		const count = await vFactsColl.stats()
 			.then(res => {
 				return res.count;
 			});
+
+		const random = Math.floor((Math.random() * count) + 1);
+		const fact = args.slice(1).join(" ");
+		const code = "```";
 			
 			const factEmbed = function(factMessage) {
 			const embed = new Discord.MessageEmbed()
@@ -49,7 +50,7 @@ module.exports = {
 			}
 
 			if (fact && (args[0] === "add")) {
-				await vFactsColl.insertOne({ Message: fact,	number: count + 1, })
+				await vFactsColl.insertOne({ Message: fact,	number: count+1, })
 					message.delete();
 					message.channel.send(`${code}${count+1}. ${fact}${code} Fact #${count+1} has been added to the list!`);
 					client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> added a Fact: ${code}#${count+1}. ${fact}${code}`);
@@ -86,7 +87,9 @@ module.exports = {
 				// console.log(list.join(" "));
 				await message.channel.send(`${code}${list.slice(0, 10).join("")}${code}`);
 				await message.channel.send(`${code}${list.slice(10, 20).join("")}${code}`);
-				
+				if (count > 20) {
+				await message.channel.send(`${code}${list.slice(20, 30).join("")}${code}`);
+				}
 				// Or push number + message to array and add fields to an embed
 				// Can use reactions to move to the next page
 			}
