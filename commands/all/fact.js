@@ -4,19 +4,20 @@ const randomColor = Math.floor(Math.random() * 16777215).toString(16);
 
 module.exports = {
 	name: "fact",
-	description: ["Displays a random fact about Valence."],
+	description: ["Displays a random fact about Valence.", "Adds a Valence Fact to the DataBase."],
 	aliases: ["f"],
-	usage:  [""],
-	run: async (client, message) => {
+	usage:  ["", "add <fact>"],
+	run: async (client, message, args) => {
 		const db = getDb();
 		const vFactsColl = db.collection("Facts");
+
 		const count = await vFactsColl.stats()
 			.then(res => {
 				return res.count;
 			});
-			console.log();
+
 			const random = Math.floor((Math.random() * count) + 1);
-		const factEmbed = function(factMessage) {
+			const factEmbed = function(factMessage) {
 			const embed = new Discord.MessageEmbed()
 				.setTitle("**Daily Valence Fact**")
 				.setDescription(factMessage)
@@ -33,5 +34,12 @@ module.exports = {
 				console.log(`Fact command used by ${message.author.username} : ${res.Message}`);
 			});
 
+			if ((args[0] === "add") && !args[1]) {
+				console.log("No 2nd argument given.");
+				message.channel.send("Give me a message to add to the DataBase.");
+			}
+
+			const fact = args[1];
+			console.log(fact);
 	},
 };

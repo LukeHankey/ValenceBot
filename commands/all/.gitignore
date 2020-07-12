@@ -1,2 +1,4 @@
+# Ignore all except any that start with fact
 /*
 !fact*
+!help*
