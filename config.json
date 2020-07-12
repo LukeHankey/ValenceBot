@@ -1,5 +1,5 @@
 {
-	"prefix": "_",
+	"prefix": "vb",
 	"options": {
 		"useNewUrlParser": true,
 		"useUnifiedTopology" : true

@@ -118,8 +118,7 @@ module.exports = async client => {
 			const random = Math.floor((Math.random() * count) + 1);
 			vFactsColl.findOne({ number: random })
 				.then(res => {
-					client.channels.cache.get("731324153356877825").send(factEmbed(res.Message));
-					client.channels.cache.get("501146013780672523").send(factEmbed(res.Message));
+					message.channel.send(factEmbed(res.Message));
 					console.log(res.Message);
 				});
 		}, daily);
