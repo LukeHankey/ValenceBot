@@ -123,6 +123,6 @@ module.exports = async client => {
 					client.channels.cache.get("501146013780672523").send(factEmbed(res.Message));
 					console.log(res.Message);
 				});
-		}, minute);
+		}, daily);
 	});
 };
