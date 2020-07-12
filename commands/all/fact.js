@@ -28,7 +28,8 @@ module.exports = {
 		vFactsColl.findOne({ number: random })
 			.then(res => {
 				message.delete();
-				message.channel.send(factEmbed(res.message));
+				message.channel.send(factEmbed(res.Message));
+				console.log(`Fact command used by ${message.author.username} : ${res.Message}`);
 			});
 
 	},
