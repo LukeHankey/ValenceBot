@@ -14,7 +14,8 @@ module.exports = {
 			.then(res => {
 				return res.count;
 			});
-		const random = Math.floor((Math.random() * count) + 1);
+			console.log();
+			const random = Math.floor((Math.random() * count) + 1);
 		const factEmbed = function(factMessage) {
 			const embed = new Discord.MessageEmbed()
 				.setTitle("**Daily Valence Fact**")

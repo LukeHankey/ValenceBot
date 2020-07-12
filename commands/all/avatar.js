@@ -13,7 +13,6 @@ module.exports = {
 				},
 			],
 			});
-		console.log();
 	}
 
 		const avatarList = message.mentions.users.map(user => {

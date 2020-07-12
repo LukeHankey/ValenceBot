@@ -5,6 +5,7 @@ module.exports = {
 	usage: ["<number>"],
 	run: async (client, message, args) => {
 		const amount = parseInt(args[0]) + 1; // Deletes itself + at least 1 other message
+		console.log();
 
 		if (isNaN(amount)) {
 			return message.reply("Please enter a valid number.");
