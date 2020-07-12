@@ -105,7 +105,6 @@ module.exports = async client => {
 					return res.count;
 				});
 
-			// Change the @Valence Team tag
 			const factEmbed = function(factMessage) {
 				const embed = new Discord.MessageEmbed()
 					.setTitle("**Daily Valence Fact**")
