@@ -4,6 +4,7 @@ const Discord = require("discord.js");
 const connection = require("../../mongodb").initDb;
 const getDb = require("../../mongodb").getDb;
 const fetch = require("node-fetch");
+const cron = require('node-cron');
 const randomColor = Math.floor(Math.random() * 16777215).toString(16);
 
 module.exports = async client => {
@@ -80,24 +81,7 @@ module.exports = async client => {
 			{ upsert: true },
 		);
 
-		async () => {
-			db = getDb();
-			const vFactsColl = db.collection("Facts");
-			const count = await vFactsColl.stats()
-				.then(res => {
-					return res.count;
-				});
-			const random = Math.floor((Math.random() * count) + 1);
-			vFactsColl.findOne({ number: random })
-				.then(res => {
-					client.channels.cache.get("731324153356877825").send(res.Message);
-				});
-		};
-		const daily = 24 * 60 * 60 * 1000;
-		const hour = 60 * 60 * 1000;
-		const minute = 60 * 1000;
-
-		setInterval(async () => {
+		cron.schedule('0 10 * * *', async () => {
 			db = getDb();
 			const vFactsColl = db.collection("Facts");
 			const count = await vFactsColl.stats()
@@ -117,10 +101,9 @@ module.exports = async client => {
 
 			const random = Math.floor((Math.random() * count) + 1);
 			vFactsColl.findOne({ number: random })
-				.then(res => {
-					message.channel.send(factEmbed(res.Message));
-					console.log(res.Message);
-				});
-		}, daily);
+			.then(res => {
+				client.channels.cache.get("732014449182900247").send(factEmbed(res.Message));
+			});
+		});
 	});
 };
