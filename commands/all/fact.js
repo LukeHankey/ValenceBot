@@ -63,9 +63,12 @@ module.exports = {
 					if (args[1] < count) {
 						vFactsColl.updateMany({ number: { $gt: res.number }}, { $inc: { number: -1 }})
 						console.log(`Total facts decreased to: ${count-1}`);
+						message.channel.send(`${code}${res.number}. ${res.Message}${code} Fact #${res.number} has been deleted from the list!`);
+						client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Fact: ${code}#${res.number}. ${res.Message}${code}`);
 					}
-					message.channel.send(`${code}${res.number}. ${res.Message}${code} Fact #${res.number} has been deleted from the list!`);
-					client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Fact: ${code}#${res.number}. ${res.Message}${code}`);
+					else {
+						message.channel.send(`There is no Fact number #${args[1]}`);
+					}
 					});
 				vFactsColl.deleteOne({ number: Number(args[1]) })
 			}
