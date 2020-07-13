@@ -102,7 +102,11 @@ module.exports = async client => {
 			const random = Math.floor((Math.random() * count) + 1);
 			vFactsColl.findOne({ number: random })
 			.then(res => {
-				client.channels.cache.get("732014449182900247").send(factEmbed(res.Message));
+				const ID = ["732014449182900247", "473235620991336468"] //#test-channel & #good-chats
+
+				ID.forEach(channel => {
+					client.channels.cache.get(channel).send(factEmbed(res.Message));
+				})
 			});
 		});
 	});
