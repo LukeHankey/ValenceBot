@@ -66,7 +66,7 @@ module.exports = {
 						message.channel.send(`${code}${res.number}. ${res.Message}${code} Fact #${res.number} has been deleted from the list!`);
 						client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Fact: ${code}#${res.number}. ${res.Message}${code}`);
 					}
-					else {
+					else if (args[1] <= 0 || args[1] > count) {
 						message.channel.send(`There is no Fact number #${args[1]}`);
 					}
 					});
