@@ -60,7 +60,7 @@ module.exports = {
 			if (args[1] && (args[0] === "remove")) { // Fact remove
 				await vFactsColl.findOne({ number: Number(args[1]) })
 				.then(res => {
-					if (args[1] < count) {
+					if (args[1] < count && (args[1] > 0)) {
 						vFactsColl.updateMany({ number: { $gt: res.number }}, { $inc: { number: -1 }})
 						console.log(`Total facts decreased to: ${count-1}`);
 						message.channel.send(`${code}${res.number}. ${res.Message}${code} Fact #${res.number} has been deleted from the list!`);
