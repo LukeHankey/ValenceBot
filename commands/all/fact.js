@@ -101,12 +101,8 @@ module.exports = {
 				const list = [];
 				await vFactsColl.find({ }).sort({ number: 1})
 				.forEach(x => list.push(`${x.number}. ${x.Message}\n`));
-				// console.log(list.join(" "));
-				await message.channel.send(`${list.slice(0, 30).join("")}`, { split: true, code: `` });
-				// await message.channel.send(`${code}${list.slice(10, 20).join("")}${code}`);
-				// if (count > 20) {
-				// await message.channel.send(`${code}${list.slice(20, 30).join("")}${code}`);
-				// }
+				await message.channel.send(`${list.join("")}`, { split: true, code: `` });
+				
 				// Or push number + message to array and add fields to an embed
 				// Can use reactions to move to the next page
 			}
