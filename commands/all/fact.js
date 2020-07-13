@@ -16,6 +16,13 @@ module.exports = {
 			.then(res => {
 				return res.count;
 			});
+		function checkNum(id = 0, gr_eq = 1, l_eq = Infinity) {
+			if (+id !== parseInt(id) || !(id >= gr_eq) || !(id <= l_eq)) {
+				return false
+			} else {
+				return true
+			}
+		}
 
 		const random = Math.floor((Math.random() * count) + 1);
 		const fact = args.slice(1).join(" ");
@@ -57,20 +64,19 @@ module.exports = {
 					client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> added a Fact: ${code}#${count+1}. ${fact}${code}`);
 				}
 
-			if (args[1] && (args[0] === "remove")) { // Fact remove
-				await vFactsColl.findOne({ number: Number(args[1]) })
-				.then(res => {
-					if (args[1] < count && (args[1] > 0)) {
-						vFactsColl.updateMany({ number: { $gt: res.number }}, { $inc: { number: -1 }})
+			if (args[1] && (args[0] === "remove")) {
+				if(checkNum(args[1], 1, count)) {  // <--------- This is the IF I suggest adding
+					await vFactsColl.findOne({ number: Number(args[1]) })
+					.then(res => {
+						vFactsColl.updateMany({ number: { $gt: res.number }}, { $inc: { number: -1 }});
 						console.log(`Total facts decreased to: ${count-1}`);
 						message.channel.send(`${code}${res.number}. ${res.Message}${code} Fact #${res.number} has been deleted from the list!`);
 						client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Fact: ${code}#${res.number}. ${res.Message}${code}`);
-					}
-					else if (args[1] <= 0 || args[1] > count) {
-						message.channel.send(`There is no Fact number #${args[1]}`);
-					}
 					});
-				vFactsColl.deleteOne({ number: Number(args[1]) })
+				vFactsColl.deleteOne({ number: Number(args[1]) });
+				} else {
+					message.channel.send(`Invalid Fact ID! The ID should be between 1 & ${count}.`);
+				}
 			}
 			
 			if (args[1] && args[2] && (args[0] === "edit")) { // Fact edit
