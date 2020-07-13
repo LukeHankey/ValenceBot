@@ -57,17 +57,17 @@ module.exports = {
 					client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> added a Fact: ${code}#${count+1}. ${fact}${code}`);
 				}
 
-			if (fact && (args[0] === "remove")) { // Fact remove
-				await vFactsColl.findOne({ number: Number(fact) })
+			if (args[1] && (args[0] === "remove")) { // Fact remove
+				await vFactsColl.findOne({ number: Number(args[1]) })
 				.then(res => {
-					if (res.number < count) {
-						vFactsColl.Many({ number: { $gt: res.number }}, { $inc: { number: -1 }})
+					if (args[1] < count) {
+						vFactsColl.updateMany({ number: { $gt: res.number }}, { $inc: { number: -1 }})
 						console.log(`Total facts decreased to: ${count-1}`);
 					}
-					message.channel.send(`${code}${res.number}. ${res.Message}${code} Fact #${count} has been deleted from the list!`);
+					message.channel.send(`${code}${res.number}. ${res.Message}${code} Fact #${res.number} has been deleted from the list!`);
 					client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Fact: ${code}#${res.number}. ${res.Message}${code}`);
 					});
-				vFactsColl.deleteOne({ number: Number(fact) })
+				vFactsColl.deleteOne({ number: Number(args[1]) })
 			}
 			
 			if (args[1] && args[2] && (args[0] === "edit")) { // Fact edit
