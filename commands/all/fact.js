@@ -102,7 +102,7 @@ module.exports = {
 				await vFactsColl.find({ }).sort({ number: 1})
 				.forEach(x => list.push(`${x.number}. ${x.Message}\n`));
 				// console.log(list.join(" "));
-				await message.channel.send(`${code}${list.slice(0, 30).join("")}${code}`, { split: true });
+				await message.channel.send(`${list.slice(0, 30).join("")}`, { split: true, code: `` });
 				// await message.channel.send(`${code}${list.slice(10, 20).join("")}${code}`);
 				// if (count > 20) {
 				// await message.channel.send(`${code}${list.slice(20, 30).join("")}${code}`);
