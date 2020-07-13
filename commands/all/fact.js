@@ -5,9 +5,9 @@ const randomColor = Math.floor(Math.random() * 16777215).toString(16);
 
 module.exports = {
 	name: "fact",
-	description: ["Displays a random fact about Valence.", "Adds a Valence Fact to the DataBase.", "Removes a specified Fact from the DataBase.", "Shows the entire list of Facts."],
+	description: ["Displays a random fact about Valence.", "Adds a Valence Fact to the DataBase.", "Removes a specified Fact from the DataBase.", "Edit the message by providing the Fact number." ,"Shows the entire list of Facts."],
 	aliases: ["f"],
-	usage:  ["", "add <fact>", "remove <number>", "list"],
+	usage:  ["", "add <fact>", "remove <number>", "edit <number>", "list"],
 	run: async (client, message, args) => {
 		const db = getDb();
 		const vFactsColl = db.collection("Facts");
