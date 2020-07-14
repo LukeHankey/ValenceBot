@@ -24,7 +24,7 @@ module.exports = {
 
         if (!args[0]) {
             collection.find({}).toArray().then(res => {
-                console.log(Object.keys(res[0]).slice(2, 3).join(""));
+                // console.log(Object.keys(res[0]).slice(2, 3).join(""));
                 const key1 = Object.keys(res[0]).slice(2, 3).join("");
                 const key2 = Object.keys(res[0]).slice(3, 4).join("");
             message.channel.send(nEmbed(
