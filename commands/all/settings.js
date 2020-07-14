@@ -38,6 +38,7 @@ module.exports = {
 					else {
 						message.channel.send(`What do you want to set the prefix to?`);
 					}
+					break;
 				default:
 					if (!args[1]) {
 						await collection.findOne({ _id: `${message.guild.name}` })
@@ -46,6 +47,31 @@ module.exports = {
 						})
 					}
 				}
+			break;
+		case "adminRole":
+			switch (args[1]) {
+				case "set":
+					if (args[2]) {
+					await collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: args[2] }}, { returnOriginal: true })
+					.then(r =. {
+						message.channel.send(`Prefix has been changed from \`${r.value.adminRole}\` to \`${args[2]}\``)
+							client.channels.cache.get("731997087721586698")
+							.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.prefix}\n+ ${args[2]}${code}`);
+						})
+			}
+			else {
+				message.channel.send(`What do you want to set the Admin Role to? Acceptable values:`);
+				message.channel.send(`${code}diff\n+ Role ID (Current ID)\n+ Tagging the role (@currentRole)\n+ Role Name (Current Role Name)${code}`)
+			}
+					break;
+				default:
+					if (!args[1]) {
+						await collection.findOne({ _id: `${message.guild.name}` })
+						.then(res => {
+							message.channel.send(`Your Admin Role is set as: \`${res.adminRole}\``)
+						})
+					}
+			}
 			break;
 		default:
 		collection.find({}).toArray().then(res => {
