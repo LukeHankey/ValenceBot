@@ -22,22 +22,22 @@ module.exports = {
         const db = getDb();
         const collection = db.collection(`Settings`)
 		
-		switch (args[0]) {
-			case "prefix":
-				switch (args[1]) {
-					case "set":
-						if (args[2]) {
-				    	await collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { prefix: args[2] }}, { returnOriginal: true })
-            			.then(r => {
+	switch (args[0]) {
+		case "prefix":
+			switch (args[1]) {
+				case "set":
+					if (args[2]) {
+						await collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { prefix: args[2] }}, { returnOriginal: true })
+						.then(r => {
 							console.log(r.value);
 							message.channel.send(`Prefix has been changed from \`${r.value.prefix}\` to \`${args[2]}\``)
-									client.channels.cache.get("731997087721586698")
-									.send(`<@${message.author.id}> changed the bot Prefix in server: **${message.guild.name}**\n${code}diff\n- ${r.value.prefix}\n+ ${args[2]}${code}`);
-            })
-						}
-						else {
-							message.channel.send(`What do you want to set the prefix to?`);
-						}
+							client.channels.cache.get("731997087721586698")
+							.send(`<@${message.author.id}> changed the bot Prefix in server: **${message.guild.name}**\n${code}diff\n- ${r.value.prefix}\n+ ${args[2]}${code}`);
+						})
+					}
+					else {
+						message.channel.send(`What do you want to set the prefix to?`);
+					}
 				default:
 					if (!args[1]) {
 						await collection.findOne({ _id: `${message.guild.name}` })
@@ -46,32 +46,22 @@ module.exports = {
 						})
 					}
 				}
-				break;
-			default:
-			collection.find({}).toArray().then(res => {
-				const key1 = Object.keys(res[0]).slice(2, 3).join("");
-				const key2 = Object.keys(res[0]).slice(3, 4).join("");
-				    message.channel.send(nEmbed(
-					"**Settings List**",
-					"Here's a list of all the settings you can change:",
-					colors.cyan,
-					client.user.displayAvatarURL()
-				    )
-					.addFields(
-					    { name: "**Settings**", value: `\`${key1}\`\n\`${key2}\``, inline: false }
-					)
+			break;
+		default:
+		collection.find({}).toArray().then(res => {
+			const key1 = Object.keys(res[0]).slice(2, 3).join("");
+			const key2 = Object.keys(res[0]).slice(3, 4).join("");
+			message.channel.send(nEmbed(
+				"**Settings List**",
+				"Here's a list of all the settings you can change:",
+				colors.cyan,
+				client.user.displayAvatarURL()
+			)
+				.addFields(
+					{ name: "**Settings**", value: `\`${key1}\`\n\`${key2}\``, inline: false }
 				)
-			})
-		}
-
-//         if (args[0] === "prefix" && (args[1] === "set") && args[2]) {
-//             await collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { prefix: args[2] }}, { returnOriginal: true })
-//             .then(r => {
-//                 console.log(r.value);
-//                 message.channel.send(`Prefix has been changed from \`${r.value.prefix}\` to \`${args[2]}\``)
-// 						client.channels.cache.get("731997087721586698")
-// 						.send(`<@${message.author.id}> changed the bot Prefix in server: **${message.guild.name}**\n${code}diff\n- ${r.value.prefix}\n+ ${args[2]}${code}`);
-//             })
-//         }
+			)
+		})
+	}
     },
 };
