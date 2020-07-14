@@ -16,6 +16,13 @@ module.exports = {
 			.then(res => {
 				return res.count;
 			});
+		function checkNum(id = 0, gr_eq = 1, l_eq = Infinity) {
+			if (+id !== parseInt(id) || !(id >= gr_eq) || !(id <= l_eq)) {
+				return false
+			} else {
+				return true
+			}
+		}
 
 		const random = Math.floor((Math.random() * count) + 1);
 		const fact = args.slice(1).join(" ");
@@ -57,17 +64,19 @@ module.exports = {
 					client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> added a Fact: ${code}#${count+1}. ${fact}${code}`);
 				}
 
-			if (fact && (args[0] === "remove")) { // Fact remove
-				await vFactsColl.findOne({ number: Number(fact) })
-				.then(res => {
-					if (res.number < count) {
-						vFactsColl.Many({ number: { $gt: res.number }}, { $inc: { number: -1 }})
+			if (args[1] && (args[0] === "remove")) {
+				if(checkNum(args[1], 1, count)) {  // <--------- This is the IF I suggest adding
+					await vFactsColl.findOne({ number: Number(args[1]) })
+					.then(res => {
+						vFactsColl.updateMany({ number: { $gt: res.number }}, { $inc: { number: -1 }});
 						console.log(`Total facts decreased to: ${count-1}`);
-					}
-					message.channel.send(`${code}${res.number}. ${res.Message}${code} Fact #${count} has been deleted from the list!`);
-					client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Fact: ${code}#${res.number}. ${res.Message}${code}`);
+						message.channel.send(`${code}${res.number}. ${res.Message}${code} Fact #${res.number} has been deleted from the list!`);
+						client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Fact: ${code}#${res.number}. ${res.Message}${code}`);
 					});
-				vFactsColl.deleteOne({ number: Number(fact) })
+				vFactsColl.deleteOne({ number: Number(args[1]) });
+				} else {
+					message.channel.send(`Invalid Fact ID! The ID should be between 1 & ${count}.`);
+				}
 			}
 			
 			if (args[1] && args[2] && (args[0] === "edit")) { // Fact edit
@@ -101,12 +110,8 @@ module.exports = {
 				const list = [];
 				await vFactsColl.find({ }).sort({ number: 1})
 				.forEach(x => list.push(`${x.number}. ${x.Message}\n`));
-				// console.log(list.join(" "));
-				await message.channel.send(`${code}${list.slice(0, 10).join("")}${code}`);
-				await message.channel.send(`${code}${list.slice(10, 20).join("")}${code}`);
-				if (count > 20) {
-				await message.channel.send(`${code}${list.slice(20, 30).join("")}${code}`);
-				}
+				await message.channel.send(`${list.join("")}`, { split: true, code: `` });
+				
 				// Or push number + message to array and add fields to an embed
 				// Can use reactions to move to the next page
 			}
