@@ -4,9 +4,9 @@ const getDb = require("../../mongodb").getDb;
 
 module.exports = {
 	name: "settings",
-	description: ["Displays the settings that you can change."],
+	description: ["Displays the settings that you can change.", "Shows the current prefix.", "Sets the new prefix in the server."],
 	aliases: ["s"],
-	usage: [""],
+	usage: ["", "prefix", "prefix set <new prefix>"],
 	run: async (client, message, args) => {
         const nEmbed = function(title, description, color = colors.cyan, thumbnail = "") {
 			const embed = new Discord.MessageEmbed()
