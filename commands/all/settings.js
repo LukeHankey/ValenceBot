@@ -23,7 +23,7 @@ module.exports = {
         const collection = db.collection(`Settings`)
 
 	switch(args[0]) {
-		case `${!args[0]}`:
+		case "":
 		    collection.find({}).toArray().then(res => {
 			console.log(Object.keys(res[0]).slice(2, 3).join(""));
 			const key1 = Object.keys(res[0]).slice(2, 3).join("");
