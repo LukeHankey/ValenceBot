@@ -74,20 +74,25 @@ module.exports = {
 			}
 			break;
 		default:
-		collection.find({}).toArray().then(res => {
-			const key1 = Object.keys(res[0]).slice(2, 3).join("");
-			const key2 = Object.keys(res[0]).slice(3, 4).join("");
-			message.channel.send(nEmbed(
-				"**Settings List**",
-				"Here's a list of all the settings you can change:",
-				colors.cyan,
-				client.user.displayAvatarURL()
-			)
-				.addFields(
-					{ name: "**Settings**", value: `\`${key1}\`\n\`${key2}\``, inline: false }
-				)
-			)
-		})
+			if (!args[0]) {
+				collection.find({}).toArray().then(res => {
+					const key1 = Object.keys(res[0]).slice(2, 3).join("");
+					const key2 = Object.keys(res[0]).slice(3, 4).join("");
+					message.channel.send(nEmbed(
+						"**Settings List**",
+						"Here's a list of all the settings you can change:",
+						colors.cyan,
+						client.user.displayAvatarURL()
+					)
+						.addFields(
+							{ name: "**Settings**", value: `\`${key1}\`\n\`${key2}\``, inline: false }
+						)
+					)
+				})
+		}
+		else {
+			return;
+		}
 	}
     },
 };
