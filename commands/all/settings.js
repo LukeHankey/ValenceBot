@@ -39,10 +39,12 @@ module.exports = {
 							message.channel.send(`What do you want to set the prefix to?`);
 						}
 				default:
-					await collection.findOne({ _id: `${message.guild.name}` })
-					.then(res => {
-						message.channel.send(`Your prefix is set as: \`${res.prefix}\``)
-				})
+					if (!args[1]) {
+						await collection.findOne({ _id: `${message.guild.name}` })
+						.then(res => {
+							message.channel.send(`Your prefix is set as: \`${res.prefix}\``)
+						})
+					}
 				}
 				break;
 			default:
