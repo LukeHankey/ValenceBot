@@ -68,7 +68,7 @@ module.exports = {
 					if (!args[1]) {
 						await collection.findOne({ _id: `${message.guild.name}` })
 						.then(res => {
-							message.channel.send(`Your Admin Role is set as: \`${res.adminRole}\``)
+							message.channel.send(`Your Admin Role is set as: ${res.adminRole}`)
 						})
 					}
 			}
