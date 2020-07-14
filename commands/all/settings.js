@@ -53,7 +53,7 @@ module.exports = {
 				case "set":
 					if (args[2]) {
 					await collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: args[2] }}, { returnOriginal: true })
-					.then(r =. {
+					.then(r => {
 						message.channel.send(`Prefix has been changed from \`${r.value.adminRole}\` to \`${args[2]}\``)
 							client.channels.cache.get("731997087721586698")
 							.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.prefix}\n+ ${args[2]}${code}`);
