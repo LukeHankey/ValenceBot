@@ -7,9 +7,6 @@ module.exports = async (client, message) => {
 	const collection = db.collection(`Settings`);
 	collection.findOne({ _id: `${message.guild.name}` })
 	.then(res => {
-		// console.log(res);
-		// console.log(res.prefix.length);
-		// console.log(res.prefix);
 
 		if (!message.content.startsWith(res.prefix) || message.author.bot) return;
 
