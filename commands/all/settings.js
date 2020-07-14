@@ -25,7 +25,8 @@ module.exports = {
 		switch (args[0]) {
 			case "prefix":
 				switch (args[1]) {
-					case "set":	
+					case "set":
+						if (args[2]) {
 				    	await collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { prefix: args[2] }}, { returnOriginal: true })
             			.then(r => {
 							console.log(r.value);
@@ -33,6 +34,10 @@ module.exports = {
 									client.channels.cache.get("731997087721586698")
 									.send(`<@${message.author.id}> changed the bot Prefix in server: **${message.guild.name}**\n${code}diff\n- ${r.value.prefix}\n+ ${args[2]}${code}`);
             })
+						}
+						else {
+							message.channel.send(`What do you want to set the prefix to?`);
+						}
 				default:
 					await collection.findOne({ _id: `${message.guild.name}` })
 					.then(res => {
