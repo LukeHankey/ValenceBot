@@ -49,7 +49,7 @@ module.exports = {
 				})
 				break;
 			default:
-				console.log("Test");
+				return;
 // 			}
 		}
 
