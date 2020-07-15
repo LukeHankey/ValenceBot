@@ -15,7 +15,7 @@ module.exports = {
 				if (typeof evalCode !== "string") {
 					evalCode = require("util").inspect(evalCode)
 				}
-			return message.channel.send(evalCode, {code:"xl"})
+			return message.channel.send(evalCode, { code:"xl", split: true })
 			} 
 			catch (error) {
 				return message.channel.send("Error:\n" + error)
