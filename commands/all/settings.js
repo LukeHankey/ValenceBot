@@ -16,92 +16,19 @@ module.exports = {
 				.setThumbnail(thumbnail)
                 .setTimestamp()
 			return embed;
-		}; // Discord Embed
+        }; // Discord Embed
+        
+        function checkNum(id = 0, gr_eq = 1, l_eq = Infinity) {
+			if (+id !== parseInt(id) || !(id >= gr_eq) || !(id <= l_eq)) {
+				return false
+			} else {
+				return true
+			}
+		}
     
 	const code = "```";
         const db = getDb();
         const collection = db.collection(`Settings`)
-<<<<<<< HEAD
-
-        if (!args[0]) {
-            collection.find({}).toArray().then(res => {
-                // console.log(Object.keys(res[0]).slice(2, 3).join(""));
-                const key1 = Object.keys(res[0]).slice(2, 3).join("");
-                const key2 = Object.keys(res[0]).slice(3, 4).join("");
-            message.channel.send(nEmbed(
-                "**Settings List**",
-                "Here's a list of all the settings you can change:",
-                colors.cyan,
-                client.user.displayAvatarURL()
-            )
-                .addFields(
-                    { name: "**Settings**", value: `\`${key1}\`\n\`${key2}\``, inline: false }
-                )
-            )
-        })
-    }
-
-        if (args[0] === "prefix" && (!args[1])) {
-            await collection.findOne({ _id: `${message.guild.name}` })
-            .then(res => {
-                message.channel.send(`Your prefix is set as: \`${res.prefix}\``)
-            })
-        }
-
-        if (args[0] === "prefix" && (args[1] === "set") && args[2]) {
-            // await collection.findOne({ _id: message.guild.name })
-            // .then(res => {
-                // console.log(res);
-            await collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { prefix: args[2] }}, { returnOriginal: true })
-            .then(r => {
-                console.log(r.value);
-                message.channel.send(`Prefix has been changed from \`${r.value.prefix}\` to \`${args[2]}\``)
-						client.channels.cache.get("731997087721586698")
-						.send(`<@${message.author.id}> changed the bot Prefix in server: **${message.guild.name}**\n${code}diff\n- ${r.value.prefix}\n+ ${args[2]}${code}`);
-            })
-            // })
-        }
-||||||| 2647ff5
-
-        if (!args[0]) {
-            collection.find({}).toArray().then(res => {
-                console.log(Object.keys(res[0]).slice(2, 3).join(""));
-                const key1 = Object.keys(res[0]).slice(2, 3).join("");
-                const key2 = Object.keys(res[0]).slice(3, 4).join("");
-            message.channel.send(nEmbed(
-                "**Settings List**",
-                "Here's a list of all the settings you can change:",
-                colors.cyan,
-                client.user.displayAvatarURL()
-            )
-                .addFields(
-                    { name: "**Settings**", value: `\`${key1}\`\n\`${key2}\``, inline: false }
-                )
-            )
-        })
-    }
-
-        if (args[0] === "prefix" && (!args[1])) {
-            await collection.findOne({ _id: `${message.guild.name}` })
-            .then(res => {
-                message.channel.send(`Your prefix is set as: \`${res.prefix}\``)
-            })
-        }
-
-        if (args[0] === "prefix" && (args[1] === "set") && args[2]) {
-            // await collection.findOne({ _id: message.guild.name })
-            // .then(res => {
-                // console.log(res);
-            await collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { prefix: args[2] }}, { returnOriginal: true })
-            .then(r => {
-                console.log(r.value);
-                message.channel.send(`Prefix has been changed from \`${r.value.prefix}\` to \`${args[2]}\``)
-						client.channels.cache.get("731997087721586698")
-						.send(`<@${message.author.id}> changed the bot Prefix in server: **${message.guild.name}**\n${code}diff\n- ${r.value.prefix}\n+ ${args[2]}${code}`);
-            })
-            // })
-        }
-=======
 		
 	switch (args[0]) {
 		case "prefix":
@@ -132,18 +59,36 @@ module.exports = {
 		case "adminRole":
 			switch (args[1]) {
 				case "set":
-					if (args[2]) {
-					await collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: args[2] }}, { returnOriginal: true })
+                    let roleArg = args.slice(2).join(" ");
+                    let roleName = message.guild.roles.cache.find(role => role.name === roleArg)
+                    if (checkNum(args[2], 1, Infinity) && (message.guild.roles.cache.has(args[2]) && !message.guild.id)) {
+                    await collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: `<@&${args[2]}>` }}, { returnOriginal: true })
 					.then(r => {
-						message.channel.send(`Prefix has been changed from \`${r.value.adminRole}\` to \`${args[2]}\``)
+						message.channel.send(`The Admin Role has been changed to: <@&${args[2]}>`)
 							client.channels.cache.get("731997087721586698")
-							.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.prefix}\n+ ${args[2]}${code}`);
+							.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ <@&${args[2]}>${code}`);
 						})
-			}
+            }
+            else if (roleName) {
+                await collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: `${roleName}` }}, { returnOriginal: true })
+					.then(r => {
+						message.channel.send(`The Admin Role has been changed to: <@&${roleName.id}>`)
+							client.channels.cache.get("731997087721586698")
+							.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ ${roleName}${code}`);
+						})
+            }
+            else if (message.mentions.roles.first()) {
+                await collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: args[2] }}, { returnOriginal: true })
+					.then(r => {
+						message.channel.send(`The Admin Role has been changed to: ${args[2]}`)
+							client.channels.cache.get("731997087721586698")
+							.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ ${args[2]}${code}`);
+						})
+            }
 			else {
 				message.channel.send(`What do you want to set the Admin Role to? Acceptable values:`);
-				message.channel.send(`${code}diff\n+ Role ID (Current ID)\n+ Tagging the role (@currentRole)\n+ Role Name (Current Role Name)${code}`)
-			}
+				message.channel.send(`${code}diff\n+ Role ID\n+ Tagging the role\n+ Role Name${code}`)
+            }
 					break;
 				default:
 					if (!args[1]) {
@@ -175,6 +120,5 @@ module.exports = {
 			return;
 		}
 	}
->>>>>>> 24593bfeeb8b84c9482cbd4f7cbfaf5832892005
     },
 };
