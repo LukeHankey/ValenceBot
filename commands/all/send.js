@@ -22,7 +22,7 @@ module.exports = {
 		if (message.author.id === myID && content) {
 			client.channels.cache.get(args[0]).send(content);
 		}
-		else if (message.author.id !== myID && content) {
+		else if (message.author.id !== myID && content && !message.guild.channels.cache.has(args[0])) {
 			message.channel.send("You are not able to send a message to a channel in another server.");
 		}
 	}
