@@ -15,10 +15,6 @@ module.exports = {
 		}
 	}
 		
-	if (!args[0]) { // No ID
-		message.channel.send("You must provide a channel ID");
-	}
-	
 // 	if (checkNum(args[0], 1, Infinity) && !args[1]) { // Has ID but no Message
 // 		 message.channel.send("Provide a message to send.");
 // 	}
@@ -34,7 +30,12 @@ module.exports = {
 		}
 	}
 	else {
+		message.channel.send("You must provide a channel ID");
 		message.channel.send("Provide a message to send.");
+	}
+		
+	if (!content) {
+		message.channel.send("You must provide a message to send");
 	}
 		// Allow it to only work in the same server unless it's me
 		// Search through all channels in server, if not found return
