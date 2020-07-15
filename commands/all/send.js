@@ -4,7 +4,7 @@ module.exports = {
 	aliases: [""],
 	usage: ["<channel ID> <message content>"],
 	run: async (client, message, args) => {
-	const myID = 212668377586597888;	
+	const myID = "212668377586597888";	
     	let content = args.slice(1).join(" ");
  	function checkNum(id = 0, gr_eq = 1, l_eq = Infinity) {
 		if (+id !== parseInt(id) || !(id >= gr_eq) || !(id <= l_eq)) {
