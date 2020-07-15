@@ -27,7 +27,7 @@ module.exports = {
 		client.channels.cache.get(args[0]).send(content)
 	}
 	else  {
-		if (message.guild.channels.cache.has(args[0]) {
+		if (message.guild.channels.cache.has(args[0])) {
 		message.guild.channels.cache.get(args[0]).send(content);
 		}
 		else {
