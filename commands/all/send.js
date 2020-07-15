@@ -13,18 +13,18 @@ module.exports = {
 			return true
 		}
 	}
-
-	if (message.author.id === myID && (checkNum(args[0], 1, Infinity)) && !args[1]) {
-		message.channel.send("You forgot to include your message content.")
+	if (args[0] && !args[1]) {
+		if (message.author.id === myID && (checkNum(args[0], 1, Infinity)) && !args[1]) {
+			message.channel.send("You forgot to include your message content.")
+		}
+		else if (checkNum(args[0], 1, Infinity) && message.guild.channels.cache.has(args[0]) && !args[1]) {
+			 message.channel.send("Provide a message to send.");
+		}
+		else {
+			message.channel.send("You must provide a channel ID");
+		}
 	}
-	else if (checkNum(args[0], 1, Infinity) && message.guild.channels.cache.has(args[0]) && !args[1]) {
-		 message.channel.send("Provide a message to send.");
-	}
-	else {
-		message.channel.send("You must provide a channel ID");
-	}
-
-    if (args[0] && content) {
+	else if (args[0] && content) {
       client.channels.cache.get(args[0]).send(content);
     }
   
