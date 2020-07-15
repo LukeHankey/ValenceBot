@@ -33,7 +33,7 @@ module.exports = {
 		message.channel.send("You must provide a channel ID");
 	}
 		
-	if (!content) {
+	if (args[1] && !content) {
 		message.channel.send("You must provide a message to send");
 	}
 		// Allow it to only work in the same server unless it's me
