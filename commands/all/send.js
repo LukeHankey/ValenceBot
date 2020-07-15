@@ -5,7 +5,7 @@ module.exports = {
 	usage: ["<channel ID> <message content>"],
 	run: async (client, message, args) => {
 		
-	const myID = 212668377586597888;	
+	const myID = "212668377586597888";	
     	let content = args.slice(1).join(" ");
 	const code = "```";
 		
