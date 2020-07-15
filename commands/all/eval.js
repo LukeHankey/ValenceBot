@@ -1,8 +1,8 @@
 module.exports = {
-	name: "fact",
-	description: ["Displays a random fact about Valence."],
-	aliases: ["f"],
-	usage:  ["", "add <fact>", "remove <number>", "edit <number>", "list"],
+	name: "eval",
+	description: ["Evaluates code."],
+	aliases: [""],
+	usage:  ["<code>"],
 	run: async (client, message, args) => {
 
 	if (message.author.id !== "212668377586597888") {
