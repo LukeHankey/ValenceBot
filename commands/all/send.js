@@ -17,8 +17,9 @@ module.exports = {
     }
     
     let content = args.slice(1).join(" ");
-    
-    if (content) {
+    console.log(content);
+		
+    if (args[0] && content) {
       message.channels.cache.get(args[0]).send(content);
     }
   
