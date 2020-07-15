@@ -15,7 +15,7 @@ module.exports = {
 		}
 	}
 		
-	if (args[0]) {
+	if (checkNum(args[0], 1, Infinity)) {
 		if (checkNum(args[0], 1, Infinity) && content && message.author.id === myID) { // Has valid ID, & content and is bot owner
 			client.channels.cache.get(args[0]).send(content)
 		}
