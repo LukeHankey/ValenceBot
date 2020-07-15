@@ -20,7 +20,7 @@ module.exports = {
     console.log(content);
 		
     if (args[0] && content) {
-      message.channels.cache.get(args[0]).send(content);
+      client.channels.cache.get(args[0]).send(content);
     }
   
   
