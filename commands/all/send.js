@@ -13,8 +13,9 @@ module.exports = {
 			return true
 		}
 	}
-    
-	if (message.author.id === myID && checkNum(args[0], 1, Infinity)) {
+		console.log(message.author.id)
+		console.log(myID)
+	if (message.author.id === myID && (checkNum(args[0], 1, Infinity))) {
 		message.channel.send("You forgot to include your message content.")
 	}
 	else if (checkNum(args[0], 1, Infinity) && message.guild.channels.cache.has(args[0])) {
