@@ -16,14 +16,14 @@ module.exports = {
 	}
 		
 	if (checkNum(args[0], 1, Infinity)) { // Has valid ID
-		if (content && message.author.id === myID) { // Has content and is bot owner
-			client.channels.cache.get(args[0]).send(content)
-		}
-		else if (message.guild.channels.cache.has(args[0]) && content) { // Checks if the channel ID is in the same server, and has message content
+		if (message.guild.channels.cache.has(args[0]) && content) { // Has content and channel is in same server
 			message.guild.channels.cache.get(args[0]).send(content);
+			}
+		if (message.author.id === myID && content) {
+			client.channels.cache.get(args[0]).send(content);
 		}
 		else {
-			message.channel.send("You can't send a message to a channel in another server!");
+			message.channel.send("You are not able to send a message to a channel in another server.");
 		}
 	}
 	else { // No valid ID
