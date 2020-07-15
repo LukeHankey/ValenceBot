@@ -4,6 +4,7 @@ module.exports = {
 	aliases: [""],
 	usage: ["<channel ID> <message content>"],
 	run: async (client, message, args) => {
+		
 	const myID = "212668377586597888";	
     	let content = args.slice(1).join(" ");
  	function checkNum(id = 0, gr_eq = 1, l_eq = Infinity) {
@@ -13,23 +14,22 @@ module.exports = {
 			return true
 		}
 	}
-	if (args[0] && !args[1]) {
-		if (message.author.id === myID && (checkNum(args[0], 1, Infinity)) && !args[1]) {
-			message.channel.send("You forgot to include your message content.")
-		}
-		else if (checkNum(args[0], 1, Infinity) && message.guild.channels.cache.has(args[0]) && !args[1]) {
-			 message.channel.send("Provide a message to send.");
-		}
-		else {
-			message.channel.send("You must provide a channel ID");
-		}
+		
+	if (!args[0]) {
+		message.channel.send("You must provide a channel ID");
 	}
-	else if (args[0] && content) {
-      client.channels.cache.get(args[0]).send(content);
-    }
-  
+	
+	if (checkNum(args[0], 1, Infinity) && message.guild.channels.cache.has(args[0]) && !args[1]) {
+		 message.channel.send("Provide a message to send.");
+	}
+	
+	if (args[0] && content && message.author.id === myID) {
+		client.channels.cache.get(args[0]).send(content)
+	}
+	else  {
+		message.guild.channels.cache.get(args[0]).send(content);
+	}  
 		// Allow it to only work in the same server unless it's me
 		// Search through all channels in server, if not found return
-  
     },
 };
