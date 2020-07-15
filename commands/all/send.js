@@ -14,7 +14,7 @@ module.exports = {
 		}
 	}
 		console.log(message.author.id)
-		console.log(myID)
+		console.log(`My ID: ${myID}`)
 	if (message.author.id === myID && (checkNum(args[0], 1, Infinity))) {
 		message.channel.send("You forgot to include your message content.")
 	}
