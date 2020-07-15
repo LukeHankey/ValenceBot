@@ -5,7 +5,7 @@ module.exports = {
 	usage: ["<channel ID> <message content>"],
 	run: async (client, message, args) => {
 		
-	const myID = 212668377586597888;	
+	const myID = "212668377586597888";	
     	let content = args.slice(1).join(" ");
  	function checkNum(id = 0, gr_eq = 1, l_eq = Infinity) {
 		if (+id !== parseInt(id) || !(id >= gr_eq) || !(id <= l_eq)) {
@@ -22,7 +22,7 @@ module.exports = {
 		if (message.author.id === myID && content) {
 			client.channels.cache.get(args[0]).send(content);
 		}
-		else if (message.author.id !== myID && content && !message.guild.channels.cache.has(args[0])) {
+		else if (message.author.id !== myID && content && !message.guild.channels.cache.has(args[0])) { // Checks for non-owner, message content and if ID is not in same server
 			message.channel.send("You are not able to send a message to a channel in another server.");
 		}
 	}
@@ -31,9 +31,7 @@ module.exports = {
 	}
 		
 	if (args[0] && !content) {
-		message.channel.send("You must provide a message to send");
+		message.channel.send("You must provide a message to send.");
 	}
-		// Allow it to only work in the same server unless it's me
-		// Search through all channels in server, if not found return
     },
 };
