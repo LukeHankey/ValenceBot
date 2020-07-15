@@ -16,7 +16,7 @@ module.exports = {
 	}
 		
 	if (checkNum(args[0], 1, Infinity)) { // Has valid ID
-		if (message.guild.channels.cache.has(args[0]) && content) { // Has content and channel is in same server
+		if (message.guild.channels.cache.has(args[0]) && content && message.author.id !== myID) { // Has content and channel is in same server
 			message.guild.channels.cache.get(args[0]).send(content);
 			}
 		if (message.author.id === myID && content) {
