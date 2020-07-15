@@ -31,7 +31,6 @@ module.exports = {
 	}
 	else {
 		message.channel.send("You must provide a channel ID");
-		message.channel.send("Provide a message to send.");
 	}
 		
 	if (!content) {
