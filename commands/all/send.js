@@ -17,7 +17,7 @@ module.exports = {
 	if (message.author.id === myID && (checkNum(args[0], 1, Infinity)) && !args[1]) {
 		message.channel.send("You forgot to include your message content.")
 	}
-	else if (checkNum(args[0], 1, Infinity) && message.guild.channels.cache.has(args[0])) {
+	else if (checkNum(args[0], 1, Infinity) && message.guild.channels.cache.has(args[0]) && !args[1]) {
 		 message.channel.send("Provide a message to send.");
 	}
 	else {
