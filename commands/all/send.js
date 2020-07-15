@@ -15,9 +15,6 @@ module.exports = {
 		}
 	}
 		
-// 	if (checkNum(args[0], 1, Infinity) && !args[1]) { // Has ID but no Message
-// 		 message.channel.send("Provide a message to send.");
-// 	}
 	if (args[0]) {
 		if (checkNum(args[0], 1, Infinity) && content && message.author.id === myID) { // Has valid ID, & content and is bot owner
 			client.channels.cache.get(args[0]).send(content)
@@ -33,7 +30,7 @@ module.exports = {
 		message.channel.send("You must provide a channel ID");
 	}
 		
-	if (args[1] && !content) {
+	if (args[0] && !content) {
 		message.channel.send("You must provide a message to send");
 	}
 		// Allow it to only work in the same server unless it's me
