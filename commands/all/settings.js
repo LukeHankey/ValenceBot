@@ -87,7 +87,8 @@ module.exports = {
             }
 			else {
 				message.channel.send(`What do you want to set the Admin Role to? Acceptable values:`);
-				message.channel.send(`${code}diff\n+ Role ID\n+ Tagging the role\n+ Role Name${code}`)
+				message.channel.send(`${code}diff\n+ Role ID\n+ Tagging the role\n+ Role Name\n\nNOTE: If specifying a Role Name, make sure the Role Name is unique!${code}`);
+				// Check that the role being set has the _ADMINISTRATOR_ permission
             }
 					break;
 				default:

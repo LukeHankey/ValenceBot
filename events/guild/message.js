@@ -5,7 +5,7 @@ const getDb = require("../../mongodb").getDb;
 module.exports = async (client, message) => {
 	const db = getDb();
 	const collection = db.collection(`Settings`);
-	collection.findOne({ _id: `${message.guild.name}` })
+	collection.findOne({ serverID: `${message.guild.id}` })
 	.then(res => {
 
 		if (!message.content.startsWith(res.prefix) || message.author.bot) return;
@@ -23,5 +23,5 @@ module.exports = async (client, message) => {
 		if (!commandName) message.channel.send("That's not a valid command!");
 		console.error(error);
 		}
-	})
+	})	
 };
