@@ -7,7 +7,6 @@ module.exports = async (client, message) => {
 	const collection = db.collection(`Settings`);
 	collection.findOne({ serverID: `${message.guild.id}` })
 	.then(res => {
-
 		if (!message.content.startsWith(res.prefix) || message.author.bot) return;
 
 		const args = message.content.slice(res.prefix.length).split(/ +/g);
