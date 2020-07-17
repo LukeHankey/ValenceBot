@@ -124,36 +124,35 @@ module.exports = {
 						})
 
 						let perm = message.member.roles.cache.has(abovePerm[0]) || message.member.roles.cache.has(rID) || message.author.id === message.guild.ownerID;
+						let mentionID = message.mentions.roles.first().id;
 						if (perm) {
-						if (checkNum(args[2], 1, Infinity) && message.guild.roles.cache.has(args[2]) && message.guild.id !== args[2]) { // Setting role by ID
-							if (ardID.rawPosition >= adRole.rawPosition && ardID.rawPosition > aboveRP) {
-								message.channel.send("You cannot set the Admin role higher than the role you have.")
-							} 
-							else {
-								collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: `<@&${args[2]}>` }}, { returnOriginal: true })
-								.then(r => {
-									message.channel.send(`The Admin Role has been changed to: <@&${args[2]}>`)
-									client.channels.cache.get("731997087721586698")
-									.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ <@&${args[2]}>${code}`);
-								})
-							}
-						}
-						else if (roleName) { // Setting role by name
-							if (roleName.rawPosition >= adRole.rawPosition && roleName.rawPosition > aboveRP) {
-								message.channel.send("You cannot set the Admin role higher than the role you have.") // Update to make better message.
-							} 
-							else {
-								collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: `${roleName}` }}, { returnOriginal: true })
+							if (checkNum(args[2], 1, Infinity) && message.guild.roles.cache.has(args[2]) && message.guild.id !== args[2] && message.guild.roles.cache.get(args[2]).hasPermission("ADMINISTRATOR")) { // Setting role by ID
+								if (ardID.rawPosition >= adRole.rawPosition && ardID.rawPosition > aboveRP) {
+									message.channel.send("You cannot set the Admin role higher than the role you have.")
+								} 
+								else {
+									collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: `<@&${args[2]}>` }}, { returnOriginal: true })
 									.then(r => {
-										message.channel.send(`The Admin Role has been changed to: <@&${roleName.id}>`)
-											client.channels.cache.get("731997087721586698")
-											.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ ${roleName}${code}`);
+										message.channel.send(`The Admin Role has been changed to: <@&${args[2]}>`)
+										client.channels.cache.get("731997087721586698")
+										.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ <@&${args[2]}>${code}`);
 									})
 								}
-						}
-						else if (message.mentions.roles.first()) { // Setting role by mention
-							let mentionID = message.mentions.roles.first().id;
-							console.log(mentionID);
+							}
+							else if (roleName && message.guild.roles.cache.get(roleName.id).hasPermission("ADMINISTRATOR")) { // Setting role by name
+								if (roleName.rawPosition >= adRole.rawPosition && roleName.rawPosition > aboveRP) {
+									message.channel.send("You cannot set the Admin role higher than the role you have.") // Update to make better message.
+								} 
+								else {
+									collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: `${roleName}` }}, { returnOriginal: true })
+										.then(r => {
+											message.channel.send(`The Admin Role has been changed to: <@&${roleName.id}>`)
+												client.channels.cache.get("731997087721586698")
+												.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ ${roleName}${code}`);
+										})
+									}
+							}
+							else if (message.mentions.roles.first() && message.guild.roles.cache.get(mentionID).hasPermission("ADMINISTRATOR")) { // Setting role by mention
 							let mentionRole = message.guild.roles.cache.find(role => role.id === mentionID)
 							if (mentionRole.rawPosition >= adRole.rawPosition && mentionRole.rawPosition > aboveRP) {
 								message.channel.send("You cannot set the Admin role higher than the role you have.") // Update to make better message.
