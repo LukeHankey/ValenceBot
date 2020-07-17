@@ -69,7 +69,8 @@ module.exports = {
 							const allRoleIDs = availPerm.map(id => `<@&${id}>`);
 							const join = allRoleIDs.join(", ")
 							message.channel.send(nEmbed("Permission Denied", "You do not have permission to change the prefix!", colors.red_dark)
-							.addField("Only the following roles can:", join ))
+							.addField("Only the following roles can:", join, true))
+							.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
 						}
 					})
 					break;
@@ -126,7 +127,7 @@ module.exports = {
 						if (perm) {
 						if (checkNum(args[2], 1, Infinity) && message.guild.roles.cache.has(args[2]) && message.guild.id !== args[2]) { // Setting role by ID
 							if (ardID.rawPosition >= adRole.rawPosition && ardID.rawPosition > aboveRP) {
-								message.channel.send("You cannot set the admin role higher than the role you have")
+								message.channel.send("You cannot set the Admin role higher than the role you have.")
 							} 
 							else {
 								collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: `<@&${args[2]}>` }}, { returnOriginal: true })
@@ -139,7 +140,7 @@ module.exports = {
 						}
 						else if (roleName) { // Setting role by name
 							if (roleName.rawPosition >= adRole.rawPosition && roleName.rawPosition > aboveRP) {
-								message.channel.send("You cannot set the admin role higher than the role you have") // Update to make better message.
+								message.channel.send("You cannot set the Admin role higher than the role you have.") // Update to make better message.
 							} 
 							else {
 								collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: `${roleName}` }}, { returnOriginal: true })
@@ -155,7 +156,7 @@ module.exports = {
 							console.log(mentionID);
 							let mentionRole = message.guild.roles.cache.find(role => role.id === mentionID)
 							if (mentionRole.rawPosition >= adRole.rawPosition && mentionRole.rawPosition > aboveRP) {
-								message.channel.send("You cannot set the admin role higher than the role you have") // Update to make better message.
+								message.channel.send("You cannot set the Admin role higher than the role you have.") // Update to make better message.
 							} 
 							else {
 							collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: args[2] }}, { returnOriginal: true })
