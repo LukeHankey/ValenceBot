@@ -5,9 +5,12 @@ const getDb = require("../../mongodb").getDb;
 module.exports = async (client, message) => {
 	const db = getDb();
 	const collection = db.collection(`Settings`);
+
+	if (message.author.bot) return;
+	
 	collection.findOne({ serverID: `${message.guild.id}` })
 	.then(res => {
-		if (!message.content.startsWith(res.prefix) || message.author.bot) return;
+		if (!message.content.startsWith(res.prefix)) return;
 
 		const args = message.content.slice(res.prefix.length).split(/ +/g);
 		const commandName = args.shift().toLowerCase();
