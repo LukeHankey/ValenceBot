@@ -51,23 +51,26 @@ module.exports = {
 							}
 						})
 
-						let perm = message.member.roles.cache.has(abovePerm[0]) || message.member.roles.highest === message.guild.roles.highest || adRole.rawPosition >= message.member.roles.highest || message.member.roles.cache.has(rID) || message.author.id === message.guild.ownerID;
-						if (args[2] && perm) {
-							collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { prefix: args[2] }}, { returnOriginal: true })
-							.then(r => {
-								message.channel.send(`Prefix has been changed from \`${r.value.prefix}\` to \`${args[2]}\``)
-								client.channels.cache.get("731997087721586698")
-								.send(`<@${message.author.id}> changed the bot Prefix in server: **${message.guild.name}**\n${code}diff\n- ${r.value.prefix}\n+ ${args[2]}${code}`);
-							})
+						let perm = message.member.roles.cache.has(abovePerm[0]) || message.member.roles.highest === message.guild.roles.highest || adRole.rawPosition <= message.member.roles.highest.rawPosition || message.member.roles.cache.has(rID) || message.author.id === message.guild.ownerID;
+						if (perm) {
+							if (args[2]) {
+								collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { prefix: args[2] }}, { returnOriginal: true })
+								.then(r => {
+									message.channel.send(`Prefix has been changed from \`${r.value.prefix}\` to \`${args[2]}\``)
+									client.channels.cache.get("731997087721586698")
+									.send(`<@${message.author.id}> changed the bot Prefix in server: **${message.guild.name}**\n${code}diff\n- ${r.value.prefix}\n+ ${args[2]}${code}`);
+								})
+							}
+							else {
+								message.channel.send(`What do you want to set the prefix to?`);
+							}
 						}
-						else if (args[2] && !perm) {
+						else {
 							const allRoleIDs = availPerm.map(id => `<@&${id}>`);
 							const join = allRoleIDs.join(", ")
 							message.channel.send(nEmbed("Permission Denied", "You do not have permission to change the prefix!", colors.red_dark)
-							.addField("Only the following roles can:", join ))
-						}
-						else {
-							message.channel.send(`What do you want to set the prefix to?`);
+							.addField("Only the following roles can:", join, true)
+							.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
 						}
 					})
 					break;
@@ -122,38 +125,51 @@ module.exports = {
 
 						let perm = message.member.roles.cache.has(abovePerm[0]) || message.member.roles.cache.has(rID) || message.author.id === message.guild.ownerID;
 						if (perm) {
-						if (checkNum(args[2], 1, Infinity) && message.guild.roles.cache.has(args[2]) && message.guild.id !== args[2]) { // Setting role by ID
-							if (ardID.rawPosition >= adRole.rawPosition && ardID.rawPosition > aboveRP) {
-								message.channel.send("You cannot set the admin role higher than the role you have")
+							
+							if (checkNum(args[2], 1, Infinity) && message.guild.roles.cache.has(args[2]) && message.guild.id !== args[2] &&  message.guild.roles.cache.get(`${args[2]}`).permissions.has("ADMINISTRATOR")) { // Setting role by ID
+								if (ardID.rawPosition >= adRole.rawPosition && ardID.rawPosition > aboveRP && message.author.id !== message.guild.ownerID) {
+									message.channel.send("You cannot set the Admin role higher than the role you have.")
+								} 
+								else {
+									collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: `<@&${args[2]}>` }}, { returnOriginal: true })
+									.then(r => {
+										message.channel.send(`The Admin Role has been changed to: <@&${args[2]}>`)
+										client.channels.cache.get("731997087721586698")
+										.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ <@&${args[2]}>${code}`);
+									})
+								}
+							}
+							else if (roleName && message.guild.roles.cache.get(roleName.id).permissions.has("ADMINISTRATOR")) { // Setting role by name
+								if (roleName.rawPosition >= adRole.rawPosition && roleName.rawPosition > aboveRP && message.author.id !== message.guild.ownerID) {
+									message.channel.send("You cannot set the Admin role higher than the role you have.") // Update to make better message.
+								} 
+								else {
+									collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: `${roleName}` }}, { returnOriginal: true })
+										.then(r => {
+											message.channel.send(`The Admin Role has been changed to: <@&${roleName.id}>`)
+												client.channels.cache.get("731997087721586698")
+												.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ ${roleName}${code}`);
+										})
+									}
+							}
+							else if (message.mentions.roles.first() && message.guild.roles.cache.get(message.mentions.roles.first().id).permissions.has("ADMINISTRATOR")) { // Setting role by mention
+							let mentionID = message.mentions.roles.first().id;
+							let mentionRole = message.guild.roles.cache.find(role => role.id === mentionID)
+							if (mentionRole.rawPosition >= adRole.rawPosition && mentionRole.rawPosition > aboveRP && message.author.id !== message.guild.ownerID) {
+								message.channel.send("You cannot set the Admin role higher than the role you have.") // Update to make better message.
 							} 
 							else {
-								collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: `<@&${args[2]}>` }}, { returnOriginal: true })
-								.then(r => {
-									message.channel.send(`The Admin Role has been changed to: <@&${args[2]}>`)
-									client.channels.cache.get("731997087721586698")
-									.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ <@&${args[2]}>${code}`);
-								})
-							}
-						}
-						else if (roleName) { // Setting role by name
-							collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: `${roleName}` }}, { returnOriginal: true })
-								.then(r => {
-									message.channel.send(`The Admin Role has been changed to: <@&${roleName.id}>`)
-										client.channels.cache.get("731997087721586698")
-										.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ ${roleName}${code}`);
-									})
-						}
-						else if (message.mentions.roles.first()) { // Setting role by mention
 							collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: args[2] }}, { returnOriginal: true })
 								.then(r => {
 									message.channel.send(`The Admin Role has been changed to: ${args[2]}`)
 										client.channels.cache.get("731997087721586698")
 										.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ ${args[2]}${code}`);
-									})
+								})
+							}
 						}
 						else {
 							message.channel.send(`What do you want to set the Admin Role to? Acceptable values:`);
-							message.channel.send(`${code}diff\n+ Role ID\n+ Tagging the role\n+ Role Name\n\nNOTE: If specifying a Role Name, make sure the Role Name is unique!${code}`);
+							message.channel.send(`${code}diff\n+ Role ID\n+ Tagging the role\n+ Role Name\n\nNOTE:\n- If specifying a Role Name, make sure the Role Name is unique!\n- All roles must have the ADMINISTRATOR permission set.${code}`);
 							// Check that the role being set has the _ADMINISTRATOR_ permission
 						}
 					}
