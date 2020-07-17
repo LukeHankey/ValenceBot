@@ -69,7 +69,7 @@ module.exports = {
 							const allRoleIDs = availPerm.map(id => `<@&${id}>`);
 							const join = allRoleIDs.join(", ")
 							message.channel.send(nEmbed("Permission Denied", "You do not have permission to change the prefix!", colors.red_dark)
-							.addField("Only the following roles can:", join, true))
+							.addField("Only the following roles can:", join, true)
 							.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
 						}
 					})
