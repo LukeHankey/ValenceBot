@@ -134,7 +134,7 @@ module.exports = {
 									.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ <@&${args[2]}>${code}`);
 								})
 							}
-						}
+						} // START HERE
 						else if (roleName) { // Setting role by name
 							collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: `${roleName}` }}, { returnOriginal: true })
 								.then(r => {
