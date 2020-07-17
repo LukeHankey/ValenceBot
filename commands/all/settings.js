@@ -50,6 +50,13 @@ module.exports = {
 								availPerm.push(id);
 							}
 						})
+						console.log(abovePerm)
+						console.log(message.member.roles.cache.has(abovePerm[0]))
+						console.log(message.member.roles.highest === message.guild.roles.highest)
+						console.log(adRole.rawPosition >= message.member.roles.highest)
+						console.log(`RP : ${adRole.RawPosition}, Highest: ${message.member.roles.highest}`)
+						console.log(message.member.roles.cache.has(rID))
+						console.log(message.author.id === message.guild.ownerID)
 
 						let perm = message.member.roles.cache.has(abovePerm[0]) || message.member.roles.highest === message.guild.roles.highest || adRole.rawPosition >= message.member.roles.highest || message.member.roles.cache.has(rID) || message.author.id === message.guild.ownerID;
 						if (args[2] && perm) {
@@ -84,8 +91,8 @@ module.exports = {
 			switch (args[1]) {
 				case "set":
                     let roleArg = args.slice(2).join(" ");
-					let roleName = message.guild.roles.cache.find(role => role.name === roleArg);
-					
+					let roleName = message.guild.roles.cache.find(role => role.name === roleArg)
+
 					await collection.findOne({ _id: message.guild.name })
     				.then(res => {
 
@@ -124,7 +131,7 @@ module.exports = {
 						if (perm) {
 						if (checkNum(args[2], 1, Infinity) && message.guild.roles.cache.has(args[2]) && message.guild.id !== args[2]) { // Setting role by ID
 							if (ardID.rawPosition >= adRole.rawPosition && ardID.rawPosition > aboveRP) {
-								message.channel.send("You cannot set the admin role higher than the role you have") // Update to make better message.
+								message.channel.send("You cannot set the admin role higher than the role you have")
 							} 
 							else {
 								collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: `<@&${args[2]}>` }}, { returnOriginal: true })
@@ -134,35 +141,22 @@ module.exports = {
 									.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ <@&${args[2]}>${code}`);
 								})
 							}
-						} // START HERE
+						}
 						else if (roleName) { // Setting role by name
-							if (roleName.rawPosition >= adRole.rawPosition && roleName.rawPosition > aboveRP) {
-								message.channel.send("You cannot set the admin role higher than the role you have") // Update to make better message.
-							} 
-							else {
-								collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: `${roleName}` }}, { returnOriginal: true })
-									.then(r => {
-										message.channel.send(`The Admin Role has been changed to: <@&${roleName.id}>`)
-											client.channels.cache.get("731997087721586698")
-											.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ ${roleName}${code}`);
+							collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: `${roleName}` }}, { returnOriginal: true })
+								.then(r => {
+									message.channel.send(`The Admin Role has been changed to: <@&${roleName.id}>`)
+										client.channels.cache.get("731997087721586698")
+										.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ ${roleName}${code}`);
 									})
-								}
 						}
 						else if (message.mentions.roles.first()) { // Setting role by mention
-							let mentionID = message.mentions.roles.first().id;
-							console.log(mentionID);
-							let mentionRole = message.guild.roles.cache.find(role => role.id === mentionID)
-							if (mentionRole.rawPosition >= adRole.rawPosition && mentionRole.rawPosition > aboveRP) {
-								message.channel.send("You cannot set the admin role higher than the role you have") // Update to make better message.
-							} 
-							else {
 							collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: args[2] }}, { returnOriginal: true })
 								.then(r => {
 									message.channel.send(`The Admin Role has been changed to: ${args[2]}`)
 										client.channels.cache.get("731997087721586698")
 										.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ ${args[2]}${code}`);
 									})
-							}
 						}
 						else {
 							message.channel.send(`What do you want to set the Admin Role to? Acceptable values:`);
