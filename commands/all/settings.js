@@ -52,22 +52,24 @@ module.exports = {
 						})
 
 						let perm = message.member.roles.cache.has(abovePerm[0]) || message.member.roles.highest === message.guild.roles.highest || adRole.rawPosition <= message.member.roles.highest.rawPosition || message.member.roles.cache.has(rID) || message.author.id === message.guild.ownerID;
-						if (args[2] && perm) {
-							collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { prefix: args[2] }}, { returnOriginal: true })
-							.then(r => {
-								message.channel.send(`Prefix has been changed from \`${r.value.prefix}\` to \`${args[2]}\``)
-								client.channels.cache.get("731997087721586698")
-								.send(`<@${message.author.id}> changed the bot Prefix in server: **${message.guild.name}**\n${code}diff\n- ${r.value.prefix}\n+ ${args[2]}${code}`);
-							})
+						if (perm) {
+							if (args[2]) {
+								collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { prefix: args[2] }}, { returnOriginal: true })
+								.then(r => {
+									message.channel.send(`Prefix has been changed from \`${r.value.prefix}\` to \`${args[2]}\``)
+									client.channels.cache.get("731997087721586698")
+									.send(`<@${message.author.id}> changed the bot Prefix in server: **${message.guild.name}**\n${code}diff\n- ${r.value.prefix}\n+ ${args[2]}${code}`);
+								})
+							}
+							else {
+								message.channel.send(`What do you want to set the prefix to?`);
+							}
 						}
-						else if (args[2] && !perm) {
+						else {
 							const allRoleIDs = availPerm.map(id => `<@&${id}>`);
 							const join = allRoleIDs.join(", ")
 							message.channel.send(nEmbed("Permission Denied", "You do not have permission to change the prefix!", colors.red_dark)
 							.addField("Only the following roles can:", join ))
-						}
-						else {
-							message.channel.send(`What do you want to set the prefix to?`);
 						}
 					})
 					break;
