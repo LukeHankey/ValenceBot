@@ -84,7 +84,10 @@ module.exports = {
 			switch (args[1]) {
 				case "set":
                     let roleArg = args.slice(2).join(" ");
-					let roleName = message.guild.roles.cache.find(role => role.name === roleArg)
+					let roleName = message.guild.roles.cache.find(role => role.name === roleArg);
+					let mentionID = message.mentions.roles.first().slice(3, 21)
+					console.log(mentionID);
+					let mentionRole = message.guild.roles.cache.find(role => role.id === mentionID)
 
 					await collection.findOne({ _id: message.guild.name })
     				.then(res => {
@@ -149,12 +152,17 @@ module.exports = {
 								}
 						}
 						else if (message.mentions.roles.first()) { // Setting role by mention
+							if (mentionRole.rawPosition >= adRole.rawPosition && mentionRole.rawPosition > aboveRP) {
+								message.channel.send("You cannot set the admin role higher than the role you have") // Update to make better message.
+							} 
+							else {
 							collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: args[2] }}, { returnOriginal: true })
 								.then(r => {
 									message.channel.send(`The Admin Role has been changed to: ${args[2]}`)
 										client.channels.cache.get("731997087721586698")
 										.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ ${args[2]}${code}`);
 									})
+							}
 						}
 						else {
 							message.channel.send(`What do you want to set the Admin Role to? Acceptable values:`);
