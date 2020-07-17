@@ -85,10 +85,7 @@ module.exports = {
 				case "set":
                     let roleArg = args.slice(2).join(" ");
 					let roleName = message.guild.roles.cache.find(role => role.name === roleArg);
-					let mentionID = message.mentions.roles.first().id;
-					console.log(mentionID);
-					let mentionRole = message.guild.roles.cache.find(role => role.id === mentionID)
-
+					
 					await collection.findOne({ _id: message.guild.name })
     				.then(res => {
 
@@ -152,6 +149,9 @@ module.exports = {
 								}
 						}
 						else if (message.mentions.roles.first()) { // Setting role by mention
+							let mentionID = message.mentions.roles.first().id;
+							console.log(mentionID);
+							let mentionRole = message.guild.roles.cache.find(role => role.id === mentionID)
 							if (mentionRole.rawPosition >= adRole.rawPosition && mentionRole.rawPosition > aboveRP) {
 								message.channel.send("You cannot set the admin role higher than the role you have") // Update to make better message.
 							} 
