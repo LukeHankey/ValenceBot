@@ -85,7 +85,7 @@ module.exports = {
 				case "set":
                     let roleArg = args.slice(2).join(" ");
 					let roleName = message.guild.roles.cache.find(role => role.name === roleArg);
-					let mentionID = message.mentions.roles.first()
+					let mentionID = message.mentions.roles.first().id;
 					console.log(mentionID);
 					let mentionRole = message.guild.roles.cache.find(role => role.id === mentionID)
 
