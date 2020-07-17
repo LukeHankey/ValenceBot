@@ -125,13 +125,8 @@ module.exports = {
 
 						let perm = message.member.roles.cache.has(abovePerm[0]) || message.member.roles.cache.has(rID) || message.author.id === message.guild.ownerID;
 						if (perm) {
-							console.log(message.guild.roles.cache.get(`${args[2]}`))
-							console.log(message.guild.roles.cache.get(`${args[2]}`).permissions)
-							console.log(message.guild.roles.cache.get(`${args[2]}`).hasPermission("ADMINISTRATOR"))
-							let test = message.guild.roles.cache.get(`${args[2]}`);
-							console.log(test.hasPermission("ADMINISTRATOR"))
 							
-							if (checkNum(args[2], 1, Infinity) && message.guild.roles.cache.has(args[2]) && message.guild.id !== args[2] &&  message.guild.roles.cache.get(`${args[2]}`).hasPermission("ADMINISTRATOR")) { // Setting role by ID
+							if (checkNum(args[2], 1, Infinity) && message.guild.roles.cache.has(args[2]) && message.guild.id !== args[2] &&  message.guild.roles.cache.get(`${args[2]}`).permissions.has("ADMINISTRATOR")) { // Setting role by ID
 								if (ardID.rawPosition >= adRole.rawPosition && ardID.rawPosition > aboveRP) {
 									message.channel.send("You cannot set the Admin role higher than the role you have.")
 								} 
@@ -144,7 +139,7 @@ module.exports = {
 									})
 								}
 							}
-							else if (roleName && message.guild.roles.cache.get(roleName.id).hasPermission("ADMINISTRATOR")) { // Setting role by name
+							else if (roleName && message.guild.roles.cache.get(roleName.id).permissions.has("ADMINISTRATOR")) { // Setting role by name
 								if (roleName.rawPosition >= adRole.rawPosition && roleName.rawPosition > aboveRP) {
 									message.channel.send("You cannot set the Admin role higher than the role you have.") // Update to make better message.
 								} 
@@ -157,7 +152,7 @@ module.exports = {
 										})
 									}
 							}
-							else if (message.mentions.roles.first() && message.guild.roles.cache.get(message.mentions.roles.first().id).hasPermission("ADMINISTRATOR")) { // Setting role by mention
+							else if (message.mentions.roles.first() && message.guild.roles.cache.get(message.mentions.roles.first().id).permissions.has("ADMINISTRATOR")) { // Setting role by mention
 							let mentionID = message.mentions.roles.first().id;
 							let mentionRole = message.guild.roles.cache.find(role => role.id === mentionID)
 							if (mentionRole.rawPosition >= adRole.rawPosition && mentionRole.rawPosition > aboveRP) {
