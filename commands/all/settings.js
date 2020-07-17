@@ -133,7 +133,7 @@ module.exports = {
 								else {
 									collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: `<@&${args[2]}>` }}, { returnOriginal: true })
 									.then(r => {
-										message.channel.send(`The Admin Role has been changed to: <@&${args[2]}>`)
+										message.channel.send(`The Admin Role has been changed to: <@&${args[2]}>`, { "allowedMentions": { "parse" : []}})
 										client.channels.cache.get("731997087721586698")
 										.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ <@&${args[2]}>${code}`);
 									})
@@ -146,7 +146,7 @@ module.exports = {
 								else {
 									collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: `${roleName}` }}, { returnOriginal: true })
 										.then(r => {
-											message.channel.send(`The Admin Role has been changed to: <@&${roleName.id}>`)
+											message.channel.send(`The Admin Role has been changed to: <@&${roleName.id}>`, { "allowedMentions": { "parse" : []}})
 												client.channels.cache.get("731997087721586698")
 												.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ ${roleName}${code}`);
 										})
@@ -161,7 +161,7 @@ module.exports = {
 							else {
 							collection.findOneAndUpdate({ _id: message.guild.name }, { $set: { adminRole: args[2] }}, { returnOriginal: true })
 								.then(r => {
-									message.channel.send(`The Admin Role has been changed to: ${args[2]}`)
+									message.channel.send(`The Admin Role has been changed to: ${args[2]}`, { "allowedMentions": { "parse" : []}})
 										client.channels.cache.get("731997087721586698")
 										.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.adminRole}\n+ ${args[2]}${code}`);
 								})
@@ -170,7 +170,6 @@ module.exports = {
 						else {
 							message.channel.send(`What do you want to set the Admin Role to? Acceptable values:`);
 							message.channel.send(`${code}diff\n+ Role ID\n+ Tagging the role\n+ Role Name\n\nNOTE:\n- If specifying a Role Name, make sure the Role Name is unique!\n- All roles must have the ADMINISTRATOR permission set.${code}`);
-							// Check that the role being set has the _ADMINISTRATOR_ permission
 						}
 					}
 					else {
