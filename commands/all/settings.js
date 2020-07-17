@@ -50,13 +50,12 @@ module.exports = {
 								availPerm.push(id);
 							}
 						})
-						console.log(abovePerm)
 						console.log(message.member.roles.cache.has(abovePerm[0]))
 						console.log(message.member.roles.highest === message.guild.roles.highest)
 						console.log(adRole.rawPosition >= message.member.roles.highest)
-						console.log(`RP : ${adRole.RawPosition}, Highest: ${message.member.roles.highest}`)
+						console.log(adRole)
+						console.log(`RP : ${adRole.RawPosition}, Highest: ${message.member.roles.highest.rawPosition}`)
 						console.log(message.member.roles.cache.has(rID))
-						console.log(message.author.id === message.guild.ownerID)
 
 						let perm = message.member.roles.cache.has(abovePerm[0]) || message.member.roles.highest === message.guild.roles.highest || adRole.rawPosition >= message.member.roles.highest || message.member.roles.cache.has(rID) || message.author.id === message.guild.ownerID;
 						if (args[2] && perm) {
