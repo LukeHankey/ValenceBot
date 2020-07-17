@@ -126,6 +126,7 @@ module.exports = {
 						let perm = message.member.roles.cache.has(abovePerm[0]) || message.member.roles.cache.has(rID) || message.author.id === message.guild.ownerID;
 						if (perm) {
 							console.log(message.guild.roles.cache.get(`${args[2]}`))
+							console.log(message.guild.roles.cache.get(`${args[2]}`).permissions)
 							console.log(message.guild.roles.cache.get(`${args[2]}`).hasPermission("ADMINISTRATOR"))
 							let test = message.guild.roles.cache.get(`${args[2]}`);
 							console.log(test.hasPermission("ADMINISTRATOR"))
