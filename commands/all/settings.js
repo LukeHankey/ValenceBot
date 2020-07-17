@@ -53,7 +53,10 @@ module.exports = {
 						console.log(message.member.roles.cache.has(abovePerm[0]))
 						console.log(message.member.roles.highest === message.guild.roles.highest)
 						console.log(adRole.rawPosition <= message.member.roles.highest)
+						console.log(message.member.roles.cache.has(rID))
 						console.log(`RP : ${adRole.rawPosition}, Highest: ${message.member.roles.highest.rawPosition}`)
+						console.log(typeof adRole.rawPosition)
+						console.log(typeof message.member.roles.highest.rawPosition)
 						console.log(message.member.roles.cache.has(rID))
 
 						let perm = message.member.roles.cache.has(abovePerm[0]) || message.member.roles.highest === message.guild.roles.highest || adRole.rawPosition >= message.member.roles.highest || message.member.roles.cache.has(rID) || message.author.id === message.guild.ownerID;
