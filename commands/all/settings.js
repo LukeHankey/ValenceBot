@@ -152,10 +152,10 @@ module.exports = {
 										})
 									}
 							}
-							else if (message.mentions.roles.first() && message.guild.roles.cache.get(message.mentions.roles.first().id).permissions.has("ADMINISTRATOR") && message.author.id !== message.guild.ownerID) { // Setting role by mention
+							else if (message.mentions.roles.first() && message.guild.roles.cache.get(message.mentions.roles.first().id).permissions.has("ADMINISTRATOR")) { // Setting role by mention
 							let mentionID = message.mentions.roles.first().id;
 							let mentionRole = message.guild.roles.cache.find(role => role.id === mentionID)
-							if (mentionRole.rawPosition >= adRole.rawPosition && mentionRole.rawPosition > aboveRP) {
+							if (mentionRole.rawPosition >= adRole.rawPosition && mentionRole.rawPosition > aboveRP && message.author.id !== message.guild.ownerID) {
 								message.channel.send("You cannot set the Admin role higher than the role you have.") // Update to make better message.
 							} 
 							else {
