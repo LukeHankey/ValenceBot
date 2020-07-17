@@ -52,7 +52,7 @@ module.exports = {
 						})
 						console.log(message.member.roles.cache.has(abovePerm[0]))
 						console.log(message.member.roles.highest === message.guild.roles.highest)
-						console.log(adRole.rawPosition <= message.member.roles.highest)
+						console.log(adRole.rawPosition <= message.member.roles.highest.rawPosition)
 						console.log(message.member.roles.cache.has(rID))
 						console.log(`RP : ${adRole.rawPosition}, Highest: ${message.member.roles.highest.rawPosition}`)
 						console.log(typeof adRole.rawPosition)
