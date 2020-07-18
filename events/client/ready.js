@@ -60,9 +60,9 @@ module.exports = async client => {
 		if (err) console.log(err);
 
 		let db = getDb();
+
 		db.createCollection("Users");
 		const collection = db.collection("Users");
-
 		collection.updateMany(
 			{},
 			{ $set:
@@ -82,7 +82,6 @@ module.exports = async client => {
 		);
 
 		cron.schedule('0 10 * * *', async () => {
-			db = getDb();
 			const vFactsColl = db.collection("Facts");
 			const count = await vFactsColl.stats()
 				.then(res => {
@@ -109,5 +108,13 @@ module.exports = async client => {
 				})
 			});
 		});
+
+		cron.schedule(`0 1 * * mon`, async () => {
+			client.channels.cache.get("501146013780672523").send("@here - Set the Citadel Locks & Targets!")
+		})
+
+		cron.schedule(`35 14 * * sat`, async () => {
+			client.channels.cache.get("501146013780672523").send("@here - Set the Citadel Reset Time!")
+		})
 	});
 };
