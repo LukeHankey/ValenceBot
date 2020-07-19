@@ -5,7 +5,6 @@ const connection = require("../../mongodb").initDb;
 const getDb = require("../../mongodb").getDb;
 const fetch = require("node-fetch");
 const cron = require('node-cron');
-const settings = require("../../commands/all/settings");
 const randomColor = Math.floor(Math.random() * 16777215).toString(16);
 
 module.exports = async client => {
@@ -128,7 +127,6 @@ module.exports = async client => {
 			},	{ scheduled: res[document].citadel_reset_time.scheduled })
 		}
 		})
-
 
 		cron.schedule(`0 1 * * mon`, async () => {
 			client.channels.cache.get("718218491257290823").send("@here - Set the Citadel Locks & Targets!")
