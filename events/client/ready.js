@@ -5,10 +5,21 @@ const connection = require("../../mongodb").initDb;
 const getDb = require("../../mongodb").getDb;
 const fetch = require("node-fetch");
 const cron = require('node-cron');
+const settings = require("../../commands/all/settings");
 const randomColor = Math.floor(Math.random() * 16777215).toString(16);
 
 module.exports = async client => {
 	console.log("Ready!");
+
+	const factEmbed = function(factMessage) {
+		const embed = new Discord.MessageEmbed()
+			.setTitle("**Daily Valence Fact**")
+			.setDescription(factMessage)
+			.setColor(`#${randomColor}`)
+			.addField("**Sent By:**", "<@&685612946231263232>", true)
+			.setTimestamp();
+		return embed;
+	};
 
 	function csvJSON(csv) {
 
@@ -58,12 +69,14 @@ module.exports = async client => {
 	}
 	connection(err => {
 		if (err) console.log(err);
-
-		let db = getDb();
-
+		const db = getDb();
+		const vFactsColl = db.collection("Facts");
+		const settings = db.collection("Settings");
 		db.createCollection("Users");
-		const collection = db.collection("Users");
-		collection.updateMany(
+		
+
+		const usersColl = db.collection("Users");
+		usersColl.updateMany(
 			{},
 			{ $set:
 			{ "Caps": 0,
@@ -82,23 +95,12 @@ module.exports = async client => {
 		);
 
 		cron.schedule('0 10 * * *', async () => {
-			const vFactsColl = db.collection("Facts");
 			const count = await vFactsColl.stats()
 				.then(res => {
 					return res.count;
 				});
-
-			const factEmbed = function(factMessage) {
-				const embed = new Discord.MessageEmbed()
-					.setTitle("**Daily Valence Fact**")
-					.setDescription(factMessage)
-					.setColor(`#${randomColor}`)
-					.addField("**Sent By:**", "<@&685612946231263232>", true)
-					.setTimestamp();
-				return embed;
-			};
-
 			const random = Math.floor((Math.random() * count) + 1);
+
 			vFactsColl.findOne({ number: random })
 			.then(res => {
 				const ID = ["732014449182900247", "473235620991336468"] //#test-channel & #good-chats
@@ -109,12 +111,27 @@ module.exports = async client => {
 			});
 		});
 
-		cron.schedule(`0 1 * * mon`, async () => {
-			client.channels.cache.get("501146013780672523").send("@here - Set the Citadel Locks & Targets!")
+	settings.find({}).toArray().then(res => {
+		for (const document in res) {
+			cron.schedule(`*/5 * * * *`, async () => {
+					let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+					let today = new Date();
+					let today_num = today.getDay();
+					let today_str = days[today_num];
+					if (res[document].citadel_reset_time.day === today_num || res[document].citadel_reset_time.day === today_str || res[document].citadel_reset_time.day === today_str.substr(0, 3) ) {
+						if (today.getUTCHours() == res[document].citadel_reset_time.hour) {
+							if (res[document].citadel_reset_time.minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].citadel_reset_time.minute + 5)) {
+								client.channels.cache.get(res[document].channels.adminChannel).send("@here - Set the Citadel Reset Time!")
+							}
+						}
+					}
+			},	{ scheduled: res[document].citadel_reset_time.scheduled })
+		}
 		})
 
-		cron.schedule(`35 14 * * sat`, async () => {
-			client.channels.cache.get("501146013780672523").send("@here - Set the Citadel Reset Time!")
+
+		cron.schedule(`0 1 * * mon`, async () => {
+			client.channels.cache.get("718218491257290823").send("@here - Set the Citadel Locks & Targets!")
 		})
 	});
 };
