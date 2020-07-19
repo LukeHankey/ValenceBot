@@ -1,6 +1,0 @@
-# Ignore all except any that start with fact, help or delete
-/*
-!fact*
-!help*
-!delete*
-!settings*

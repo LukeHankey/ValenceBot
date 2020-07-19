@@ -49,7 +49,7 @@ module.exports = {
 			const fields = [];
 
 			for (let i = 0; i < command.usage.length; i++) {
-				const field = { name: `🔹 ${prefix}${cName} ${command.usage[i] || ""}`, value: `${command.description[i]}` };
+				const field = { name: `🔹 ${prefix}${cName} ${command.usage[i] || ""}`, value: `${command.description[i]}`, inline: true };
 				fields.push(field);
 				// console.log(field);
 			}
