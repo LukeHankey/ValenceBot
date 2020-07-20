@@ -128,8 +128,8 @@ module.exports = async client => {
 		}
 		})
 
-		cron.schedule(`0 1 * * mon`, async () => {
-			client.channels.cache.get("718218491257290823").send("@here - Set the Citadel Locks & Targets!")
-		})
+		// cron.schedule(`0 1 * * mon`, async () => {
+		// 	client.channels.cache.get("718218491257290823").send("@here - Set the Citadel Locks & Targets!")
+		// })
 	});
 };

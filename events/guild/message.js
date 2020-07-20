@@ -1,5 +1,4 @@
 const getDb = require("../../mongodb").getDb;
-const cron = require('node-cron');
 
 module.exports = async (client, message) => {
 	const db = getDb();
@@ -24,9 +23,5 @@ module.exports = async (client, message) => {
 		if (!commandName) message.channel.send("That's not a valid command!");
 		console.error(error);
 		}
-
-		// cron.schedule(`${res.citadel_reset_time.minute} ${res.citadel_reset_time.hour} * * ${res.citadel_reset_time.day}`, async () => {
-		// 	client.channels.cache.get(`${res.channels.adminChannel}`).send("Set the Citadel Reset Time!")
-		// }, { scheduled: `${res.citadel_reset_time.scheduled}` })
 	})	
 };
