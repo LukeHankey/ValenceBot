@@ -65,7 +65,7 @@ module.exports = {
 				}
 
 			if (args[1] && (args[0] === "remove")) {
-				if(checkNum(args[1], 1, count)) {  // <--------- This is the IF I suggest adding
+				if(checkNum(args[1], 1, count)) { 
 					await vFactsColl.findOne({ number: Number(args[1]) })
 					.then(res => {
 						vFactsColl.updateMany({ number: { $gt: res.number }}, { $inc: { number: -1 }});

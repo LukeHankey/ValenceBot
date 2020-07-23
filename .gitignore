@@ -3,6 +3,6 @@ node_modules
 start.bat
 Webhook
 .eslintrc.json
-**/**/guildUpdateTest.js
+#**/**/guildUpdateTest.js
 **/avatar.js
 **/*info.js

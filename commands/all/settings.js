@@ -361,7 +361,7 @@ module.exports = {
 									.send(`<@${message.author.id}> set the Admin Channel in server: **${message.guild.name}** from <#${r.value.channels.adminChannel}> to <#${args[2]}>`);
 								})
 							}
-							else if (checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0]) && message.guild.id !== channelTag[0]) {
+							else if (checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) { // Check by #Channel
 								settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "channels.adminChannel": channelTag[0] }}, { returnOriginal: true })
 								.then(r => {
 									message.channel.send(`The Admin Channel has been set to: <#${channelTag[0]}>`)
