@@ -162,11 +162,12 @@ module.exports = {
 			default:
 				if (!args[0]) {
 					const list = [];
-					
+					console.log(list)
 					res.reminders.forEach(x => {
 						list.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel}>, Date: \`${dayCheck[x.day] || x.day} ${doubleDigits(x.hour)}:${doubleDigits(x.minute)}\`, Message: \`${x.message}\`\n`)
 					})
 					message.channel.send(`Your reminders:\n\n${list.join("")}`);
+					console.log(list)
 				}
 			}
 		})
