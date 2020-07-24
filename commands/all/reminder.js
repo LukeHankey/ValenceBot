@@ -142,10 +142,10 @@ module.exports = {
 							settings.updateOne({ _id: message.guild.name }, { $pull: { reminders: { id: args[1] } } })
 							console.log(idMap)
 						}						
-						console.log(idCheck)
 						else {
 							message.channel.send(`There is no reminder with that ID. Use ${res.prefix}reminders to show the full list.`)
 						}
+						console.log(idCheck)
 					}
 					else {
 						const allRoleIDs = availPermMod.map(id => `<@&${id}>`);
