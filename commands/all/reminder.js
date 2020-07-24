@@ -139,7 +139,10 @@ module.exports = {
 						console.log(idCheck.includes(args[1]))
 						if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1])) {
 							let idMap = [];
-							console.log(settings.find({ "reminders.id": args[1] })) /*.map(ids => { idMap.push(ids.id, ids.channel, ids.message) })*/
+							settings.findOne({ "reminders.id": args[1] })
+							.then(x => {
+								console.log(x)
+							})/*.map(ids => { idMap.push(ids.id, ids.channel, ids.message) })*/
 							message.channel.send(`Reminder \`${args[1]}\` has been deleted from <#${idMap[1]}>!\n${code}${args[1]}. ${idMap[2]}${code}`);
 							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Reminder: ${code}#${args[1]}. ${idMap[2]}${code}`);
 							settings.updateOne({ _id: message.guild.name }, { $pull: { reminders: { id: args[1] } } })
