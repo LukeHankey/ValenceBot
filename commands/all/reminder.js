@@ -135,7 +135,7 @@ module.exports = {
 						let idCheck = [];
 						res.reminders.forEach(x => { x.id })
 						console.log(idCheck)
-						if (checkNum(args[1]), 1, Infinity && idCheck.includes(args[1])) {
+						if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1])) {
 							let idMap = [];
 							settings.find({ "reminders.id": args[1] }).map(ids => { idMap.push(ids.id, ids.channel, ids.message) })
 							console.log(idMap)
