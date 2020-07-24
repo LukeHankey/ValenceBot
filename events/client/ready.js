@@ -112,11 +112,11 @@ module.exports = async client => {
 
 	settings.find({}).toArray().then(res => {
 		for (const document in res) {
+			let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+			let today = new Date();
+			let today_num = today.getDay();
+			let today_str = days[today_num];
 			cron.schedule(`*/5 * * * *`, async () => {
-					let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-					let today = new Date();
-					let today_num = today.getDay();
-					let today_str = days[today_num];
 					if (res[document].citadel_reset_time.day === today_num || res[document].citadel_reset_time.day === today_str || res[document].citadel_reset_time.day === today_str.substr(0, 3) ) {
 						if (today.getUTCHours() == res[document].citadel_reset_time.hour) {
 							if (res[document].citadel_reset_time.minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].citadel_reset_time.minute + 5)) {
@@ -125,6 +125,15 @@ module.exports = async client => {
 						}
 					}
 			},	{ scheduled: res[document].citadel_reset_time.scheduled })
+			cron.schedule(`*/5 * * * *`, async () => {
+				if (res[document].reminders.day === today_num || res[document].reminders.day === today_str || res[document].reminders.day === today_str.substr(0, 3) ) {
+					if (today.getUTCHours() == res[document].reminders.hour) {
+						if (res[document].reminders.minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].reminders.minute + 5)) {
+							client.channels.cache.get(res[document].reminders.channel).send(`res[document].reminders.message`)
+						}
+					}
+				}
+			}
 		}
 		})
 
