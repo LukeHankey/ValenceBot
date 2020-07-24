@@ -135,7 +135,7 @@ module.exports = async client => {
 				console.log(`1 + ${res[document].reminders[remDoc].day === today_num}`)
 				console.log(`2 + ${res[document].reminders[remDoc].day === today_str}`)
 				console.log(`3 + ${res[document].reminders[remDoc].day === today_str.substr(0, 3)}`)
-					if (res[document].reminders[remDoc].day === today_num || res[document].reminders[remDoc].day === today_str || res[document].reminders[remDoc].day === today_str.substr(0, 3) ) {
+					if (+res[document].reminders[remDoc].day === today_num || res[document].reminders[remDoc].day === today_str || res[document].reminders[remDoc].day === today_str.substr(0, 3) ) {
 						if (today.getUTCHours() == res[document].reminders[remDoc].hour) {
 							if (res[document].reminders[remDoc].minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].reminders[remDoc].minute + 2)) {
 								client.channels.cache.get(res[document].reminders[remDoc].channel).send(`res[document].reminders[remDoc].message`)
