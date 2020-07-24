@@ -141,8 +141,8 @@ module.exports = {
 							let idMap = [];
 							settings.findOne({ "reminders.id": args[1] })
 							.then(x => {
-								console.log(x)
-							})/*.map(ids => { idMap.push(ids.id, ids.channel, ids.message) })*/
+								idMap.push(x.id, x.channel, x.message)
+							})
 							message.channel.send(`Reminder \`${args[1]}\` has been deleted from <#${idMap[1]}>!\n${code}${args[1]}. ${idMap[2]}${code}`);
 							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Reminder: ${code}#${args[1]}. ${idMap[2]}${code}`);
 							settings.updateOne({ _id: message.guild.name }, { $pull: { reminders: { id: args[1] } } })
