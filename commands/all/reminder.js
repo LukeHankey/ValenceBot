@@ -133,7 +133,7 @@ module.exports = {
 				case "remove":
 					if (permMod) {
 						let idCheck = [];
-						res.reminders.forEach(x => { x.id })
+						res.reminders.forEach(x => { console.log(x.id) })
 						if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1])) {
 							let idMap = [];
 							settings.find({ "reminders.id": args[1] }).map(ids => { idMap.push(ids.id, ids.channel, ids.message) })
@@ -162,7 +162,6 @@ module.exports = {
 			default:
 				if (!args[0]) {
 					const list = [];
-					console.log(list)
 					res.reminders.forEach(x => {
 						list.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel}>, Date: \`${dayCheck[x.day] || x.day} ${doubleDigits(x.hour)}:${doubleDigits(x.minute)}\`, Message: \`${x.message}\`\n`)
 					})
