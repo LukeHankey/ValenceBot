@@ -78,12 +78,12 @@ module.exports = {
 						})
 					}
                     if (permMod) {
-						if (res.reminders.length == 0) {
+// 						if (res.reminders.length == 0) {
 							if ((checkDate(args[1], 0, 6) || dayCheck.includes(args[1])) && checkDate(args[2], 1, 23) && checkDate(args[3], 1, 59)) {
 								if (checkNum(args[4], 1, Infinity) && message.guild.channels.cache.has(args[4]) && message.guild.id !== args[4]) {
 									if (messageContent) {
 										settings.updateOne({ _id: message.guild.name }, {
-											$push: { "reminders": { $each: [{ id: res.reminders.length + 1, day: args[1], hour: args[2], minute: args[3], channel: args[4], message: messageContent }] }
+											$push: { "reminders": { $each: [{ id: message.id, day: args[1], hour: args[2], minute: args[3], channel: args[4], message: messageContent }] }
 											}}, { returnOriginal: true })
 										.then(r => {
 											message.channel.send(`A reminder has been added to <#${args[4]}>:\n ${messageContent}`)
@@ -98,7 +98,7 @@ module.exports = {
 								else if (checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) {
 									if (messageContent) {
 										settings.findOneAndUpdate({ _id: message.guild.name }, {
-											$push: { "reminders": { $each: [{ id: res.reminders.length + 1, day: args[1], hour: args[2], minute: args[3], channel: channelTag[0], message: messageContent }] }
+											$push: { "reminders": { $each: [{ id: message.id, day: args[1], hour: args[2], minute: args[3], channel: channelTag[0], message: messageContent }] }
 											}}, { returnOriginal: false })
 										.then(r => {
 											message.channel.send(`A reminder has been added to <#${channelTag[0]}>:\n ${messageContent}`)
@@ -116,11 +116,11 @@ module.exports = {
 							// }
 							}
 						}
-						else {
-							message.channel.send(`You can only set one reminder per server!`)
-							client.channels.cache.get("731997087721586698")
-							.send(`<@${message.author.id}> tried to add another Reminder in **${message.guild.name}** - <#${args[4] || channelTag[0]}>\n${code}diff\n+ ${dayCheck[args[1]] || args[1]} ${doubleDigits(args[2])}:${doubleDigits(args[3])} - ${messageContent}${code}`);
-						}
+// 						else {
+// 							message.channel.send(`You can only set one reminder per server!`)
+// 							client.channels.cache.get("731997087721586698")
+// 							.send(`<@${message.author.id}> tried to add another Reminder in **${message.guild.name}** - <#${args[4] || channelTag[0]}>\n${code}diff\n+ ${dayCheck[args[1]] || args[1]} ${doubleDigits(args[2])}:${doubleDigits(args[3])} - ${messageContent}${code}`);
+// 						}
 					}
                     else {
 						const allRoleIDs = availPermMod.map(id => `<@&${id}>`);
@@ -132,11 +132,13 @@ module.exports = {
 				break;
 				case "remove":
 					if (permMod) {
-						if (checkNum(args[1]), 1, res.reminders.length) {
-							console.log(res.reminders.length)
-							message.channel.send(`Reminder #${res.reminders[args[1] - 1].id} has been deleted from <#${res.reminders[args[1] - 1].channel}> !\n${code}${args[1]}. ${res.reminders[args[1] - 1].message}${code}`);
-							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Reminder: ${code}#${res.reminders[args[1] - 1].id}. ${res.reminders[args[1] - 1].message}${code}`);
-							settings.updateOne({ _id: message.guild.name }, { $pull: { reminders: { id: res.reminders[args[1] - 1].id } } })
+						if (checkNum(args[1]), 1, Infinity) {
+							console.log(res.reminders)
+							let idMap = [];
+							settings.find({ "reminders.id": args[1] }).map(ids => { idMap.push(ids.id, ids.channel, ids.message) })
+							message.channel.send(`Reminder \`${args[1]}\` has been deleted from <#${idMap[1].join("")}>!\n${code}${args[1]}. ${idMap[2].join("")}${code}`);
+							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Reminder: ${code}#${args[1]}. ${idMap[2].join("")}${code}`);
+							settings.updateOne({ _id: message.guild.name }, { $pull: { reminders: { id: args[1] } } })
 						}						
 						else {
 							message.channel.send(`There is no reminder with that ID. Use ${res.prefix}reminders to show the full list.`)
