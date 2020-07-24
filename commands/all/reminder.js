@@ -134,20 +134,14 @@ module.exports = {
 					if (permMod) {
 						let idCheck = [];
 						res.reminders.forEach(x => { idCheck.push(x.id) })
-						console.log(checkNum(args[1], 1, Infinity))
-						console.log(+idCheck.includes(args[1]))
-						console.log(idCheck.includes(args[1]))
 						if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1])) {
-							let idMap = [];
-							settings.findOne({ "reminders.id": args[1] })
-							.then(x => {
-								console.log(x.reminders[0].id)
-								idMap.push(x.id, x.channel, x.message)
-							})
-							message.channel.send(`Reminder \`${args[1]}\` has been deleted from <#${idMap[1]}>!\n${code}${args[1]}. ${idMap[2]}${code}`);
-							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Reminder: ${code}#${args[1]}. ${idMap[2]}${code}`);
+							message.channel.send(`Reminder \`${args[1]}\` has been deleted.`);
+							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Reminder: \`${args[1]}\``);
 							settings.updateOne({ _id: message.guild.name }, { $pull: { reminders: { id: args[1] } } })
-						}						
+						}
+						else if (!args[1]) {
+							message.channel.send(`You must provide an ID to remove.`);
+						}
 						else {
 							message.channel.send(`There is no reminder with that ID. Use ${res.prefix}reminders to show the full list.`)
 						}
@@ -171,7 +165,6 @@ module.exports = {
 						list.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel}>, Date: \`${dayCheck[x.day] || x.day} ${doubleDigits(x.hour)}:${doubleDigits(x.minute)}\`, Message: \`${x.message}\`\n`)
 					})
 					message.channel.send(`Your reminders:\n\n${list.join("")}`);
-					console.log(list)
 				}
 			}
 		})
