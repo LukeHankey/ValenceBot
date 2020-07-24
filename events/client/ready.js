@@ -127,10 +127,9 @@ module.exports = async client => {
 			},	{ scheduled: res[document].citadel_reset_time.scheduled })
 			cron.schedule(`*/2 * * * *`, async () => {
 				for (const remDoc in res[document].reminders) {
-				console.log(`1 + ${res[document].reminders[remDoc].day === today_str}`)
-				console.log(`2 + ${today.getUTCHours() == res[document].reminders[remDoc].hour}`)
-				console.log(`3 + ${res[document].reminders[remDoc].minute <= today.getUTCMinutes()}`)
-				console.log(today.getUTCMinutes() < (+res[document].reminders[remDoc].minute + 2))
+				console.log(`1 + ${res[document].reminders[remDoc].day === today_num}`)
+				console.log(`2 + ${res[document].reminders[remDoc].day === today_str}`)
+				console.log(`3 + ${res[document].reminders[remDoc].day === today_str.substr(0, 3)}`)
 					if (res[document].reminders[remDoc].day === today_num || res[document].reminders[remDoc].day === today_str || res[document].reminders[remDoc].day === today_str.substr(0, 3) ) {
 						if (today.getUTCHours() == res[document].reminders[remDoc].hour) {
 							if (res[document].reminders[remDoc].minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].reminders[remDoc].minute + 2)) {
