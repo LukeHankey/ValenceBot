@@ -133,7 +133,7 @@ module.exports = async client => {
 						}
 					}
 				}
-			}
+			})
 		}
 		})
 
