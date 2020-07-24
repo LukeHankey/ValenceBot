@@ -114,7 +114,7 @@ module.exports = {
 							// else if () {
 							// Can add in reminders to be every so many hours if need be
 							// }
-							}
+// 							}
 						}
 // 						else {
 // 							message.channel.send(`You can only set one reminder per server!`)
