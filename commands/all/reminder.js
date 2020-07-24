@@ -133,11 +133,11 @@ module.exports = {
 				case "remove":
 					if (permMod) {
 						if (checkNum(args[1]), 1, Infinity) {
-							console.log(res.reminders)
 							let idMap = [];
 							settings.find({ "reminders.id": args[1] }).map(ids => { idMap.push(ids.id, ids.channel, ids.message) })
-							message.channel.send(`Reminder \`${args[1]}\` has been deleted from <#${idMap[1].join("")}>!\n${code}${args[1]}. ${idMap[2].join("")}${code}`);
-							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Reminder: ${code}#${args[1]}. ${idMap[2].join("")}${code}`);
+							console.log(idMap)
+							message.channel.send(`Reminder \`${args[1]}\` has been deleted from <#${idMap[1]}>!\n${code}${args[1]}. ${idMap[2]}${code}`);
+							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Reminder: ${code}#${args[1]}. ${idMap[2]}${code}`);
 							settings.updateOne({ _id: message.guild.name }, { $pull: { reminders: { id: args[1] } } })
 						}						
 						else {
