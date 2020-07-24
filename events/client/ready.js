@@ -127,6 +127,11 @@ module.exports = async client => {
 			},	{ scheduled: res[document].citadel_reset_time.scheduled })
 			cron.schedule(`*/2 * * * *`, async () => {
 				for (const remDoc in res[document].reminders) {
+					console.log(res[document].reminders[resDoc].day)
+					console.log(typeof today_num)
+					console.log(typeof today_str)
+					console.log(res[document].reminders[resDoc].day)
+					console.log(typeof res[document].reminders[resDoc].day)
 				console.log(`1 + ${res[document].reminders[remDoc].day === today_num}`)
 				console.log(`2 + ${res[document].reminders[remDoc].day === today_str}`)
 				console.log(`3 + ${res[document].reminders[remDoc].day === today_str.substr(0, 3)}`)
