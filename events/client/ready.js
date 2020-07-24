@@ -126,14 +126,16 @@ module.exports = async client => {
 					}
 			},	{ scheduled: res[document].citadel_reset_time.scheduled })
 			cron.schedule(`*/5 * * * *`, async () => {
-				console.log(res[document].reminders.day)
-				if (res[document].reminders.day === today_num || res[document].reminders.day === today_str || res[document].reminders.day === today_str.substr(0, 3) ) {
-					if (today.getUTCHours() == res[document].reminders.hour) {
-						if (res[document].reminders.minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].reminders.minute + 5)) {
-							client.channels.cache.get(res[document].reminders.channel).send(`res[document].reminders.message`)
+// 				for (const remDoc in res[document].reminders) {
+				console.log(res[document].reminders)
+					if (res[document].reminders.day === today_num || res[document].reminders.day === today_str || res[document].reminders.day === today_str.substr(0, 3) ) {
+						if (today.getUTCHours() == res[document].reminders.hour) {
+							if (res[document].reminders.minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].reminders.minute + 5)) {
+								client.channels.cache.get(res[document].reminders.channel).send(`res[document].reminders.message`)
+							}
 						}
 					}
-				}
+// 				}
 			})
 		}
 		})
