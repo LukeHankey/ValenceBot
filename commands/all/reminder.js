@@ -141,7 +141,7 @@ module.exports = {
 							let idMap = [];
 							settings.findOne({ "reminders.id": args[1] })
 							.then(x => {
-								console.log(x.reminders.id)
+								console.log(x.reminders[0].id)
 								idMap.push(x.id, x.channel, x.message)
 							})
 							message.channel.send(`Reminder \`${args[1]}\` has been deleted from <#${idMap[1]}>!\n${code}${args[1]}. ${idMap[2]}${code}`);
