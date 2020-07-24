@@ -141,17 +141,16 @@ module.exports = {
 							let idMap = [];
 							settings.findOne({ "reminders.id": args[1] })
 							.then(x => {
+								console.log(x.reminders.id)
 								idMap.push(x.id, x.channel, x.message)
 							})
 							message.channel.send(`Reminder \`${args[1]}\` has been deleted from <#${idMap[1]}>!\n${code}${args[1]}. ${idMap[2]}${code}`);
 							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Reminder: ${code}#${args[1]}. ${idMap[2]}${code}`);
 							settings.updateOne({ _id: message.guild.name }, { $pull: { reminders: { id: args[1] } } })
-							console.log(idMap)
 						}						
 						else {
 							message.channel.send(`There is no reminder with that ID. Use ${res.prefix}reminders to show the full list.`)
 						}
-						console.log(idCheck)
 					}
 					else {
 						const allRoleIDs = availPermMod.map(id => `<@&${id}>`);
