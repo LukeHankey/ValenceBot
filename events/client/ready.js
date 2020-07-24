@@ -125,20 +125,25 @@ module.exports = async client => {
 						}
 					}
 			},	{ scheduled: res[document].citadel_reset_time.scheduled })
-			cron.schedule(`*/2 * * * *`, async () => {
+			cron.schedule(`* * * * *`, async () => {
 				for (const remDoc in res[document].reminders) {
-					console.log(res[document].reminders[remDoc].day)
-					console.log(typeof today_num)
-					console.log(typeof today_str)
-					console.log(res[document].reminders[remDoc].day)
-					console.log(typeof res[document].reminders[remDoc].day)
-				console.log(`1 + ${res[document].reminders[remDoc].day === today_num}`)
+					console.log(res[document].reminders[remDoc])
+				console.log(`1 + ${+res[document].reminders[remDoc].day === today_num}`)
 				console.log(`2 + ${res[document].reminders[remDoc].day === today_str}`)
 				console.log(`3 + ${res[document].reminders[remDoc].day === today_str.substr(0, 3)}`)
+				console.log()
+				console.log(today.getUTCHours() == +res[document].reminders[remDoc].hour)
+				console.log(`// ${res[document].reminders[remDoc].minute}`)
+				console.log(+res[document].reminders[remDoc].minute <= today.getUTCMinutes())
+				console.log(today.getUTCMinutes() < (+res[document].reminders[remDoc].minute + 3))
+				console.log(`// ${today.getUTCMinutes()}`)
+				console.log(`// ${+res[document].reminders[remDoc].minute + 3}`)
+				console.log()
+				console.log()
 					if (+res[document].reminders[remDoc].day === today_num || res[document].reminders[remDoc].day === today_str || res[document].reminders[remDoc].day === today_str.substr(0, 3) ) {
-						if (today.getUTCHours() == res[document].reminders[remDoc].hour) {
-							if (res[document].reminders[remDoc].minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].reminders[remDoc].minute + 2)) {
-								client.channels.cache.get(res[document].reminders[remDoc].channel).send(res[document].reminders[remDoc].message)
+						if (today.getUTCHours() == +res[document].reminders[remDoc].hour) {
+							if (+res[document].reminders[remDoc].minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].reminders[remDoc].minute + 3)) {
+								await client.channels.cache.get(res[document].reminders[remDoc].channel).send(res[document].reminders[remDoc].message)
 							}
 						}
 					}

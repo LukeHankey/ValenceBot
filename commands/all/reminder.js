@@ -66,7 +66,7 @@ module.exports = {
 				channelTag.push(args[4].slice(2, 20))
 			}
 
-			let messageContent = args.slice(5).join("")
+			let messageContent = args.slice(5).join(" ")
 			const dayCheck = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 			let permMod = message.member.roles.cache.has(abovePermModArray[0]) || message.member.roles.cache.has(mrID) || aboveRPMod[0] >= modRole.rawPosition || message.author.id === message.guild.ownerID;
             switch (args[0]) {
@@ -86,7 +86,7 @@ module.exports = {
 											$push: { "reminders": { $each: [{ id: message.id, day: args[1], hour: args[2], minute: args[3], channel: args[4], message: messageContent }] }
 											}}, { returnOriginal: true })
 										.then(r => {
-											message.channel.send(`A reminder has been added to <#${args[4]}>:\n ${messageContent}`)
+											message.channel.send(`A reminder has been added to <#${args[4]}>`)
 											client.channels.cache.get("731997087721586698")
 											.send(`<@${message.author.id}> added a Reminder in server: **${message.guild.name}** - <#${args[4]}>\n${code}diff\n+ ${dayCheck[args[1]] || args[1]} ${doubleDigits(args[2])}:${doubleDigits(args[3])} - ${messageContent}${code}`);
 										})
@@ -101,7 +101,7 @@ module.exports = {
 											$push: { "reminders": { $each: [{ id: message.id, day: args[1], hour: args[2], minute: args[3], channel: channelTag[0], message: messageContent }] }
 											}}, { returnOriginal: false })
 										.then(r => {
-											message.channel.send(`A reminder has been added to <#${channelTag[0]}>:\n ${messageContent}`)
+											message.channel.send(`A reminder has been added to <#${channelTag[0]}>`)
 											client.channels.cache.get("731997087721586698")
 											.send(`<@${message.author.id}> added a Reminder in server: **${message.guild.name}** - <#${channelTag[0]}>\n${code}diff\n+ ${dayCheck[r.value.reminders[res.reminders.length].day] || r.value.reminders[res.reminders.length].day} ${doubleDigits(args[2])}:${doubleDigits(args[3])} - ${r.value.reminders[res.reminders.length].message}${code}`);
 										})
