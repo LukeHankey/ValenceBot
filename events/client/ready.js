@@ -110,14 +110,13 @@ module.exports = async client => {
 			});
 		});
 
-	settings.find({}).toArray().then(res => {
+	await settings.find({}).toArray().then(res => {
 		for (const document in res) {
-			let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-			let today = new Date();
-			let today_num = today.getDay();
-			let today_str = days[today_num];
 			cron.schedule(`*/5 * * * *`, async () => {
-					if (res[document].citadel_reset_time.day === today_num || res[document].citadel_reset_time.day === today_str || res[document].citadel_reset_time.day === today_str.substr(0, 3) ) {
+				let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+				let today = new Date();
+				let today_num = today.getDay();
+				let today_str = days[today_num];if (res[document].citadel_reset_time.day === today_num || res[document].citadel_reset_time.day === today_str || res[document].citadel_reset_time.day === today_str.substr(0, 3) ) {
 						if (today.getUTCHours() == res[document].citadel_reset_time.hour) {
 							if (res[document].citadel_reset_time.minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].citadel_reset_time.minute + 5)) {
 								client.channels.cache.get(res[document].channels.adminChannel).send("@here - Set the Citadel Reset Time!")
@@ -125,35 +124,33 @@ module.exports = async client => {
 						}
 					}
 			},	{ scheduled: res[document].citadel_reset_time.scheduled })
-			cron.schedule(`*/5 * * * *`, async () => {
-				for (const remDoc in res[document].reminders) {
-					console.log(res[document].reminders[remDoc])
-				console.log(`1 + ${+res[document].reminders[remDoc].day === today_num}`)
-				console.log(`2 + ${res[document].reminders[remDoc].day === today_str}`)
-				console.log(`3 + ${res[document].reminders[remDoc].day === today_str.substr(0, 3)}`)
-				console.log()
-				console.log(today.getUTCHours() == +res[document].reminders[remDoc].hour)
-				console.log(`// ${res[document].reminders[remDoc].minute}`)
-				console.log(+res[document].reminders[remDoc].minute <= today.getUTCMinutes())
-				console.log(today.getUTCMinutes() < (+res[document].reminders[remDoc].minute + 5))
-				console.log(`// ${today.getUTCMinutes()}`)
-				console.log(`// ${+res[document].reminders[remDoc].minute + 5}`)
-				console.log()
-				console.log()
+		}
+		})
+
+
+		cron.schedule(`*/2 * * * *`, async () => {
+			let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+			let today = new Date();
+			let today_num = today.getDay();
+			let today_str = days[today_num];
+			await settings.find({}).toArray().then(res => {
+				for (const document in res) {	
+					for (const remDoc in res[document].reminders) {
 					if (+res[document].reminders[remDoc].day === today_num || res[document].reminders[remDoc].day === today_str || res[document].reminders[remDoc].day === today_str.substr(0, 3) ) {
-						if (today.getUTCHours() == +res[document].reminders[remDoc].hour) {
-							if (+res[document].reminders[remDoc].minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].reminders[remDoc].minute + 5)) {
-								await client.channels.cache.get(res[document].reminders[remDoc].channel).send(res[document].reminders[remDoc].message)
+							if (today.getUTCHours() == +res[document].reminders[remDoc].hour) {
+								if (+res[document].reminders[remDoc].minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].reminders[remDoc].minute + 2)) {
+									client.channels.cache.get(res[document].reminders[remDoc].channel).send(res[document].reminders[remDoc].message)
+								}
 							}
 						}
 					}
 				}
 			})
-		}
 		})
 
-		// cron.schedule(`0 1 * * mon`, async () => {
-		// 	client.channels.cache.get("718218491257290823").send("@here - Set the Citadel Locks & Targets!")
+		// cron.schedule(`*/2 * * * *`, async () => {
+			// client.channels.cache.get("718218491257290823").send("@here - Set the Citadel Locks & Targets!")
 		// })
+
 	});
 };
