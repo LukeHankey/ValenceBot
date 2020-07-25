@@ -66,7 +66,7 @@ module.exports = async client => {
 		})
 			.catch(error => console.error(error));
 	}
-	connection(err => {
+	connection(async err => {
 		if (err) console.log(err);
 		const db = getDb();
 		const vFactsColl = db.collection("Facts");
