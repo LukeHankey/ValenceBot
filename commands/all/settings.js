@@ -4,9 +4,9 @@ const getDb = require("../../mongodb").getDb;
 
 module.exports = {
 	name: "settings",
-	description: ["Displays the settings that you can change.", "Shows the current prefix.", "Sets the new prefix in the server.", "Shows the current admin role.", "Sets the new admin role in the server.", "Shows the current mod role.", "Sets the new mod role in the server.", "Shows the current Citadel Reset Time.", "Sets the Citadel Reset Time.", "Toggle the Citadel Reset Time notifications.", "Shows the current admin channel.", "Sets the current admin channel."],
+	description: ["Displays the settings that you can change.", "Shows the current prefix.", "Sets the new prefix in the server.", "Shows the current admin role.", "Sets the new admin role in the server.", "Shows the current mod role.", "Sets the new mod role in the server.", "Shows the current admin channel.", "Sets the current admin channel."],
 	aliases: ["s"],
-	usage: ["", "prefix", "prefix set <new prefix>", "adminRole", "adminRole set <new role>", "modRole", "modRole set <new role>", "citadel", "citadel set <date/time>", "citadel <on/off>", "adminChannel", "adminChannel set <channel>"],
+	usage: ["", "prefix", "prefix set <new prefix>", "adminRole", "adminRole set <new role>", "modRole", "modRole set <new role>", "adminChannel", "adminChannel set <channel>"],
 	run: async (client, message, args) => {
         const nEmbed = function(title, description, color = colors.cyan, thumbnail = "") {
 			const embed = new Discord.MessageEmbed()
@@ -25,29 +25,13 @@ module.exports = {
 				return true
 			}
 		}
-		function checkDate(id = 0, gr_eq = 0, l_eq = Infinity) {
-			if (+id !== parseInt(id) || !(id >= gr_eq) || !(id <= l_eq)) {
-				return false
-			} else {
-				return true
-			}
-		}
-		function doubleDigits(digit) {
-			if (digit.length === 2) {
-				return digit;
-			}
-			else {
-				const zero = "0";
-				return zero.concat(digit)
-			}
-		}
-    
-	const code = "```";
+		
+		const code = "```";
         const db = getDb();
         const settings = db.collection(`Settings`)
 		
 		await settings.findOne({ _id: message.guild.name })
-		.then(res => {
+		.then(async res => {
 			// Admin Roles //
 			const rID = res.roles.adminRole.slice(3, 21) // Get adminRole ID
 			const adRole = message.guild.roles.cache.find(role => role.id === rID); // Grab the adminRole object by ID
@@ -83,32 +67,6 @@ module.exports = {
 					aboveRP.push(rp);
 				})
 			})
-
-			// Mod Roles //
-			const mrID = res.roles.modRole.slice(3, 21) // Get modRole ID
-			const modRole = message.guild.roles.cache.find(role => role.id === mrID); // Grab the modRole object by ID
-			const modRoles = message.guild.roles.cache.filter(roles => roles.rawPosition >= modRole.rawPosition); // Grab all roles' rawPositions that are equal to or higher than the modRole
-			const filterORolesM = modRoles.map(role => role.id); // Finds the ID's of available roles
-			const abovePermModArray = []; // All roles that the member has that is >= modRole
-			const availPermMod = []; // All the roles that the member doesn't have that are >= modRole
-			const aboveRPMod = [];
-			filterORolesM.forEach(id => {
-				if (message.member.roles.cache.has(id)) {
-					abovePermModArray.push(id)
-				}
-				else {
-					availPermMod.push(id);
-				}
-			})
-			abovePermModArray.forEach(id => {
-				const abovePermRawMod = message.guild.roles.cache.find(role => role.id === id)
-				const aboveRpMod = abovePermRawMod.rawPosition + "";
-				aboveRpMod.split().forEach(rp => {
-					aboveRPMod.push(rp);
-				})
-			})
-			const dayCheck = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-			let permMod = message.member.roles.cache.has(abovePermModArray[0]) || message.member.roles.cache.has(mrID) || aboveRPMod[0] >= modRole.rawPosition || message.author.id === message.guild.ownerID;
 
 		switch (args[0]) {
 			case "prefix":
@@ -253,94 +211,7 @@ module.exports = {
 					}
 				}
 			break;
-			case "citadel":
-				switch (args[1]) {
-					case "set":
-						if (permMod) {
-							if ((checkDate(args[2], 0, 6) || dayCheck.includes(args[2])) && checkDate(args[3], 1, 23) && checkDate(args[4], 1, 59)) { // Setting reset by Day / Hour /
-								settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "citadel_reset_time.day": dayCheck[args[2]] || args[2], "citadel_reset_time.hour": doubleDigits(args[3]), "citadel_reset_time.minute": doubleDigits(args[4]) }}, { returnOriginal: true })
-									.then(r => {
-										message.channel.send(`The Citadel Reset Time has been changed to: ${dayCheck[args[2]] || args[2]} ${doubleDigits(args[3])}:${doubleDigits(args[4])}`)
-										client.channels.cache.get("731997087721586698")
-										.send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.guild.name}**\n${code}diff\n- ${r.value.citadel_reset_time.day} ${r.value.citadel_reset_time.hour}:${r.value.citadel_reset_time.minute}\n+ ${dayCheck[args[2]] || args[2]} ${doubleDigits(args[3])}:${doubleDigits(args[4])} ${code}`);
-									})
-							}
-							else if (checkDate(args[2], 1, 23) && checkDate(args[3], 1, 59)) {
-								settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "citadel_reset_time.hour": doubleDigits(args[2]), "citadel_reset_time.minute": doubleDigits(args[3]) }}, { returnOriginal: true })
-									.then(r => {
-										message.channel.send(`The Citadel Reset Time has been changed to: ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${doubleDigits(args[2])}:${doubleDigits(args[3])}`)
-										client.channels.cache.get("731997087721586698")
-										.send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.guild.name}**\n${code}diff\n- ${r.value.citadel_reset_time.day} ${r.value.citadel_reset_time.hour}:${r.value.citadel_reset_time.minute}\n+ ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${doubleDigits(args[2])}:${doubleDigits(args[3])}${code}`);
-									})
-							}
-							else if (checkDate(args[2], 1, 59)) {
-								settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "citadel_reset_time.minute": doubleDigits(args[2]) }}, { returnOriginal: true })
-									.then(r => {
-										message.channel.send(`The Citadel Reset Time has been changed to: ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${doubleDigits(r.value.citadel_reset_time.hour)}:${doubleDigits(args[2])}`)
-										client.channels.cache.get("731997087721586698")
-										.send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.guild.name}**\n${code}diff\n- ${r.value.citadel_reset_time.day} ${r.value.citadel_reset_time.hour}:${r.value.citadel_reset_time.minute}\n+ ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${doubleDigits(r.value.citadel_reset_time.hour)}:${doubleDigits(args[2])}${code}`);
-									})
-							}
-							else {
-								message.channel.send(`What do you want to set the Citadel Reset Time to? Acceptable values:`);
-								message.channel.send(`${code}diff\n+ DD HH MM (Sat 14 02)\n+ HH MM (14 02)\n+ MM (02)\n \n\nNOTE:\n- The Reset Time must be the same as Game Time.\n- If specifying a Day, you can use shorthand (Mon), full names (Monday) or numbers (1)!\n- Monday/Mon/1 | Tuesday/Tue/2 | Wednesday/Wed/3 | Thursday/Thu/4 | Friday/Fri/5 | Saturday/Sat/6 | Sunday/Sun/0${code}`);
-							}
-						}
-						else {
-							const allRoleIDs = availPermMod.map(id => `<@&${id}>`);
-							const join = allRoleIDs.join(", ")
-							message.channel.send(nEmbed("Permission Denied", "You do not have permission to change the Citadel Reset Time!", colors.red_dark)
-							.addField("Only the following Roles & Users can:", join, true)
-							.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
-						}
-					break;
-					case "on":
-						if (permAdmin) {
-							if (res.channels.adminChannel === null) {
-								message.channel.send(`You must set your Admin Channel before you set the Citadel notifications.`)
-							} 
-							else {
-								settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "citadel_reset_time.scheduled": true }}, { returnOriginal: true })
-								.then(r => {
-									message.channel.send(`The Citadel Reset Time notifications have been toggled on!`)
-									client.channels.cache.get("731997087721586698")
-									.send(`<@${message.author.id}> toggled the Citadel Reset Time to on in server: **${message.guild.name}**\n${code}diff\n- ${r.value.citadel_reset_time.scheduled}\n+ true${code}`);
-								})
-							}
-						}
-						else {
-								const allRoleIDs = availPerm.map(id => `<@&${id}>`);
-								const join = allRoleIDs.join(", ")
-								message.channel.send(nEmbed("Permission Denied", "You do not have permission to toggle the Citadel Reset Time notifications!", colors.red_dark)
-								.addField("Only the following Roles & Users can:", join, true)
-								.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
-						}
-					break;
-					case "off":
-					if (permAdmin) {
-						settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "citadel_reset_time.scheduled": false }}, { returnOriginal: true })
-								.then(r => {
-									message.channel.send(`The Citadel Reset Time notifications have been toggled off!`)
-									client.channels.cache.get("731997087721586698")
-									.send(`<@${message.author.id}> toggled the Citadel Reset Time to on in server: **${message.guild.name}**\n${code}diff\n- ${r.value.citadel_reset_time.scheduled}\n+ false${code}`);
-								})
-					}
-					else {
-							const allRoleIDs = availPerm.map(id => `<@&${id}>`);
-							const join = allRoleIDs.join(", ")
-							message.channel.send(nEmbed("Permission Denied", "You do not have permission to toggle the Citadel Reset Time notifications!", colors.red_dark)
-							.addField("Only the following Roles & Users can:", join, true)
-							.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
-					}
-				break;
-					default:
-					if (!args[1] && res.citadel_reset_time.day === "*") {
-						message.channel.send(`Your Citadel Reset Time is set as: \`Not set.\``)
-					}
-					else {
-						message.channel.send(`Your Citadel Reset Time is set as: \`${res.citadel_reset_time.day || dayCheck[res.citadel_reset_time.day]} ${res.citadel_reset_time.hour}:${res.citadel_reset_time.minute}\``)
-					}
-				}
+
 			break;
 			case "adminChannel":
 				switch (args[1]) {

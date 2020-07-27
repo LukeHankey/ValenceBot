@@ -4,9 +4,9 @@ const colors = require("../../colors.json");
 
 module.exports = {
 	name: "help",
-	description: "List all of my commands or info about a specific command.",
+	description: ["List all of my commands or info about a specific command."],
 	aliases: ["commands"],
-	usage: "[command name]",
+	usage: ["command name"],
 	run: async (client, message, args) => {
 		function capitalize(str) {
 			return str.charAt(0).toUpperCase() + str.slice(1);
@@ -53,7 +53,6 @@ module.exports = {
 				fields.push(field);
 				// console.log(field);
 			}
-
 			message.channel.send(nEmbed(
 				`**Command:** ${cName}`,
 				`**Aliases:** ${command.aliases.join(", ") || "[NO ALIASES]"}\n**Usage:**`,
