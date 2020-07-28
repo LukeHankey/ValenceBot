@@ -158,9 +158,10 @@ module.exports = {
 				case "edit":
 					if (permMod) {
 						let editMessage = args.slice(3).join(" ");
+						let param = args.slice(2, 3).join("").toLowerCase()
 						let idCheck = [];
 						res.reminders.forEach(x => { idCheck.push(x.id) })
-						if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1]) && args[2].toLowerCase() === "channel") { 
+						if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1]) && param === "channel") { 
 							settings.findOneAndUpdate({ _id: message.guild.name, "reminders.id": args[1] }, { $set: { "reminders.$.channel": args[3] } } )
 							if (args[3].length > 18) {
 								message.channel.send(`Reminder \`${args[1]}\` has had the channel changed to <#${args[3].slice(2, 20)}>`);
@@ -173,7 +174,7 @@ module.exports = {
 							}                                    
 							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);
 						}
-						else if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1]) && args[2].toLowerCase() === "message") {
+						else if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1]) && param === "message") {
 							settings.findOneAndUpdate({ _id: message.guild.name, "reminders.id": args[1] }, { $set: { "reminders.$.message": editMessage } } )
 							if (!editMessage) {
 								message.channel.send(`You need to specify the message content you'd like to change.`);
@@ -182,7 +183,7 @@ module.exports = {
 							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);
 						}
 						else if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1])) {
-							if (args[2].toLowerCase() === "date" || args[2].toLowerCase() === "time") {
+							if (param === "date" || param === "time") {
 								if (checkDate(args[3], 0, 6) && checkDate(args[4], 0, 23) && checkDate(args[5], 0, 59)) {
 									settings.findOneAndUpdate({ _id: message.guild.name, "reminders.id": args[1] }, { $set: { "reminders.$.day": args[3], "reminders.$.hour": args[4], "reminders.$.minute": args[5] } } )
 									if (!args[3] && !args[4] && !args[5]) {
