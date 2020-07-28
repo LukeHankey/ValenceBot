@@ -19,8 +19,10 @@ const code = "```";
         channels: { 
             adminChannel: null,
         },
-        citadel_reset_time: { hour: "*", minute: "*", day: "*", scheduled: "false" }
-        }, 
+        citadel_reset_time: { hour: "*", minute: "*", day: "*", scheduled: "false", reminders: [], 
+        },
+        reminders: [],
+        },
         { forceServerObjectId: true }
     );
 

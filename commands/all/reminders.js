@@ -34,9 +34,9 @@ module.exports = {
 		}
 		const code = "```";
 
-        
         const db = getDb();
-        const settings = db.collection(`Settings`)
+		const settings = db.collection(`Settings`)
+		
         await settings.findOne({ _id: message.guild.name })
 		.then(async res => {
             const mrID = res.roles.modRole.slice(3, 21) // Get modRole ID
@@ -75,15 +75,9 @@ module.exports = {
 			let messageContent = args.slice(5).join(" ")
 			const dayCheck = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 			let permMod = message.member.roles.cache.has(abovePermModArray[0]) || message.member.roles.cache.has(mrID) || aboveRPMod[0] >= modRole.rawPosition || message.author.id === message.guild.ownerID;
-            switch (args[0]) {
+		   
+			switch (args[0]) {
                 case "add":
-					switch (args[1]) { // Want to move all citadel related stuff to a new Citadel command
-						case "citadel":
-							
-						default:
-							message.channel.send(`What reminder do you want to add? Examples:\n${code}diff\n+ ${res.prefix}reminders add Monday 15 30 #reminders @citadel The citadel has reset!\n+ ${res.prefix}reminders add 3 01 00 The weekly reset has happened!\n\nNOTE:\n- "${res.prefix}help reminders" for more info on how to add a reminder to a channel.\n- If using number values for the days of the week; Sunday = 0, Monday = 1, Tuesday = 2, etc..${code}`)
-							console.log(res.citadel_reset_time.reminders)
-					}
 				if (permMod) {
 // 						if (res.reminders.length == 0) {
 					if ((checkDate(args[1], 0, 6) || dayCheck.includes(capitalise(args[1].toLowerCase()))) && checkDate(args[2], 1, 23) && checkDate(args[3], 1, 59)) {
@@ -112,7 +106,7 @@ module.exports = {
 								})
 							}
 							else {
-								message.channel.send(`You must provide a message to send as a reminder to <#${args[4] || channelTag[0]}>.`)
+								message.channel.send(`You must provide a message to send as a reminder to <#${channelTag[0]}>.`)
 							}
 						}
 						else {
@@ -123,6 +117,9 @@ module.exports = {
 							// Can add in reminders to be every so many hours if need be
 							// }
 // 							}
+						}
+						else {
+							message.channel.send(`What reminder do you want to add? Examples:\n${code}diff\n+ ${res.prefix}reminders add Monday 15 30 #reminders We have completed the challenge!\n+ ${res.prefix}reminders add 3 01 00 The weekly reset has happened!\n\nNOTE:\n- "${res.prefix}help reminders" for more info on how to add a reminder to a channel.\n- If using number values for the days of the week; Sunday = 0, Monday = 1, Tuesday = 2, etc..${code}`)
 						}
 // 						else {
 // 							message.channel.send(`You can only set one reminder per server!`)

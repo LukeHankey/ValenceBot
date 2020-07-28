@@ -122,7 +122,7 @@ module.exports = async client => {
 							if (today.getUTCHours() == res[document].citadel_reset_time.hour) {
 								if (res[document].citadel_reset_time.minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].citadel_reset_time.minute + 1)) {
 									client.channels.cache.get(res[document].channels.adminChannel).send("@here - Set the Citadel Reset Time!")
-									client.channels.cache.get(res[document].citadel_reset_time.reminders[remDoc].channel).send(`${res[document].citadel_reset_time.reminders[remDoc].message}${code}You can also help out with setting the Citadel Reset Time since it changes almost every single week! Use the following command to let your Clan Admins know the next Citadel Reset:\n\n${res[document].prefix}citadel reset <days> <hours> <minutes>\n\nExample:\n${res[document].prefix}citadel reset 6 22 42${code}`)
+									client.channels.cache.get(res[document].citadel_reset_time.reminders[remDoc].channel).send(`${res[document].citadel_reset_time.reminders[remDoc].message}${code}You can also help out with setting the Citadel Reset Time since it changes almost every single week! Use the following command to let your Clan Admins know the next Citadel Reset:\n\n${res[document].prefix}citadel reset info <days> <hours> <minutes>\n\nExample:\n${res[document].prefix}citadel reset info 6 22 42${code}`)
 								}
 							}
 						}

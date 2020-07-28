@@ -123,7 +123,7 @@ module.exports = {
                             if (checkNum(args[2], 1, Infinity) && message.guild.channels.cache.has(args[2])) {
                                 if (messageContentCit) {
                                     settings.updateOne({ _id: message.guild.name }, {
-                                        $push: { "citadel_reset_time": { $each: [{ id: message.id, channel: args[2], message: messageContentCit }] }}
+                                        $push: { "citadel_reset_time.reminders": { $each: [{ id: message.id, channel: args[2], message: messageContentCit }] }}
                                     })
                                     message.channel.send(`A citadel reminder has been added to <#${args[2]}>. **NOTE:** This reminder is to let clan members know the citadel has been reset.`)
                                     client.channels.cache.get("731997087721586698")
@@ -152,15 +152,69 @@ module.exports = {
                     }
                     break;
                     case "remove":
+                        if (permMod) {
+                            let idCheck = [];
+                            res.citadel_reset_time.reminders.forEach(x => { idCheck.push(x.id) })
+                            if (checkNum(args[2], 1, Infinity) && idCheck.includes(args[2])) {
+                                message.channel.send(`Reminder \`${args[2]}\` has been deleted.`);
+                                client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Reminder: \`${args[2]}\``);
+                                settings.updateOne({ _id: message.guild.name }, { $pull: { "citadel_reset_time.reminders": { id: args[2] } } })
+                            }
+                            else if (!args[1]) {
+                                message.channel.send(`You must provide an ID to remove.`);
+                            }
+                            else {
+                                message.channel.send(`There is no reminder with that ID. Use \`${res.prefix}citadel reminders\` to show the full list.`)
+                            }
+                        }
+                        else {
+                            message.channel.send(nEmbed("Permission Denied", "You do not have permission to remove a Reminder!", colors.red_dark)
+                            .addField("Only the following Roles & Users can:", join, true)
+                            .addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
+                        }
                     break;
                     case "edit":
+                        if (permMod) {
+                            let idCheck = [];
+                            res.citadel_reset_time.reminders.forEach(x => { idCheck.push(x.id) })
+                            if (checkNum(args[2], 1, Infinity) && idCheck.includes(args[2]) && args[3].toLowerCase() === "channel") {
+                                settings.findOneAndUpdate({ _id: message.guild.name, "citadel_reset_time.reminders.id": args[2] }, { $set: { "citadel_reset_time.reminders.$.channel": args[4] } } )
+                                if (args[4].length > 18) {
+                                    message.channel.send(`Reminder \`${args[2]}\` has had the channel changed to <#${args[4].slice(2, 20)}>`);
+                                } 
+                                else {
+                                    message.channel.send(`Reminder \`${args[2]}\` has had the channel changed to <#${args[4]}>`);
+                                }                                    
+                                client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``);
+                            }
+                            else if (!args[1]) {
+                                message.channel.send(`You must provide an ID to remove.`);
+                            }
+                            else {
+                                message.channel.send(`There is no reminder with that ID. Use \`${res.prefix}citadel reminders\` to show the full list.`)
+                            }
+                        }
+                        else {
+                            message.channel.send(nEmbed("Permission Denied", "You do not have permission to remove a Reminder!", colors.red_dark)
+                            .addField("Only the following Roles & Users can:", join, true)
+                            .addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
+                        }
                     break;
                     default:
                         const citRem = [];
                         res.citadel_reset_time.reminders.forEach(x => {
-                            citRem.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel}>, Date: \`${dayCheck[res.citadel_reset_time.day] || res.citadel_reset_time.day} ${doubleDigits(res.citadel_reset_time.hour)}:${doubleDigits(res.citadel_reset_time.minute)}\`, Message: ${x.message}\n`)
+                            if (x.channel.length > 18) {
+                                citRem.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel.slice(2, 20)}>, Date: \`${dayCheck[res.citadel_reset_time.day] || res.citadel_reset_time.day} ${doubleDigits(res.citadel_reset_time.hour)}:${doubleDigits(res.citadel_reset_time.minute)}\`, Message: ${x.message}\n`)
+                            } else {
+                                citRem.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel}>, Date: \`${dayCheck[res.citadel_reset_time.day] || res.citadel_reset_time.day} ${doubleDigits(res.citadel_reset_time.hour)}:${doubleDigits(res.citadel_reset_time.minute)}\`, Message: ${x.message}\n`)
+                            }
                         })
-						message.channel.send(`Current Reminders:\n${citRem.join("")}`)
+                        if (res.citadel_reset_time.reminders.length === 0) {
+                            message.channel.send(`You have no citadel reminders set.`)
+                        }
+                        else {
+                            message.channel.send(`Current Reminders:\n${citRem.join("")}`)
+                        }
                     break;
                 }
             break;
