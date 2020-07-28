@@ -109,7 +109,7 @@ module.exports = {
 								message.channel.send(`You must provide a message to send as a reminder to <#${channelTag[0]}>.`)
 							}
 						}
-						else {
+						else { // ;rem add sends this instead of the next message
 							message.channel.send(`What do you want to set the Notificaiton Channel to? Acceptable values:`);
 							message.channel.send(`${code}diff\n+ Channel ID (18 Digits)\n+ Channel tag (#<Channel name>)${code}`);
 						}
@@ -117,10 +117,10 @@ module.exports = {
 							// Can add in reminders to be every so many hours if need be
 							// }
 // 							}
-						}
-						else {
-							message.channel.send(`What reminder do you want to add? Examples:\n${code}diff\n+ ${res.prefix}reminders add Monday 15 30 #reminders We have completed the challenge!\n+ ${res.prefix}reminders add 3 01 00 The weekly reset has happened!\n\nNOTE:\n- "${res.prefix}help reminders" for more info on how to add a reminder to a channel.\n- If using number values for the days of the week; Sunday = 0, Monday = 1, Tuesday = 2, etc..${code}`)
-						}
+					}
+					else {
+						message.channel.send(`What reminder do you want to add? Examples:\n${code}diff\n+ ${res.prefix}reminders add Monday 15 30 #reminders We have completed the challenge!\n+ ${res.prefix}reminders add 3 01 00 The weekly reset has happened!\n\nNOTE:\n- "${res.prefix}help reminders" for more info on how to add a reminder to a channel.\n- If using number values for the days of the week; Sunday = 0, Monday = 1, Tuesday = 2, etc..${code}`)
+					}
 // 						else {
 // 							message.channel.send(`You can only set one reminder per server!`)
 // 							client.channels.cache.get("731997087721586698")
@@ -161,7 +161,6 @@ module.exports = {
 					* Edit for Message -- Complete
 					*/
 					if (permMod) {
-						let editMessage = args[3].slice(3).join(" ");
 						let idCheck = [];
 						res.reminders.forEach(x => { idCheck.push(x.id) })
 						if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1]) && args[2].toLowerCase() === "channel") { 
@@ -175,6 +174,7 @@ module.exports = {
 							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);
 						}
 						else if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1]) && args[2].toLowerCase() === "message") {
+							let editMessage = args[3].slice(3).join(" ");
 							settings.findOneAndUpdate({ _id: message.guild.name, "reminders.id": args[1] }, { $set: { "reminders.$.message": editMessage } } )
 							message.channel.send(`Reminder \`${args[1]}\` has had the message changed to \`${editMessage}\``);
 							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);
