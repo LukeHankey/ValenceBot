@@ -180,24 +180,34 @@ module.exports = {
 								message.channel.send(`You must provide a parameter to edit. You can edit either the \`Channel\`, \`Date / Time\` or the \`Message\`.`);
 							}
 						}
-						else if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1]) && param === "message") {
-							settings.findOneAndUpdate({ _id: message.guild.name, "reminders.id": args[1] }, { $set: { "reminders.$.message": editMessage } } )
-							if (!editMessage) {
-								message.channel.send(`You need to specify the message content you'd like to change.`);
+						else if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1])) {
+							if (param === "message") {
+								if (!editMessage) {
+									message.channel.send(`You need to specify the message content you'd like to change.`);
+								}
+								else {
+									settings.findOneAndUpdate({ _id: message.guild.name, "reminders.id": args[1] }, { $set: { "reminders.$.message": editMessage } } )
+									message.channel.send(`Reminder \`${args[1]}\` has had the message changed to \`${editMessage}\``);
+									client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);
+								}
 							}
-							message.channel.send(`Reminder \`${args[1]}\` has had the message changed to \`${editMessage}\``);
-							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);
+							else {
+								message.channel.send(`You must provide a parameter to edit. You can edit either the \`Channel\`, \`Date / Time\` or the \`Message\`.`);
+							}
 						}
 						else if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1])) {
 							if (param === "date" || param === "time") {
-								if (checkDate(args[3], 0, 6) && checkDate(args[4], 0, 23) && checkDate(args[5], 0, 59)) {
+								if (!args[3] && !args[4] && !args[5]) {
+									message.channel.send(`You must provide the full Datetime to change. Example: \`Monday 14 25\``);
+								}
+								else if (checkDate(args[3], 0, 6) && checkDate(args[4], 0, 23) && checkDate(args[5], 0, 59)) {
 									settings.findOneAndUpdate({ _id: message.guild.name, "reminders.id": args[1] }, { $set: { "reminders.$.day": args[3], "reminders.$.hour": args[4], "reminders.$.minute": args[5] } } )
-									if (!args[3] && !args[4] && !args[5]) {
-										message.channel.send(`You must provide the full Datetime to change. Example: \`Monday 14 25\``);
-									}
 									message.channel.send(`Reminder \`${args[1]}\` has had the date/time changed to \`${dayCheck[capitalise(args[3].toLowerCase())] || args[3]} ${doubleDigits(args[4])}:${doubleDigits(args[5])}\``);
 									client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);
 								}
+							}
+							else {
+								message.channel.send(`You must provide a parameter to edit. You can edit either the \`Channel\`, \`Date / Time\` or the \`Message\`.`);
 							}
 						}
 						else if (!args[1]) {
