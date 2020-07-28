@@ -161,18 +161,24 @@ module.exports = {
 						let param = args.slice(2, 3).join("").toLowerCase()
 						let idCheck = [];
 						res.reminders.forEach(x => { idCheck.push(x.id) })
-						if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1]) && param === "channel") { 
-							settings.findOneAndUpdate({ _id: message.guild.name, "reminders.id": args[1] }, { $set: { "reminders.$.channel": args[3] } } )
-							if (args[3].length > 18) {
-								message.channel.send(`Reminder \`${args[1]}\` has had the channel changed to <#${args[3].slice(2, 20)}>`);
-							}
-							else if (!args[3]) {
-								message.channel.send(`You need to specify a channel to change to. Either the channel ID or the channel Tag.`);	
-							 }
+						if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1])) { 
+							if (param === "channel") {
+								if (!args[3]) {
+									message.channel.send(`You need to specify a channel to change to. Either the channel ID or the channel Tag.`);	
+								}
+								else if (args[3].length > 18) {
+									settings.findOneAndUpdate({ _id: message.guild.name, "reminders.id": args[1] }, { $set: { "reminders.$.channel": args[3] } } )
+									message.channel.send(`Reminder \`${args[1]}\` has had the channel changed to <#${args[3].slice(2, 20)}>`);
+									client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);
+								}
+								else {
+									settings.findOneAndUpdate({ _id: message.guild.name, "reminders.id": args[1] }, { $set: { "reminders.$.channel": args[3] } } )
+									message.channel.send(`Reminder \`${args[1]}\` has had the channel changed to <#${args[3]}>`);
+									client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);}                                    
+								}
 							else {
-								message.channel.send(`Reminder \`${args[1]}\` has had the channel changed to <#${args[3]}>`);
-							}                                    
-							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);
+								message.channel.send(`You must provide a parameter to edit. You can edit either the \`Channel\`, \`Date / Time\` or the \`Message\`.`);
+							}
 						}
 						else if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1]) && param === "message") {
 							settings.findOneAndUpdate({ _id: message.guild.name, "reminders.id": args[1] }, { $set: { "reminders.$.message": editMessage } } )
@@ -196,9 +202,6 @@ module.exports = {
 						}
 						else if (!args[1]) {
 							message.channel.send(`You must provide an ID to remove.`);
-						}
-						else if (args[1] && !args[2]) {
-							message.channel.send(`You must provide a parameter to edit. You can edit either the \`Channel\`, \`Date / Time\` or the \`Message\`.`);
 						}
 						else {
 							message.channel.send(`There is no reminder with that ID. Use \`${res.prefix}citadel reminders\` to show the full list.`)
