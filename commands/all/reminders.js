@@ -197,7 +197,7 @@ module.exports = {
 						else if (!args[1]) {
 							message.channel.send(`You must provide an ID to remove.`);
 						}
-						else if (!args[2]) {
+						else if (args[1] && !args[2]) {
 							message.channel.send(`You must provide a parameter to edit. You can edit either the \`Channel\`, \`Date / Time\` or the \`Message\`.`);
 						}
 						else {
