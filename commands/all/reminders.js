@@ -80,7 +80,7 @@ module.exports = {
                 case "add":
 				if (permMod) {
 // 						if (res.reminders.length == 0) {
-					if ((checkDate(args[1], 0, 6) || dayCheck.includes(capitalise(args[1].toLowerCase()))) && checkDate(args[2], 1, 23) && checkDate(args[3], 1, 59)) {
+					if ((checkDate(args[1], 0, 6) || dayCheck.includes(capitalise(args[1].toLowerCase()))) && checkDate(args[2], 0, 23) && checkDate(args[3], 0, 59)) {
 						if (checkNum(args[4], 1, Infinity) && message.guild.channels.cache.has(args[4]) && message.guild.id !== args[4]) {
 							if (messageContent) {
 								settings.updateOne({ _id: message.guild.name }, {
@@ -157,10 +157,11 @@ module.exports = {
 				break;
 				case "edit":
 					/* To Do
-					* Edit for Time (Full DateTime String)
-					* Edit for Message
+					* Edit for Time (Full DateTime String) -- Complete
+					* Edit for Message -- Complete
 					*/
 					if (permMod) {
+						let editMessage = args[3].slice(3).join(" ");
 						let idCheck = [];
 						res.reminders.forEach(x => { idCheck.push(x.id) })
 						if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1]) && args[2].toLowerCase() === "channel") { 
@@ -172,6 +173,20 @@ module.exports = {
 								message.channel.send(`Reminder \`${args[1]}\` has had the channel changed to <#${args[3]}>`);
 							}                                    
 							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);
+						}
+						else if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1]) && args[2].toLowerCase() === "message") {
+							settings.findOneAndUpdate({ _id: message.guild.name, "reminders.id": args[1] }, { $set: { "reminders.$.message": editMessage } } )
+							message.channel.send(`Reminder \`${args[1]}\` has had the message changed to \`${editMessage}\``);
+							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);
+						}
+						else if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1])) {
+							if (args[2].toLowerCase() === "date" || args[2].toLowerCase() === "time") {
+								if (checkDate(args[3], 0, 6) && checkDate(args[4], 0, 23) && checkDate(args[5], 0, 59)) {
+									settings.findOneAndUpdate({ _id: message.guild.name, "reminders.id": args[1] }, { $set: { "reminders.$.day": args[3], "reminders.$.hour": args[4], "reminders.$.minute": args[5] } } )
+									message.channel.send(`Reminder \`${args[1]}\` has had the date/time changed to \`${dayCheck[capitalise(args[3].toLowerCase())] || args[3]} ${doubleDigits(args[4])}:${doubleDigits(args[5])}\``);
+									client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);
+								}
+							}
 						}
 						else if (!args[1]) {
 							message.channel.send(`You must provide an ID to remove.`);
