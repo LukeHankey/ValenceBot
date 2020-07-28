@@ -174,6 +174,9 @@ module.exports = {
                         }
                     break;
                     case "edit":
+                        /* To Do
+                        * Edit for Message
+                        */
                         if (permMod) {
                             let idCheck = [];
                             res.citadel_reset_time.reminders.forEach(x => { idCheck.push(x.id) })
@@ -187,7 +190,7 @@ module.exports = {
                                 }                                    
                                 client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``);
                             }
-                            else if (!args[1]) {
+                            else if (!args[2]) {
                                 message.channel.send(`You must provide an ID to remove.`);
                             }
                             else {

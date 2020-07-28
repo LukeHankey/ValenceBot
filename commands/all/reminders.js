@@ -156,20 +156,50 @@ module.exports = {
 					}
 				break;
 				case "edit":
+					/* To Do
+					* Edit for Time (Full DateTime String)
+					* Edit for Message
+					*/
 					if (permMod) {
-						
+						let idCheck = [];
+						res.reminders.forEach(x => { idCheck.push(x.id) })
+						if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1]) && args[2].toLowerCase() === "channel") { 
+							settings.findOneAndUpdate({ _id: message.guild.name, "reminders.id": args[1] }, { $set: { "reminders.$.channel": args[3] } } )
+							if (args[3].length > 18) {
+								message.channel.send(`Reminder \`${args[1]}\` has had the channel changed to <#${args[3].slice(2, 20)}>`);
+							} 
+							else {
+								message.channel.send(`Reminder \`${args[1]}\` has had the channel changed to <#${args[3]}>`);
+							}                                    
+							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);
+						}
+						else if (!args[1]) {
+							message.channel.send(`You must provide an ID to remove.`);
+						}
+						else {
+							message.channel.send(`There is no reminder with that ID. Use \`${res.prefix}citadel reminders\` to show the full list.`)
+						}
+					}
+					else {
+						message.channel.send(nEmbed("Permission Denied", "You do not have permission to remove a Reminder!", colors.red_dark)
+						.addField("Only the following Roles & Users can:", join, true)
+						.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
 					}
 				break;
 			default:
 				if (!args[0]) {
-					console.log(res.reminders)
 					if (res.reminders.length === 0) {
 						message.channel.send(`You have no server reminders set.`)
 					}
 					else {
 						const list = [];
 						res.reminders.forEach(x => {
-							list.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel}>, Date: \`${dayCheck[x.day] || x.day} ${doubleDigits(x.hour)}:${doubleDigits(x.minute)}\`, Message: ${x.message}\n`)
+							if (x.channel.length > 18) {
+								list.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel.slice(2, 20)}>, Date: \`${dayCheck[x.day] || x.day} ${doubleDigits(x.hour)}:${doubleDigits(x.minute)}\`, Message: ${x.message}\n`)
+							}
+							else {
+								list.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel}>, Date: \`${dayCheck[x.day] || x.day} ${doubleDigits(x.hour)}:${doubleDigits(x.minute)}\`, Message: ${x.message}\n`)
+							}
 						})
 						message.channel.send(`Your reminders:\n\n${list.join("")}`);
 					}
