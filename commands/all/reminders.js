@@ -161,6 +161,7 @@ module.exports = {
 					* Edit for Message -- Complete
 					*/
 					if (permMod) {
+						let editMessage = args.slice(3).join(" ");
 						let idCheck = [];
 						res.reminders.forEach(x => { idCheck.push(x.id) })
 						if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1]) && args[2].toLowerCase() === "channel") { 
@@ -174,7 +175,6 @@ module.exports = {
 							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);
 						}
 						else if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1]) && args[2].toLowerCase() === "message") {
-							let editMessage = args[3].slice(3).join(" ");
 							settings.findOneAndUpdate({ _id: message.guild.name, "reminders.id": args[1] }, { $set: { "reminders.$.message": editMessage } } )
 							message.channel.send(`Reminder \`${args[1]}\` has had the message changed to \`${editMessage}\``);
 							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);
