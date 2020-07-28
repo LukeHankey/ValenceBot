@@ -176,12 +176,7 @@ module.exports = {
 									message.channel.send(`Reminder \`${args[1]}\` has had the channel changed to <#${args[3]}>`);
 									client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);}                                    
 								}
-							else {
-								message.channel.send(`You must provide a parameter to edit. You can edit either the \`Channel\`, \`Date / Time\` or the \`Message\`.`);
-							}
-						}
-						else if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1])) {
-							if (param === "message") {
+							else if (param === "message") {
 								if (!editMessage) {
 									message.channel.send(`You need to specify the message content you'd like to change.`);
 								}
@@ -191,12 +186,7 @@ module.exports = {
 									client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);
 								}
 							}
-							else {
-								message.channel.send(`You must provide a parameter to edit. You can edit either the \`Channel\`, \`Date / Time\` or the \`Message\`.`);
-							}
-						}
-						else if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1])) {
-							if (param === "date" || param === "time") {
+							else if (param === "date" || param === "time") {
 								if (!args[3] && !args[4] && !args[5]) {
 									message.channel.send(`You must provide the full Datetime to change. Example: \`Monday 14 25\``);
 								}
@@ -209,7 +199,7 @@ module.exports = {
 							else {
 								message.channel.send(`You must provide a parameter to edit. You can edit either the \`Channel\`, \`Date / Time\` or the \`Message\`.`);
 							}
-						}
+						}							
 						else if (!args[1]) {
 							message.channel.send(`You must provide an ID to remove.`);
 						}
