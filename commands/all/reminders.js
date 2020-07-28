@@ -156,10 +156,6 @@ module.exports = {
 					}
 				break;
 				case "edit":
-					/* To Do
-					* Edit for Time (Full DateTime String) -- Complete
-					* Edit for Message -- Complete
-					*/
 					if (permMod) {
 						let editMessage = args.slice(3).join(" ");
 						let idCheck = [];
@@ -168,7 +164,10 @@ module.exports = {
 							settings.findOneAndUpdate({ _id: message.guild.name, "reminders.id": args[1] }, { $set: { "reminders.$.channel": args[3] } } )
 							if (args[3].length > 18) {
 								message.channel.send(`Reminder \`${args[1]}\` has had the channel changed to <#${args[3].slice(2, 20)}>`);
-							} 
+							}
+							else if (!args[3]) {
+								message.channel.send(`You need to specify a channel to change to. Either the channel ID or the channel Tag.`);	
+							 }
 							else {
 								message.channel.send(`Reminder \`${args[1]}\` has had the channel changed to <#${args[3]}>`);
 							}                                    
@@ -176,6 +175,9 @@ module.exports = {
 						}
 						else if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1]) && args[2].toLowerCase() === "message") {
 							settings.findOneAndUpdate({ _id: message.guild.name, "reminders.id": args[1] }, { $set: { "reminders.$.message": editMessage } } )
+							if (!editMessage) {
+								message.channel.send(`You need to specify the message content you'd like to change.`);
+							}
 							message.channel.send(`Reminder \`${args[1]}\` has had the message changed to \`${editMessage}\``);
 							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);
 						}
@@ -183,6 +185,9 @@ module.exports = {
 							if (args[2].toLowerCase() === "date" || args[2].toLowerCase() === "time") {
 								if (checkDate(args[3], 0, 6) && checkDate(args[4], 0, 23) && checkDate(args[5], 0, 59)) {
 									settings.findOneAndUpdate({ _id: message.guild.name, "reminders.id": args[1] }, { $set: { "reminders.$.day": args[3], "reminders.$.hour": args[4], "reminders.$.minute": args[5] } } )
+									if (!args[3] && !args[4] && !args[5]) {
+										message.channel.send(`You must provide the full Datetime to change. Example: \`Monday 14 25\``);
+									}
 									message.channel.send(`Reminder \`${args[1]}\` has had the date/time changed to \`${dayCheck[capitalise(args[3].toLowerCase())] || args[3]} ${doubleDigits(args[4])}:${doubleDigits(args[5])}\``);
 									client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);
 								}
@@ -190,6 +195,9 @@ module.exports = {
 						}
 						else if (!args[1]) {
 							message.channel.send(`You must provide an ID to remove.`);
+						}
+						else if (!args[2]) {
+							message.channel.send(`You must provide a parameter to edit. You can edit either the \`Channel\`, \`Date / Time\` or the \`Message\`.`);
 						}
 						else {
 							message.channel.send(`There is no reminder with that ID. Use \`${res.prefix}citadel reminders\` to show the full list.`)
