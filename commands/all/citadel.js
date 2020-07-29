@@ -302,21 +302,60 @@ module.exports = {
                                     // const filter = (reaction, user) => {
                                     //     return [`✅`, `❌`].includes(reaction.emoji.name) && user.id !== message.author.id
                                     // };
-
-                                    client.channels.cache.get(res.channels.adminChannel).send(nEmbed(
-                                        "**Citadel Reset Time Suggestion**",
-                                        `<@${message.author.id}> used the Citadel Info command to suggest the new Reset Time.`,
-                                        colors.gold,
-                                        message.author.displayAvatarURL()
-                                    ).addFields(
-                                        { name: "Input", value: `${args[2]} days, ${args[3]} hours and ${args[4]} minutes until Reset.` },
-                                        { name: "Conversion", value: `${newDate}`, inline: true },
-                                        { name: "Next Reset Time", value: `${dateDay} ${dateHour}:${dateMin}`, inline: true },
-                                        { name: "Command", value: `\`${res.prefix}citadel reset set ${dateDay} ${dateHour} ${dateMin}\``, inline: false }
-                                    ).setFooter(
-                                        `Valence Bot created by Luke_#8346`, client.user.displayAvatarURL()
-                                    ).setTimestamp()
-                                    )
+					
+					let infoEmbedOne = new Discord.MessageEmbed()
+					.setTitle("**Citadel Reset Time Suggestion**")
+					.setColor(colors.gold)
+					.setDescription(<@${message.author.id}> used the Citadel Info command to suggest the new Reset Time.`)
+					.addFields(
+						{ name: "Input", value: `${args[2]} days, ${args[3]} hours and ${args[4]} minutes until Reset.` },
+						{ name: "Conversion", value: `${newDate}`, inline: true },
+						{ name: "Next Reset Time", value: `${dateDay} ${dateHour}:${dateMin}`, inline: true },
+						{ name: "Command", value: `\`${res.prefix}citadel reset set ${dateDay} ${dateHour} ${dateMin}\``, inline: false }
+					 )
+					.setFooter(
+                                        	`Valence Bot created by Luke_#8346`, client.user.displayAvatarURL()
+					 )
+					.setTimestamp()
+					
+					let infoEmbedTwo = new Discord.MessageEmbed()
+					.setTitle("**Citadel Reset Time Suggestion**")
+					.setColor(colors.gold)
+					.setDescription(<@${message.author.id}> used the Citadel Info command to suggest the new Reset Time.`)
+					.addFields(
+						{ name: "Input", value: `${args[2]} days, ${args[3]} hours and ${args[4]} minutes until Reset.` },
+						{ name: "Conversion", value: `${newDate}`, inline: true },
+						{ name: "Next Reset Time", value: `${dateDay} ${dateHour}:${dateMin}`, inline: true },
+						{ name: "Command", value: `\`${res.prefix}citadel reset set ${dateDay} ${dateHour} ${dateMin}\``, inline: false }
+					 )
+					.setFooter(
+                                        	`Valence Bot created by Luke_#8346`, client.user.displayAvatarURL()
+					 )
+					.setImage(${args[5]})
+					.setTimestamp()
+					
+					if (args[5]) {
+						client.channels.cache.get(res.channels.adminChannel).send(infoEmbedTwo)    
+					}
+					else {
+						client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne)
+					}
+					
+					
+//                                     client.channels.cache.get(res.channels.adminChannel).send(nEmbed(
+//                                         "**Citadel Reset Time Suggestion**",
+//                                         `<@${message.author.id}> used the Citadel Info command to suggest the new Reset Time.`,
+//                                         colors.gold,
+//                                         message.author.displayAvatarURL()
+//                                     ).addFields(
+//                                         { name: "Input", value: `${args[2]} days, ${args[3]} hours and ${args[4]} minutes until Reset.` },
+//                                         { name: "Conversion", value: `${newDate}`, inline: true },
+//                                         { name: "Next Reset Time", value: `${dateDay} ${dateHour}:${dateMin}`, inline: true },
+//                                         { name: "Command", value: `\`${res.prefix}citadel reset set ${dateDay} ${dateHour} ${dateMin}\``, inline: false }
+//                                     ).setFooter(
+//                                         `Valence Bot created by Luke_#8346`, client.user.displayAvatarURL()
+//                                     ).setTimestamp()
+//                                     )
                                     // .then(async m => 
                                     //     await m.react(`✅`)
                                         // await m.react(`❌`)
@@ -335,6 +374,9 @@ module.exports = {
                                 message.channel.send(`Invalid hour parameter! Hours range from 00 - 23.`)
                             }
                         }
+			else if (!args[2]) {
+				 message.channel.send(``);
+			}
                         else {
                             message.channel.send(`Invalid day parameter! Days range from 0 - 6.`)
                         }
