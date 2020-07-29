@@ -375,7 +375,7 @@ module.exports = {
                             }
                         }
 			else if (!args[2]) {
-				 message.channel.send(``);
+				 message.channel.send(`What do you want to suggest the Citadel Reset Time as: Acceptable values:${code}${res.prefix}citadel reset info <days> <hours> <minutes> <image>\n\nNOTE: The image is optional and if included, should show the Citadel Reset Time in the Citadel Management Screen.${code}`);
 			}
                         else {
                             message.channel.send(`Invalid day parameter! Days range from 0 - 6.`)
