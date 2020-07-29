@@ -331,7 +331,7 @@ module.exports = {
 					.setFooter(
                                         	`Valence Bot created by Luke_#8346`, client.user.displayAvatarURL()
 					 )
-					.setImage(${args[5]})
+					.setImage(`${args[5]}`)
 					.setTimestamp()
 					
 					if (args[5]) {
