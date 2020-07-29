@@ -80,43 +80,45 @@ module.exports = {
                 case "add":
 				if (permMod) {
 // 						if (res.reminders.length == 0) {
-					if ((checkDate(args[1], 0, 6) || dayCheck.includes(capitalise(args[1].toLowerCase()))) && checkDate(args[2], 0, 23) && checkDate(args[3], 0, 59)) {
-						if (checkNum(args[4], 1, Infinity) && message.guild.channels.cache.has(args[4]) && message.guild.id !== args[4]) {
-							if (messageContent) {
-								settings.updateOne({ _id: message.guild.name }, {
-									$push: { "reminders": { $each: [{ id: message.id, day: capitalise(args[1].toLowerCase()), hour: args[2], minute: args[3], channel: args[4], message: messageContent }] }
-									}}, { returnOriginal: true })
-									message.channel.send(`A reminder has been added to <#${args[4]}>`)
-									client.channels.cache.get("731997087721586698")
-									.send(`<@${message.author.id}> added a Reminder in server: **${message.guild.name}** - <#${args[4]}>\n${code}diff\n+ ${dayCheck[capitalise(args[1].toLowerCase())] || args[1]} ${doubleDigits(args[2])}:${doubleDigits(args[3])} - ${messageContent}${code}`);
+					if (args[1] && args[2] && args[3]) {
+						if ((checkDate(args[1], 0, 6) || dayCheck.includes(capitalise(args[1].toLowerCase()))) && checkDate(args[2], 0, 23) && checkDate(args[3], 0, 59)) {
+							if (checkNum(args[4], 1, Infinity) && message.guild.channels.cache.has(args[4]) && message.guild.id !== args[4]) {
+								if (messageContent) {
+									settings.updateOne({ _id: message.guild.name }, {
+										$push: { "reminders": { $each: [{ id: message.id, day: capitalise(args[1].toLowerCase()), hour: args[2], minute: args[3], channel: args[4], message: messageContent }] }
+										}}, { returnOriginal: true })
+										message.channel.send(`A reminder has been added to <#${args[4]}>`)
+										client.channels.cache.get("731997087721586698")
+										.send(`<@${message.author.id}> added a Reminder in server: **${message.guild.name}** - <#${args[4]}>\n${code}diff\n+ ${dayCheck[capitalise(args[1].toLowerCase())] || args[1]} ${doubleDigits(args[2])}:${doubleDigits(args[3])} - ${messageContent}${code}`);
+								}
+								else {
+									message.channel.send(`You must provide a message to send as a reminder to <#${args[4] || channelTag[0]}>.`)
+								}
+							}
+							else if (checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) {
+								if (messageContent) {
+									settings.findOneAndUpdate({ _id: message.guild.name }, {
+										$push: { "reminders": { $each: [{ id: message.id, day: capitalise(args[1].toLowerCase()), hour: args[2], minute: args[3], channel: channelTag[0], message: messageContent }] }
+										}}, { returnOriginal: false })
+									.then(r => {
+										message.channel.send(`A reminder has been added to <#${channelTag[0]}>`)
+										client.channels.cache.get("731997087721586698")
+										.send(`<@${message.author.id}> added a Reminder in server: **${message.guild.name}** - <#${channelTag[0]}>\n${code}diff\n+ ${dayCheck[capitalise(args[1].toLowerCase())] || args[1]} ${doubleDigits(args[2])}:${doubleDigits(args[3])} - ${messageContent}${code}`);
+									})
+								}
+								else {
+									message.channel.send(`You must provide a message to send as a reminder to <#${channelTag[0]}>.`)
+								}
 							}
 							else {
-								message.channel.send(`You must provide a message to send as a reminder to <#${args[4] || channelTag[0]}>.`)
+								message.channel.send(`What do you want to set the Notificaiton Channel to? Acceptable values:`);
+								message.channel.send(`${code}diff\n+ Channel ID (18 Digits)\n+ Channel tag (#<Channel name>)${code}`);
 							}
+								// else if () {
+								// Can add in reminders to be every so many hours if need be
+								// }
+	// 							}
 						}
-						else if (checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) {
-							if (messageContent) {
-								settings.findOneAndUpdate({ _id: message.guild.name }, {
-									$push: { "reminders": { $each: [{ id: message.id, day: capitalise(args[1].toLowerCase()), hour: args[2], minute: args[3], channel: channelTag[0], message: messageContent }] }
-									}}, { returnOriginal: false })
-								.then(r => {
-									message.channel.send(`A reminder has been added to <#${channelTag[0]}>`)
-									client.channels.cache.get("731997087721586698")
-									.send(`<@${message.author.id}> added a Reminder in server: **${message.guild.name}** - <#${channelTag[0]}>\n${code}diff\n+ ${dayCheck[capitalise(args[1].toLowerCase())] || args[1]} ${doubleDigits(args[2])}:${doubleDigits(args[3])} - ${messageContent}${code}`);
-								})
-							}
-							else {
-								message.channel.send(`You must provide a message to send as a reminder to <#${channelTag[0]}>.`)
-							}
-						}
-						else { // ;rem add sends this instead of the next message
-							message.channel.send(`What do you want to set the Notificaiton Channel to? Acceptable values:`);
-							message.channel.send(`${code}diff\n+ Channel ID (18 Digits)\n+ Channel tag (#<Channel name>)${code}`);
-						}
-							// else if () {
-							// Can add in reminders to be every so many hours if need be
-							// }
-// 							}
 					}
 					else {
 						message.channel.send(`What reminder do you want to add? Examples:\n${code}diff\n+ ${res.prefix}reminders add Monday 15 30 #reminders We have completed the challenge!\n+ ${res.prefix}reminders add 3 01 00 The weekly reset has happened!\n\nNOTE:\n- "${res.prefix}help reminders" for more info on how to add a reminder to a channel.\n- If using number values for the days of the week; Sunday = 0, Monday = 1, Tuesday = 2, etc..${code}`)
