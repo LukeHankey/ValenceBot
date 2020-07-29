@@ -321,9 +321,14 @@ module.exports = {
 							if (args[5]) {
 								client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne.setImage(`${args[5]}`))
 								.then((err, res) => {
+									console.log(err)
+									console.log(res)
 									if (err) { 
 										message.channel.send(err)  
-									}    
+									}
+									else {
+										message.channel.send(res)
+									}
 								})
 							}
 							else {
