@@ -60,19 +60,18 @@ module.exports = async client => {
 
 			newData.forEach(e => {
 				e._id = e.Clanmate.toUpperCase();
-			// console.log(e);
 			});
 			collection.insertMany(newData);
 		})
 			.catch(error => console.error(error));
 	}
-	connection(err => {
+	connection(async err => {
 		if (err) console.log(err);
 		const db = getDb();
 		const vFactsColl = db.collection("Facts");
 		const settings = db.collection("Settings");
 		db.createCollection("Users");
-		
+		const code = "```";
 
 		const usersColl = db.collection("Users");
 		usersColl.updateMany(
@@ -110,26 +109,54 @@ module.exports = async client => {
 			});
 		});
 
-	settings.find({}).toArray().then(res => {
-		for (const document in res) {
-			cron.schedule(`*/5 * * * *`, async () => {
-					let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-					let today = new Date();
-					let today_num = today.getDay();
-					let today_str = days[today_num];
-					if (res[document].citadel_reset_time.day === today_num || res[document].citadel_reset_time.day === today_str || res[document].citadel_reset_time.day === today_str.substr(0, 3) ) {
-						if (today.getUTCHours() == res[document].citadel_reset_time.hour) {
-							if (res[document].citadel_reset_time.minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].citadel_reset_time.minute + 5)) {
-								client.channels.cache.get(res[document].channels.adminChannel).send("@here - Set the Citadel Reset Time!")
+	await settings.find({}).toArray().then(r => {
+		for (const document in r) {
+			cron.schedule(`*/1 * * * *`, async () => {
+				let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+				let today = new Date();
+				let today_num = today.getUTCDay();
+				let today_str = days[today_num];
+				await settings.find({}).toArray().then(res => {
+					for (const remDoc in res[document].citadel_reset_time.reminders) {
+						if (res[document].citadel_reset_time.day === today_num || res[document].citadel_reset_time.day === today_str || res[document].citadel_reset_time.day === today_str.substr(0, 3) ) {
+							if (today.getUTCHours() == res[document].citadel_reset_time.hour) {
+								if (res[document].citadel_reset_time.minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].citadel_reset_time.minute + 1)) {
+									client.channels.cache.get(res[document].channels.adminChannel).send("@here - Set the Citadel Reset Time!")
+									client.channels.cache.get(res[document].citadel_reset_time.reminders[remDoc].channel).send(`${res[document].citadel_reset_time.reminders[remDoc].message}${code}You can also help out with setting the Citadel Reset Time since it changes almost every single week! Use the following command to let your Clan Admins know the next Citadel Reset:\n\n${res[document].prefix}citadel reset info <days> <hours> <minutes>\n\nExample:\n${res[document].prefix}citadel reset info 6 22 42${code}`)
+								}
 							}
 						}
 					}
-			},	{ scheduled: res[document].citadel_reset_time.scheduled })
+				})
+			},	{ scheduled: r[document].citadel_reset_time.scheduled }) // Will continue to be on/off and won't switch until the bot resets
 		}
 		})
 
-		cron.schedule(`0 1 * * mon`, async () => {
-			client.channels.cache.get("718218491257290823").send("@here - Set the Citadel Locks & Targets!")
+		cron.schedule(`*/5 * * * *`, async () => {
+			let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+			let today = new Date();
+			let today_num = today.getDay();
+			let today_str = days[today_num];
+			await settings.find({}).toArray().then(res => {
+				for (const document in res) {	
+					for (const remDoc in res[document].reminders) {
+						if (res[document].reminders[remDoc].day !== undefined) {
+							if (+res[document].reminders[remDoc].day === today_num || res[document].reminders[remDoc].day.toLowerCase() === today_str.toLowerCase() || res[document].reminders[remDoc].day.toLowerCase() === today_str.substr(0, 3).toLowerCase() ) {
+								if (today.getUTCHours() == +res[document].reminders[remDoc].hour) {
+									if (+res[document].reminders[remDoc].minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].reminders[remDoc].minute + 5)) {
+										client.channels.cache.get(res[document].reminders[remDoc].channel).send(res[document].reminders[remDoc].message)
+									}
+								}
+							}
+						}
+					}
+				}
+			})
 		})
+
+		// cron.schedule(`*/2 * * * *`, async () => {
+			// client.channels.cache.get("718218491257290823").send("@here - Set the Citadel Locks & Targets!")
+		// })
+
 	});
 };
