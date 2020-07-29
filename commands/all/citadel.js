@@ -291,74 +291,62 @@ module.exports = {
                             return msDay + msHour + msMin;
                         }
                         if (args[2] && args[3] && args[4]) {
-							if (checkDate(args[2], 0, 6)) {
-								if (checkDate(args[3], 0, 23)) {
-									if (checkDate(args[4], 0, 59)) {
-										let newDate = new Date(msCalc(args[2], doubleDigits(args[3]), doubleDigits(args[4])) + now).toUTCString();
-										let dateDay = newDate.split(" ")[0].slice(0, 3);
-										let dateHour = newDate.split(" ")[4].slice(0, 2);
-										let dateMin = newDate.split(" ")[4].slice(3, 5);
+				if (checkDate(args[2], 0, 6)) {
+					if (checkDate(args[3], 0, 23)) {
+						if (checkDate(args[4], 0, 59)) {
+							let newDate = new Date(msCalc(args[2], doubleDigits(args[3]), doubleDigits(args[4])) + now).toUTCString();
+							let dateDay = newDate.split(" ")[0].slice(0, 3);
+							let dateHour = newDate.split(" ")[4].slice(0, 2);
+							let dateMin = newDate.split(" ")[4].slice(3, 5);
 
-										// const filter = (reaction, user) => {
-										//     return [`✅`, `❌`].includes(reaction.emoji.name) && user.id !== message.author.id
-										// };
+							// const filter = (reaction, user) => {
+							//     return [`✅`, `❌`].includes(reaction.emoji.name) && user.id !== message.author.id
+							// };
 
-										let infoEmbedOne = new Discord.MessageEmbed()
-										.setTitle("**Citadel Reset Time Suggestion**")
-										.setColor(colors.gold)
-										.setDescription(`<@${message.author.id}> used the Citadel Info command to suggest the new Reset Time.`)
-										.addFields(
-											{ name: "Input", value: `${args[2]} days, ${args[3]} hours and ${args[4]} minutes until Reset.` },
-											{ name: "Conversion", value: `${newDate}`, inline: true },
-											{ name: "Next Reset Time", value: `${dateDay} ${dateHour}:${dateMin}`, inline: true },
-											{ name: "Command", value: `\`${res.prefix}citadel reset set ${dateDay} ${dateHour} ${dateMin}\``, inline: false }
-										 )
-										.setFooter(
-																`Valence Bot created by Luke_#8346`, client.user.displayAvatarURL()
-										 )
-										.setTimestamp()
+							let infoEmbedOne = new Discord.MessageEmbed()
+							.setTitle("**Citadel Reset Time Suggestion**")
+							.setColor(colors.gold)
+							.setDescription(`<@${message.author.id}> used the Citadel Info command to suggest the new Reset Time.`)
+							.addFields(
+								{ name: "Input", value: `${args[2]} days, ${args[3]} hours and ${args[4]} minutes until Reset.` },
+								{ name: "Conversion", value: `${newDate}`, inline: true },
+								{ name: "Next Reset Time", value: `${dateDay} ${dateHour}:${dateMin}`, inline: true },
+								{ name: "Command", value: `\`${res.prefix}citadel reset set ${dateDay} ${dateHour} ${dateMin}\``, inline: false }
+							 )
+							.setFooter(
+													`Valence Bot created by Luke_#8346`, client.user.displayAvatarURL()
+							 )
+							.setTimestamp()
 
-										let infoEmbedTwo = new Discord.MessageEmbed()
-										.setTitle("**Citadel Reset Time Suggestion**")
-										.setColor(colors.gold)
-										.setDescription(`<@${message.author.id}> used the Citadel Info command to suggest the new Reset Time.`)
-										.addFields(
-											{ name: "Input", value: `${args[2]} days, ${args[3]} hours and ${args[4]} minutes until Reset.` },
-											{ name: "Conversion", value: `${newDate}`, inline: true },
-											{ name: "Next Reset Time", value: `${dateDay} ${dateHour}:${dateMin}`, inline: true },
-											{ name: "Command", value: `\`${res.prefix}citadel reset set ${dateDay} ${dateHour} ${dateMin}\``, inline: false }
-										 )
-										.setFooter(
-																`Valence Bot created by Luke_#8346`, client.user.displayAvatarURL()
-										 )
-										.setImage(`${args[5]}`)
-										.setTimestamp()
-
-										if (args[5]) {
-											client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne.setImage(`${args[5]}`))    
-										}
-										else {
-											client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne)
-										}
-
-										// .then(async m => 
-										//     await m.react(`✅`)
-											// await m.react(`❌`)
-											// await m.awaitReactions(filter, {max: 1, time: 5000 })
-										// )
-										// .then(x => x.awaitReactions(filter, {max: 1, time: 5000 }))
-
-										message.delete();
-										message.reply(`thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!`)
-									}
-									else {
-										message.channel.send(`Invalid minute parameter! Minutes range from 00 - 59.`)
-									}
+							if (args[5]) {
+								.then((err, res) {
+								if (err) {
+									message.channel.send(`That is not a valid image link.`)
 								}
-								else {
-									message.channel.send(`Invalid hour parameter! Hours range from 00 - 23.`)
-								}
+								else client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne.setImage(`${args[5]}`))
 							}
+							else {
+								client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne)
+							}
+
+							// .then(async m => 
+							//     await m.react(`✅`)
+								// await m.react(`❌`)
+								// await m.awaitReactions(filter, {max: 1, time: 5000 })
+							// )
+							// .then(x => x.awaitReactions(filter, {max: 1, time: 5000 }))
+
+							message.delete();
+							message.reply(`thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!`)
+						}
+						else {
+							message.channel.send(`Invalid minute parameter! Minutes range from 00 - 59.`)
+						}
+					}
+					else {
+						message.channel.send(`Invalid hour parameter! Hours range from 00 - 23.`)
+					}
+				}
                         }
 			else if (!args[2]) {
 				 message.channel.send(`What do you want to suggest the Citadel Reset Time as: Acceptable values:${code}${res.prefix}citadel reset info <days> <hours> <minutes> <image>\n\nNOTE: The image is optional and if included, should show the Citadel Reset Time in the Citadel Management Screen.${code}`);
