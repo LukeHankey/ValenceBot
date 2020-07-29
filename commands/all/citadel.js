@@ -320,8 +320,8 @@ module.exports = {
 
 							if (args[5]) {
 								let array = ["gif", "jpeg", "tiff", "png", "webp", "bmp"]
-								console.log(args[5].some(x => array.includes(array))
-								if (args[5].some(x => array.includes(array)) {
+								console.log(array.some(x => args[5].includes(x)))
+								if (array.some(x => args[5].includes(x))) {
 									client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne.setImage(`${args[5]}`))
 								}
 								else {
