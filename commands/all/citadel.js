@@ -323,6 +323,8 @@ module.exports = {
 								console.log(array.some(x => args[5].includes(x)))
 								if (array.some(x => args[5].includes(x))) {
 									client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne.setImage(`${args[5]}`))
+									message.delete();
+									message.reply(`thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!`)
 								}
 								else {
 									message.channel.send(`That is not a valid image URL`)
@@ -330,6 +332,8 @@ module.exports = {
 							}
 							else {
 								client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne)
+								message.delete();
+								message.reply(`thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!`)	
 							}
 
 							// .then(async m => 
@@ -339,8 +343,6 @@ module.exports = {
 							// )
 							// .then(x => x.awaitReactions(filter, {max: 1, time: 5000 }))
 
-							message.delete();
-							message.reply(`thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!`)
 						}
 						else {
 							message.channel.send(`Invalid minute parameter! Minutes range from 00 - 59.`)
