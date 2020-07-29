@@ -319,13 +319,12 @@ module.exports = {
 							.setTimestamp()
 
 							if (args[5]) {
-								client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne.setImage(`${args[5]}`)
+								client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne.setImage(`${args[5]}`))
 								.then((err, res) => {
 									if (err) { 
 										message.channel.send(err)  
 									}    
-								})							 
-								)
+								})
 							}
 							else {
 								client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne)
