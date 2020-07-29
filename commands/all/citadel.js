@@ -319,7 +319,6 @@ module.exports = {
 							.setTimestamp()
 
 							if (args[5]) {
-								.then((err, res) {
 								if (err) {
 									message.channel.send(`That is not a valid image link.`)
 								}
