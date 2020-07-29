@@ -319,8 +319,9 @@ module.exports = {
 							.setTimestamp()
 
 							if (args[5]) {
-								let match = /\.(gif|jpe?g|tiff?|png|webp|bmp)$/i;
-								if (args[5].includes(match)) {
+								let string = /\.(gif|jpe?g|tiff?|png|webp|bmp)$/i;
+								console.log(args[5].match(string))
+								if (args[5].match(string)) {
 									client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne.setImage(`${args[5]}`))
 								}
 								else {
