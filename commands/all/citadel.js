@@ -306,7 +306,7 @@ module.exports = {
 					let infoEmbedOne = new Discord.MessageEmbed()
 					.setTitle("**Citadel Reset Time Suggestion**")
 					.setColor(colors.gold)
-					.setDescription(<@${message.author.id}> used the Citadel Info command to suggest the new Reset Time.`)
+					.setDescription(`<@${message.author.id}> used the Citadel Info command to suggest the new Reset Time.`)
 					.addFields(
 						{ name: "Input", value: `${args[2]} days, ${args[3]} hours and ${args[4]} minutes until Reset.` },
 						{ name: "Conversion", value: `${newDate}`, inline: true },
