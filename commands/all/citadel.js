@@ -338,8 +338,8 @@ module.exports = {
 							// )
 							// .then(x => x.awaitReactions(filter, {max: 1, time: 5000 }))
 
-							message.delete();
-							message.reply(`thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!`)
+// 							message.delete();
+// 							message.reply(`thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!`)
 						}
 						else {
 							message.channel.send(`Invalid minute parameter! Minutes range from 00 - 59.`)
