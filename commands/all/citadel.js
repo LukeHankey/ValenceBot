@@ -319,8 +319,13 @@ module.exports = {
 							.setTimestamp()
 
 							if (args[5]) {
-								console.log(typeof args[5])
-								client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne.setImage(`${args[5]}`))
+								let match = /\.(gif|jpe?g|tiff?|png|webp|bmp)$/i;
+								if (args[5].includes(match)) {
+									client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne.setImage(`${args[5]}`))
+								}
+								else {
+									message.channel.send(`That is not a valid image URL`)
+								}
 							}
 							else {
 								client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne)
