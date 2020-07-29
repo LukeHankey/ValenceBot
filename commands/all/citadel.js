@@ -174,21 +174,39 @@ module.exports = {
                         }
                     break;
                     case "edit":
-                        /* To Do
-                        * Edit for Message
-                        */
                         if (permMod) {
+                            let editMessage = args.slice(4).join(" ");
+                            let param = args.slice(3, 4).join("").toLowerCase()
                             let idCheck = [];
                             res.citadel_reset_time.reminders.forEach(x => { idCheck.push(x.id) })
-                            if (checkNum(args[2], 1, Infinity) && idCheck.includes(args[2]) && args[3].toLowerCase() === "channel") {
-                                settings.findOneAndUpdate({ _id: message.guild.name, "citadel_reset_time.reminders.id": args[2] }, { $set: { "citadel_reset_time.reminders.$.channel": args[4] } } )
-                                if (args[4].length > 18) {
-                                    message.channel.send(`Reminder \`${args[2]}\` has had the channel changed to <#${args[4].slice(2, 20)}>`);
+                            if (checkNum(args[2], 1, Infinity) && idCheck.includes(args[2])) {
+                                if (param === "channel") {
+                                    if (!args[4]) {
+                                        message.channel.send(`You need to specify a channel to change to. Either the channel ID or the channel Tag.`);	
+                                    }
+                                    else if (args[4].length > 18) {
+                                        settings.findOneAndUpdate({ _id: message.guild.name, "citadel_reset_time.reminders.id": args[2] }, { $set: { "citadel_reset_time.reminders.$.channel": args[4] } } )
+                                        message.channel.send(`Reminder \`${args[2]}\` has had the channel changed to <#${args[4].slice(2, 20)}>`);
+                                        client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``);
+                                    }
+                                    else {
+                                        settings.findOneAndUpdate({ _id: message.guild.name, "citadel_reset_time.reminders.id": args[2] }, { $set: { "citadel_reset_time.reminders.$.channel": args[4] } } )
+                                        message.channel.send(`Reminder \`${args[2]}\` has had the channel changed to <#${args[4]}>`);
+                                        client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``);}                                    
+                                    }
+                                else if (param === "message") {
+                                    if (!editMessage) {
+                                        message.channel.send(`You need to specify the message content you'd like to change.`);
+                                    }
+                                    else {
+                                        settings.findOneAndUpdate({ _id: message.guild.name, "citadel_reset_time.reminders.id": args[2] }, { $set: { "citadel_reset_time.reminders.$.message": editMessage } } )
+                                        message.channel.send(`Reminder \`${args[2]}\` has had the message changed to \`${editMessage}\``);
+                                        client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``);
+                                    }
                                 } 
                                 else {
-                                    message.channel.send(`Reminder \`${args[2]}\` has had the channel changed to <#${args[4]}>`);
-                                }                                    
-                                client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``);
+                                    message.channel.send(`You must provide a parameter to edit. You can edit either the \`Channel\` or the \`Message\`.`);
+                                }
                             }
                             else if (!args[2]) {
                                 message.channel.send(`You must provide an ID to remove.`);
@@ -261,6 +279,65 @@ module.exports = {
                         }
                     break;
                     case "info":
+                        const day = 24 * 60 * 60 * 1000;
+                        const hour = 60 * 60 * 1000;
+                        const minute = 60 * 1000;
+                        let now = Date.now();
+
+                        let msCalc = function(d, h, m) {
+                            let msDay = d * day;
+                            let msHour = h * hour;
+                            let msMin = m * minute;
+                            return msDay + msHour + msMin;
+                        }
+                        
+                        if (checkDate(args[2], 0, 6)) {
+                            if (checkDate(args[3], 0, 23)) {
+                                if (checkDate(args[4], 0, 59)) {
+                                    let newDate = new Date(msCalc(args[2], doubleDigits(args[3]), doubleDigits(args[4])) + now).toUTCString();
+                                    let dateDay = newDate.split(" ")[0].slice(0, 3);
+                                    let dateHour = newDate.split(" ")[4].slice(0, 2);
+                                    let dateMin = newDate.split(" ")[4].slice(3, 5);
+
+                                    // const filter = (reaction, user) => {
+                                    //     return [`✅`, `❌`].includes(reaction.emoji.name) && user.id !== message.author.id
+                                    // };
+
+                                    client.channels.cache.get(res.channels.adminChannel).send(nEmbed(
+                                        "**Citadel Reset Time Suggestion**",
+                                        `<@${message.author.id}> used the Citadel Info command to suggest the new Reset Time.`,
+                                        colors.gold,
+                                        message.author.displayAvatarURL()
+                                    ).addFields(
+                                        { name: "Input", value: `${args[2]} days, ${args[3]} hours and ${args[4]} minutes until Reset.` },
+                                        { name: "Conversion", value: `${newDate}`, inline: true },
+                                        { name: "Next Reset Time", value: `${dateDay} ${dateHour}:${dateMin}`, inline: true },
+                                        { name: "Command", value: `\`${res.prefix}citadel reset set ${dateDay} ${dateHour} ${dateMin}\``, inline: false }
+                                    ).setFooter(
+                                        `Valence Bot created by Luke_#8346`, client.user.displayAvatarURL()
+                                    ).setTimestamp()
+                                    )
+                                    // .then(async m => 
+                                    //     await m.react(`✅`)
+                                        // await m.react(`❌`)
+                                        // await m.awaitReactions(filter, {max: 1, time: 5000 })
+                                    // )
+                                    // .then(x => x.awaitReactions(filter, {max: 1, time: 5000 }))
+                                    
+                                    message.delete();
+                                    message.reply(`thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!`)
+                                }
+                                else {
+                                    message.channel.send(`Invalid minute parameter! Minutes range from 00 - 59.`)
+                                }
+                            }
+                            else {
+                                message.channel.send(`Invalid hour parameter! Hours range from 00 - 23.`)
+                            }
+                        }
+                        else {
+                            message.channel.send(`Invalid day parameter! Days range from 0 - 6.`)
+                        }
                     break;
                     default:
                         if (!args[1] && res.citadel_reset_time.day === "*") {

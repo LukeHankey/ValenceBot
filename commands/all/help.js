@@ -33,7 +33,7 @@ module.exports = {
 				"**Help Commands List**",
 				"Here's a list of all my commands:",
 				colors.cyan,
-				client.user.displayAvatarURL(),
+				message.author.displayAvatarURL()
 			)
 				.addFields(
 					{ name: "**Commands:**", value: join, inline: false },
