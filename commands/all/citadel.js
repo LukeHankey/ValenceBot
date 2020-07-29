@@ -319,13 +319,8 @@ module.exports = {
 							.setTimestamp()
 
 							if (args[5]) {
-								try {
+								console.log(typeof args[5])
 								client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne.setImage(`${args[5]}`))
-								}
-								catch (err) {
-									message.channel.send(err)
-								}
-								
 							}
 							else {
 								client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne)
@@ -338,8 +333,8 @@ module.exports = {
 							// )
 							// .then(x => x.awaitReactions(filter, {max: 1, time: 5000 }))
 
-// 							message.delete();
-// 							message.reply(`thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!`)
+							message.delete();
+							message.reply(`thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!`)
 						}
 						else {
 							message.channel.send(`Invalid minute parameter! Minutes range from 00 - 59.`)
