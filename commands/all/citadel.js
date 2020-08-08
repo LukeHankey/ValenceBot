@@ -1,47 +1,13 @@
 const colors = require("../../colors.json");
-const Discord = require("discord.js");
 const getDb = require("../../mongodb").getDb;
-
+const func = require("../../functions.js")
 module.exports = {
 	name: "citadel",
-	description: ["Lists out the citadel commands.", "Toggles the citadel reset time & reminders on/off.", "Shows the current Citadel Reset Time.", "Allows a user to suggest the reset time - Sends info to the current Admin Channel.", "Sets the new Citadel Reset Time.", "Lists the current citadel reminders by ID.", "Adds a new citadel reminder.", "Removes a citadel reminder.", "Edit an existing citadel reminder by ID, then the field you want to change; then the updated value."],
+	description: ["Lists out the citadel commands.", "Toggles the citadel reset time & reminders on/off.", "Shows the current Citadel Reset Time.", "Allows a user to suggest the reset time - Sends info to the current Admin Channel.", "Sets the new Citadel Reset Time.", "Lists the current citadel reminders by ID.", "Adds a new citadel reminder.", "Adds a citadel reminder which sends the set message at reset +<date/time>.", "Removes a citadel reminder.", "Edit an existing citadel reminder by ID, then the field you want to change; then the updated value."],
 	aliases: ["c", "cit"],
-	usage:  ["", "on/off", "reset", "reset info", "reset set", "reminders", "reminders add <date/time> <channel> <message>", "reminders remove <id>", "reminders edit <id> <parameter> <new value>"],
+	usage:  ["", "on/off", "reset", "reset info", "reset set", "reminders", "reminders add <channel> <message>", "reminders add <channel> reset +<days/time> <message>", "reminders remove <id>", "reminders edit <id> <parameter> <new value>"],
 	run: async (client, message, args) => {
-        const nEmbed = function(title, description, color = colors.cyan, thumbnail = "") {
-			const embed = new Discord.MessageEmbed()
-				.setTitle(title)
-				.setDescription(description)
-				.setColor(color)
-				.setThumbnail(thumbnail)
-                .setTimestamp()
-			return embed;
-        }; // Discord Embed
-        function checkNum(id = 0, gr_eq = 1, l_eq = Infinity) {
-			if (+id !== parseInt(id) || !(id >= gr_eq) || !(id <= l_eq)) {
-				return false
-			} else {
-				return true
-			}
-        }
-        function checkDate(id = 0, gr_eq = 0, l_eq = Infinity) {
-			if (+id !== parseInt(id) || !(id >= gr_eq) || !(id <= l_eq)) {
-				return false
-			} else {
-				return true
-			}
-		}
-		function doubleDigits(digit) {
-            if (digit.length === 2) {
-				return digit;
-            }
-			else {
-				const zero = "0";
-				return zero.concat(digit)
-			}
-        }
-
-		const code = "```";
+        const code = "```";
         const db = getDb();
         const settings = db.collection(`Settings`)
         
@@ -111,17 +77,68 @@ module.exports = {
             channelTagCit.push(args[2].slice(2, 20))
         }
 
+        const newDates = function(days, hours, minutes, timer) {
+            let time = func.msCalc(days, func.doubleDigits(hours), func.doubleDigits(minutes)) + timer;
+            return new Date(time).toUTCString()
+        }
+        const day = 24 * 60 * 60 * 1000;
+        const hour = 60 * 60 * 1000;
+        const minute = 60 * 1000;
+
 		let messageContentCit = args.slice(3).join(" ")
-        const dayCheck = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+		let messageContentCitR = args.slice(5).join(" ")
+        const dayCheck = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
         let permMod = message.member.roles.cache.has(abovePermModArray[0]) || message.member.roles.cache.has(mrID) || aboveRPMod[0] >= modRole.rawPosition || message.author.id === message.guild.ownerID;
+
+        let dayNum = dayCheck.indexOf(res.citadel_reset_time.day);
+        let resetString = func.nextDay(dayNum).toUTCString().split(" ")
+        resetString.splice(4, 1, `${res.citadel_reset_time.hour}:${res.citadel_reset_time.minute}:00`)
+        let resetms = Date.parse(resetString.join(" "))
 
         switch (args[0]) {
             case "reminders":
                 switch (args[1]) {
                     case "add":
                         if (permMod) {
-                            if (checkNum(args[2], 1, Infinity) && message.guild.channels.cache.has(args[2])) {
-                                if (messageContentCit) {
+                            if (func.checkNum(args[2], 1, Infinity) && message.guild.channels.cache.has(args[2])) {
+                                if (args[3] === "reset") {
+                                    if (!args[4] || args[4].charAt(0) !== "+") {
+                                        message.channel.send(`${code}diff\n+ For setting a citadel reminder at reset plus "x" amount of time, you must include the amount of time after a reset for your given message to send.\n\nExample:\n> ${res.prefix}citadel reminders add <channel> reset +3d0h0m <message>${code}`)
+                                    }
+                                    else {
+                                        let dateDay = args[4].slice(1);
+                                        let dateHour = dateDay.slice(2);
+                                        let dateMin = dateHour.slice(dateHour.indexOf("h"));
+                                        let dayChecks = func.checkNum(dateDay.slice(0, dateDay.indexOf("d")), 0, 6) && dateDay.includes("d");
+                                        let hourCheck = func.checkNum(dateHour.slice(0, dateHour.indexOf("h")), 0, 168) && dateHour.includes("h");
+                                        let minCheck = func.checkNum(dateMin.slice(1, dateMin.length - 1), 0, 10080) && dateMin.includes("m");
+                                        let totalCheck = (dateDay.slice(0, dateDay.indexOf("d")) * day) + (dateHour.slice(0, dateHour.indexOf("h")) * hour) + (dateMin.slice(1, dateMin.length - 1) * minute);
+                                        let totalms = 604800000;
+                                      
+                                        let newDate = newDates(dateDay.slice(0, dateDay.indexOf("d")), dateHour.slice(0, dateHour.indexOf("h")), dateMin.slice(1, dateMin.length - 1), resetms);
+                                        
+                                        if (dayChecks && hourCheck && minCheck && +totalCheck < totalms && newDate.split(" ")[4] !== undefined) {
+                                            let dateDays = newDate.split(" ")[0].slice(0, 3);
+                                            let dateHours = newDate.split(" ")[4].slice(0, 2);
+                                            let dateMins = newDate.split(" ")[4].slice(3, 5); 
+                                            if (messageContentCitR) {
+                                                settings.updateOne({ _id: message.guild.name }, {
+                                                    $push: { "citadel_reset_time.reminders": { $each: [{ id: message.id, channel: args[2], dayReset: args[3], dayResetPlus: dateDay.slice(0, dateDay.indexOf("d")), hourResetPlus: dateHour.slice(0, dateHour.indexOf("h")), minResetPlus: dateMin.slice(1, dateMin.length - 1), message: messageContentCitR }] }}
+                                                })
+                                                message.channel.send(`A citadel reminder has been added to <#${args[2]}>. The reminder will be sent on \`${dateDays} ${dateHours}:${dateMins}\``)
+                                                client.channels.cache.get("731997087721586698")
+                                                .send(`<@${message.author.id}> added a custom Citadel Reminder in server: **${message.guild.name}** - <#${args[2]}>\n${code}diff\n+ ${messageContentCitR}${code}`);
+                                            }
+                                            else {
+                                                message.channel.send(`You're missing the message content that you want to send to <#${args[2]}>.`)
+                                            }
+                                        }
+                                        else {
+                                            message.channel.send(`Invalid Date. Acceptable values:${code}diff\n+ +5d2h40m\n+ +0d0h5000m\n+ +0d140h0m\n\n> Max Values include 6 days | 168 Hours | 10080 Minutes\n> Total Time must be less than the next reset (7 days)${code}`)
+                                        }
+                                    }
+                                }
+                                else if (messageContentCit && args[3] !== "reset") {
                                     settings.updateOne({ _id: message.guild.name }, {
                                         $push: { "citadel_reset_time.reminders": { $each: [{ id: message.id, channel: args[2], message: messageContentCit }] }}
                                     })
@@ -130,7 +147,7 @@ module.exports = {
                                     .send(`<@${message.author.id}> added a Citadel Reminder in server: **${message.guild.name}** - <#${args[2]}>\n${code}diff\n+ ${messageContentCit}${code}`);
                                 }
                             }
-                            else if (checkNum(channelTagCit[0], 1, Infinity) && message.guild.channels.cache.has(channelTagCit[0])) {
+                            else if (func.checkNum(channelTagCit[0], 1, Infinity) && message.guild.channels.cache.has(channelTagCit[0])) {
                                 if (messageContentCit) {
                                     settings.findOneAndUpdate({ _id: message.guild.name }, {
                                         $push: { "citadel_reset_time.reminders": { $each: [{ id: message.id, channel: channelTagCit[0], message: messageContentCit }] }}
@@ -146,7 +163,7 @@ module.exports = {
                             }
                     }
                     else {
-                        message.channel.send(nEmbed("Permission Denied", "You do not have permission to add a citadel Reminder!", colors.red_dark)
+                        message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to add a citadel Reminder!", colors.red_dark)
                         .addField("Only the following Roles & Users can:", join, true)
                         .addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
                     }
@@ -155,7 +172,7 @@ module.exports = {
                         if (permMod) {
                             let idCheck = [];
                             res.citadel_reset_time.reminders.forEach(x => { idCheck.push(x.id) })
-                            if (checkNum(args[2], 1, Infinity) && idCheck.includes(args[2])) {
+                            if (func.checkNum(args[2], 1, Infinity) && idCheck.includes(args[2])) {
                                 message.channel.send(`Reminder \`${args[2]}\` has been deleted.`);
                                 client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Reminder: \`${args[2]}\``);
                                 settings.updateOne({ _id: message.guild.name }, { $pull: { "citadel_reset_time.reminders": { id: args[2] } } })
@@ -168,7 +185,7 @@ module.exports = {
                             }
                         }
                         else {
-                            message.channel.send(nEmbed("Permission Denied", "You do not have permission to remove a Reminder!", colors.red_dark)
+                            message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to remove a Reminder!", colors.red_dark)
                             .addField("Only the following Roles & Users can:", join, true)
                             .addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
                         }
@@ -179,7 +196,7 @@ module.exports = {
                             let param = args.slice(3, 4).join("").toLowerCase()
                             let idCheck = [];
                             res.citadel_reset_time.reminders.forEach(x => { idCheck.push(x.id) })
-                            if (checkNum(args[2], 1, Infinity) && idCheck.includes(args[2])) {
+                            if (func.checkNum(args[2], 1, Infinity) && idCheck.includes(args[2])) {
                                 if (param === "channel") {
                                     if (!args[4]) {
                                         message.channel.send(`You need to specify a channel to change to. Either the channel ID or the channel Tag.`);	
@@ -216,7 +233,7 @@ module.exports = {
                             }
                         }
                         else {
-                            message.channel.send(nEmbed("Permission Denied", "You do not have permission to remove a Reminder!", colors.red_dark)
+                            message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to remove a Reminder!", colors.red_dark)
                             .addField("Only the following Roles & Users can:", join, true)
                             .addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
                         }
@@ -224,10 +241,25 @@ module.exports = {
                     default:
                         const citRem = [];
                         res.citadel_reset_time.reminders.forEach(x => {
-                            if (x.channel.length > 18) {
-                                citRem.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel.slice(2, 20)}>, Date: \`${dayCheck[res.citadel_reset_time.day] || res.citadel_reset_time.day} ${doubleDigits(res.citadel_reset_time.hour)}:${doubleDigits(res.citadel_reset_time.minute)}\`, Message: ${x.message}\n`)
-                            } else {
-                                citRem.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel}>, Date: \`${dayCheck[res.citadel_reset_time.day] || res.citadel_reset_time.day} ${doubleDigits(res.citadel_reset_time.hour)}:${doubleDigits(res.citadel_reset_time.minute)}\`, Message: ${x.message}\n`)
+                            if (x.dayReset === "reset") {
+                                let newDate = newDates(`${dayCheck.indexOf(x.dayResetPlus) || +x.dayResetPlus}`, +x.hourResetPlus, +x.minResetPlus, resetms);
+                                let dateDays = newDate.split(" ")[0].slice(0, 3);
+                                let dateHours = newDate.split(" ")[4].slice(0, 2);
+                                let dateMins = newDate.split(" ")[4].slice(3, 5); 
+                                if (res.citadel_reset_time.reminders.length > 0) {
+                                    if (x.channel.length > 18) {
+                                        citRem.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel.slice(2, 20)}>, Date: \`${dateDays} ${dateHours}:${dateMins}\`, Message: ${x.message}\n`)
+                                    } else {
+                                        citRem.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel}>, Date: \`${dateDays} ${dateHours}:${dateMins}\`, Message: ${x.message}\n`)
+                                    }
+                                }
+                            }
+                            else {
+                                if (x.channel.length > 18) {
+                                    citRem.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel.slice(2, 20)}>, Date: \`${dayCheck[res.citadel_reset_time.day] || res.citadel_reset_time.day} ${func.doubleDigits(res.citadel_reset_time.hour)}:${func.doubleDigits(res.citadel_reset_time.minute)}\`, Message: ${x.message}\n`)
+                                } else {
+                                    citRem.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel}>, Date: \`${dayCheck[res.citadel_reset_time.day] || res.citadel_reset_time.day} ${func.doubleDigits(res.citadel_reset_time.hour)}:${func.doubleDigits(res.citadel_reset_time.minute)}\`, Message: ${x.message}\n`)
+                                }
                             }
                         })
                         if (res.citadel_reset_time.reminders.length === 0) {
@@ -243,28 +275,31 @@ module.exports = {
                 switch (args[1]) {
                     case "set":
                         if (permMod) {
-                            if ((checkDate(args[2], 0, 6) || dayCheck.includes(args[2])) && checkDate(args[3], 0, 23) && checkDate(args[4], 0, 59) && args[2] && args[3] && args[4]) { // Setting reset by Day / Hour / Minute
-                                await settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "citadel_reset_time.day": dayCheck[args[2]] || args[2], "citadel_reset_time.hour": doubleDigits(args[3]), "citadel_reset_time.minute": doubleDigits(args[4]) }}, { returnOriginal: true })
+                            if ((func.checkDate(args[2], 0, 6) || dayCheck.includes(args[2]) || dayCheck[new Date().getUTCDay()].substr(0, 3)) && func.checkDate(args[3], 0, 23) && func.checkDate(args[4], 0, 59) && args[2] && args[3] && args[4]) { // Setting reset by Day / Hour / Minute
+                                await settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "citadel_reset_time.day": dayCheck[args[2]] || args[2], "citadel_reset_time.hour": func.doubleDigits(args[3]), "citadel_reset_time.minute": func.doubleDigits(args[4]) }}, { returnOriginal: true })
                                     .then(r => {
-                                        message.channel.send(`The Citadel Reset Time has been changed to: ${dayCheck[args[2]] || args[2]} ${doubleDigits(args[3])}:${doubleDigits(args[4])}`)
+                                        console.log(`Reset set: ${dayCheck[args[2]] || args[2]} ${func.doubleDigits(args[3])}:${func.doubleDigits(args[4])}`)
+                                        message.channel.send(`The Citadel Reset Time has been changed to: ${dayCheck[args[2]] || args[2]} ${func.doubleDigits(args[3])}:${func.doubleDigits(args[4])}`)
                                         client.channels.cache.get("731997087721586698")
-                                        .send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.guild.name}**\n${code}diff\n- ${r.value.citadel_reset_time.day} ${r.value.citadel_reset_time.hour}:${r.value.citadel_reset_time.minute}\n+ ${dayCheck[args[2]] || args[2]} ${doubleDigits(args[3])}:${doubleDigits(args[4])} ${code}`);
+                                        .send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.guild.name}**\n${code}diff\n- ${r.value.citadel_reset_time.day} ${r.value.citadel_reset_time.hour}:${r.value.citadel_reset_time.minute}\n+ ${dayCheck[args[2]] || args[2]} ${func.doubleDigits(args[3])}:${func.doubleDigits(args[4])} ${code}`);
                                     })
                             }
-                            else if (checkDate(args[2], 0, 23) && checkDate(args[3], 0, 59) && args[2] && args[3]) { // Setting by Hour / Minute
-                                await settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "citadel_reset_time.hour": doubleDigits(args[2]), "citadel_reset_time.minute": doubleDigits(args[3]) }}, { returnOriginal: true })
+                            else if (func.checkDate(args[2], 0, 23) && func.checkDate(args[3], 0, 59) && args[2] && args[3]) { // Setting by Hour / Minute
+                                await settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "citadel_reset_time.hour": func.doubleDigits(args[2]), "citadel_reset_time.minute": func.doubleDigits(args[3]) }}, { returnOriginal: true })
                                     .then(r => {
-                                        message.channel.send(`The Citadel Reset Time has been changed to: ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${doubleDigits(args[2])}:${doubleDigits(args[3])}`)
+                                        console.log(`Reset set: ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${func.doubleDigits(args[2])}:${func.doubleDigits(args[3])}`)
+                                        message.channel.send(`The Citadel Reset Time has been changed to: ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${func.doubleDigits(args[2])}:${func.doubleDigits(args[3])}`)
                                         client.channels.cache.get("731997087721586698")
-                                        .send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.guild.name}**\n${code}diff\n- ${r.value.citadel_reset_time.day} ${r.value.citadel_reset_time.hour}:${r.value.citadel_reset_time.minute}\n+ ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${doubleDigits(args[2])}:${doubleDigits(args[3])}${code}`);
+                                        .send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.guild.name}**\n${code}diff\n- ${r.value.citadel_reset_time.day} ${r.value.citadel_reset_time.hour}:${r.value.citadel_reset_time.minute}\n+ ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${func.doubleDigits(args[2])}:${func.doubleDigits(args[3])}${code}`);
                                     })
                             }
-                            else if (checkDate(args[2], 00, 59) && args[2]) { // Setting by Minute
-                                await settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "citadel_reset_time.minute": doubleDigits(args[2]) }}, { returnOriginal: true })
+                            else if (func.checkDate(args[2], 00, 59) && args[2]) { // Setting by Minute
+                                await settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "citadel_reset_time.minute": func.doubleDigits(args[2]) }}, { returnOriginal: true })
                                     .then(r => {
-                                        message.channel.send(`The Citadel Reset Time has been changed to: ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${doubleDigits(r.value.citadel_reset_time.hour)}:${doubleDigits(args[2])}`)
+                                        console.log(`Reset set: ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${func.doubleDigits(r.value.citadel_reset_time.hour)}:${func.doubleDigits(args[2])}`)
+                                        message.channel.send(`The Citadel Reset Time has been changed to: ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${func.doubleDigits(r.value.citadel_reset_time.hour)}:${func.doubleDigits(args[2])}`)
                                         client.channels.cache.get("731997087721586698")
-                                        .send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.guild.name}**\n${code}diff\n- ${r.value.citadel_reset_time.day} ${r.value.citadel_reset_time.hour}:${r.value.citadel_reset_time.minute}\n+ ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${doubleDigits(r.value.citadel_reset_time.hour)}:${doubleDigits(args[2])}${code}`);
+                                        .send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.guild.name}**\n${code}diff\n- ${r.value.citadel_reset_time.day} ${r.value.citadel_reset_time.hour}:${r.value.citadel_reset_time.minute}\n+ ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${func.doubleDigits(r.value.citadel_reset_time.hour)}:${func.doubleDigits(args[2])}${code}`);
                                     })
                             }
                             else {
@@ -273,31 +308,20 @@ module.exports = {
                             }
                         }
                         else {
-                            message.channel.send(nEmbed("Permission Denied", "You do not have permission to change the Citadel Reset Time!", colors.red_dark)
+                            message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to change the Citadel Reset Time!", colors.red_dark)
                             .addField("Only the following Roles & Users can:", join, true)
                             .addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
                         }
                     break;
                     case "info":
-                        const day = 24 * 60 * 60 * 1000;
-                        const hour = 60 * 60 * 1000;
-                        const minute = 60 * 1000;
-                        let now = Date.now();
-
-                        let msCalc = function(d, h, m) {
-                            let msDay = d * day;
-                            let msHour = h * hour;
-                            let msMin = m * minute;
-                            return msDay + msHour + msMin;
-                        }
                         if (args[2] && args[3] && args[4]) {
-				if (checkDate(args[2], 0, 6)) {
-					if (checkDate(args[3], 0, 23)) {
-						if (checkDate(args[4], 0, 59)) {
-							let newDate = new Date(msCalc(args[2], doubleDigits(args[3]), doubleDigits(args[4])) + now).toUTCString();
+                        if (func.checkDate(args[2], 0, 6)) {
+                            if (func.checkDate(args[3], 0, 23)) {
+                                if (func.checkDate(args[4], 0, 59)) {
+                            let newDate = newDates(args[2], args[3], args[4], now)
 							let dateDay = newDate.split(" ")[0].slice(0, 3);
 							let dateHour = newDate.split(" ")[4].slice(0, 2);
-							let dateMin = newDate.split(" ")[4].slice(3, 5);
+                            let dateMin = newDate.split(" ")[4].slice(3, 5);
 
 							// const filter = (reaction, user) => {
 							//     return [`✅`, `❌`].includes(reaction.emoji.name) && user.id !== message.author.id
@@ -314,13 +338,12 @@ module.exports = {
 								{ name: "Command", value: `\`${res.prefix}citadel reset set ${dateDay} ${dateHour} ${dateMin}\``, inline: false }
 							 )
 							.setFooter(
-													`Valence Bot created by Luke_#8346`, client.user.displayAvatarURL()
+								`Valence Bot created by Luke_#8346`, client.user.displayAvatarURL()
 							 )
 							.setTimestamp()
 
 							if (args[5]) {
 								let array = ["gif", "jpeg", "tiff", "png", "webp", "bmp"]
-								console.log(array.some(x => args[5].includes(x)))
 								if (array.some(x => args[5].includes(x))) {
 									client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne.setImage(`${args[5]}`))
 									message.delete();
@@ -365,7 +388,7 @@ module.exports = {
                             message.channel.send(`Your Citadel Reset Time is set as: \`Not set.\``)
                         }
                         else {
-                            message.channel.send(`Your Citadel Reset Time is set as: \`${res.citadel_reset_time.day || dayCheck[res.citadel_reset_time.day]} ${res.citadel_reset_time.hour}:${res.citadel_reset_time.minute}\``)
+                            message.channel.send(`Your Citadel Reset Time is set as: \`${res.citadel_reset_time.day || dayCheck[res.citadel_reset_time.day]} ${res.citadel_reset_time.hour}:${res.citadel_reset_time.minute}\`\nTo set the Reset Time, use the \`${res.prefix}citadel reset set\` command.`)
                         }
                     break;
                 }
@@ -385,7 +408,7 @@ module.exports = {
                     }
                 }
                 else {
-                        message.channel.send(nEmbed("Permission Denied", "You do not have permission to toggle the Citadel Reset Time notifications!", colors.red_dark)
+                        message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to toggle the Citadel Reset Time notifications!", colors.red_dark)
                         .addField("Only the following Roles & Users can:", join, true)
                         .addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
                 }
@@ -400,7 +423,7 @@ module.exports = {
                         })
             }
             else {
-                    message.channel.send(nEmbed("Permission Denied", "You do not have permission to toggle the Citadel Reset Time notifications!", colors.red_dark)
+                    message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to toggle the Citadel Reset Time notifications!", colors.red_dark)
                     .addField("Only the following Roles & Users can:", join, true)
                     .addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
             }
@@ -414,7 +437,7 @@ module.exports = {
                     }
                 });
 
-                message.channel.send(nEmbed(
+                message.channel.send(func.nEmbed(
                     "**Citadel Commands List**",
                     "Here's a list of all the citadel settings:",
                     colors.cyan,
@@ -423,12 +446,5 @@ module.exports = {
                 .addFields({ name: "**Commands:**", value: com, inline: true }))
             }
         })
-
-       
-        
-
-
-
-
 	},
 }
