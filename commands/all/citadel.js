@@ -148,7 +148,44 @@ module.exports = {
                                 }
                             }
                             else if (func.checkNum(channelTagCit[0], 1, Infinity) && message.guild.channels.cache.has(channelTagCit[0])) {
-                                if (messageContentCit) {
+                                if (args[3] === "reset") {
+                                    if (!args[4] || args[4].charAt(0) !== "+") {
+                                        message.channel.send(`${code}diff\n+ For setting a citadel reminder at reset plus "x" amount of time, you must include the amount of time after a reset for your given message to send.\n\nExample:\n> ${res.prefix}citadel reminders add <channel> reset +3d0h0m <message>${code}`)
+                                    }
+                                    else {
+                                        let dateDay = args[4].slice(1);
+                                        let dateHour = dateDay.slice(2);
+                                        let dateMin = dateHour.slice(dateHour.indexOf("h"));
+                                        let dayChecks = func.checkNum(dateDay.slice(0, dateDay.indexOf("d")), 0, 6) && dateDay.includes("d");
+                                        let hourCheck = func.checkNum(dateHour.slice(0, dateHour.indexOf("h")), 0, 168) && dateHour.includes("h");
+                                        let minCheck = func.checkNum(dateMin.slice(1, dateMin.length - 1), 0, 10080) && dateMin.includes("m");
+                                        let totalCheck = (dateDay.slice(0, dateDay.indexOf("d")) * day) + (dateHour.slice(0, dateHour.indexOf("h")) * hour) + (dateMin.slice(1, dateMin.length - 1) * minute);
+                                        let totalms = 604800000;
+                                      
+                                        let newDate = newDates(dateDay.slice(0, dateDay.indexOf("d")), dateHour.slice(0, dateHour.indexOf("h")), dateMin.slice(1, dateMin.length - 1), resetms);
+                                        
+                                        if (dayChecks && hourCheck && minCheck && +totalCheck < totalms && newDate.split(" ")[4] !== undefined) {
+                                            let dateDays = newDate.split(" ")[0].slice(0, 3);
+                                            let dateHours = newDate.split(" ")[4].slice(0, 2);
+                                            let dateMins = newDate.split(" ")[4].slice(3, 5); 
+                                            if (messageContentCitR) {
+                                                settings.updateOne({ _id: message.guild.name }, {
+                                                    $push: { "citadel_reset_time.reminders": { $each: [{ id: message.id, channel: channelTagCit[0], dayReset: args[3], dayResetPlus: dateDay.slice(0, dateDay.indexOf("d")), hourResetPlus: dateHour.slice(0, dateHour.indexOf("h")), minResetPlus: dateMin.slice(1, dateMin.length - 1), message: messageContentCitR }] }}
+                                                })
+                                                message.channel.send(`A citadel reminder has been added to <#${channelTagCit[0]}>. The reminder will be sent on \`${dateDays} ${dateHours}:${dateMins}\``)
+                                                client.channels.cache.get("731997087721586698")
+                                                .send(`<@${message.author.id}> added a custom Citadel Reminder in server: **${message.guild.name}** - <#${channelTagCit[0]}>\n${code}diff\n+ ${messageContentCitR}${code}`);
+                                            }
+                                            else {
+                                                message.channel.send(`You're missing the message content that you want to send to <#${args[2]}>.`)
+                                            }
+                                        }
+                                        else {
+                                            message.channel.send(`Invalid Date. Acceptable values:${code}diff\n+ +5d2h40m\n+ +0d0h5000m\n+ +0d140h0m\n\n> Max Values include 6 days | 168 Hours | 10080 Minutes\n> Total Time must be less than the next reset (7 days)${code}`)
+                                        }
+                                    }
+                                }
+                                else if (messageContentCit && args[3] !== "reset") {
                                     settings.findOneAndUpdate({ _id: message.guild.name }, {
                                         $push: { "citadel_reset_time.reminders": { $each: [{ id: message.id, channel: channelTagCit[0], message: messageContentCit }] }}
                                     })

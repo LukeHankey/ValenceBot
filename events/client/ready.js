@@ -48,7 +48,6 @@ module.exports = async client => {
 		const json = text.then(body => csvJSON(body));
 
 		json.then(res => {
-
 			const newData = [];
 
 			for (data of res) {
@@ -71,7 +70,6 @@ module.exports = async client => {
 		const db = getDb();
 		const vFactsColl = db.collection("Facts");
 		const settings = db.collection("Settings");
-		db.createCollection("Users");
 		const code = "```";
 
 		const usersColl = db.collection("Users");
