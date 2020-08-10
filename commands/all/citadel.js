@@ -1,3 +1,4 @@
+const Discord = require("discord.js");
 const colors = require("../../colors.json");
 const getDb = require("../../mongodb").getDb;
 const func = require("../../functions.js")
@@ -77,10 +78,6 @@ module.exports = {
             channelTagCit.push(args[2].slice(2, 20))
         }
 
-        const newDates = function(days, hours, minutes, timer) {
-            let time = func.msCalc(days, func.doubleDigits(hours), func.doubleDigits(minutes)) + timer;
-            return new Date(time).toUTCString()
-        }
         const day = 24 * 60 * 60 * 1000;
         const hour = 60 * 60 * 1000;
         const minute = 60 * 1000;
@@ -115,7 +112,7 @@ module.exports = {
                                         let totalCheck = (dateDay.slice(0, dateDay.indexOf("d")) * day) + (dateHour.slice(0, dateHour.indexOf("h")) * hour) + (dateMin.slice(1, dateMin.length - 1) * minute);
                                         let totalms = 604800000;
                                       
-                                        let newDate = newDates(dateDay.slice(0, dateDay.indexOf("d")), dateHour.slice(0, dateHour.indexOf("h")), dateMin.slice(1, dateMin.length - 1), resetms);
+                                        let newDate = func.newDates(dateDay.slice(0, dateDay.indexOf("d")), dateHour.slice(0, dateHour.indexOf("h")), dateMin.slice(1, dateMin.length - 1), resetms);
                                         
                                         if (dayChecks && hourCheck && minCheck && +totalCheck < totalms && newDate.split(" ")[4] !== undefined) {
                                             let dateDays = newDate.split(" ")[0].slice(0, 3);
@@ -162,7 +159,7 @@ module.exports = {
                                         let totalCheck = (dateDay.slice(0, dateDay.indexOf("d")) * day) + (dateHour.slice(0, dateHour.indexOf("h")) * hour) + (dateMin.slice(1, dateMin.length - 1) * minute);
                                         let totalms = 604800000;
                                       
-                                        let newDate = newDates(dateDay.slice(0, dateDay.indexOf("d")), dateHour.slice(0, dateHour.indexOf("h")), dateMin.slice(1, dateMin.length - 1), resetms);
+                                        let newDate = func.newDates(dateDay.slice(0, dateDay.indexOf("d")), dateHour.slice(0, dateHour.indexOf("h")), dateMin.slice(1, dateMin.length - 1), resetms);
                                         
                                         if (dayChecks && hourCheck && minCheck && +totalCheck < totalms && newDate.split(" ")[4] !== undefined) {
                                             let dateDays = newDate.split(" ")[0].slice(0, 3);
@@ -279,7 +276,7 @@ module.exports = {
                         const citRem = [];
                         res.citadel_reset_time.reminders.forEach(x => {
                             if (x.dayReset === "reset") {
-                                let newDate = newDates(`${dayCheck.indexOf(x.dayResetPlus) || +x.dayResetPlus}`, +x.hourResetPlus, +x.minResetPlus, resetms);
+                                let newDate = func.newDates(`${dayCheck.indexOf(x.dayResetPlus) || +x.dayResetPlus}`, +x.hourResetPlus, +x.minResetPlus, resetms);
                                 let dateDays = newDate.split(" ")[0].slice(0, 3);
                                 let dateHours = newDate.split(" ")[4].slice(0, 2);
                                 let dateMins = newDate.split(" ")[4].slice(3, 5); 
@@ -355,7 +352,8 @@ module.exports = {
                         if (func.checkDate(args[2], 0, 6)) {
                             if (func.checkDate(args[3], 0, 23)) {
                                 if (func.checkDate(args[4], 0, 59)) {
-                            let newDate = newDates(args[2], args[3], args[4], now)
+                            let now = Date.now();
+                            let newDate = func.newDates(args[2], args[3], args[4], now)
 							let dateDay = newDate.split(" ")[0].slice(0, 3);
 							let dateHour = newDate.split(" ")[4].slice(0, 2);
                             let dateMin = newDate.split(" ")[4].slice(3, 5);

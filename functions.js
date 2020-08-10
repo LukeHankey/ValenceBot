@@ -46,5 +46,8 @@ module.exports = {
         now.setDate(now.getUTCDate() + (d+(7-now.getUTCDay())) % 7);
         return now;
     },
-    
+    newDates: function(days, hours, minutes, timer) {
+        let time = this.msCalc(days, this.doubleDigits(hours), this.doubleDigits(minutes)) + timer;
+        return new Date(time).toUTCString()
+    },
 };
