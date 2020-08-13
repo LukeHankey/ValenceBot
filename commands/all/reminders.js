@@ -1,4 +1,5 @@
 const getDb = require("../../mongodb").getDb;
+const func = require("../../functions.js")
 
 module.exports = {
 	name: "reminders",
@@ -6,32 +7,6 @@ module.exports = {
 	aliases: ["rem"],
 	usage:  ["", "add <date> <channel> <message>", "Add citadel <channel> <message>", "remove <id>"],
 	run: async (client, message, args) => {
-        function checkNum(id = 0, gr_eq = 1, l_eq = Infinity) {
-			if (+id !== parseInt(id) || !(id >= gr_eq) || !(id <= l_eq)) {
-				return false
-			} else {
-				return true
-			}
-        }
-        function checkDate(id = 0, gr_eq = 0, l_eq = Infinity) {
-			if (+id !== parseInt(id) || !(id >= gr_eq) || !(id <= l_eq)) {
-				return false
-			} else {
-				return true
-			}
-		}
-		function doubleDigits(digit) {
-			if (digit.length === 2) {
-				return digit;
-			}
-			else {
-				const zero = "0";
-				return zero.concat(digit)
-			}
-		}
-		function capitalise(str) {
-			return str.charAt(0).toUpperCase() + str.slice(1);
-		}
 		const code = "```";
 
         const db = getDb();
@@ -81,29 +56,29 @@ module.exports = {
 				if (permMod) {
 // 						if (res.reminders.length == 0) {
 					if (args[1] && args[2] && args[3]) {
-						if ((checkDate(args[1], 0, 6) || dayCheck.includes(capitalise(args[1].toLowerCase()))) && checkDate(args[2], 0, 23) && checkDate(args[3], 0, 59)) {
-							if (checkNum(args[4], 1, Infinity) && message.guild.channels.cache.has(args[4]) && message.guild.id !== args[4]) {
+						if ((func.checkDate(args[1], 0, 6) || dayCheck.includes(func.capitalise(args[1].toLowerCase()))) && func.checkDate(args[2], 0, 23) && func.checkDate(args[3], 0, 59)) {
+							if (func.checkNum(args[4], 1, Infinity) && message.guild.channels.cache.has(args[4]) && message.guild.id !== args[4]) {
 								if (messageContent) {
 									settings.updateOne({ _id: message.guild.name }, {
-										$push: { "reminders": { $each: [{ id: message.id, day: capitalise(args[1].toLowerCase()), hour: args[2], minute: args[3], channel: args[4], message: messageContent }] }
+										$push: { "reminders": { $each: [{ id: message.id, day: func.capitalise(args[1].toLowerCase()), hour: args[2], minute: args[3], channel: args[4], message: messageContent }] }
 										}}, { returnOriginal: true })
 										message.channel.send(`A reminder has been added to <#${args[4]}>`)
 										client.channels.cache.get("731997087721586698")
-										.send(`<@${message.author.id}> added a Reminder in server: **${message.guild.name}** - <#${args[4]}>\n${code}diff\n+ ${dayCheck[capitalise(args[1].toLowerCase())] || args[1]} ${doubleDigits(args[2])}:${doubleDigits(args[3])} - ${messageContent}${code}`);
+										.send(`<@${message.author.id}> added a Reminder in server: **${message.guild.name}** - <#${args[4]}>\n${code}diff\n+ ${dayCheck[func.capitalise(args[1].toLowerCase())] || args[1]} ${func.doubleDigits(args[2])}:${func.doubleDigits(args[3])} - ${messageContent}${code}`);
 								}
 								else {
 									message.channel.send(`You must provide a message to send as a reminder to <#${args[4] || channelTag[0]}>.`)
 								}
 							}
-							else if (checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) {
+							else if (func.checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) {
 								if (messageContent) {
 									settings.findOneAndUpdate({ _id: message.guild.name }, {
-										$push: { "reminders": { $each: [{ id: message.id, day: capitalise(args[1].toLowerCase()), hour: args[2], minute: args[3], channel: channelTag[0], message: messageContent }] }
+										$push: { "reminders": { $each: [{ id: message.id, day: func.capitalise(args[1].toLowerCase()), hour: args[2], minute: args[3], channel: channelTag[0], message: messageContent }] }
 										}}, { returnOriginal: false })
 									.then(r => {
 										message.channel.send(`A reminder has been added to <#${channelTag[0]}>`)
 										client.channels.cache.get("731997087721586698")
-										.send(`<@${message.author.id}> added a Reminder in server: **${message.guild.name}** - <#${channelTag[0]}>\n${code}diff\n+ ${dayCheck[capitalise(args[1].toLowerCase())] || args[1]} ${doubleDigits(args[2])}:${doubleDigits(args[3])} - ${messageContent}${code}`);
+										.send(`<@${message.author.id}> added a Reminder in server: **${message.guild.name}** - <#${channelTag[0]}>\n${code}diff\n+ ${dayCheck[func.capitalise(args[1].toLowerCase())] || args[1]} ${func.doubleDigits(args[2])}:${func.doubleDigits(args[3])} - ${messageContent}${code}`);
 									})
 								}
 								else {
@@ -126,7 +101,7 @@ module.exports = {
 // 						else {
 // 							message.channel.send(`You can only set one reminder per server!`)
 // 							client.channels.cache.get("731997087721586698")
-// 							.send(`<@${message.author.id}> tried to add another Reminder in **${message.guild.name}** - <#${args[4] || channelTag[0]}>\n${code}diff\n+ ${dayCheck[args[1]] || args[1]} ${doubleDigits(args[2])}:${doubleDigits(args[3])} - ${messageContent}${code}`);
+// 							.send(`<@${message.author.id}> tried to add another Reminder in **${message.guild.name}** - <#${args[4] || channelTag[0]}>\n${code}diff\n+ ${dayCheck[args[1]] || args[1]} ${func.doubleDigits(args[2])}:${func.doubleDigits(args[3])} - ${messageContent}${code}`);
 // 						}
 					}
                     else {
@@ -139,7 +114,7 @@ module.exports = {
 					if (permMod) {
 						let idCheck = [];
 						res.reminders.forEach(x => { idCheck.push(x.id) })
-						if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1])) {
+						if (func.checkNum(args[1], 1, Infinity) && idCheck.includes(args[1])) {
 							message.channel.send(`Reminder \`${args[1]}\` has been deleted.`);
 							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Reminder: \`${args[1]}\``);
 							settings.updateOne({ _id: message.guild.name }, { $pull: { reminders: { id: args[1] } } })
@@ -163,7 +138,7 @@ module.exports = {
 						let param = args.slice(2, 3).join("").toLowerCase()
 						let idCheck = [];
 						res.reminders.forEach(x => { idCheck.push(x.id) })
-						if (checkNum(args[1], 1, Infinity) && idCheck.includes(args[1])) { 
+						if (func.checkNum(args[1], 1, Infinity) && idCheck.includes(args[1])) { 
 							if (param === "channel") {
 								if (!args[3]) {
 									message.channel.send(`You need to specify a channel to change to. Either the channel ID or the channel Tag.`);	
@@ -192,9 +167,9 @@ module.exports = {
 								if (!args[3] && !args[4] && !args[5]) {
 									message.channel.send(`You must provide the full Datetime to change. Example: \`Monday 14 25\``);
 								}
-								else if (checkDate(args[3], 0, 6) && checkDate(args[4], 0, 23) && checkDate(args[5], 0, 59)) {
+								else if (func.checkDate(args[3], 0, 6) && func.checkDate(args[4], 0, 23) && func.checkDate(args[5], 0, 59)) {
 									settings.findOneAndUpdate({ _id: message.guild.name, "reminders.id": args[1] }, { $set: { "reminders.$.day": args[3], "reminders.$.hour": args[4], "reminders.$.minute": args[5] } } )
-									message.channel.send(`Reminder \`${args[1]}\` has had the date/time changed to \`${dayCheck[capitalise(args[3].toLowerCase())] || args[3]} ${doubleDigits(args[4])}:${doubleDigits(args[5])}\``);
+									message.channel.send(`Reminder \`${args[1]}\` has had the date/time changed to \`${dayCheck[func.capitalise(args[3].toLowerCase())] || args[3]} ${func.doubleDigits(args[4])}:${func.doubleDigits(args[5])}\``);
 									client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Reminder: \`${args[1]}\``);
 								}
 							}
@@ -224,10 +199,10 @@ module.exports = {
 						const list = [];
 						res.reminders.forEach(x => {
 							if (x.channel.length > 18) {
-								list.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel.slice(2, 20)}>, Date: \`${dayCheck[x.day] || x.day} ${doubleDigits(x.hour)}:${doubleDigits(x.minute)}\`, Message: ${x.message}\n`)
+								list.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel.slice(2, 20)}>, Date: \`${dayCheck[x.day] || x.day} ${func.doubleDigits(x.hour)}:${func.doubleDigits(x.minute)}\`, Message: ${x.message}\n`)
 							}
 							else {
-								list.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel}>, Date: \`${dayCheck[x.day] || x.day} ${doubleDigits(x.hour)}:${doubleDigits(x.minute)}\`, Message: ${x.message}\n`)
+								list.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel}>, Date: \`${dayCheck[x.day] || x.day} ${func.doubleDigits(x.hour)}:${func.doubleDigits(x.minute)}\`, Message: ${x.message}\n`)
 							}
 						})
 						message.channel.send(`Your reminders:\n\n${list.join("")}`);

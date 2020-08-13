@@ -2,6 +2,7 @@ const Discord = require("discord.js");
 const colors = require("../../colors.json");
 const getDb = require("../../mongodb").getDb;
 const func = require("../../functions.js")
+
 module.exports = {
 	name: "citadel",
 	description: ["Lists out the citadel commands.", "Toggles the citadel reset time & reminders on/off.", "Shows the current Citadel Reset Time.", "Allows a user to suggest the reset time - Sends info to the current Admin Channel.", "Sets the new Citadel Reset Time.", "Lists the current citadel reminders by ID.", "Adds a new citadel reminder.", "Adds a citadel reminder which sends the set message at reset +<date/time>.", "Removes a citadel reminder.", "Edit an existing citadel reminder by ID, then the field you want to change; then the updated value."],

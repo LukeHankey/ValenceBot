@@ -2,6 +2,7 @@ const Discord = require("discord.js");
 const { prefix } = require("../../config.json");
 const getDb = require("../../mongodb").getDb;
 const randomColor = Math.floor(Math.random() * 16777215).toString(16);
+const func = require("../../functions.js")
 
 module.exports = {
 	name: "fact",
@@ -11,30 +12,22 @@ module.exports = {
 	run: async (client, message, args) => {
 		const db = getDb();
 		const vFactsColl = db.collection("Facts");
-
 		const count = await vFactsColl.stats()
 			.then(res => {
 				return res.count;
 			});
-		function checkNum(id = 0, gr_eq = 1, l_eq = Infinity) {
-			if (+id !== parseInt(id) || !(id >= gr_eq) || !(id <= l_eq)) {
-				return false
-			} else {
-				return true
-			}
-		}
-
+		
 		const random = Math.floor((Math.random() * count) + 1);
 		const fact = args.slice(1).join(" ");
 		const code = "```";
 			
-			const factEmbed = function(factMessage) {
-			const embed = new Discord.MessageEmbed()
-				.setTitle("**Daily Valence Fact**")
-				.setDescription(factMessage)
-				.setColor(`#${randomColor}`)
-				.addField("**Sent By:**", "<@&685612946231263232>", true)
-				.setTimestamp();
+		const factEmbed = function(factMessage) {
+		const embed = new Discord.MessageEmbed()
+			.setTitle("**Daily Valence Fact**")
+			.setDescription(factMessage)
+			.setColor(`#${randomColor}`)
+			.addField("**Sent By:**", "<@&685612946231263232>", true)
+			.setTimestamp();
 			return embed;
 		};
 
@@ -65,7 +58,7 @@ module.exports = {
 				}
 
 			if (args[1] && (args[0] === "remove")) {
-				if(checkNum(args[1], 1, count)) { 
+				if(func.checkNum(args[1], 1, count)) { 
 					await vFactsColl.findOne({ number: Number(args[1]) })
 					.then(res => {
 						vFactsColl.updateMany({ number: { $gt: res.number }}, { $inc: { number: -1 }});
@@ -96,24 +89,10 @@ module.exports = {
 			}
 
 			if (args[0] === "list") { // Fact list
-				// const listEmbed = function(fNum, fMessage) {
-				// 	const embed = new Discord.MessageEmbed()
-				// 		.setTitle("**Daily Valence Facts**")
-				// 		.setColor(`#${randomColor}`)
-				// 		.addField(fNum, fMessage)
-				// 		.setTimestamp();
-				// 	return embed;
-				// };
-				// await vFactsColl.find({ number: { $gte: 1 } })
-				// .forEach(f => message.channel.send(listEmbed(`${f.number}.`, `${f.Message}`)));
-
 				const list = [];
 				await vFactsColl.find({ }).sort({ number: 1})
 				.forEach(x => list.push(`${x.number}. ${x.Message}\n`));
 				await message.channel.send(`${list.join("")}`, { split: true, code: `` });
-				
-				// Or push number + message to array and add fields to an embed
-				// Can use reactions to move to the next page
 			}
 	},
 };

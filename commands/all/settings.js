@@ -1,6 +1,7 @@
 const colors = require("../../colors.json");
 const Discord = require("discord.js");
 const getDb = require("../../mongodb").getDb;
+const func = require("../../functions.js")
 
 module.exports = {
 	name: "settings",
@@ -8,24 +9,6 @@ module.exports = {
 	aliases: ["s"],
 	usage: ["", "prefix", "prefix set <new prefix>", "adminRole", "adminRole set <new role>", "modRole", "modRole set <new role>", "adminChannel", "adminChannel set <channel>"],
 	run: async (client, message, args) => {
-        const nEmbed = function(title, description, color = colors.cyan, thumbnail = "") {
-			const embed = new Discord.MessageEmbed()
-				.setTitle(title)
-				.setDescription(description)
-				.setColor(color)
-				.setThumbnail(thumbnail)
-                .setTimestamp()
-			return embed;
-        }; // Discord Embed
-        
-        function checkNum(id = 0, gr_eq = 1, l_eq = Infinity) {
-			if (+id !== parseInt(id) || !(id >= gr_eq) || !(id <= l_eq)) {
-				return false
-			} else {
-				return true
-			}
-		}
-		
 		const code = "```";
         const db = getDb();
         const settings = db.collection(`Settings`)
@@ -86,7 +69,7 @@ module.exports = {
 							}
 						}
 						else {
-							message.channel.send(nEmbed("Permission Denied", "You do not have permission to change the prefix!", colors.red_dark)
+							message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to change the prefix!", colors.red_dark)
 							.addField("Only the following roles can:", join, true)
 							.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
 						}
@@ -101,7 +84,7 @@ module.exports = {
 				switch (args[1]) {
 					case "set":
 						if (permAdmin) {
-								if (checkNum(args[2], 1, Infinity) && message.guild.roles.cache.has(args[2]) && message.guild.id !== args[2] && message.guild.roles.cache.get(`${args[2]}`).permissions.has("ADMINISTRATOR")) { // Setting role by ID
+								if (func.checkNum(args[2], 1, Infinity) && message.guild.roles.cache.has(args[2]) && message.guild.id !== args[2] && message.guild.roles.cache.get(`${args[2]}`).permissions.has("ADMINISTRATOR")) { // Setting role by ID
 									if (ardID.rawPosition >= adRole.rawPosition && ardID.rawPosition > aboveRP && message.author.id !== message.guild.ownerID) {
 										message.channel.send("You cannot set the Admin role higher than the role you have.")
 									} 
@@ -150,7 +133,7 @@ module.exports = {
 						else {
 							const allRoleIDs = availPerm.map(id => `<@&${id}>`);
 							const join = allRoleIDs.join(", ")
-							message.channel.send(nEmbed("Permission Denied", "You do not have permission to change the Admin Role!", colors.red_dark)
+							message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to change the Admin Role!", colors.red_dark)
 							.addField("Only the following Roles & Users can:", join, true)
 							.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
 						}
@@ -168,7 +151,7 @@ module.exports = {
 				switch (args[1]) {
 					case "set":							
 						if (permAdmin) {
-							if (checkNum(args[2], 1, Infinity) && message.guild.roles.cache.has(args[2]) && message.guild.id !== args[2] && message.guild.roles.cache.get(`${args[2]}`).permissions.has(["KICK_MEMBERS", "BAN_MEMBERS"])) { // Setting role by ID
+							if (func.checkNum(args[2], 1, Infinity) && message.guild.roles.cache.has(args[2]) && message.guild.id !== args[2] && message.guild.roles.cache.get(`${args[2]}`).permissions.has(["KICK_MEMBERS", "BAN_MEMBERS"])) { // Setting role by ID
 									settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "roles.modRole": `<@&${args[2]}>` }}, { returnOriginal: true })
 									.then(r => {
 										message.channel.send(`The Mod Role has been changed to: <@&${args[2]}>`, { "allowedMentions": { "parse" : []}})
@@ -200,7 +183,7 @@ module.exports = {
 						else {
 							const allRoleIDs = availPerm.map(id => `<@&${id}>`);
 							const join = allRoleIDs.join(", ")
-							message.channel.send(nEmbed("Permission Denied", "You do not have permission to change the Mod Role!", colors.red_dark)
+							message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to change the Mod Role!", colors.red_dark)
 							.addField("Only the following Roles & Users can:", join, true)
 							.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
 						}
@@ -224,7 +207,7 @@ module.exports = {
 							else {
 								channelTag.push(args[2].slice(2, 20))
 							}
-							if (checkNum(args[2], 1, Infinity) && message.guild.channels.cache.has(args[2]) && message.guild.id !== args[2]) { // Check by ID
+							if (func.checkNum(args[2], 1, Infinity) && message.guild.channels.cache.has(args[2]) && message.guild.id !== args[2]) { // Check by ID
 								settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "channels.adminChannel": args[2] }}, { returnOriginal: true })
 								.then(r => {
 									message.channel.send(`The Admin Channel has been set to: <#${args[2]}>`)
@@ -232,7 +215,7 @@ module.exports = {
 									.send(`<@${message.author.id}> set the Admin Channel in server: **${message.guild.name}** from <#${r.value.channels.adminChannel}> to <#${args[2]}>`);
 								})
 							}
-							else if (checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) { // Check by #Channel
+							else if (func.checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) { // Check by #Channel
 								settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "channels.adminChannel": channelTag[0] }}, { returnOriginal: true })
 								.then(r => {
 									message.channel.send(`The Admin Channel has been set to: <#${channelTag[0]}>`)
@@ -248,7 +231,7 @@ module.exports = {
 						else {
 							const allRoleIDs = availPerm.map(id => `<@&${id}>`);
 							const join = allRoleIDs.join(", ")
-							message.channel.send(nEmbed("Permission Denied", "You do not have permission to set the Admin Channel!", colors.red_dark)
+							message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to set the Admin Channel!", colors.red_dark)
 							.addField("Only the following Roles & Users can:", join, true)
 							.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
 						}
@@ -258,13 +241,13 @@ module.exports = {
 						message.channel.send(`Your Admin Channel is set as: <#${res.channels.adminChannel}>`)
 					}
 					else {
-						message.channel.send(nEmbed("Permission Denied", "You do not have permission to see the Admin Channel!", colors.red_dark))
+						message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to see the Admin Channel!", colors.red_dark))
 					}
 				}
 			break;
 			default:
 				if (!args[0]) {
-						message.channel.send(nEmbed(
+						message.channel.send(func.nEmbed(
 						"**Settings List**",
 						"Here's a list of all the settings you can change:",
 						colors.cyan,

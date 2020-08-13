@@ -1,3 +1,5 @@
+const func = require("../../functions.js")
+
 module.exports = {
 	name: "send",
 	description: ["Sends a message to a channel."],
@@ -9,15 +11,7 @@ module.exports = {
     let content = args.slice(1).join(" ");
 	const code = "```";
 		
- 	function checkNum(id = 0, gr_eq = 1, l_eq = Infinity) {
-		if (+id !== parseInt(id) || !(id >= gr_eq) || !(id <= l_eq)) {
-			return false
-		} else {
-			return true
-		}
-	}
-		
-		if (checkNum(args[0], 1, Infinity)) { // Has valid ID
+		if (func.checkNum(args[0], 1, Infinity)) { // Has valid ID
 			if (message.guild.channels.cache.has(args[0]) && content && message.author.id !== myID) { // Has content and channel is in same server
 				message.guild.channels.cache.get(args[0]).send(content);
 				}

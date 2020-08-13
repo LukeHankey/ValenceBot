@@ -2,6 +2,7 @@ const Discord = require("discord.js");
 const day = 24 * 60 * 60 * 1000;
 const hour = 60 * 60 * 1000;
 const minute = 60 * 1000;
+
 module.exports = {
     nEmbed: function(title, description, color = colors.cyan, thumbnail = "") {
         const embed = new Discord.MessageEmbed()
@@ -49,5 +50,8 @@ module.exports = {
     newDates: function(days, hours, minutes, timer) {
         let time = this.msCalc(days, this.doubleDigits(hours), this.doubleDigits(minutes)) + timer;
         return new Date(time).toUTCString()
+    },
+    capitalise: function(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
     },
 };
