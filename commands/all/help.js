@@ -9,6 +9,7 @@ module.exports = {
 	usage: ["command name"],
 	run: async (client, message, args) => {
 		const { commands } = message.client;
+		console.log(commands)
 
 		if (!args.length) {
 			const com = commands.map(command => `\`${command.name}\``);

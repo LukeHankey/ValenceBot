@@ -25,8 +25,7 @@ module.exports = {
 			const idFilter = []; // Roles not on the member
 			const aboveRP = []; // rawPosition of each role on the member
 			let permAdmin = message.member.roles.cache.has(abovePerm[0]) || message.member.roles.cache.has(rID) || message.author.id === message.guild.ownerID; // Admin Permissions
-			const allRoleIDs = availPerm.map(id => `<@&${id}>`);
-			const join = allRoleIDs.join(", ")
+			
 			const roleArg = args.slice(2).join(" ");
 			const roleName = message.guild.roles.cache.find(role => role.name === roleArg)
 			const ardID = message.guild.roles.cache.find(role => role.id === args[2])
@@ -50,6 +49,8 @@ module.exports = {
 					aboveRP.push(rp);
 				})
 			})
+			const allRoleIDs = availPerm.map(id => `<@&${id}>`);
+			const join = allRoleIDs.join(", ")
 
 		switch (args[0]) {
 			case "prefix":

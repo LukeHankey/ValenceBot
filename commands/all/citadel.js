@@ -25,8 +25,6 @@ module.exports = {
         const idFilter = []; // Roles not on the member
         const aboveRP = []; // rawPosition of each role on the member
         let permAdmin = message.member.roles.cache.has(abovePerm[0]) || message.member.roles.cache.has(rID) || message.author.id === message.guild.ownerID; // Admin Permissions
-        const allRoleIDs = availPerm.map(id => `<@&${id}>`);
-        const join = allRoleIDs.join(", ")
         filterORoles.forEach(id => {
             if (message.member.roles.cache.has(id)) {
                 abovePerm.push(id)
@@ -47,6 +45,8 @@ module.exports = {
                 aboveRP.push(rp);
             })
         })
+        const allRoleIDs = availPerm.map(id => `<@&${id}>`);
+        const join = allRoleIDs.join(", ")
 
         // Mod Roles //
         const mrID = res.roles.modRole.slice(3, 21) // Get modRole ID

@@ -10,7 +10,7 @@ module.exports = {
 			console.warn("Trying to init DB again!");
 			return callback(null, _db);
 		}
-		mongo.connect(process.env.MONGODB_URI, config.options, connected);
+		mongo.connect(process.env.DB_URI, config.options, connected);
 		function connected(err, dataBase) {
 			if (err) {
 				return callback(err);
