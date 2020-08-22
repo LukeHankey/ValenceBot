@@ -31,6 +31,8 @@ module.exports = {
 			return embed;
 		};
 
+		settings.find({}).toArray().then(o => console.log(o))
+
 		await settings.findOne({ _id: message.guild.name })
 		.then(async res => {
 			switch (args[0]) {
