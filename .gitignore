@@ -6,5 +6,6 @@ Webhook
 #**/**/guildUpdateTest.js
 **/avatar.js
 **/*info.js
+**/*ban.js
 DB.txt
 amRolePerms.js

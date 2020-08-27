@@ -11,6 +11,11 @@ const func = require("../../functions")
 module.exports = async client => {
 	console.log("Ready!");
 
+	client.user.setPresence({
+		status: "idle",
+		activity: { type: "WATCHING", name: "Over Valence" }
+	})
+
 	const factEmbed = function(factMessage) {
 		const embed = new Discord.MessageEmbed()
 			.setTitle("**Daily Valence Fact**")
