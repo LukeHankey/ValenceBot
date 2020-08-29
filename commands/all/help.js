@@ -1,6 +1,6 @@
-const { prefix } = require("../../config.json");
 const colors = require("../../colors.json");
 const func = require("../../functions.js")
+const getDb = require("../../mongodb").getDb;
 
 module.exports = {
 	name: "help",
@@ -9,45 +9,51 @@ module.exports = {
 	usage: ["command name"],
 	run: async (client, message, args) => {
 		const { commands } = message.client;
-		console.log(commands)
 
-		if (!args.length) {
-			const com = commands.map(command => `\`${command.name}\``);
-			const join = com.join("|");
+		const db = getDb();
+        const settings = db.collection(`Settings`)
+		
+		settings.findOne({ _id: message.guild.name })
+		.then(res => {
+			if (!args.length) {
+				const com = commands.map(command => `\`${command.name}\``);
+				const join = com.join("|");
 
-			message.channel.send(func.nEmbed(
-				"**Help Commands List**",
-				"Here's a list of all my commands:",
-				colors.cyan,
-				message.author.displayAvatarURL()
-			)
-				.addFields(
-					{ name: "**Commands:**", value: join, inline: false },
-					{ name: `**The bot prefix is: ${prefix}**`, value: `\nYou can send \`${prefix}help [command name]\` to get info on a specific command!`, inline: false },
-				),
-			);
-		}
-		else {
-			const name = args[0];
-			const command = commands.get(name) || commands.find(c => c.aliases && c.aliases.includes(name));
-
-			const cName = func.capitalise(command.name);
-			const fields = [];
-
-			for (let i = 0; i < command.usage.length; i++) {
-				const field = { name: `🔹 ${prefix}${cName} ${command.usage[i] || ""}`, value: `${command.description[i]}`, inline: true };
-				fields.push(field);
-				// console.log(field);
+				message.channel.send(func.nEmbed(
+					"**Help Commands List**",
+					"Here's a list of all my commands:",
+					colors.cyan,
+					message.author.displayAvatarURL()
+				)
+					.addFields(
+						{ name: "**Commands:**", value: join, inline: false },
+						{ name: `**The bot prefix is: ${res.prefix}**`, value: `\nYou can send \`${res.prefix}help [command name]\` to get info on a specific command!`, inline: false },
+					),
+				);
 			}
-			message.channel.send(func.nEmbed(
-				`**Command:** ${cName}`,
-				`**Aliases:** ${command.aliases.join(", ") || "[NO ALIASES]"}\n**Usage:**`,
-				colors.aqua,
-				message.member.user.displayAvatarURL(),
-				"Valence Bot Help", client.user.displayAvatarURL(),
-			)
-				.addFields(fields),
-			);
-		}
+			else {
+				const name = args[0];
+				const command = commands.get(name) || commands.find(c => c.aliases && c.aliases.includes(name));
+
+				const cName = func.capitalise(command.name);
+				const fields = [];
+
+				for (let i = 0; i < command.usage.length; i++) {
+					const field = { name: `🔹 ${res.prefix}${cName} ${command.usage[i] || ""}`, value: `${command.description[i]}`, inline: true };
+					fields.push(field);
+					// console.log(field);
+				}
+
+				message.channel.send(func.nEmbed(
+					`**Command:** ${cName}`,
+					`**Aliases:** ${command.aliases.join(", ") || "[NO ALIASES]"}\n**Usage:**`,
+					colors.aqua,
+					message.member.user.displayAvatarURL(),
+					"Valence Bot Help", client.user.displayAvatarURL(),
+				)
+					.addFields(fields),
+				);
+			}
+		})
 	},
 };
