@@ -3,9 +3,9 @@ const func = require("../../functions.js")
 
 module.exports = {
 	name: "reminders",
-	description: ["Shows a list of all reminders.", "Add a new reminder to a channel. Date format must be Day HH MM.", "Adds a citadel reminder to a channel to let your clan members know a reset has happened. The citadel reset time must be set and turned on.", "Removes a reminder from the server by ID"],
+	description: ["Shows a list of all reminders.", "Add a new reminder to a channel. Date format must be Day HH MM.", "Removes a reminder from the server by ID", "Edit a server reminder."],
 	aliases: ["rem"],
-	usage:  ["", "add <date> <channel> <message>", "Add citadel <channel> <message>", "remove <id>"],
+	usage:  ["", "add <date> <channel> <message>", "remove <id>", "edit <id> <param> <new value>"],
 	run: async (client, message, args) => {
 		const code = "```";
 
@@ -181,7 +181,7 @@ module.exports = {
 							message.channel.send(`You must provide an ID to remove.`);
 						}
 						else {
-							message.channel.send(`There is no reminder with that ID. Use \`${res.prefix}citadel reminders\` to show the full list.`)
+							message.channel.send(`There is no reminder with that ID. Use \`${res.prefix}reminders\` to show the full list.`)
 						}
 					}
 					else {
