@@ -9,3 +9,4 @@ Webhook
 **/*ban.js
 DB.txt
 amRolePerms.js
+client_secret.json
