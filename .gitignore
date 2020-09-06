@@ -3,10 +3,9 @@ node_modules
 start.bat
 Webhook
 .eslintrc.json
-#**/**/guildUpdateTest.js
 **/avatar.js
 **/*info.js
-**/*ban.js
-DB.txt
+**/*ban.json
 amRolePerms.js
 client_secret.json
+test*

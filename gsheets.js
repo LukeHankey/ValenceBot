@@ -1,51 +1,44 @@
-const fs = require('fs');
-const readline = require('readline');
 const {google} = require('googleapis');
-const creds = require('./client_secret.json')
 
 // https://console.developers.google.com/
 // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/append
-// https://www.youtube.com/watch?v=shctaaILCiU
+// https://www.youtube.com/watch?v=shctaaILCiUgit
 
-const googleClient = new google.auth.JWT(
-    creds.client_email, 
+const googleClient =  new google.auth.JWT(
+    process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL, 
     null,
-    creds.private_key, 
+    process.env.GOOGLE_PRIVATE_KEY, 
     ["https://www.googleapis.com/auth/spreadsheets"]
 );
 
-googleClient.authorize((err, tokens) => {
-    if (err) return console.log('Error loading Google Client', err)
-    else {
-        console.log("Connected to the Google Client!")
-        googleSheets(googleClient)
-    }
-})
+// googleSheets: async function googleSheets(gClient) {
+    //     const gsapi = google.sheets({ version: "v4", auth: gClient })
+    //     const opt = { // READ ONLY OPTIONS
+    //         spreadsheetId: "1iyhZrRXPFJnEJEVMKQi58xRp6Uq3XPcOPcWhCG7cZWw",
+    //         range: "Contestants!A2:A5",
+    //     }
+        
+    //     let data = await gsapi.spreadsheets.values.get(opt);
 
-async function googleSheets(gClient) {
-    const gsapi = google.sheets({ version: "v4", auth: gClient })
-    const opt = { // READ ONLY OPTIONS
-        spreadsheetId: "1iyhZrRXPFJnEJEVMKQi58xRp6Uq3XPcOPcWhCG7cZWw",
-        range: "Contestants!A2:A5",
-    }
-    
-    let data = await gsapi.spreadsheets.values.get(opt);
+    //     let dataArr = data.data.values
+    //     let newArr = dataArr.map(row => {
+    //         row.push(`${row[0]}-400`)
+    //         return row
+    //     })
+    //     const optW = { // WRITE OPTIONS
+    //         spreadsheetId: "1iyhZrRXPFJnEJEVMKQi58xRp6Uq3XPcOPcWhCG7cZWw",
+    //         range: "Contestants!S2",
+    //         valueInputOption: "USER_ENTERED",
+    //         resource: { values: newArr }
+    //     }
+    //     let update = await gsapi.spreadsheets.values.update(optW)
 
-    let dataArr = data.data.values
-    let newArr = dataArr.map(row => {
-        row.push(`${row[0]}-400`)
-        return row
-    })
-    const optW = { // WRITE OPTIONS
-        spreadsheetId: "1iyhZrRXPFJnEJEVMKQi58xRp6Uq3XPcOPcWhCG7cZWw",
-        range: "Contestants!S2",
-        valueInputOption: "USER_ENTERED",
-        resource: { values: newArr }
-    }
-    let update = await gsapi.spreadsheets.values.update(optW)
+    //     console.log(update)
+    // }
 
-    console.log(update)
-};
+module.exports = {
+    googleClient,
+}
 
 // /**
 //  * Prints the names and majors of students in a sample spreadsheet:
