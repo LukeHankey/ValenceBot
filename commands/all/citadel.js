@@ -2,6 +2,7 @@ const Discord = require("discord.js");
 const colors = require("../../colors.json");
 const getDb = require("../../mongodb").getDb;
 const func = require("../../functions.js")
+const cron = require('node-cron');
 
 module.exports = {
 	name: "citadel",
@@ -358,11 +359,7 @@ module.exports = {
 							let dateDay = newDate.split(" ")[0].slice(0, 3);
 							let dateHour = newDate.split(" ")[4].slice(0, 2);
                             let dateMin = newDate.split(" ")[4].slice(3, 5);
-
-							// const filter = (reaction, user) => {
-							//     return [`✅`, `❌`].includes(reaction.emoji.name) && user.id !== message.author.id
-							// };
-
+							
 							let infoEmbedOne = new Discord.MessageEmbed()
 							.setTitle("**Citadel Reset Time Suggestion**")
 							.setColor(colors.gold)
@@ -371,7 +368,8 @@ module.exports = {
 								{ name: "Input", value: `${args[2]} days, ${args[3]} hours and ${args[4]} minutes until Reset.` },
 								{ name: "Conversion", value: `${newDate}`, inline: true },
 								{ name: "Next Reset Time", value: `${dateDay} ${dateHour}:${dateMin}`, inline: true },
-								{ name: "Command", value: `\`${res.prefix}citadel reset set ${dateDay} ${dateHour} ${dateMin}\``, inline: false }
+								{ name: "Command", value: `\`${res.prefix}citadel reset set ${dateDay} ${dateHour} ${dateMin}\``, inline: false },
+								{ name: "Reactions", value: `✅ - Accept the time given. Command has a 24 hour cooldown to prevent spam.\n❌ - Reject input. Command can be re-used.`, inline: false }
 							 )
 							.setFooter(
 								`Valence Bot created by Luke_#8346`, client.user.displayAvatarURL()
@@ -383,25 +381,47 @@ module.exports = {
 								if (array.some(x => args[5].includes(x))) {
 									client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne.setImage(`${args[5]}`))
 									message.delete();
-									message.reply(`thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!`)
+									message.reply(`Thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!`)
 								}
 								else {
 									message.channel.send(`That is not a valid image URL`)
 								}
 							}
 							else {
-								client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne)
-								message.delete();
-								message.reply(`thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!`)	
+                                settings.findOne({ _id: message.guild.name }, { $set: { resetInfoCount: 0 }})
+                                .then(r => {
+                                    if (r.resetInfoCount == 0) {
+                                        client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne)
+                                        .then(async m => {
+                                            await m.react(`✅`)
+                                            await m.react(`❌`)
+    
+                                            const tick = (reaction, user) => reaction.emoji.name === '✅'
+                                            const cross = (reaction, user) => reaction.emoji.name === '❌' && user.id === message.author.id
+    
+                                            const collectorT = m.createReactionCollector(tick, { time: day })
+                                            const collectorC = m.createReactionCollector(cross, { time: day })
+    
+                                            collectorT.on('collect', (react, u) => {
+                                                let userRoles = message.member.roles
+                                                if (userRoles.cache.has(r.roles.modRole.slice(3, 21)) || userRoles.cache.has(r.roles.adminRole.slice(3, 21))) return
+                                                else settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 1 }}, { returnOriginal: false})
+                                            })
+                                            collectorC.on('collect', (r, u) => {
+                                                return
+                                            })
+                                        })
+                                        message.delete();
+							        	message.reply(`Thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!`)	
+                                    }
+                                    else if (r.resetInfoCount == 1) {
+                                        message.channel.send("You can't use that command again. Please wait until the next reset!")
+                                        setTimeout(() => {
+                                            settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 0 }})
+                                        }, day)
+                                    }
+                                })
 							}
-
-							// .then(async m => 
-							//     await m.react(`✅`)
-								// await m.react(`❌`)
-								// await m.awaitReactions(filter, {max: 1, time: 5000 })
-							// )
-							// .then(x => x.awaitReactions(filter, {max: 1, time: 5000 }))
-
 						}
 						else {
 							message.channel.send(`Invalid minute parameter! Minutes range from 00 - 59.`)
