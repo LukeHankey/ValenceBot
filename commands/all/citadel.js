@@ -377,11 +377,41 @@ module.exports = {
 							.setTimestamp()
 
 							if (args[5]) {
-								let array = ["gif", "jpeg", "tiff", "png", "webp", "bmp"]
+								let array = ["gif", "jpeg", "tiff", "png", "webp", "bmp", "prnt.sc", "gyazo.com"]
 								if (array.some(x => args[5].includes(x))) {
-									client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne.setImage(`${args[5]}`))
-									message.delete();
-									message.reply(`Thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!`)
+                                    settings.findOne({ _id: message.guild.name }, { $set: { resetInfoCount: 0 }})
+                                    .then(r => {
+                                        if (r.resetInfoCount == 0) {
+                                            client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne.setImage(`${args[5]}`))
+                                            .then(async m => {
+                                                await m.react(`✅`)
+                                                await m.react(`❌`)
+        
+                                                const tick = (reaction, user) => reaction.emoji.name === '✅'
+                                                const cross = (reaction, user) => reaction.emoji.name === '❌' && user.id === message.author.id
+        
+                                                const collectorT = m.createReactionCollector(tick, { time: day })
+                                                const collectorC = m.createReactionCollector(cross, { time: day })
+        
+                                                collectorT.on('collect', (react, u) => {
+                                                    let userRoles = message.member.roles
+                                                    if (userRoles.cache.has(r.roles.modRole.slice(3, 21)) || userRoles.cache.has(r.roles.adminRole.slice(3, 21))) return
+                                                    else settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 1 }}, { returnOriginal: false})
+                                                })
+                                                collectorC.on('collect', (r, u) => {
+                                                    return
+                                                })
+                                            })
+                                            message.delete();
+                                            message.reply(`Thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!`)
+                                        }
+                                        else if (r.resetInfoCount == 1) {
+                                            message.channel.send("You can't use that command again. Please wait until the next reset!")
+                                            setTimeout(() => {
+                                                settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 0 }})
+                                            }, day)
+                                        }
+                                    })
 								}
 								else {
 									message.channel.send(`That is not a valid image URL`)
