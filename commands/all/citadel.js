@@ -2,7 +2,6 @@ const Discord = require("discord.js");
 const colors = require("../../colors.json");
 const getDb = require("../../mongodb").getDb;
 const func = require("../../functions.js")
-const cron = require('node-cron');
 
 module.exports = {
 	name: "citadel",
@@ -276,6 +275,12 @@ module.exports = {
                     break;
                     default:
                         const citRem = [];
+                        if (res.citadel_reset_time.reminders.length === 0) {
+                            message.channel.send(`You have no citadel reminders set.`)
+                        }
+                        else {
+                            message.channel.send(`Current Reminders:\n${citRem.join("")}`)
+                        }
                         res.citadel_reset_time.reminders.forEach(x => {
                             if (x.dayReset === "reset") {
                                 let newDate = func.newDates(`${dayCheck.indexOf(x.dayResetPlus) || +x.dayResetPlus}`, +x.hourResetPlus, +x.minResetPlus, resetms);
@@ -298,12 +303,7 @@ module.exports = {
                                 }
                             }
                         })
-                        if (res.citadel_reset_time.reminders.length === 0) {
-                            message.channel.send(`You have no citadel reminders set.`)
-                        }
-                        else {
-                            message.channel.send(`Current Reminders:\n${citRem.join("")}`)
-                        }
+                        
                     break;
                 }
             break;
@@ -351,9 +351,9 @@ module.exports = {
                     break;
                     case "info":
                         if (args[2] && args[3] && args[4]) {
-                        if (func.checkDate(args[2], 0, 6)) {
+                            if (func.checkDate(args[2], 0, 6)) {
                             if (func.checkDate(args[3], 0, 23)) {
-                                if (func.checkDate(args[4], 0, 59)) {
+                            if (func.checkDate(args[4], 0, 59)) {
                             let now = Date.now();
                             let newDate = func.newDates(args[2], args[3], args[4], now)
 							let dateDay = newDate.split(" ")[0].slice(0, 3);
@@ -460,24 +460,24 @@ module.exports = {
 					else {
 						message.channel.send(`Invalid hour parameter! Hours range from 00 - 23.`)
 					}
-				}
-                        }
-			else if (!args[2]) {
+                }
+                else {
+                    message.channel.send(`Invalid day parameter! Days range from 0 - 6.`)
+                }
+            }
+			else {
 				 message.channel.send(`What do you want to suggest the Citadel Reset Time as: Acceptable values:${code}${res.prefix}citadel reset info <days> <hours> <minutes> <image>\n\nNOTE: The image is optional and if included, should show the Citadel Reset Time in the Citadel Management Screen.${code}`);
 			}
-                        else {
-                            message.channel.send(`Invalid day parameter! Days range from 0 - 6.`)
-                        }
-                    break;
-                    default:
-                        if (!args[1] && res.citadel_reset_time.day === "*") {
-                            message.channel.send(`Your Citadel Reset Time is set as: \`Not set.\``)
-                        }
-                        else {
-                            message.channel.send(`Your Citadel Reset Time is set as: \`${res.citadel_reset_time.day || dayCheck[res.citadel_reset_time.day]} ${res.citadel_reset_time.hour}:${res.citadel_reset_time.minute}\`\nTo set the Reset Time, use the \`${res.prefix}citadel reset set\` command.`)
-                        }
-                    break;
+            break;
+            default:
+                if (!args[1] && res.citadel_reset_time.day === "*") {
+                    message.channel.send(`Your Citadel Reset Time is set as: \`Not set.\``)
                 }
+                else {
+                    message.channel.send(`Your Citadel Reset Time is set as: \`${res.citadel_reset_time.day || dayCheck[res.citadel_reset_time.day]} ${res.citadel_reset_time.hour}:${res.citadel_reset_time.minute}\`\nTo set the Reset Time, use the \`${res.prefix}citadel reset set\` command.`)
+                }
+            break;
+            }
             break;
             case "on":
                 if (permAdmin) {
