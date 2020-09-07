@@ -15,7 +15,7 @@ module.exports = async (client, message) => {
 
 		const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases
 		&& cmd.aliases.includes(commandName)); // Command object
-
+		
 			/* PERMISSIONS *\
 			* COMMAND FILES
 			* Add permissions: ["modRole", "adminRole"] to all commands
@@ -28,7 +28,11 @@ module.exports = async (client, message) => {
 			*/
 
 		try {
-			command.run(client, message, args);
+			if (command.guildSpecific === message.guild.id) {
+				command.run(client, message, args);
+			}
+			else if(!command.guildSpecific) command.run(client, message, args)
+			else return message.channel.send("You can't use that command in this server.")
 		}
 		catch (error) {
 			if (commandName !== command) message.channel.send("That's not a valid command!");

@@ -8,6 +8,7 @@ name: "lotto",
 description: ["Shows a list of everyone in the current months lottery.", "Shows information about the <user> lottery entry."],
 aliases: ["lottery"],
 usage: ["", "<user>"],
+guildSpecific: "472448603642920973",
 run: async (client, message, args) => {
     gsheet.googleClient.authorize(err => {
         if (err) console.error(err)
