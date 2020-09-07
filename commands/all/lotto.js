@@ -22,8 +22,9 @@ run: async (client, message, args) => {
         async function googleSheets(gClient) {
             const gsapi = google.sheets({ version: "v4", auth: gClient })
             const opt = { // READ ONLY OPTIONS
-                spreadsheetId: "1iyhZrRXPFJnEJEVMKQi58xRp6Uq3XPcOPcWhCG7cZWw",
-                range: "test!B2:C51",
+                // spreadsheetId: "1iyhZrRXPFJnEJEVMKQi58xRp6Uq3XPcOPcWhCG7cZWw", // Test Sheet
+                spreadsheetId: "1ZView14HaimCuCUg_durvI-3wiOn4Pf5mZRKYVwrHlY",
+                range: "September 2020!B2:C51",
             }
 
             let data = await gsapi.spreadsheets.values.get(opt);
