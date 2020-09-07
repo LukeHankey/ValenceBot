@@ -5,9 +5,9 @@ const colors = require('../../colors.json')
 
 module.exports = {
 name: "lotto",
-description: ["", ""],
+description: ["Shows a list of everyone in the current months lottery.", "Shows information about the <user> lottery entry."],
 aliases: ["lottery"],
-usage: ["", ""],
+usage: ["", "<user>"],
 run: async (client, message, args) => {
     gsheet.googleClient.authorize(err => {
         if (err) console.error(err)
@@ -44,9 +44,11 @@ run: async (client, message, args) => {
                 )
                 .setFooter(`Page ${page} of ${Math.floor(userData.length/24) + 1}`)
 
-           
-            if (args[0]) {
-            let nameFound = dataArr.filter(name => name[0].toLowerCase() === args[0].toLowerCase())
+            let username = args.join(" ")
+            console.log(username)
+                
+            if (username) {
+            let nameFound = dataArr.filter(name => name[0].toLowerCase() === username.toLowerCase())
             for (values of nameFound) {
                 let fields = { name: `${values[0]}`, value: `${values[1]}`, inline: true}
                 found.push(fields)
@@ -82,7 +84,7 @@ run: async (client, message, args) => {
                         .addField("Get your lotto entry in!", `Message any Admin in game to pay the 500k entry fee!`))           
                 }
             }
-            else if (!args[0]) {
+            else if (!username) {
                 if (userData.length <= 24) {
                     message.channel.send(gEmbed
                         .addFields(userData)
