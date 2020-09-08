@@ -7,7 +7,6 @@ module.exports = {
 	description: ["List all of my commands or info about a specific command."],
 	aliases: ["commands"],
 	usage: ["command name"],
-	guildSpecific: false,
 	run: async (client, message, args) => {
 		const { commands } = message.client;
 

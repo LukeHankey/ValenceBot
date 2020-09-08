@@ -8,69 +8,14 @@ module.exports = {
 	description: ["Lists out the citadel commands.", "Toggles the citadel reset time & reminders on/off.", "Shows the current Citadel Reset Time.", "Allows a user to suggest the reset time - Sends info to the current Admin Channel.", "Sets the new Citadel Reset Time.", "Lists the current citadel reminders by ID.", "Adds a new citadel reminder.", "Adds a citadel reminder which sends the set message at reset +<date/time>.", "Removes a citadel reminder.", "Edit an existing citadel reminder by ID, then the field you want to change; then the updated value."],
 	aliases: ["c", "cit"],
 	usage:  ["", "on/off", "reset", "reset info", "reset set", "reminders", "reminders add <channel> <message>", "reminders add <channel> reset +<days/time> <message>", "reminders remove <id>", "reminders edit <id> <parameter> <new value>"],
-	run: async (client, message, args) => {
+	run: async (client, message, args, perms) => {
         const code = "```";
         const db = getDb();
         const settings = db.collection(`Settings`)
         
         await settings.findOne({ _id: message.guild.name })
 		.then(async res => {
-        // Admin Roles //
-        const rID = res.roles.adminRole.slice(3, 21) // Get adminRole ID
-        const adRole = message.guild.roles.cache.find(role => role.id === rID); // Grab the adminRole object by ID
-        const oRoles = message.guild.roles.cache.filter(roles => roles.rawPosition >= adRole.rawPosition); // Grab all roles rawPosition that are equal to or higher than the adminRole
-        const filterORoles = oRoles.map(role => role.id); // Finds the ID's of available roles
-        const abovePerm = []; // Roles on the member
-        const availPerm = []; // adminRole+ that the member doesn't have
-        const idFilter = []; // Roles not on the member
-        const aboveRP = []; // rawPosition of each role on the member
-        let permAdmin = message.member.roles.cache.has(abovePerm[0]) || message.member.roles.cache.has(rID) || message.author.id === message.guild.ownerID; // Admin Permissions
-        filterORoles.forEach(id => {
-            if (message.member.roles.cache.has(id)) {
-                abovePerm.push(id)
-            }
-            else {
-                availPerm.push(id);
-            }
-        })
-        filterORoles.filter(id => {
-            if (!abovePerm.includes(id)) {
-                idFilter.push(id) 
-            }
-        })
-        abovePerm.forEach(id => {
-            const abovePermRaw = message.guild.roles.cache.find(role => role.id === id)
-            const aboveRp = abovePermRaw.rawPosition + "";
-            aboveRp.split().forEach(rp => {
-                aboveRP.push(rp);
-            })
-        })
-        const allRoleIDs = availPerm.map(id => `<@&${id}>`);
-        const join = allRoleIDs.join(", ")
-
-        // Mod Roles //
-        const mrID = res.roles.modRole.slice(3, 21) // Get modRole ID
-        const modRole = message.guild.roles.cache.find(role => role.id === mrID); // Grab the modRole object by ID
-        const modRoles = message.guild.roles.cache.filter(roles => roles.rawPosition >= modRole.rawPosition); // Grab all roles' rawPositions that are equal to or higher than the modRole
-        const filterORolesM = modRoles.map(role => role.id); // Finds the ID's of available roles
-        const abovePermModArray = []; // All roles that the member has that is >= modRole
-        const availPermMod = []; // All the roles that the member doesn't have that are >= modRole
-        const aboveRPMod = [];
-        filterORolesM.forEach(id => {
-            if (message.member.roles.cache.has(id)) {
-                abovePermModArray.push(id)
-            }
-            else {
-                availPermMod.push(id);
-            }
-        })
-        abovePermModArray.forEach(id => {
-            const abovePermRawMod = message.guild.roles.cache.find(role => role.id === id)
-            const aboveRpMod = abovePermRawMod.rawPosition + "";
-            aboveRpMod.split().forEach(rp => {
-                aboveRPMod.push(rp);
-            })
-        })
+       
         const channelTagCit = [];
         if (args[2] === undefined) {
             channelTagCit.push("false")
@@ -86,7 +31,6 @@ module.exports = {
 		let messageContentCit = args.slice(3).join(" ")
 		let messageContentCitR = args.slice(5).join(" ")
         const dayCheck = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-        let permMod = message.member.roles.cache.has(abovePermModArray[0]) || message.member.roles.cache.has(mrID) || aboveRPMod[0] >= modRole.rawPosition || message.author.id === message.guild.ownerID;
 
         let dayNum = dayCheck.indexOf(res.citadel_reset_time.day);
         let resetString = func.nextDay(dayNum).toUTCString().split(" ")
@@ -97,7 +41,7 @@ module.exports = {
             case "reminders":
                 switch (args[1]) {
                     case "add":
-                        if (permMod) {
+                        if (perms.mod) {
                             if (func.checkNum(args[2], 1, Infinity) && message.guild.channels.cache.has(args[2])) {
                                 if (args[3] === "reset") {
                                     if (!args[4] || args[4].charAt(0) !== "+") {
@@ -199,12 +143,12 @@ module.exports = {
                     }
                     else {
                         message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to add a citadel Reminder!", colors.red_dark)
-                        .addField("Only the following Roles & Users can:", join, true)
+                        .addField("Only the following Roles & Users can:", perms.joinM, true)
                         .addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
                     }
                     break;
                     case "remove":
-                        if (permMod) {
+                        if (perms.mod) {
                             let idCheck = [];
                             res.citadel_reset_time.reminders.forEach(x => { idCheck.push(x.id) })
                             if (func.checkNum(args[2], 1, Infinity) && idCheck.includes(args[2])) {
@@ -221,12 +165,12 @@ module.exports = {
                         }
                         else {
                             message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to remove a Reminder!", colors.red_dark)
-                            .addField("Only the following Roles & Users can:", join, true)
+                            .addField("Only the following Roles & Users can:", perms.joinM, true)
                             .addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
                         }
                     break;
                     case "edit":
-                        if (permMod) {
+                        if (perms.mod) {
                             let editMessage = args.slice(4).join(" ");
                             let param = args.slice(3, 4).join("").toLowerCase()
                             let idCheck = [];
@@ -269,7 +213,7 @@ module.exports = {
                         }
                         else {
                             message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to remove a Reminder!", colors.red_dark)
-                            .addField("Only the following Roles & Users can:", join, true)
+                            .addField("Only the following Roles & Users can:", perms.joinM, true)
                             .addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
                         }
                     break;
@@ -310,7 +254,7 @@ module.exports = {
             case "reset":
                 switch (args[1]) {
                     case "set":
-                        if (permMod) {
+                        if (perms.mod) {
                             if ((func.checkDate(args[2], 0, 6) || dayCheck.includes(args[2]) || dayCheck[new Date().getUTCDay()].substr(0, 3)) && func.checkDate(args[3], 0, 23) && func.checkDate(args[4], 0, 59) && args[2] && args[3] && args[4]) { // Setting reset by Day / Hour / Minute
                                 await settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "citadel_reset_time.day": dayCheck[args[2]] || args[2], "citadel_reset_time.hour": func.doubleDigits(args[3]), "citadel_reset_time.minute": func.doubleDigits(args[4]) }}, { returnOriginal: true })
                                     .then(r => {
@@ -345,7 +289,7 @@ module.exports = {
                         }
                         else {
                             message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to change the Citadel Reset Time!", colors.red_dark)
-                            .addField("Only the following Roles & Users can:", join, true)
+                            .addField("Only the following Roles & Users can:", perms.joinM, true)
                             .addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
                         }
                     break;
@@ -480,7 +424,7 @@ module.exports = {
             }
             break;
             case "on":
-                if (permAdmin) {
+                if (perms.admin) {
                     if (res.channels.adminChannel === null) {
                         message.channel.send(`You must set your Admin Channel before you set the Citadel notifications.`)
                     } 
@@ -495,12 +439,12 @@ module.exports = {
                 }
                 else {
                         message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to toggle the Citadel Reset Time notifications!", colors.red_dark)
-                        .addField("Only the following Roles & Users can:", join, true)
+                        .addField("Only the following Roles & Users can:", perms.joinA, true)
                         .addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
                 }
             break;
             case "off":
-            if (permAdmin) {
+            if (perms.admin) {
                 settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "citadel_reset_time.scheduled": false }}, { returnOriginal: true })
                         .then(r => {
                             message.channel.send(`The Citadel Reset Time notifications have been toggled off!`)
@@ -510,7 +454,7 @@ module.exports = {
             }
             else {
                     message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to toggle the Citadel Reset Time notifications!", colors.red_dark)
-                    .addField("Only the following Roles & Users can:", join, true)
+                    .addField("Only the following Roles & Users can:", perms.joinA, true)
                     .addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
             }
         break;

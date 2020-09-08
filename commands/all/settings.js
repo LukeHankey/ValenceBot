@@ -1,5 +1,4 @@
 const colors = require("../../colors.json");
-const Discord = require("discord.js");
 const getDb = require("../../mongodb").getDb;
 const func = require("../../functions.js")
 
@@ -8,55 +7,20 @@ module.exports = {
 	description: ["Displays the settings that you can change.", "Shows the current prefix.", "Sets the new prefix in the server.", "Shows the current admin role.", "Sets the new admin role in the server.", "Shows the current mod role.", "Sets the new mod role in the server.", "Shows the current admin channel.", "Sets the current admin channel."],
 	aliases: ["s"],
 	usage: ["", "prefix", "prefix set <new prefix>", "adminRole", "adminRole set <new role>", "modRole", "modRole set <new role>", "adminChannel", "adminChannel set <channel>"],
-	run: async (client, message, args) => {
+	guildSpecific: false,
+	run: async (client, message, args, perms) => {
 		const code = "```";
         const db = getDb();
         const settings = db.collection(`Settings`)
 		
 		await settings.findOne({ _id: message.guild.name })
 		.then(async res => {
-			// Admin Roles //
-			const rID = res.roles.adminRole.slice(3, 21) // Get adminRole ID
-			const adRole = message.guild.roles.cache.find(role => role.id === rID); // Grab the adminRole object by ID
-			const oRoles = message.guild.roles.cache.filter(roles => roles.rawPosition >= adRole.rawPosition); // Grab all roles rawPosition that are equal to or higher than the adminRole
-			const filterORoles = oRoles.map(role => role.id); // Finds the ID's of available roles
-			const abovePerm = []; // Roles on the member
-			const availPerm = []; // adminRole+ that the member doesn't have
-			const idFilter = []; // Roles not on the member
-			const aboveRP = []; // rawPosition of each role on the member
-			let permAdmin = message.member.roles.cache.has(abovePerm[0]) || message.member.roles.cache.has(rID) || message.author.id === message.guild.ownerID; // Admin Permissions
-			
-			const roleArg = args.slice(2).join(" ");
-			const roleName = message.guild.roles.cache.find(role => role.name === roleArg)
-			const ardID = message.guild.roles.cache.find(role => role.id === args[2])
-			filterORoles.forEach(id => {
-				if (message.member.roles.cache.has(id)) {
-					abovePerm.push(id)
-				}
-				else {
-					availPerm.push(id);
-				}
-			})
-			filterORoles.filter(id => {
-				if (!abovePerm.includes(id)) {
-					idFilter.push(id) 
-				}
-			})
-			abovePerm.forEach(id => {
-				const abovePermRaw = message.guild.roles.cache.find(role => role.id === id)
-				const aboveRp = abovePermRaw.rawPosition + "";
-				aboveRp.split().forEach(rp => {
-					aboveRP.push(rp);
-				})
-			})
-			const allRoleIDs = availPerm.map(id => `<@&${id}>`);
-			const join = allRoleIDs.join(", ")
 
 		switch (args[0]) {
 			case "prefix":
 				switch (args[1]) {
 					case "set":						
-						if (permAdmin) {
+						if (perms.admin) {
 							if (args[2]) {
 								settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { prefix: args[2] }}, { returnOriginal: true })
 								.then(r => {
@@ -70,9 +34,10 @@ module.exports = {
 							}
 						}
 						else {
-							message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to change the prefix!", colors.red_dark)
-							.addField("Only the following roles can:", join, true)
-							.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
+								message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to change the prefix!", colors.red_dark)
+								.addField("Only the following roles can:", perms.joinA, true)
+								.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
+								return
 						}
 					break;
 				default:
@@ -84,7 +49,7 @@ module.exports = {
 			case "adminRole":
 				switch (args[1]) {
 					case "set":
-						if (permAdmin) {
+						if (perms.admin) {
 								if (func.checkNum(args[2], 1, Infinity) && message.guild.roles.cache.has(args[2]) && message.guild.id !== args[2] && message.guild.roles.cache.get(`${args[2]}`).permissions.has("ADMINISTRATOR")) { // Setting role by ID
 									if (ardID.rawPosition >= adRole.rawPosition && ardID.rawPosition > aboveRP && message.author.id !== message.guild.ownerID) {
 										message.channel.send("You cannot set the Admin role higher than the role you have.")
@@ -132,10 +97,8 @@ module.exports = {
 							}
 						}
 						else {
-							const allRoleIDs = availPerm.map(id => `<@&${id}>`);
-							const join = allRoleIDs.join(", ")
 							message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to change the Admin Role!", colors.red_dark)
-							.addField("Only the following Roles & Users can:", join, true)
+							.addField("Only the following Roles & Users can:", perms.joinA, true)
 							.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
 						}
 					break;
@@ -151,7 +114,7 @@ module.exports = {
 			case "modRole":
 				switch (args[1]) {
 					case "set":							
-						if (permAdmin) {
+						if (perms.admin) {
 							if (func.checkNum(args[2], 1, Infinity) && message.guild.roles.cache.has(args[2]) && message.guild.id !== args[2] && message.guild.roles.cache.get(`${args[2]}`).permissions.has(["KICK_MEMBERS", "BAN_MEMBERS"])) { // Setting role by ID
 									settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "roles.modRole": `<@&${args[2]}>` }}, { returnOriginal: true })
 									.then(r => {
@@ -182,10 +145,8 @@ module.exports = {
 							}
 						}
 						else {
-							const allRoleIDs = availPerm.map(id => `<@&${id}>`);
-							const join = allRoleIDs.join(", ")
 							message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to change the Mod Role!", colors.red_dark)
-							.addField("Only the following Roles & Users can:", join, true)
+							.addField("Only the following Roles & Users can:", perms.joinA, true)
 							.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
 						}
 					break;
@@ -200,7 +161,7 @@ module.exports = {
 			case "adminChannel":
 				switch (args[1]) {
 					case "set":
-						if (permAdmin) {
+						if (perms.admin) {
 							const channelTag = [];
 							if (args[2] === undefined) {
 								channelTag.push("false")
@@ -230,15 +191,13 @@ module.exports = {
 							}
 						}
 						else {
-							const allRoleIDs = availPerm.map(id => `<@&${id}>`);
-							const join = allRoleIDs.join(", ")
 							message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to set the Admin Channel!", colors.red_dark)
-							.addField("Only the following Roles & Users can:", join, true)
+							.addField("Only the following Roles & Users can:", perms.joinA, true)
 							.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
 						}
 				break;
 				default:
-					if (!args[1] && permAdmin) {
+					if (!args[1] && perms.admin) {
 						message.channel.send(`Your Admin Channel is set as: <#${res.channels.adminChannel}>`)
 					}
 					else {

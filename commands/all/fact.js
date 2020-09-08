@@ -9,46 +9,15 @@ module.exports = {
 	description: ["Displays a random fact about Valence.", "Adds a Valence Fact to the DataBase.", "Removes a specified Fact from the DataBase.", "Edit the message by providing the Fact number." ,"Shows the entire list of Facts."],
 	aliases: ["f"],
 	usage:  ["", "add <fact>", "remove <number>", "edit <number>", "list"],
-	run: async (client, message, args) => {
+	guildSpecific: false,
+	run: async (client, message, args, perms) => {
 		const db = getDb();
 		const vFactsColl = db.collection("Facts");
 		const settings = db.collection("Settings")
 
 		await settings.findOne({ _id: message.guild.name })
 		.then(async res => {
-		// Admin Perms
-		const rID = res.roles.adminRole.slice(3, 21) // Get adminRole ID
-        const adRole = message.guild.roles.cache.find(role => role.id === rID); // Grab the adminRole object by ID
-        const oRoles = message.guild.roles.cache.filter(roles => roles.rawPosition >= adRole.rawPosition); // Grab all roles rawPosition that are equal to or higher than the adminRole
-        const filterORoles = oRoles.map(role => role.id); // Finds the ID's of available roles
-        const abovePerm = []; // Roles on the member
-        const availPerm = []; // adminRole+ that the member doesn't have
-        const idFilter = []; // Roles not on the member
-        const aboveRP = []; // rawPosition of each role on the member
-        let permAdmin = message.member.roles.cache.has(abovePerm[0]) || message.member.roles.cache.has(rID) || message.author.id === message.guild.ownerID; // Admin Permissions
-        filterORoles.forEach(id => {
-            if (message.member.roles.cache.has(id)) {
-                abovePerm.push(id)
-            }
-            else {
-                availPerm.push(id);
-            }
-        })
-        filterORoles.filter(id => {
-            if (!abovePerm.includes(id)) {
-                idFilter.push(id) 
-            }
-        })
-        abovePerm.forEach(id => {
-            const abovePermRaw = message.guild.roles.cache.find(role => role.id === id)
-            const aboveRp = abovePermRaw.rawPosition + "";
-            aboveRp.split().forEach(rp => {
-                aboveRP.push(rp);
-            })
-        })
-        const allRoleIDs = availPerm.map(id => `<@&${id}>`);
-        const join = allRoleIDs.join(", ")
-
+		
 		const count = await vFactsColl.stats()
 			.then(res => {
 				return res.count;
@@ -68,7 +37,7 @@ module.exports = {
 			return embed;
 		};
 
-			if (permAdmin) {
+			if (perms.admin) {
 				switch (args[0]) {
 					case "add":
 						if (!args[1]) {
@@ -135,8 +104,8 @@ module.exports = {
 				}
 			}
 			else {
-				message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to add a citadel Reminder!", colors.red_dark)
-				.addField("Only the following Roles & Users can:", join, true)
+				message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
+				.addField("Only the following Roles & Users can:", perms.joinA, true)
 				.addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
 			}
 		});
