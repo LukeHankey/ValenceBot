@@ -16,7 +16,6 @@ module.exports = async (client, message) => {
 		const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases
 		&& cmd.aliases.includes(commandName)); // Command object
 		
-		// PERMISSIONS \\
 		// Admin Roles \\
 		const rID = res.roles.adminRole.slice(3, 21) // Get adminRole ID
 		const adRole = message.guild.roles.cache.find(role => role.id === rID); // Grab the adminRole object by ID
@@ -66,7 +65,6 @@ module.exports = async (client, message) => {
 			 })
 		 })
 		 const allModRoleIDs = availPermMod.map(id => `<@&${id}>`);
-
 		
 		let perms = {
 			admin: message.member.roles.cache.has(abovePerm[0]) || message.member.roles.cache.has(rID) || message.author.id === message.guild.ownerID,
