@@ -77,7 +77,7 @@ module.exports = async (client, message) => {
 
 		try {
 			if (command.guildSpecific === message.guild.id) { // Checks if there is guildSpecific set
-				command.run(client, message, args);
+				command.run(client, message, args, perms);
 			}
 			else if(!command.guildSpecific) {
 				command.run(client, message, args, perms);
