@@ -23,7 +23,8 @@ module.exports = {
 					"**Help Commands List**",
 					"Here's a list of all my commands:",
 					colors.cyan,
-					message.author.displayAvatarURL()
+					message.author.displayAvatarURL(),
+					client.user.displayAvatarURL()
 				)
 					.addFields(
 						{ name: "**Commands:**", value: join, inline: false },
@@ -49,7 +50,7 @@ module.exports = {
 					`**Aliases:** ${command.aliases.join(", ") || "[NO ALIASES]"}\n**Usage:**`,
 					colors.aqua,
 					message.member.user.displayAvatarURL(),
-					"Valence Bot Help", client.user.displayAvatarURL(),
+					client.user.displayAvatarURL(),
 				)
 					.addFields(fields),
 				);
