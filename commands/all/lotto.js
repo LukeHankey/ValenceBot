@@ -8,8 +8,10 @@ name: "lotto",
 description: ["Shows a list of everyone in the current months lottery.", "Shows information about the <user> lottery entry."],
 aliases: ["lottery"],
 usage: ["", "<user>"],
-guildSpecific: "472448603642920973",
+// guildSpecific: "472448603642920973",
 run: async (client, message, args) => {
+    if (message.guild.id !== "472448603642920973") return message.channel.send("You can't use that command in this server.")
+
     gsheet.googleClient.authorize(err => {
         if (err) console.error(err)
         googleSheets(gsheet.googleClient)

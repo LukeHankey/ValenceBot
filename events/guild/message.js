@@ -15,7 +15,7 @@ module.exports = async (client, message) => {
 
 		const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases
 		&& cmd.aliases.includes(commandName)); // Command object
-		
+
 		// Admin Roles \\
 		const rID = res.roles.adminRole.slice(3, 21) // Get adminRole ID
 		const adRole = message.guild.roles.cache.find(role => role.id === rID); // Grab the adminRole object by ID
@@ -65,22 +65,16 @@ module.exports = async (client, message) => {
 			 })
 		 })
 		 const allModRoleIDs = availPermMod.map(id => `<@&${id}>`);
-		
+
 		let perms = {
 			admin: message.member.roles.cache.has(abovePerm[0]) || message.member.roles.cache.has(rID) || message.author.id === message.guild.ownerID,
 			mod: message.member.roles.cache.has(abovePermModArray[0]) || message.member.roles.cache.has(mrID) || aboveRPMod[0] >= modRole.rawPosition || message.author.id === message.guild.ownerID,
 			joinA: allRoleIDs.join(", "),
-			joinM: allModRoleIDs.join(", ")
+			joinM: allModRoleIDs.join(", "),
 		}
 
 		try {
-			if (command.guildSpecific === message.guild.id) { // Checks if there is guildSpecific set
-				command.run(client, message, args, perms);
-			}
-			else if(!command.guildSpecific) {
-				command.run(client, message, args, perms);
-			}
-			else return message.channel.send("You can't use that command in this server.")
+			command.run(client, message, args, perms);
 		}
 		catch (error) {
 			if (commandName !== command) message.channel.send("That's not a valid command!");
