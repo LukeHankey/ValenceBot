@@ -76,7 +76,10 @@ run: async (client, message, args, perms) => {
             case "add":
                 let rsn = args.slice(3).join(" ")
                 let collectors = ["bank", "julian", "gabe", "hazey", "luke", "moon", "prov", "sarah", "zinedin"]
-                collectorName = collectors.indexOf(args[2].toLowerCase())
+                function collectorsName(name) {
+                    if (name === undefined) return
+                    else name = collectors.indexOf(args[2].toLowerCase())
+                }
                 let collNames = function() {
                     let names = collectors.map(name => func.capitalise(name))
                     names.shift()
@@ -121,16 +124,16 @@ run: async (client, message, args, perms) => {
                                     if (rsn.split(/ /g).includes("-double")) {
                                         message.channel.send(lottoEmbed
                                         .spliceFields(0, 1, { name: `RuneScape Name:`, value: `${rsn.split(/ /g).slice(0, -1).join(" ")}`, inline: true })
-                                        .spliceFields(2, 1, { name: `To:`, value: `${func.capitalise(collectors[collectorName])}`, inline: true })
+                                        .spliceFields(2, 1, { name: `To:`, value: `${func.capitalise(collectors[collectorsName()])}`, inline: true })
                                         .addField("Double Entry:", "Yes", true))
-                                        newArr.push([userData.length + 1, rsn.split(/ /g).slice(0, -1).join(" "), "500,000", func.capitalise(collectors[collectorName]), "N/A", "Double Entry"])
+                                        newArr.push([userData.length + 1, rsn.split(/ /g).slice(0, -1).join(" "), "500,000", func.capitalise(collectors[collectorsName()]), "N/A", "Double Entry"])
                                         await gsapi.spreadsheets.values.append(optW)
                                     }
                                     else {
                                         message.channel.send(lottoEmbed
-                                        .spliceFields(2, 1, { name: `To:`, value: `${func.capitalise(collectors[collectorName])}`, inline: true })
+                                        .spliceFields(2, 1, { name: `To:`, value: `${func.capitalise(collectors[collectorsName()])}`, inline: true })
                                         )
-                                        newArr.push([userData.length + 1, rsn, "500,000", func.capitalise(collectors[collectorName]), "N/A"])
+                                        newArr.push([userData.length + 1, rsn, "500,000", func.capitalise(collectors[collectorsName()]), "N/A"])
                                         await gsapi.spreadsheets.values.append(optW)
                                 }}
                             }
@@ -169,8 +172,8 @@ run: async (client, message, args, perms) => {
                                 }
                                 else {
                                     message.channel.send(lottoEmbed
-                                        .spliceFields(2, 1, { name: `To:`, value: `${func.capitalise(collectors[collectorName])}`, inline: true }))
-                                    newArr.push([userData.length + 1, rsn, args[1], func.capitalise(collectors[collectorName]), "N/A"])
+                                        .spliceFields(2, 1, { name: `To:`, value: `${func.capitalise(collectors[collectorsName()])}`, inline: true }))
+                                    newArr.push([userData.length + 1, rsn, args[1], func.capitalise(collectors[collectorsName()]), "N/A"])
                                     await gsapi.spreadsheets.values.append(optW)
                                 }
                             }
@@ -183,7 +186,7 @@ run: async (client, message, args, perms) => {
                                         .spliceFields(0, 1, { name: `RuneScape Name:`, value: `${rsn.split(/ /g).slice(0, -1).join(" ")}`, inline: true })
                                         .spliceFields(1, 1, { name: `Amount:`, value: `${checkValue(args[1])}`, inline: true })
                                         .addField("Double Entry:", "Yes", true))
-                                        newArr.push([userData.length + 1, rsn.split(/ /g).slice(0, -1).join(" "), args[1], func.capitalise(collectors[collectorName]), "No", "Double Entry"])
+                                        newArr.push([userData.length + 1, rsn.split(/ /g).slice(0, -1).join(" "), args[1], func.capitalise(collectors[collectorsName()]), "No", "Double Entry"])
                                     await gsapi.spreadsheets.values.append(optW)
                                 }  
                             }
@@ -206,6 +209,31 @@ run: async (client, message, args, perms) => {
                     .addField("Only the following Roles & Users can:", perms.joinM, true)
                     .addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
                 }
+            break;
+            case "total":
+                const optTotal = { // READ ONLY OPTIONS
+                    spreadsheetId: "1ZView14HaimCuCUg_durvI-3wiOn4Pf5mZRKYVwrHlY", // Test Sheet
+                    range: "September 2020!G1:M2",
+                }
+                let dataTotals = await gsapi.spreadsheets.values.get(optTotal);
+                let arrTotal = dataTotals.data.values
+                let totalArr = []
+                let totalValues = []
+                let totalEmbed = func.nEmbed(`Total Prize Pool for month of ${months[monthIndex]}!`, "This is the current prize pool so far with dividends for 1st, 2nd and 3rd place!", colors.gold, message.author.displayAvatarURL(), client.user.displayAvatarURL())
+                
+                for (values of arrTotal) {
+                    values = values.filter(x => x !== "")
+                    totalArr.push(values)
+                }
+                for (let i = 0; i < totalArr[0].length; i++) {
+                    totalArr.push([totalArr[0][i], totalArr[1][i]])
+                }
+                for (values of totalArr.slice(2)) {
+                    let fields = { name: values[0], value: values[1], inline: true }
+                    totalValues.push(fields)
+                }
+                
+                message.channel.send(totalEmbed.addFields(totalValues).spliceFields(2, 0, { name: `\u200B`, value: `\u200B`, inline: true }))
             break;
             default:
                 let username = args.join(" ")
