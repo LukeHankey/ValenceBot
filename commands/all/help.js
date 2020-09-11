@@ -35,13 +35,19 @@ module.exports = {
 			else {
 				const name = args[0];
 				const command = commands.get(name) || commands.find(c => c.aliases && c.aliases.includes(name));
+				let otherView = ["Lotto", "Calendar"]
 
 				const cName = func.capitalise(command.name);
 				const fields = [];
 
-				for (let i = 0; i < command.usage.length; i++) {
-					const field = { name: `🔹 ${res.prefix}${cName} ${command.usage[i] || ""}`, value: `${command.description[i]}`, inline: true };
-					fields.push(field);
+					for (let i = 0; i < command.usage.length; i++) {
+						if (otherView.includes(cName)) {
+							const field = { name: `🔹 ${res.prefix}${cName} ${command.usage[i] || ""}`, value: `${command.description[i]}`, inline: false };
+							fields.push(field);
+						} else {
+							const field = { name: `🔹 ${res.prefix}${cName} ${command.usage[i] || ""}`, value: `${command.description[i]}`, inline: true };
+							fields.push(field);
+					}
 					// console.log(field);
 				}
 
