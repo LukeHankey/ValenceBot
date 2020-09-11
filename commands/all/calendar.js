@@ -69,8 +69,13 @@ module.exports = {
 
                 if (args[1] && args[2] && args[3] != 0) {
                     n.spliceFields(args[2] - 1, args[3])
-                    let log = removeE.embeds[0].fields[args[2] - 1]
-                    client.channels.cache.get("731997087721586698").send(`Calendar updated - removed event: \`\`\`Name: ${log.name}\nValue: ${log.value}\`\`\``);
+                    let log = removeE.embeds[0].fields.splice(args[2])
+                    let logs = []
+                    for (values of log) {
+                        let logValues = `${values.name}\n${values.value}`
+                        logs.push(logValues)
+                    }
+                    client.channels.cache.get("731997087721586698").send(`Calendar updated - removed event: \`\`\`${logs.join("\n\n")}\`\`\``);
                     removeE.edit(n)
                 } else if (!args[1]) {
                     message.channel.send("You must provide the message ID of the calendar to edit it.")
