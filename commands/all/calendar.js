@@ -41,7 +41,7 @@ module.exports = {
                 
                 if (!id) message.channel.send("You must provide the message ID of the calendar to add to it.")
                 else if (id && !date || !event || !time || !link || !host) {
-                    message.channel.send("Please provide the content that you would like to add to the calendar. Acceptable format below:\n\`\`\`\n<messageID> 21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include Event: / Time: / Announcement: / Host: \nStarting with capitals and including the colon.\`\`\`")
+                    message.channel.send("Please provide the content that you would like to add to the calendar. Acceptable format below:\n\`\`\`\n<messageID> 21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include <Date> Event: / Time: / Announcement: / Host: \nStarting with capitals and including the colon.\`\`\`")
                 }
                 else {
                     let editEmbed = new Discord.MessageEmbed(m.embeds[0])
