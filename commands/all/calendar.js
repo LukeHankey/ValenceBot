@@ -28,6 +28,7 @@ module.exports = {
                 .setFooter(`Valence Bot created by Luke_#8346`, client.user.displayAvatarURL())
             return embed;
             }
+            client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> created a new Calendar embed.`);
             message.channel.send(embed())
             break;
             case "add": {
@@ -49,6 +50,7 @@ module.exports = {
                         { name: date, value: `Event: ${event}\nTime: ${time}\n[Announcement](${link})\nHost: ${host}`}
                     )
                 m.edit(editEmbed)
+                client.channels.cache.get("731997087721586698").send(`Calendar updated - Add event: \`\`\`${message.content}\`\`\``);
                 } 
             }
             break
@@ -67,6 +69,8 @@ module.exports = {
 
                 if (args[1] && args[2] && args[3] != 0) {
                     n.spliceFields(args[2] - 1, args[3])
+                    let log = removeE.embeds[0].fields[args[2] - 1]
+                    client.channels.cache.get("731997087721586698").send(`Calendar updated - removed event: \`\`\`Name: ${log.name}\nValue: ${log.value}\`\`\``);
                     removeE.edit(n)
                 } else if (!args[1]) {
                     message.channel.send("You must provide the message ID of the calendar to edit it.")
@@ -76,6 +80,7 @@ module.exports = {
                 else {
                     n.spliceFields(args[2] - 1, args[3], { name: date, value: `${params.join("\n")}`})
                     removeE.edit(n)
+                    client.channels.cache.get("731997087721586698").send(`Calendar updated - Edited event: \`\`\`${message.content}\`\`\``);
                 }
             }
         }
