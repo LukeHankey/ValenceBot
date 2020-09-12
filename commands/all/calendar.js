@@ -1,5 +1,7 @@
 const colors = require('../../colors.json')
 const Discord = require("discord.js");
+const getDb = require("../../mongodb").getDb;
+const func = require("../../functions.js")
 
 module.exports = {
 	name: "calendar",
@@ -13,14 +15,16 @@ module.exports = {
             .addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
         }
 
+        let db = getDb()
+        let settings = db.collection("Settings")
+
         const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
         const monthIndex = (new Date()).getUTCMonth()
         const code = "```";
-        let messageID = "754101298911248416"
-
+       
         switch (args[0]) {
             case "create":
-            if (!perms.admin) {
+            if (perms.admin) {
                 function embed(title = `Calendar for ${months[monthIndex]}`, description = "This months events are as follows:",) {
                 const embed = new Discord.MessageEmbed()
                     .setTitle(title)
@@ -33,15 +37,19 @@ module.exports = {
                 }
                 client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> created a new Calendar embed.`);
                 message.channel.send(embed())
+                .then(msg => {
+                    settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "calendarID": msg.id }})
+                })
             } else {
                 return message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
                 .addField("Only the following Roles & Users can:", perms.joinA, true)
                 .addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
             }
             break;
-            case "add": {
+            case "add": 
+            settings.findOne({ _id: message.guild.name }).then(async r => {
                 let [...rest] = args.slice(1)
-                let m = await message.channel.messages.fetch(messageID)
+                let m = await message.channel.messages.fetch(r.calendarID)
                 .catch(err => {
                     message.channel.send("Try again in the <#626172209051860992> channel.")
                     return
@@ -63,9 +71,10 @@ module.exports = {
                 m.edit(editEmbed)
                 client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
                 } 
-            }
+            })
             break
-            case "edit": {
+            case "edit": 
+            settings.findOne({ _id: message.guild.name }).then(async r => {
                 let [...rest] = args.slice(3)
                 const date = rest.slice(0, rest.indexOf("Event:")).join(" ")
                 const event = `Event: ${rest.slice(rest.indexOf("Event:") + 1, rest.indexOf("Time:")).join(" ")}`
@@ -75,7 +84,7 @@ module.exports = {
 
                 let [...params] = [event, time, link, host]
 
-                let removeE = await message.channel.messages.fetch(messageID)
+                let removeE = await message.channel.messages.fetch(r.calendarID)
                 .catch(err => {
                     return message.channel.send("Try again in the <#626172209051860992> channel.")
                 })
@@ -96,7 +105,7 @@ module.exports = {
                     removeE.edit(n)
                     client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
                 }
-            }
+            })
         }
 
 	},
