@@ -5,7 +5,7 @@ module.exports = {
 	name: "calendar",
 	description: ["Creates an embed for a calender.", "Add to the current calendar embed by specifying specific parameters.", "Edit the current calendar to remove or add events in a specific position."],
 	aliases: ["cal"],
-	usage: ["create", "add <messageID> <Date> Event: <event text> Time: <time> Announcement: <link> Host: <@member/role>", "edit <messageID> <starting field> <delete count> <addfields (same as add but adding to a specific position)>"],
+	usage: ["create", "add <Date> Event: <event text> Time: <time> Announcement: <link> Host: <@member/role>", "edit <starting field> <delete count> <addfields (same as add but adding to a specific position)>"],
 	run: async (client, message, args, perms) => {
 		if (!perms.mod) {
             return message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
@@ -20,7 +20,7 @@ module.exports = {
 
         switch (args[0]) {
             case "create":
-            if (!perms.admin) {
+            if (perms.admin) {
                 function embed(title = `Calendar for ${months[monthIndex]}`, description = "This months events are as follows:",) {
                 const embed = new Discord.MessageEmbed()
                     .setTitle(title)
