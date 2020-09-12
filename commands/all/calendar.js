@@ -15,6 +15,8 @@ module.exports = {
 
         const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
         const monthIndex = (new Date()).getUTCMonth()
+        const code = "```";
+        let messageID = "754101298911248416"
 
         switch (args[0]) {
             case "create":
@@ -32,17 +34,16 @@ module.exports = {
             message.channel.send(embed())
             break;
             case "add": {
-                let [id, ...rest] = args.slice(1)
-                let m = await message.channel.messages.fetch(id)
+                let [...rest] = args.slice(1)
+                let m = await message.channel.messages.fetch(messageID)
                 const date = rest.slice(0, rest.indexOf("Event:")).join(" ")
                 const event = rest.slice(rest.indexOf("Event:") + 1, rest.indexOf("Time:")).join(" ")
                 const time = rest.slice(rest.indexOf("Time:") + 1, rest.indexOf("Announcement:")).join(" ")
                 const link = rest.slice(rest.indexOf("Announcement:") + 1, rest.indexOf("Host:")).join(" ")
                 const host = message.mentions.members.first() || message.mentions.roles.first()
                 
-                if (!id) message.channel.send("You must provide the message ID of the calendar to add to it.")
-                else if (id && !date || !event || !time || !link || !host) {
-                    message.channel.send("Please provide the content that you would like to add to the calendar. Acceptable format below:\n\`\`\`\n<messageID> 21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include <Date> Event: / Time: / Announcement: / Host: \nStarting with capitals and including the colon.\`\`\`")
+                if (!date || !event || !time || !link || !host) {
+                    message.channel.send(`Please provide the content that you would like to add to the calendar. Acceptable format below:\n${code}\n21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include <Date> Event: / Time: / Announcement: / Host: \nStarting with capitals and including the colon.${code}`)
                 }
                 else {
                     let editEmbed = new Discord.MessageEmbed(m.embeds[0])
@@ -50,12 +51,12 @@ module.exports = {
                         { name: date, value: `Event: ${event}\nTime: ${time}\n[Announcement](${link})\nHost: ${host}`}
                     )
                 m.edit(editEmbed)
-                client.channels.cache.get("731997087721586698").send(`Calendar updated - Add event: \`\`\`${message.content}\`\`\``);
+                client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
                 } 
             }
             break
             case "edit": {
-                let [...rest] = args.slice(4)
+                let [...rest] = args.slice(3)
                 const date = rest.slice(0, rest.indexOf("Event:")).join(" ")
                 const event = `Event: ${rest.slice(rest.indexOf("Event:") + 1, rest.indexOf("Time:")).join(" ")}`
                 const time = `Time: ${rest.slice(rest.indexOf("Time:") + 1, rest.indexOf("Announcement:")).join(" ")}`
@@ -64,30 +65,27 @@ module.exports = {
 
                 let [...params] = [event, time, link, host]
 
-                let removeE = await message.channel.messages.fetch(args[1])
+                let removeE = await message.channel.messages.fetch(messageID)
                 let n = new Discord.MessageEmbed(removeE.embeds[0])
+                console.log(n)
 
-                if (args[1] && args[2] && args[3] != 0) {
-                    n.spliceFields(args[2] - 1, args[3])
-                    let log = removeE.embeds[0].fields.splice(args[2])
-                    let logs = []
-                    for (values of log) {
-                        let logValues = `${values.name}\n${values.value}`
-                        logs.push(logValues)
-                    }
-                    client.channels.cache.get("731997087721586698").send(`Calendar updated - removed event: \`\`\`${logs.join("\n\n")}\`\`\``);
+                if (args[1] && args[2] != 0) {
+                    n.spliceFields(args[1] - 1, args[2])
+                    let log = removeE.embeds[0].fields.splice(args[1] - 1, args[2])
+                    let logValues = log.map(values => `${values.name}\n${values.value}\n`)
+                    let remaining = n.fields.map(values => `${values.name}\n${values.value}\n`)
+                    client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} removed event: ${code}diff\n- Removed\n${logValues.join("\n")}\n+ Remaining\n ${remaining.join("\n")}${code}`);
                     removeE.edit(n)
-                } else if (!args[1]) {
-                    message.channel.send("You must provide the message ID of the calendar to edit it.")
-                } else if (!args[2] || !args[3]) {
-                    message.channel.send("You must provide the starting field and a delete count. Examples: \`\`\`<messageID> 1 1 - This will start at the first field and delete 1 (Removing the first).\n<messageID> 3 2 - Starts at the 3rd field and removes the 3rd and 4th field.\`\`\`")
+                } else if (!args[1] || !args[2]) {
+                    message.channel.send(`You must provide the starting field and a delete count. Examples: ${code}<messageID> 1 1 - This will start at the first field and delete 1 (Removing the first).\n<messageID> 3 2 - Starts at the 3rd field and removes the 3rd and 4th field.${code}`)
                 }
                 else {
-                    n.spliceFields(args[2] - 1, args[3], { name: date, value: `${params.join("\n")}`})
+                    n.spliceFields(args[1] - 1, args[2], { name: date, value: `${params.join("\n")}`})
                     removeE.edit(n)
-                    client.channels.cache.get("731997087721586698").send(`Calendar updated - Edited event: \`\`\`${message.content}\`\`\``);
+                    client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
                 }
             }
         }
+
 	},
 };
