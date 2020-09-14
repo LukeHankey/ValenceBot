@@ -1,8 +1,12 @@
 const mongo = require("mongodb").MongoClient;
-const config = require("./config.json");
 const assert = require("assert");
 
 let _db;
+
+const options = {
+		useNewUrlParser: true,
+		useUnifiedTopology: true
+}
 
 module.exports = {
 	initDb: function initDb(callback) {
@@ -10,7 +14,7 @@ module.exports = {
 			console.warn("Trying to init DB again!");
 			return callback(null, _db);
 		}
-		mongo.connect(process.env.DB_URI, config.options, connected);
+		mongo.connect(process.env.DB_URI, options, connected);
 		function connected(err, dataBase) {
 			if (err) {
 				return callback(err);
