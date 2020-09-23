@@ -1,5 +1,6 @@
 const colors = require('../../colors.json')
 const Discord = require("discord.js");
+const func = require('../../functions.js')
 
 module.exports = {
 	name: "calendar",
@@ -81,7 +82,7 @@ module.exports = {
                 })
                 let n = new Discord.MessageEmbed(removeE.embeds[0])
 
-                if (args[1] && args[2] != 0 && args[2]) {
+                if (func.checkNum(args[1]) && func.checkNum(args[2], 0) != 0 && args[2]) {
                     n.spliceFields(args[1] - 1, args[2])
                     let log = removeE.embeds[0].fields.splice(args[1] - 1, args[2])
                     let logValues = log.map(values => `${values.name}\n${values.value}\n`)
