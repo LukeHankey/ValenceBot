@@ -1,12 +1,17 @@
 const colors = require('../../colors.json')
 const Discord = require("discord.js");
 <<<<<<< HEAD
+<<<<<<< HEAD
 const func = require('../../functions.js')
 ||||||| 459528b
 =======
 const getDb = require("../../mongodb").getDb;
 const func = require("../../functions.js")
 >>>>>>> cal-db-hook
+||||||| 122f299
+=======
+const func = require('../../functions.js')
+>>>>>>> 3d462c8d679fe7a13df4a22bdb554b279c60a2aa
 
 module.exports = {
 	name: "calendar",
@@ -125,15 +130,17 @@ module.exports = {
                     return message.channel.send("Try again in the <#626172209051860992> channel.")
                 })
                 let n = new Discord.MessageEmbed(removeE.embeds[0])
-
-                if (args[1] && args[2] != 0 && args[2]) {
+console.log(func.checkNum(args[1]))
+console.log(func.checkNum(args[2], 0))
+console.log(args[2])
+                if (func.checkNum(args[1]) && func.checkNum(args[2], 0) && args[1] !== undefined && args[2] !== undefined) {
                     n.spliceFields(args[1] - 1, args[2])
                     let log = removeE.embeds[0].fields.splice(args[1] - 1, args[2])
                     let logValues = log.map(values => `${values.name}\n${values.value}\n`)
                     let remaining = n.fields.map(values => `${values.name}\n${values.value}\n`)
                     client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} removed event: ${code}diff\n- Removed\n${logValues.join("\n")}\n+ Remaining\n ${remaining.join("\n")}${code}`);
                     removeE.edit(n)
-                } else if (args[1] === undefined || args[2] === undefined || !args[1] || !args[2]) {
+                } else if (func.checkNum(args[1]) === false || func.checkNum(args[2], 0) === false || args[1] === undefined || args[2] === undefined) {
                     message.channel.send(`You must provide the starting field and a delete count. Examples: ${code}1 1 - This will start at the first field and delete 1 (Removing the first).\n3 2 - Starts at the 3rd field and removes the 3rd and 4th field.${code}`)
                 }
                 else {
