@@ -83,14 +83,15 @@ module.exports = {
                 let n = new Discord.MessageEmbed(removeE.embeds[0])
 console.log(func.checkNum(args[1]))
 console.log(func.checkNum(args[2], 0))
-                if (func.checkNum(args[1]) && func.checkNum(args[2], 0) != 0 && func.checkNum(args[2], 0)) {
+console.log(args[2])
+                if (func.checkNum(args[1]) && func.checkNum(args[2], 0)) {
                     n.spliceFields(args[1] - 1, args[2])
                     let log = removeE.embeds[0].fields.splice(args[1] - 1, args[2])
                     let logValues = log.map(values => `${values.name}\n${values.value}\n`)
                     let remaining = n.fields.map(values => `${values.name}\n${values.value}\n`)
                     client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} removed event: ${code}diff\n- Removed\n${logValues.join("\n")}\n+ Remaining\n ${remaining.join("\n")}${code}`);
                     removeE.edit(n)
-                } else if (args[1] === undefined || args[2] === undefined || !args[1] || !args[2]) {
+                } else if (args[1] === false || args[2] === false) {
                     message.channel.send(`You must provide the starting field and a delete count. Examples: ${code}1 1 - This will start at the first field and delete 1 (Removing the first).\n3 2 - Starts at the 3rd field and removes the 3rd and 4th field.${code}`)
                 }
                 else {
