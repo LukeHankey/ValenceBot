@@ -8,7 +8,7 @@ module.exports = client => {
 			.filter(d => d.endsWith(".js"));
 
 		for (const file of commandFiles) {
-			const command = require(`../commands/${dirs}/${file}`);
+			const command = require(`../commands/${dirs}/${ file }`);
 			client.commands.set(command.name, command);
 		}
 	};

@@ -1,5 +1,6 @@
 const colors = require('../../colors.json')
 const Discord = require("discord.js");
+const func = require('../../functions.js')
 
 module.exports = {
 	name: "calendar",
@@ -21,7 +22,7 @@ module.exports = {
         switch (args[0]) {
             case "create":
             if (perms.admin) {
-                function embed(title = `Calendar for ${months[monthIndex]}`, description = "This months events are as follows:",) {
+                function embed(title, description = "This months events are as follows:",) {
                 const embed = new Discord.MessageEmbed()
                     .setTitle(title)
                     .setDescription(description)
@@ -31,8 +32,15 @@ module.exports = {
                     .setFooter(`Valence Bot created by Luke_#8346`, client.user.displayAvatarURL())
                     return embed;
                 }
-                client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> created a new Calendar embed.`);
-                message.channel.send(embed())
+
+                if (!args[1]) {
+                    client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> created a new Calendar embed.`);
+                    message.channel.send(embed(`Calendar for ${months[monthIndex]}`))
+                }
+                else {
+                    client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> created a new Calendar embed.`);
+                    message.channel.send(embed(`Calendar for ${func.capitalise(args[1])}`))
+                }
             } else {
                 return message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
                 .addField("Only the following Roles & Users can:", perms.joinA, true)
