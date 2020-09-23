@@ -65,15 +65,46 @@ module.exports = {
             break;
             case "add": 
             settings.findOne({ _id: message.guild.name }).then(async r => {
-                const monthInc = r.calendarID.filter(obj => obj.month === args[1] || obj.month.substring(0, 3) === args[1].substring(0, 3))
+                const monthInc = r.calendarID.filter(obj => obj.month.toLowerCase() === args[1].toLowerCase() || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase())
                 if (monthInc && monthInc.length !== 0) {
-                    if (args[1] === monthInc[0].month || args[1] === monthInc[0].month.substring(0, 3)) {
-                        let [...rest] = args.slice(2)
-                        let m = await message.channel.messages.fetch(monthInc[0].messageID)
-                        .catch(err => {
-                            message.channel.send("Try again in the <#626172209051860992> channel.")
-                            return
-                        })
+                    if (args[1].toLowerCase() === monthInc[0].month.toLowerCase() || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
+                        
+                        try {
+                            let [...rest] = args.slice(2)
+                            let m = await message.channel.messages.fetch(monthInc[0].messageID)
+                            const date = rest.slice(0, rest.indexOf("Event:")).join(" ")
+                            const event = rest.slice(rest.indexOf("Event:") + 1, rest.indexOf("Time:")).join(" ")
+                            const time = rest.slice(rest.indexOf("Time:") + 1, rest.indexOf("Announcement:")).join(" ")
+                            const link = rest.slice(rest.indexOf("Announcement:") + 1, rest.indexOf("Host:")).join(" ")
+                            const host = message.mentions.members.first() || message.mentions.roles.first()
+                            
+                            if (!date || !event || !time || !link || !host) {
+                                message.channel.send(`Please provide the content that you would like to add to the calendar. Acceptable format below:\n${code}\n21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include <Date> Event: / Time: / Announcement: / Host: \nStarting with capitals and including the colon.${code}`)
+                            }
+                            else {
+                                let editEmbed = new Discord.MessageEmbed(m.embeds[0])
+                                .addFields(
+                                    { name: date, value: `Event: ${event}\nTime: ${time}\n[Announcement](${link})\nHost: ${host}`}
+                                )
+                            m.edit(editEmbed)
+                            client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
+                            }
+                        }
+                        catch (err) {
+                            if (err.message === "Unknown Message") {
+                                message.channel.send("Calendar not found. - It may have been deleted.")
+                                .then(m => m.delete({ timeout: 5000 }))
+                            } else {
+                                message.channel.send("Try again in the <#626172209051860992> channel.")
+                            }
+                        }
+                    }
+                }
+                else {
+                    const currentMonthMessage = r.calendarID.filter(obj => obj.month === currentMonth)
+                    try {
+                        let [...rest] = args.slice(1)
+                        let m = await message.channel.messages.fetch(currentMonthMessage[0].messageID)
                         const date = rest.slice(0, rest.indexOf("Event:")).join(" ")
                         const event = rest.slice(rest.indexOf("Event:") + 1, rest.indexOf("Time:")).join(" ")
                         const time = rest.slice(rest.indexOf("Time:") + 1, rest.indexOf("Announcement:")).join(" ")
@@ -92,32 +123,26 @@ module.exports = {
                         client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
                         } 
                     }
-                }
-                else {
-                    const currentMonthMessage = r.calendarID.filter(obj => obj.month === currentMonth)
-                    let [...rest] = args.slice(1)
-                    let m = await message.channel.messages.fetch(currentMonthMessage[0].messageID)
-                    .catch(err => {
+                    catch (err) {
+                        if (err.message === "Unknown Message") {
+                            return message.channel.send(`Calendar not found. - It may have been deleted. Attempting to remove all calendars for the month of ${currentMonth}...`)
+                            .then(mes => {
+                                settings.findOne({ _id: message.guild.name })
+                                .then(async re => {
+                                let mObj = await re.calendarID.filter(x => x.month === currentMonth)
+                                let mID = mObj[mObj.length - 1].messageID
+
+                                settings.findOneAndUpdate({ _id: message.guild.name }, { $pull: { calendarID: { month: currentMonth } } })
+                                message.channel.messages.fetch(mID)
+                                .then(m => m.delete())
+                            })
+                            setTimeout(() => {
+                                mes.edit(`Calendars for ${currentMonth} have been removed. Recreate a new calendar.`)
+                            }, 5000)
+                            })
+                        }
                         message.channel.send("Try again in the <#626172209051860992> channel.")
-                        return
-                    })
-                    const date = rest.slice(0, rest.indexOf("Event:")).join(" ")
-                    const event = rest.slice(rest.indexOf("Event:") + 1, rest.indexOf("Time:")).join(" ")
-                    const time = rest.slice(rest.indexOf("Time:") + 1, rest.indexOf("Announcement:")).join(" ")
-                    const link = rest.slice(rest.indexOf("Announcement:") + 1, rest.indexOf("Host:")).join(" ")
-                    const host = message.mentions.members.first() || message.mentions.roles.first()
-                    
-                    if (!date || !event || !time || !link || !host) {
-                        message.channel.send(`Please provide the content that you would like to add to the calendar. Acceptable format below:\n${code}\n21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include <Date> Event: / Time: / Announcement: / Host: \nStarting with capitals and including the colon.${code}`)
                     }
-                    else {
-                        let editEmbed = new Discord.MessageEmbed(m.embeds[0])
-                        .addFields(
-                            { name: date, value: `Event: ${event}\nTime: ${time}\n[Announcement](${link})\nHost: ${host}`}
-                        )
-                    m.edit(editEmbed)
-                    client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
-                    } 
                 }
             })
             break
