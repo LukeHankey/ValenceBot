@@ -81,8 +81,9 @@ module.exports = {
                     return message.channel.send("Try again in the <#626172209051860992> channel.")
                 })
                 let n = new Discord.MessageEmbed(removeE.embeds[0])
-
-                if (func.checkNum(args[1]) && func.checkNum(args[2], 0) != 0 && args[2]) {
+console.log(args[1])
+console.log(args[2])
+                if (func.checkNum(args[1]) && func.checkNum(args[2], 0) != 0 && func.checkNum(args[2], 0)) {
                     n.spliceFields(args[1] - 1, args[2])
                     let log = removeE.embeds[0].fields.splice(args[1] - 1, args[2])
                     let logValues = log.map(values => `${values.name}\n${values.value}\n`)
