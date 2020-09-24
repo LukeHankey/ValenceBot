@@ -109,8 +109,9 @@ module.exports = {
                         const event = rest.slice(rest.indexOf("Event:") + 1, rest.indexOf("Time:")).join(" ")
                         const time = rest.slice(rest.indexOf("Time:") + 1, rest.indexOf("Announcement:")).join(" ")
                         const link = rest.slice(rest.indexOf("Announcement:") + 1, rest.indexOf("Host:")).join(" ")
-                        const host = message.mentions.members.first() || message.mentions.roles.first()
-                        
+                        const hostCollection = message.mentions.members.keyArray().map(id => `<@${id}>`)
+                        const host = hostCollection.join(" ") || message.mentions.roles.first()
+
                         if (!date || !event || !time || !link || !host) {
                             message.channel.send(`Please provide the content that you would like to add to the calendar. Acceptable format below:\n${code}\n21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include <Date> Event: / Time: / Announcement: / Host: \nStarting with capitals and including the colon.${code}`)
                         }
