@@ -5,9 +5,9 @@ const getDb = require("../../mongodb").getDb;
 
 module.exports = {
 	name: "calendar",
-	description: ["Creates an embed for a calender, with an optional <Month> parameter.", "Add to the current calendar embed by specifying specific parameters. Also add to a specific calendar by specifying the", "Edit the current calendar to remove or add events in a specific position."],
+	description: ["Creates an embed for a calender, with an optional <Month> parameter.", "Add to the current calendar embed by specifying specific parameters. Also add to a specific calendar by specifying the month.", "Edit the current calendar to remove or add events in a specific position. Also edit a specific calendar by specifying the month."],
 	aliases: ["cal"],
-	usage: ["create <month>", "add <month> <Date> Event: <event text> Time: <time> Announcement: <link> Host: <@member/role>", "edit <starting field> <delete count> <addfields (same as add but adding to a specific position)>"],
+	usage: ["create <month>", "add <month> <Date> Event: <event text> Time: <time> Announcement: <link> Host: <@member/role>", "edit <month> <starting field> <delete count> <addfields (same as add but adding to a specific position)>"],
 	run: async (client, message, args, perms) => {
 		if (!perms.mod) {
             return message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
@@ -75,8 +75,9 @@ module.exports = {
                             const date = rest.slice(0, rest.indexOf("Event:")).join(" ")
                             const event = rest.slice(rest.indexOf("Event:") + 1, rest.indexOf("Time:")).join(" ")
                             const time = rest.slice(rest.indexOf("Time:") + 1, rest.indexOf("Announcement:")).join(" ")
-                            const link = rest.slice(rest.indexOf("Announcement:") + 1, rest.indexOf("Host:")).join(" ")
-                            const host = message.mentions.members.first() || message.mentions.roles.first()
+                            const link = rest.slice(rest.indexOf("Announcement:") + 1, rest.indexOf("Host:")).join(" ") || ""
+                            const hostCollection = message.mentions.members.keyArray().map(id => `<@${id}>`)
+                            const host = hostCollection.join(" ") || message.mentions.roles.first()
                             
                             if (!date || !event || !time || !link || !host) {
                                 message.channel.send(`Please provide the content that you would like to add to the calendar. Acceptable format below:\n${code}\n21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include <Date> Event: / Time: / Announcement: / Host: \nStarting with capitals and including the colon.${code}`)
@@ -108,7 +109,7 @@ module.exports = {
                         const date = rest.slice(0, rest.indexOf("Event:")).join(" ")
                         const event = rest.slice(rest.indexOf("Event:") + 1, rest.indexOf("Time:")).join(" ")
                         const time = rest.slice(rest.indexOf("Time:") + 1, rest.indexOf("Announcement:")).join(" ")
-                        const link = rest.slice(rest.indexOf("Announcement:") + 1, rest.indexOf("Host:")).join(" ")
+                        const link = rest.slice(rest.indexOf("Announcement:") + 1, rest.indexOf("Host:")).join(" ") || ""
                         const hostCollection = message.mentions.members.keyArray().map(id => `<@${id}>`)
                         const host = hostCollection.join(" ") || message.mentions.roles.first()
 
@@ -156,8 +157,13 @@ module.exports = {
                         const date = rest.slice(0, rest.indexOf("Event:")).join(" ")
                         const event = `Event: ${rest.slice(rest.indexOf("Event:") + 1, rest.indexOf("Time:")).join(" ")}`
                         const time = `Time: ${rest.slice(rest.indexOf("Time:") + 1, rest.indexOf("Announcement:")).join(" ")}`
-                        const link = `[Announcement](${rest.slice(rest.indexOf("Announcement:") + 1, rest.indexOf("Host:")).join(" ")})`
-                        const host = `Host: ${message.mentions.members.first() || message.mentions.roles.first()}`
+                        const link = `[Announcement](${rest.slice(rest.indexOf("Announcement:") + 1, rest.indexOf("Host:")).join(" ")})` || ""
+                        const hostCollection = message.mentions.members.keyArray().map(id => `<@${id}>`)
+                        const host = `Host: ${hostCollection.join(" ") || message.mentions.roles.first()}`
+
+
+                        console.log(link)
+                    console.log(host)
 
                         let [...params] = [event, time, link, host]
 
@@ -190,8 +196,9 @@ module.exports = {
                     const date = rest.slice(0, rest.indexOf("Event:")).join(" ")
                     const event = `Event: ${rest.slice(rest.indexOf("Event:") + 1, rest.indexOf("Time:")).join(" ")}`
                     const time = `Time: ${rest.slice(rest.indexOf("Time:") + 1, rest.indexOf("Announcement:")).join(" ")}`
-                    const link = `[Announcement](${rest.slice(rest.indexOf("Announcement:") + 1, rest.indexOf("Host:")).join(" ")})`
-                    const host = `Host: ${message.mentions.members.first() || message.mentions.roles.first()}`
+                    const link = `[Announcement](${rest.slice(rest.indexOf("Announcement:") + 1, rest.indexOf("Host:")).join(" ")})` || ""
+                    const hostCollection = message.mentions.members.keyArray().map(id => `<@${id}>`)
+                    const host = `Host: ${hostCollection.join(" ") || message.mentions.roles.first()}`
 
                     let [...params] = [event, time, link, host]
 
