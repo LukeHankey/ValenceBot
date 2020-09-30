@@ -2,6 +2,7 @@ const Discord = require("discord.js");
 const colors = require("../../colors.json");
 const getDb = require("../../mongodb").getDb;
 const func = require("../../functions.js")
+const cron = require('node-cron');
 
 module.exports = {
 	name: "citadel",
@@ -351,9 +352,13 @@ module.exports = {
                                         }
                                         else if (r.resetInfoCount == 1) {
                                             message.channel.send("You can't use that command again. Please wait until the next reset!")
-                                            setTimeout(() => {
-                                                settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 0 }})
-                                            }, day)
+                                            let timestamp = message.createdTimestamp
+                                            let timestampDay = timestamp + day
+                                            cron.schedule('0 */1 * * *', async () => { // 0 */1 * * *
+                                                if (Date.now() === timestampDay || Date.now() > timestampDay) {
+                                                    settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 0 }})
+                                                }
+                                            })
                                         }
                                     })
 								}
