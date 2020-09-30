@@ -341,10 +341,18 @@ module.exports = {
                                                 collectorT.on('collect', (react, u) => {
                                                     let userRoles = message.member.roles
                                                     if (userRoles.cache.has(r.roles.modRole.slice(3, 21)) || userRoles.cache.has(r.roles.adminRole.slice(3, 21))) return
-                                                    else settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 1 }}, { returnOriginal: false})
+                                                    else {
+                                                        settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 1 }}, { returnOriginal: false})
+                                                        let timestamp = Date.now() + day
+                                                        cron.schedule('0 */1 * * *', async () => { 
+                                                            if (Date.now() > timestamp && (Date.now() - timestamp < day)) {
+                                                                settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 0 }})
+                                                            }
+                                                        })
+                                                    } 
                                                 })
                                                 collectorC.on('collect', (r, u) => {
-                                                    return
+                                                    settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 0 }})
                                                 })
                                             })
                                             message.delete();
@@ -352,13 +360,6 @@ module.exports = {
                                         }
                                         else if (r.resetInfoCount == 1) {
                                             message.channel.send("You can't use that command again. Please wait until the next reset!")
-                                            let timestamp = message.createdTimestamp
-                                            let timestampDay = timestamp + day
-                                            cron.schedule('0 */1 * * *', async () => { // 0 */1 * * *
-                                                if (Date.now() === timestampDay || Date.now() > timestampDay) {
-                                                    settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 0 }})
-                                                }
-                                            })
                                         }
                                     })
 								}
@@ -384,10 +385,18 @@ module.exports = {
                                             collectorT.on('collect', (react, u) => {
                                                 let userRoles = message.member.roles
                                                 if (userRoles.cache.has(r.roles.modRole.slice(3, 21)) || userRoles.cache.has(r.roles.adminRole.slice(3, 21))) return
-                                                else settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 1 }}, { returnOriginal: false})
+                                                else {
+                                                    settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 1 }}, { returnOriginal: false})
+                                                    let timestamp = Date.now() + day
+                                                    cron.schedule('0 */1 * * *', async () => { 
+                                                        if (Date.now() > timestamp && (Date.now() - timestamp < day)) {
+                                                            settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 0 }})
+                                                        }
+                                                    })
+                                                }
                                             })
                                             collectorC.on('collect', (r, u) => {
-                                                return
+                                                settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 0 }})
                                             })
                                         })
                                         message.delete();
@@ -395,9 +404,6 @@ module.exports = {
                                     }
                                     else if (r.resetInfoCount == 1) {
                                         message.channel.send("You can't use that command again. Please wait until the next reset!")
-                                        setTimeout(() => {
-                                            settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 0 }})
-                                        }, day)
                                     }
                                 })
 							}
