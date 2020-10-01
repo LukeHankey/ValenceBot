@@ -24,7 +24,7 @@ run: async (client, message, args, perms) => {
         const gsapi = google.sheets({ version: "v4", auth: gClient })
         const opt = { // READ ONLY OPTIONS
             spreadsheetId: "1ZView14HaimCuCUg_durvI-3wiOn4Pf5mZRKYVwrHlY",
-            range: "September 2020!A2:C52",
+            range: "October 2020!A2:C52",
         }
 
         let userData = []; // Holds all fields in specified range
