@@ -9,7 +9,7 @@ description: ["Shows a list of everyone in the current months lottery.", "Shows 
 aliases: ["lottery"],
 usage: ["", "<user>", "add <amount> <collector> <clanmate>"],
 run: async (client, message, args, perms) => {
-    if (message.guild.id !== "472448603642920973") return message.channel.send("You can't use that command in this server.")
+    // if (message.guild.id !== "472448603642920973") return message.channel.send("You can't use that command in this server.")
 
     gsheet.googleClient.authorize(err => {
         if (err) console.error(err)
@@ -76,9 +76,8 @@ run: async (client, message, args, perms) => {
             case "add":
                 let rsn = args.slice(3).join(" ")
                 let collectors = ["bank", "julian", "gabe", "hazey", "luke", "moon", "prov", "sarah", "zinedin"]
-                function collectorsName(name) {
-                    if (name === undefined) return
-                    else name = collectors.indexOf(args[2].toLowerCase())
+                function collectorsName() {
+                    return collectors.indexOf(args[2].toLowerCase())
                 }
                 let collNames = function() {
                     let names = collectors.map(name => func.capitalise(name))
