@@ -9,7 +9,7 @@ description: ["Shows a list of everyone in the current months lottery.", "Shows 
 aliases: ["lottery"],
 usage: ["", "<user>", "add <amount> <collector> <clanmate>"],
 run: async (client, message, args, perms) => {
-    // if (message.guild.id !== "472448603642920973") return message.channel.send("You can't use that command in this server.")
+    if (message.guild.id !== "472448603642920973") return message.channel.send("You can't use that command in this server.")
 
     gsheet.googleClient.authorize(err => {
         if (err) console.error(err)
@@ -17,7 +17,7 @@ run: async (client, message, args, perms) => {
     })
 
     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-    const monthIndex = (new Date()).getUTCMonth()
+    const monthIndex = (new Date()).getUTCMonth() -1
     let page = 1;
 
     async function googleSheets(gClient) {
