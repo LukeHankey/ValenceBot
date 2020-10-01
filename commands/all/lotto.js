@@ -183,7 +183,7 @@ run: async (client, message, args, perms) => {
                                 else if (rsn.split(/ /g).includes("-double")) {
                                     message.channel.send(lottoEmbed
                                         .spliceFields(0, 1, { name: `RuneScape Name:`, value: `${rsn.split(/ /g).slice(0, -1).join(" ")}`, inline: true })
-                                        .spliceFields(1, 1, { name: `Amount:`, value: `${checkValue(args[1])}`, inline: true })
+                                        .spliceFields(1, 2, [{ name: `Amount:`, value: `${checkValue(args[1])}`, inline: true }, { name: `To:`, value: `${func.capitalise(collectors[collectorsName()])}`, inline: true }])
                                         .addField("Double Entry:", "Yes", true))
                                         newArr.push([userData.length + 1, rsn.split(/ /g).slice(0, -1).join(" "), args[1], func.capitalise(collectors[collectorsName()]), "No", "Double Entry"])
                                     await gsapi.spreadsheets.values.append(optW)
