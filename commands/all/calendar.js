@@ -14,14 +14,6 @@ module.exports = {
             .addField("Only the following Roles & Users can:", perms.joinM, true)
             .addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
         }
-
-        /* Commands
-        * Add event to end, or specific position - Done
-        * Edit specific event details, specify the position of the event - Done
-        * Move events to a different position
-        * Delete events
-        */
-
         let db = getDb()
         let settings = db.collection("Settings")
 
@@ -280,6 +272,12 @@ module.exports = {
                         let n = new Discord.MessageEmbed(removeE.embeds[0])
                         n.spliceFields(args[2] - 1, args[3])
                         removeE.edit(n)
+                        
+                        let log = removeE.embeds[0].fields.splice(args[2] - 1, args[3])
+                        let logValues = log.map(values => `${values.name}\n${values.value}\n`)
+                        let remaining = n.fields.map(values => `${values.name}\n${values.value}\n`)
+                        client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} removed event: ${code}diff\n- Removed\n${logValues.join("\n")}\n+ Remaining\n ${remaining.join("\n")}${code}`);
+                        
                     }
                 }
                 else {
@@ -291,6 +289,11 @@ module.exports = {
                     let n = new Discord.MessageEmbed(removeE.embeds[0])
                     n.spliceFields(args[1] - 1, args[2])
                     removeE.edit(n)
+
+                    let log = removeE.embeds[0].fields.splice(args[1] - 1, args[2])
+                    let logValues = log.map(values => `${values.name}\n${values.value}\n`)
+                    let remaining = n.fields.map(values => `${values.name}\n${values.value}\n`)
+                    client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} removed event: ${code}diff\n- Removed\n${logValues.join("\n")}\n+ Remaining\n ${remaining.join("\n")}${code}`);
                 }
             })
             break;
