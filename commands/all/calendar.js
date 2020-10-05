@@ -5,15 +5,22 @@ const getDb = require("../../mongodb").getDb;
 
 module.exports = {
 	name: "calendar",
-	description: ["Creates an embed for a calender, with an optional <Month> parameter.", "Add to the current calendar embed by specifying specific parameters. Also add to a specific calendar by specifying the month.", "Edit the current calendar to remove or add events in a specific position. Also edit a specific calendar by specifying the month."],
+	description: ["Creates an embed for a calender - defaults to the current month.", "Add an event to the current or specified calendar month. Position defaults to the end of the calendar. \nExample:\n ```css\n;calendar add 4 Date: 13th Event: New Event Title! Time: 20:00 - 21:00 Announcement: <link> Host: @everyone```", "Edit the current or specified calendar month by field name:\n Date: / Event: / Time: / Announcement: / Host:", "Removes 1 or more events from the current or specified calendar month.", "Moves one event from x position to y position in the current or specified calendar month."],
 	aliases: ["cal"],
-	usage: ["create <month>", "add <month> <Date> Event: <event text> Time: <time> Announcement: <link> Host: <@member/role>", "edit <month> <starting field> <delete count> <addfields (same as add but adding to a specific position)>"],
+	usage: ["create <month (optional)>", "add <month (optional)> <position (optional)> Date: <Date> Event: <event text> Time: <time> Announcement: <link> Host: <@member(s)/role>", "edit <month (optional)> <starting field> <event field> <new value>", "remove <month (optional)> <starting field> <delete count>", "move <month (optional)> <from position> <to position>"],
 	run: async (client, message, args, perms) => {
 		if (!perms.mod) {
             return message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
             .addField("Only the following Roles & Users can:", perms.joinM, true)
             .addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
         }
+
+        /* Commands
+        * Add event to end, or specific position - Done
+        * Edit specific event details, specify the position of the event - Done
+        * Move events to a different position
+        * Delete events
+        */
 
         let db = getDb()
         let settings = db.collection("Settings")
@@ -68,11 +75,12 @@ module.exports = {
                 const monthInc = r.calendarID.filter(obj => obj.month.toLowerCase() === args[1].toLowerCase() || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase())
                 if (monthInc && monthInc.length !== 0) {
                     if (args[1].toLowerCase() === monthInc[0].month.toLowerCase() || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
-                        
+                        // Adding to a specified month \\
                         try {
                             let [...rest] = args.slice(2)
+
                             let m = await message.channel.messages.fetch(monthInc[0].messageID)
-                            const date = rest.slice(0, rest.indexOf("Event:")).join(" ")
+                            const date = rest.slice(rest.indexOf("Date:") + 1, rest.indexOf("Event:")).join(" ")
                             const event = rest.slice(rest.indexOf("Event:") + 1, rest.indexOf("Time:")).join(" ")
                             const time = rest.slice(rest.indexOf("Time:") + 1, rest.indexOf("Announcement:")).join(" ")
                             const link = rest.slice(rest.indexOf("Announcement:") + 1, rest.indexOf("Host:")).join(" ") || ""
@@ -80,21 +88,40 @@ module.exports = {
                             const host = hostCollection.join(" ") || message.mentions.roles.first()
                             
                             if (!date || !event || !time || !link || !host) {
-                                message.channel.send(`Please provide the content that you would like to add to the calendar. Acceptable format below:\n${code}\n21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include <Date> Event: / Time: / Announcement: / Host: \nStarting with capitals and including the colon.${code}`)
+                                message.channel.send(`Please provide the content that you would like to add to the calendar. Acceptable format below:\n${code}\nDate: 21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include Date: / Event: / Time: / Announcement: / Host: \nStarting with capitals and including the colon.${code}`)
                             }
                             else {
                                 let editEmbed = new Discord.MessageEmbed(m.embeds[0])
-                                .addFields(
-                                    { name: date, value: `Event: ${event}\nTime: ${time}\n[Announcement](${link})\nHost: ${host}`}
-                                )
-                            m.edit(editEmbed)
+                                if (args[2] !== "Date:" && func.checkNum(args[2], 1)) {
+                                    editEmbed.spliceFields(args[2] - 1, 0, { name: date, value: `Event: ${event}\nTime: ${time}\n[Announcement](${link})\nHost: ${host}`})
+                                    m.edit(editEmbed)
+                                }
+                                else {
+                                    editEmbed.addFields(
+                                        { name: date, value: `Event: ${event}\nTime: ${time}\n[Announcement](${link})\nHost: ${host}`}
+                                    )
+                                    m.edit(editEmbed)
+                                }
                             client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
                             }
                         }
                         catch (err) {
                             if (err.message === "Unknown Message") {
-                                message.channel.send("Calendar not found. - It may have been deleted.")
-                                .then(m => m.delete({ timeout: 5000 }))
+                            return message.channel.send(`Calendar not found. - It may have been deleted. Attempting to remove all calendars for the month of ${args[1]}...`)
+                            .then(mes => {
+                                settings.findOne({ _id: message.guild.name })
+                                .then(async re => {
+                                let mObj = await re.calendarID.filter(x => x.month === args[1])
+                                let mID = mObj[mObj.length - 1].messageID
+
+                                settings.findOneAndUpdate({ _id: message.guild.name }, { $pull: { calendarID: { month: args[1] } } })
+                                message.channel.messages.fetch(mID)
+                                .then(m => m.delete())
+                            })
+                            setTimeout(() => {
+                                mes.edit(`Calendars for ${args[1]} have been removed. Recreate a new calendar.`)
+                            }, 5000)
+                            })
                             } else {
                                 message.channel.send("Try again in the <#626172209051860992> channel.")
                             }
@@ -106,7 +133,7 @@ module.exports = {
                     try {
                         let [...rest] = args.slice(1)
                         let m = await message.channel.messages.fetch(currentMonthMessage[0].messageID)
-                        const date = rest.slice(0, rest.indexOf("Event:")).join(" ")
+                        const date = rest.slice(rest.indexOf("Date:") + 1, rest.indexOf("Event:")).join(" ")
                         const event = rest.slice(rest.indexOf("Event:") + 1, rest.indexOf("Time:")).join(" ")
                         const time = rest.slice(rest.indexOf("Time:") + 1, rest.indexOf("Announcement:")).join(" ")
                         const link = rest.slice(rest.indexOf("Announcement:") + 1, rest.indexOf("Host:")).join(" ") || ""
@@ -118,10 +145,16 @@ module.exports = {
                         }
                         else {
                             let editEmbed = new Discord.MessageEmbed(m.embeds[0])
-                            .addFields(
+                            if (args[2] !== "Date:" && func.checkNum(args[2], 1)) {
+                                editEmbed.spliceFields(args[1] - 1, 0, { name: date, value: `Event: ${event}\nTime: ${time}\n[Announcement](${link})\nHost: ${host}`})
+                                m.edit(editEmbed)
+                            }
+                            else {
+                                editEmbed.addFields(
                                 { name: date, value: `Event: ${event}\nTime: ${time}\n[Announcement](${link})\nHost: ${host}`}
-                            )
-                        m.edit(editEmbed)
+                                )
+                                m.edit(editEmbed)
+                            }
                         client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
                         } 
                     }
@@ -151,78 +184,143 @@ module.exports = {
             case "edit": 
             settings.findOne({ _id: message.guild.name }).then(async r => {
                 const monthInc = r.calendarID.filter(obj => obj.month === args[1] || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase())
+                // Editing a specific month \\
                 if (monthInc && monthInc.length !== 0) {
                     if (args[1] === monthInc[0].month || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
-                    let [...rest] = args.slice(4)
-                        const date = rest.slice(0, rest.indexOf("Event:")).join(" ")
-                        const event = `Event: ${rest.slice(rest.indexOf("Event:") + 1, rest.indexOf("Time:")).join(" ")}`
-                        const time = `Time: ${rest.slice(rest.indexOf("Time:") + 1, rest.indexOf("Announcement:")).join(" ")}`
-                        const link = `[Announcement](${rest.slice(rest.indexOf("Announcement:") + 1, rest.indexOf("Host:")).join(" ")})` || ""
-                        const hostCollection = message.mentions.members.keyArray().map(id => `<@${id}>`)
-                        const host = `Host: ${hostCollection.join(" ") || message.mentions.roles.first()}`
+                        let [...rest] = args.slice(3)
+                        let fieldParams = ["date:", "event:", "time:", "announcement:", "host:"]
+                        let parameter = fieldParams.indexOf(args[3].toLowerCase())
 
-
-                        console.log(link)
-                    console.log(host)
-
-                        let [...params] = [event, time, link, host]
-
-                        let removeE = await message.channel.messages.fetch(monthInc[0].messageID)
+                        let editE = await message.channel.messages.fetch(monthInc[0].messageID)
                         .catch(err => {
                             return message.channel.send("Try again in the <#626172209051860992> channel.")
                         })
-                        let n = new Discord.MessageEmbed(removeE.embeds[0])
+                        let n = new Discord.MessageEmbed(editE.embeds[0])
 
-                        if (func.checkNum(args[2]) && func.checkNum(args[3], 0) && args[2] !== undefined && args[3] !== undefined && params[3].includes("undefined")) {
-                            n.spliceFields(args[2] - 1, args[3])
-                            let log = removeE.embeds[0].fields.splice(args[2] - 1, args[3])
-                            let logValues = log.map(values => `${values.name}\n${values.value}\n`)
-                            let remaining = n.fields.map(values => `${values.name}\n${values.value}\n`)
-                            client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} removed event: ${code}diff\n- Removed\n${logValues.join("\n")}\n+ Remaining\n ${remaining.join("\n")}${code}`);
-                            removeE.edit(n)
-                        } else if (func.checkNum(args[2]) === false || func.checkNum(args[3], 0) === false || args[2] === undefined || args[3] === undefined) {
-                            message.channel.send(`You must provide the starting field and a delete count. Examples: ${code}1 1 - This will start at the first field and delete 1 (Removing the first).\n3 2 - Starts at the 3rd field and removes the 3rd and 4th field.${code}`)
+                        let fields = n.fields[args[2] - 1]
+                        if (fieldParams.includes(args[2].toLowerCase())) {
+                            if (fieldParams[0] === rest[0].toLowerCase()) {
+                                n.spliceFields(args[2] - 1, 1, { name: rest.slice(1).join(" "), value: fields.value })
+                                editE.edit(n)
+                            } 
+                            else if (fieldParams[parameter] === rest[0].toLowerCase() && rest[0].toLowerCase() !== fieldParams[0]) {
+                                let values = fields.value.split("\n")
+                                let newValue = ` ${rest.slice(1).join(" ")}`
+                                if (fieldParams[parameter] !== fieldParams[3]) {
+                                    let value = values.filter(value => value.toLowerCase().includes(fieldParams[parameter]))
+                                    let fieldValue = value.join(" ").split(`${func.capitalise(fieldParams[parameter])}`) // Doesn't work for announcement
+                                    n.spliceFields(args[2] - 1, 1, { name: fields.name, value: fields.value.replace(fieldValue[1], newValue) })
+                                    editE.edit(n) 
+                                }
+                                else {
+                                    let annVal = values[2].split("](")
+                                    newValue = ` ${rest.slice(1).join(" ")})`
+                                    n.spliceFields(args[2] - 1, 1, { name: fields.name, value: fields.value.replace(annVal[1], newValue) })
+                                    editE.edit(n) 
+                                }
+                            }
+                            client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
                         }
                         else {
-                            n.spliceFields(args[2] - 1, args[3], { name: date, value: `${params.join("\n")}`})
-                            removeE.edit(n)
-                            client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
+                            message.channel.send(`You must provide the event number you want to edit as well as the field. Examples: ${code}1 Time: 14:00 - 15:00. - Gets the 1st event and edits the Time field to the new value.\n3 Date: 5th. - Gets the 3rd event and edits the Date field to the new value.${code}`)
                         }
                     }
                 }
                 else {
                     const currentMonthMessage = r.calendarID.filter(obj => obj.month === currentMonth)
-                    let [...rest] = args.slice(3)
-                    const date = rest.slice(0, rest.indexOf("Event:")).join(" ")
-                    const event = `Event: ${rest.slice(rest.indexOf("Event:") + 1, rest.indexOf("Time:")).join(" ")}`
-                    const time = `Time: ${rest.slice(rest.indexOf("Time:") + 1, rest.indexOf("Announcement:")).join(" ")}`
-                    const link = `[Announcement](${rest.slice(rest.indexOf("Announcement:") + 1, rest.indexOf("Host:")).join(" ")})` || ""
-                    const hostCollection = message.mentions.members.keyArray().map(id => `<@${id}>`)
-                    const host = `Host: ${hostCollection.join(" ") || message.mentions.roles.first()}`
+                    let [...rest] = args.slice(2)
+                    let fieldParams = ["date:", "event:", "time:", "announcement:", "host:"]
+                    let parameter = fieldParams.indexOf(args[2].toLowerCase())
 
-                    let [...params] = [event, time, link, host]
+                    let editE = await message.channel.messages.fetch(currentMonthMessage[0].messageID)
+                    .catch(err => {
+                        return message.channel.send("Try again in the <#626172209051860992> channel.")
+                    })
+                    let n = new Discord.MessageEmbed(editE.embeds[0])
 
+                    let fields = n.fields[args[1] - 1]
+                    if (fieldParams.includes(args[2].toLowerCase())) {
+                        if (fieldParams[0] === rest[0].toLowerCase()) {
+                            n.spliceFields(args[1] - 1, 1, { name: rest.slice(1).join(" "), value: fields.value })
+                            editE.edit(n)
+                        } 
+                        else if (fieldParams[parameter] === rest[0].toLowerCase() && rest[0].toLowerCase() !== fieldParams[0]) {
+                            let values = fields.value.split("\n")
+                            let newValue = ` ${rest.slice(1).join(" ")}`
+                            if (fieldParams[parameter] !== fieldParams[3]) {
+                                let value = values.filter(value => value.toLowerCase().includes(fieldParams[parameter]))
+                                let fieldValue = value.join(" ").split(`${func.capitalise(fieldParams[parameter])}`) // Doesn't work for announcement
+                                n.spliceFields(args[1] - 1, 1, { name: fields.name, value: fields.value.replace(fieldValue[1], newValue) })
+                                editE.edit(n) 
+                            }
+                            else {
+                                let annVal = values[2].split("](")
+                                newValue = ` ${rest.slice(1).join(" ")})`
+                                n.spliceFields(args[1] - 1, 1, { name: fields.name, value: fields.value.replace(annVal[1], newValue) })
+                                editE.edit(n) 
+                            }
+                        }
+                        client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
+                    }
+                    else {
+                        message.channel.send(`You must provide the event number you want to edit as well as the field. Examples: ${code}1 Time: 14:00 - 15:00. - Gets the 1st event and edits the Time field to the new value.\n3 Date: 5th. - Gets the 3rd event and edits the Date field to the new value.${code}`)
+                    }
+                }
+            })
+            break;
+            case "remove":
+            settings.findOne({ _id: message.guild.name }).then(async r => {
+                const monthInc = r.calendarID.filter(obj => obj.month === args[1] || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase())
+                if (monthInc && monthInc.length !== 0) {
+                    if (args[1] === monthInc[0].month || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
+                        let removeE = await message.channel.messages.fetch(monthInc[0].messageID)
+                        .catch(err => {
+                            return message.channel.send("Try again in the <#626172209051860992> channel.")
+                        })
+                        let n = new Discord.MessageEmbed(removeE.embeds[0])
+                        n.spliceFields(args[2] - 1, args[3])
+                        removeE.edit(n)
+                    }
+                }
+                else {
+                    const currentMonthMessage = r.calendarID.filter(obj => obj.month === currentMonth)
                     let removeE = await message.channel.messages.fetch(currentMonthMessage[0].messageID)
                     .catch(err => {
                         return message.channel.send("Try again in the <#626172209051860992> channel.")
                     })
                     let n = new Discord.MessageEmbed(removeE.embeds[0])
-
-                    if (func.checkNum(args[1]) && func.checkNum(args[2], 0) && args[1] !== undefined && args[2] !== undefined && params[3].includes("undefined")) {
-                        n.spliceFields(args[1] - 1, args[2])
-                        let log = removeE.embeds[0].fields.splice(args[1] - 1, args[2])
-                        let logValues = log.map(values => `${values.name}\n${values.value}\n`)
-                        let remaining = n.fields.map(values => `${values.name}\n${values.value}\n`)
-                        client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} removed event: ${code}diff\n- Removed\n${logValues.join("\n")}\n+ Remaining\n ${remaining.join("\n")}${code}`);
-                        removeE.edit(n)
-                    } else if (func.checkNum(args[1]) === false || func.checkNum(args[2], 0) === false || args[1] === undefined || args[2] === undefined) {
-                        message.channel.send(`You must provide the starting field and a delete count. Examples: ${code}1 1 - This will start at the first field and delete 1 (Removing the first).\n3 2 - Starts at the 3rd field and removes the 3rd and 4th field.${code}`)
+                    n.spliceFields(args[1] - 1, args[2])
+                    removeE.edit(n)
+                }
+            })
+            break;
+            case "move":
+            settings.findOne({ _id: message.guild.name }).then(async r => {
+                const monthInc = r.calendarID.filter(obj => obj.month === args[1] || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase())
+                if (monthInc && monthInc.length !== 0) {
+                    if (args[1] === monthInc[0].month || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
+                        let moveE = await message.channel.messages.fetch(monthInc[0].messageID)
+                        .catch(err => {
+                            return message.channel.send("Try again in the <#626172209051860992> channel.")
+                        })
+                        let n = new Discord.MessageEmbed(moveE.embeds[0])
+                        let fields = n.fields[args[2] - 1]
+                        n.spliceFields(args[2] - 1, 1)
+                        .spliceFields(args[3] - 1, 0, { name: fields.name, value: fields.value })
+                        moveE.edit(n)
                     }
-                    else {
-                        n.spliceFields(args[1] - 1, args[2], { name: date, value: `${params.join("\n")}`})
-                        removeE.edit(n)
-                        client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
-                    }
+                }
+                else {
+                    const currentMonthMessage = r.calendarID.filter(obj => obj.month === currentMonth)
+                    let moveE = await message.channel.messages.fetch(currentMonthMessage[0].messageID)
+                    .catch(err => {
+                        return message.channel.send("Try again in the <#626172209051860992> channel.")
+                    })
+                    let n = new Discord.MessageEmbed(moveE.embeds[0])
+                    let fields = n.fields[args[1] - 1]
+                    n.spliceFields(args[1] - 1, 1)
+                    .spliceFields(args[2] - 1, 0, { name: fields.name, value: fields.value })
+                    moveE.edit(n)
                 }
             })
         }
