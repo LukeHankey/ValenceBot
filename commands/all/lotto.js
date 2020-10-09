@@ -4,7 +4,7 @@ const func = require('../../functions')
 const colors = require('../../colors.json')
 
 module.exports = {
-name: "tr",
+name: "lotto",
 description: ["Shows a list of everyone in the current months lottery.", "Shows information about the <user> lottery entry.", "Adds a clanmate's lottery entry to google sheet."],
 aliases: ["lottery"],
 usage: ["", "<user>", "add <amount> <collector> <clanmate>"],
