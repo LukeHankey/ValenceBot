@@ -5,9 +5,9 @@ const colors = require('../../colors.json')
 
 module.exports = {
 name: "lotto",
-description: ["Shows a list of everyone in the current months lottery.", "Shows information about the <user> lottery entry.", "Adds a clanmate's lottery entry to google sheet."],
+description: ["Shows a list of everyone in the current months lottery.", "Shows information about the <user> lottery entry.", "Adds a clanmate's lottery entry to google sheet.\nExample:\n```js\n;lotto add 1000000 clan bank / J ulian\n;lotto add 500000 clan bank / Guys / double```"],
 aliases: ["lottery"],
-usage: ["", "<user>", "add <amount> <collector> <clanmate>"],
+usage: ["", "<user>", "add <amount> <collector> / <clanmate> / double (optional)"],
 run: async (client, message, args, perms) => {
     if (message.guild.id !== "472448603642920973") return message.channel.send("You can't use that command in this server.")
 
