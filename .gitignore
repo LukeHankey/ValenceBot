@@ -1,0 +1,11 @@
+node_modules
+.env
+start.bat
+Webhook
+.eslintrc.json
+**/avatar.js
+**/*info.js
+**/*ban.json
+amRolePerms.js
+client_secret.json
+test*

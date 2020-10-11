@@ -1,0 +1,25 @@
+{
+  "name": "discord-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "gsheets": "node gsheets.js"
+  },
+  "author": "Guys",
+  "license": "ISC",
+  "dependencies": {
+    "assert": "^2.0.0",
+    "convert-csv-to-json": "0.0.15",
+    "csvtojson": "^2.0.10",
+    "discord.js": "^12.3.1",
+    "dotenv": "^8.2.0",
+    "eslint": "^6.8.0",
+    "express": "^4.17.1",
+    "googleapis": "^39.2.0",
+    "mongodb": "^3.6.0",
+    "node-cron": "^2.0.3",
+    "node-fetch": "^2.6.0"
+  }
+}
