@@ -11,7 +11,8 @@ module.exports = {
 		const { commands } = message.client;
 
 		const db = getDb();
-        const settings = db.collection(`Settings`)
+		const settings = db.collection(`Settings`)
+		console.log(client.commands.size)
 		
 		settings.findOne({ _id: message.guild.name })
 		.then(res => {

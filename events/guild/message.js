@@ -5,7 +5,11 @@ module.exports = async (client, message) => {
 	const settingsColl = db.collection("Settings");
 
 	if (message.author.bot) return;
+	const filterWords = ["retard", "nigger", "ngr"]
+	const blocked = filterWords.filter(word => message.content.toLowerCase().includes(word));
 	
+	if (blocked.length > 0) message.delete()
+
 	settingsColl.findOne({ serverID: `${message.guild.id}` })
 	.then(res => {
 		if (!message.content.startsWith(res.prefix)) return;
