@@ -6,7 +6,12 @@ module.exports = async (client, message) => {
 
 	if (message.author.bot) return;
 	const filterWords = ["retard", "nigger", "ngr"]
-	const blocked = filterWords.filter(word => message.content.toLowerCase().includes(word));
+	const blocked = filterWords.filter(word => { 
+		if (message.content.toLowerCase().includes("congrats")) {
+			return
+		}
+		return message.content.toLowerCase().includes(word)
+	});
 	
 	if (blocked.length > 0) message.delete()
 
