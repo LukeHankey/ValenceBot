@@ -3,6 +3,7 @@ module.exports = {
 	description: ["Evaluates code."],
 	aliases: [""],
 	usage:  ["<code>"],
+	permissions: [false],
 	run: async (client, message, args) => {
 
 		if (message.author.id !== "212668377586597888") {

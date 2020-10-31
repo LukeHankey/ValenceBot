@@ -4,7 +4,7 @@ module.exports = async (client, role) => {
 let db = getDb();
 const collection = db.collection(`Settings`);
 
-    await collection.findOne({ _id: role.guild.name })
+    await collection.findOne({ _id: role.guild.id })
     .then(res => {
         if (res.adminRole === `<@&${role.id}>`) {
             collection.findOneAndUpdate({ adminRole: `<@&${role.id}>` }, { $set: { adminRole: res.defaultAdminRole }})

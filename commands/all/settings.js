@@ -7,13 +7,14 @@ module.exports = {
 	description: ["Displays the settings that you can change.", "Shows the current prefix.", "Sets the new prefix in the server.", "Shows the current admin role.", "Sets the new admin role in the server.", "Shows the current mod role.", "Sets the new mod role in the server.", "Shows the current admin channel.", "Sets the current admin channel."],
 	aliases: ["s"],
 	usage: ["", "prefix", "prefix set <new prefix>", "adminRole", "adminRole set <new role>", "modRole", "modRole set <new role>", "adminChannel", "adminChannel set <channel>"],
-	guildSpecific: false,
+	guildSpecific: ["472448603642920973", "733164313744769024", "668330890790699079"],
+	permissions: ["Admin", "Mod"],
 	run: async (client, message, args, perms) => {
 		const code = "```";
         const db = getDb();
         const settings = db.collection(`Settings`)
 		
-		await settings.findOne({ _id: message.guild.name })
+		await settings.findOne({ _id: message.guild.id })
 		.then(async res => {
 
 		switch (args[0]) {
@@ -22,7 +23,7 @@ module.exports = {
 					case "set":						
 						if (perms.admin) {
 							if (args[2]) {
-								settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { prefix: args[2] }}, { returnOriginal: true })
+								settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { prefix: args[2] }}, { returnOriginal: true })
 								.then(r => {
 									message.channel.send(`Prefix has been changed from \`${r.value.prefix}\` to \`${args[2]}\``)
 									client.channels.cache.get("731997087721586698")
@@ -55,7 +56,7 @@ module.exports = {
 										message.channel.send("You cannot set the Admin role higher than the role you have.")
 									} 
 									else {
-										settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "roles.adminRole": `<@&${args[2]}>` }}, { returnOriginal: true })
+										settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "roles.adminRole": `<@&${args[2]}>` }}, { returnOriginal: true })
 										.then(r => {
 											message.channel.send(`The Admin Role has been changed to: <@&${args[2]}>`, { "allowedMentions": { "parse" : []}})
 											client.channels.cache.get("731997087721586698")
@@ -68,7 +69,7 @@ module.exports = {
 										message.channel.send("You cannot set the Admin role higher than the role you have.") // Update to make better message.
 									} 
 									else {
-										settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "roles.adminRole": `${roleName}` }}, { returnOriginal: true })
+										settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "roles.adminRole": `${roleName}` }}, { returnOriginal: true })
 											.then(r => {
 												message.channel.send(`The Admin Role has been changed to: <@&${roleName.id}>`, { "allowedMentions": { "parse" : []}})
 													client.channels.cache.get("731997087721586698")
@@ -83,7 +84,7 @@ module.exports = {
 									message.channel.send("You cannot set the Admin role higher than the role you have.") // Update to make better message.
 								} 
 								else {
-								settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "roles.adminRole": args[2] }}, { returnOriginal: true })
+								settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "roles.adminRole": args[2] }}, { returnOriginal: true })
 									.then(r => {
 										message.channel.send(`The Admin Role has been changed to: ${args[2]}`, { "allowedMentions": { "parse" : []}})
 											client.channels.cache.get("731997087721586698")
@@ -116,7 +117,7 @@ module.exports = {
 					case "set":							
 						if (perms.admin) {
 							if (func.checkNum(args[2], 1, Infinity) && message.guild.roles.cache.has(args[2]) && message.guild.id !== args[2] && message.guild.roles.cache.get(`${args[2]}`).permissions.has(["KICK_MEMBERS", "BAN_MEMBERS"])) { // Setting role by ID
-									settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "roles.modRole": `<@&${args[2]}>` }}, { returnOriginal: true })
+									settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "roles.modRole": `<@&${args[2]}>` }}, { returnOriginal: true })
 									.then(r => {
 										message.channel.send(`The Mod Role has been changed to: <@&${args[2]}>`, { "allowedMentions": { "parse" : []}})
 										client.channels.cache.get("731997087721586698")
@@ -124,7 +125,7 @@ module.exports = {
 									})
 							}
 							else if (roleName && message.guild.roles.cache.get(roleName.id).permissions.has(["KICK_MEMBERS", "BAN_MEMBERS"])) { // Setting role by name
-									settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "roles.modRole": `${roleName}` }}, { returnOriginal: true })
+									settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "roles.modRole": `${roleName}` }}, { returnOriginal: true })
 									.then(r => {
 										message.channel.send(`The Mod Role has been changed to: <@&${roleName.id}>`, { "allowedMentions": { "parse" : []}})
 										client.channels.cache.get("731997087721586698")
@@ -132,7 +133,7 @@ module.exports = {
 									})
 							}
 							else if (message.mentions.roles.first() && message.guild.roles.cache.get(message.mentions.roles.first().id).permissions.has(["KICK_MEMBERS", "BAN_MEMBERS"])) { // Setting role by mention
-								settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "roles.modRole": args[2] }}, { returnOriginal: true })
+								settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "roles.modRole": args[2] }}, { returnOriginal: true })
 									.then(r => {
 										message.channel.send(`The Mod Role has been changed to: ${args[2]}`, { "allowedMentions": { "parse" : []}})
 										client.channels.cache.get("731997087721586698")
@@ -170,7 +171,7 @@ module.exports = {
 								channelTag.push(args[2].slice(2, 20))
 							}
 							if (func.checkNum(args[2], 1, Infinity) && message.guild.channels.cache.has(args[2]) && message.guild.id !== args[2]) { // Check by ID
-								settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "channels.adminChannel": args[2] }}, { returnOriginal: true })
+								settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "channels.adminChannel": args[2] }}, { returnOriginal: true })
 								.then(r => {
 									message.channel.send(`The Admin Channel has been set to: <#${args[2]}>`)
 									client.channels.cache.get("731997087721586698")
@@ -178,7 +179,7 @@ module.exports = {
 								})
 							}
 							else if (func.checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) { // Check by #Channel
-								settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "channels.adminChannel": channelTag[0] }}, { returnOriginal: true })
+								settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "channels.adminChannel": channelTag[0] }}, { returnOriginal: true })
 								.then(r => {
 									message.channel.send(`The Admin Channel has been set to: <#${channelTag[0]}>`)
 									client.channels.cache.get("731997087721586698")
@@ -198,7 +199,9 @@ module.exports = {
 				break;
 				default:
 					if (!args[1] && perms.admin) {
-						message.channel.send(`Your Admin Channel is set as: <#${res.channels.adminChannel}>`)
+						res.channels.adminChannel === null
+						? message.channel.send(`Your Admin Channel is set as: null`)
+						: message.channel.send(`Your Admin Channel is set as: <#${res.channels.adminChannel}>`)
 					}
 					else {
 						message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to see the Admin Channel!", colors.red_dark))

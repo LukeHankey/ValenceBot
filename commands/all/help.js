@@ -7,6 +7,7 @@ module.exports = {
 	description: ["List all of my commands or info about a specific command."],
 	aliases: ["commands"],
 	usage: ["command name"],
+	permissions: [false],
 	run: async (client, message, args) => {
 		const { commands } = message.client;
 
@@ -14,7 +15,7 @@ module.exports = {
 		const settings = db.collection(`Settings`)
 		console.log(client.commands.size)
 		
-		settings.findOne({ _id: message.guild.name })
+		settings.findOne({ _id: message.guild.id })
 		.then(res => {
 			if (!args.length) {
 				const com = commands.map(command => `\`${command.name}\``);

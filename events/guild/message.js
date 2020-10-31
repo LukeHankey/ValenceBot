@@ -1,3 +1,4 @@
+const cron = require('node-cron');
 const getDb = require("../../mongodb").getDb;
 
 module.exports = async (client, message) => {
@@ -7,15 +8,34 @@ module.exports = async (client, message) => {
 	if (message.author.bot) return;
 	const filterWords = ["retard", "nigger", "ngr"]
 	const blocked = filterWords.filter(word => { 
-		if (message.content.toLowerCase().includes("congrats")) {
-			return
-		}
+		if (message.content.toLowerCase().includes("congrats")) return
 		return message.content.toLowerCase().includes(word)
 	});
 	
-	if (blocked.length > 0) message.delete()
+	if (message.guild.id === "472448603642920973" && blocked.length > 0) message.delete()
 
-	settingsColl.findOne({ serverID: `${message.guild.id}` })
+	/* DSF Reactions - TO DO  (Possibly)
+	* Add each messageID, timestamp as an object to an array
+	* Fetch the first array element, find the timestamp and add 10 minutes
+	* Use cron to check if Date.now() > above time. If so, add reaction and remove from database
+	*/
+
+	if (message.channel.id === "566338186406789123") {
+		const last = message.channel.lastMessage
+		const tenSeconds = 600000;
+		cron.schedule('2 * * * *', async () => {
+			if (Date.now() >= (last.createdTimestamp + tenSeconds)) {
+				try {
+					await last.react('☠️')
+				}
+				catch (e) {
+					if (e.message === 'Unknown Message') return
+				}
+			}
+		})
+	}
+
+	settingsColl.findOne({ _id: `${message.guild.id}` })
 	.then(res => {
 		if (!message.content.startsWith(res.prefix)) return;
 
@@ -24,6 +44,13 @@ module.exports = async (client, message) => {
 
 		const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases
 		&& cmd.aliases.includes(commandName)); // Command object
+
+
+		// Find a way to make this work for joining new guilds without having to manually change the admin/mod roles in the DB.
+
+		if ((command.permissions.includes("Admin") && res.roles.adminRole === null) || (command.permissions.includes("Mod") && res.roles.modRole === null)) {
+			return message.channel.send("To use this command, you first need to set some permissions. Either your Admin or Mod role needs to be set.")
+		} 
 
 		// Admin Roles \\
 		const rID = res.roles.adminRole.slice(3, 21) // Get adminRole ID
@@ -83,7 +110,10 @@ module.exports = async (client, message) => {
 		}
 
 		try {
-			command.run(client, message, args, perms);
+			// undefined results in all guilds allowed
+			command.guildSpecific === undefined || command.guildSpecific.includes(message.guild.id)
+			? command.run(client, message, args, perms)
+			: message.channel.send("You cannot use that command in this server.")
 		}
 		catch (error) {
 			if (commandName !== command) message.channel.send("That's not a valid command!");
