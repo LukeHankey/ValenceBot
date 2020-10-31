@@ -6,6 +6,7 @@ module.exports = {
 	description: ["Sends a message to a channel."],
 	aliases: [""],
 	usage: ["<channel ID> <message content>"],
+	permissions: [false],
 	run: async (client, message, args, perms) => {
 		
 	const myID = "212668377586597888";	
@@ -30,7 +31,7 @@ module.exports = {
 			}
 		}
 		else { // No valid ID
-			message.channel.send("You must provide a channel ID.");git 
+			message.channel.send("You must provide a channel ID.");
 		}
 		
 		if (args[0] && !content) {
