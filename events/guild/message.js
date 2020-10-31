@@ -20,10 +20,10 @@ module.exports = async (client, message) => {
 	* Use cron to check if Date.now() > above time. If so, add reaction and remove from database
 	*/
 
-	if (message.channel.id === "734477320672247869") {
+	if (message.channel.id === "566338186406789123") {
 		const last = message.channel.lastMessage
 		const tenSeconds = 10 * 60 * 1000;
-		cron.schedule('* * * * *', async () => {
+		cron.schedule('2 * * * *', async () => {
 			if (Date.now() >= (last.createdTimestamp + tenSeconds)) {
 				try {
 					await last.react('☠️')
