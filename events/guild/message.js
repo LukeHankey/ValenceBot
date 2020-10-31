@@ -7,13 +7,11 @@ module.exports = async (client, message) => {
 	if (message.author.bot) return;
 	const filterWords = ["retard", "nigger", "ngr"]
 	const blocked = filterWords.filter(word => { 
-		if (message.content.toLowerCase().includes("congrats")) {
-			return
-		}
+		if (message.content.toLowerCase().includes("congrats")) return
 		return message.content.toLowerCase().includes(word)
 	});
 	
-	if (blocked.length > 0) message.delete()
+	if (message.guild.id === "472448603642920973" && blocked.length > 0) message.delete()
 
 	settingsColl.findOne({ serverID: `${message.guild.id}` })
 	.then(res => {
@@ -83,7 +81,10 @@ module.exports = async (client, message) => {
 		}
 
 		try {
-			command.run(client, message, args, perms);
+			// undefined results in all guilds allowed
+			command.guildSpecific === undefined || command.guildSpecific.includes(message.guild.id)
+			? command.run(client, message, args, perms)
+			: message.channel.send("You cannot use that command in this server.")
 		}
 		catch (error) {
 			if (commandName !== command) message.channel.send("That's not a valid command!");

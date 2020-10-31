@@ -7,7 +7,7 @@ module.exports = {
 	description: ["Displays the settings that you can change.", "Shows the current prefix.", "Sets the new prefix in the server.", "Shows the current admin role.", "Sets the new admin role in the server.", "Shows the current mod role.", "Sets the new mod role in the server.", "Shows the current admin channel.", "Sets the current admin channel."],
 	aliases: ["s"],
 	usage: ["", "prefix", "prefix set <new prefix>", "adminRole", "adminRole set <new role>", "modRole", "modRole set <new role>", "adminChannel", "adminChannel set <channel>"],
-	guildSpecific: false,
+	guildSpecific: ["472448603642920973", "733164313744769024", "668330890790699079"],
 	run: async (client, message, args, perms) => {
 		const code = "```";
         const db = getDb();

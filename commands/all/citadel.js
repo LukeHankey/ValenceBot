@@ -10,6 +10,13 @@ module.exports = {
 	aliases: ["c", "cit"],
 	usage:  ["", "on/off", "reset", "reset info", "reset set", "reminders", "reminders add <channel> <message>", "reminders add <channel> reset +<days/time> <message>", "reminders remove <id>", "reminders edit <id> <parameter> <new value>"],
 	run: async (client, message, args, perms) => {
+        /*
+        * Not to be used in DSF
+        */
+
+        if (message.guild.id === "420803245758480405") return
+
+
         const code = "```";
         const db = getDb();
         const settings = db.collection(`Settings`)
