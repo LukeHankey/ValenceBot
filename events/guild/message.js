@@ -22,7 +22,7 @@ module.exports = async (client, message) => {
 
 	if (message.channel.id === "566338186406789123") {
 		const last = message.channel.lastMessage
-		const tenSeconds = 10 * 60 * 1000;
+		const tenSeconds = 600000;
 		cron.schedule('2 * * * *', async () => {
 			if (Date.now() >= (last.createdTimestamp + tenSeconds)) {
 				try {
