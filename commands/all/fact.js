@@ -10,12 +10,13 @@ module.exports = {
 	aliases: ["f"],
 	usage:  ["", "add <fact>", "remove <number>", "edit <number>", "list"],
 	guildSpecific: ["472448603642920973", "733164313744769024"],
+	permissions: ["Admin", "Mod"],
 	run: async (client, message, args, perms) => {
 		const db = getDb();
 		const vFactsColl = db.collection("Facts");
 		const settings = db.collection("Settings")
 
-		await settings.findOne({ _id: message.guild.name })
+		await settings.findOne({ _id: message.guild.id })
 		.then(async res => {
 		
 		const count = await vFactsColl.stats().then(res => res.count);

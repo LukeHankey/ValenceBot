@@ -7,36 +7,15 @@ module.exports = {
 	aliases: ["rem"],
 	usage:  ["", "add <date> <channel> <message>", "remove <id>", "edit <id> <param> <new value>"],
 	guildSpecific: ["472448603642920973", "733164313744769024", "668330890790699079"],
-	run: async (client, message, args) => {
+	permissions: ["Mod"],
+	run: async (client, message, args, perms) => {
 		const code = "```";
 
         const db = getDb();
 		const settings = db.collection(`Settings`)
 		
-        await settings.findOne({ _id: message.guild.name })
+        await settings.findOne({ _id: message.guild.id})
 		.then(async res => {
-            const mrID = res.roles.modRole.slice(3, 21) // Get modRole ID
-			const modRole = message.guild.roles.cache.find(role => role.id === mrID); // Grab the modRole object by ID
-			const modRoles = message.guild.roles.cache.filter(roles => roles.rawPosition >= modRole.rawPosition); // Grab all roles' rawPositions that are equal to or higher than the modRole
-			const filterORolesM = modRoles.map(role => role.id); // Finds the ID's of available roles
-			const abovePermModArray = []; // All roles that the member has that is >= modRole
-			const availPermMod = []; // All the roles that the member doesn't have that are >= modRole
-			const aboveRPMod = [];
-			filterORolesM.forEach(id => {
-				if (message.member.roles.cache.has(id)) {
-					abovePermModArray.push(id)
-				}
-				else {
-					availPermMod.push(id);
-				}
-			})
-			abovePermModArray.forEach(id => {
-				const abovePermRawMod = message.guild.roles.cache.find(role => role.id === id)
-				const aboveRpMod = abovePermRawMod.rawPosition + "";
-				aboveRpMod.split().forEach(rp => {
-					aboveRPMod.push(rp);
-				})
-			})
 			const channelTag = [];
 			if (args[4] === undefined) {
 				channelTag.push("false")
@@ -44,23 +23,19 @@ module.exports = {
 			else {
 				channelTag.push(args[4].slice(2, 20))
 			}
-			
-			const allRoleIDs = availPermMod.map(id => `<@&${id}>`);
-			const join = allRoleIDs.join(", ")
 
 			let messageContent = args.slice(5).join(" ")
 			const dayCheck = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-			let permMod = message.member.roles.cache.has(abovePermModArray[0]) || message.member.roles.cache.has(mrID) || aboveRPMod[0] >= modRole.rawPosition || message.author.id === message.guild.ownerID;
-		   
+			
 			switch (args[0]) {
                 case "add":
-				if (permMod) {
+				if (perms.mod) {
 // 						if (res.reminders.length == 0) {
 					if (args[1] && args[2] && args[3]) {
 						if ((func.checkDate(args[1], 0, 6) || dayCheck.includes(func.capitalise(args[1].toLowerCase()))) && func.checkDate(args[2], 0, 23) && func.checkDate(args[3], 0, 59)) {
 							if (func.checkNum(args[4], 1, Infinity) && message.guild.channels.cache.has(args[4]) && message.guild.id !== args[4]) {
 								if (messageContent) {
-									settings.updateOne({ _id: message.guild.name }, {
+									settings.updateOne({ _id: message.guild.id}, {
 										$push: { "reminders": { $each: [{ id: message.id, day: func.capitalise(args[1].toLowerCase()), hour: args[2], minute: args[3], channel: args[4], message: messageContent }] }
 										}}, { returnOriginal: true })
 										message.channel.send(`A reminder has been added to <#${args[4]}>`)
@@ -73,7 +48,7 @@ module.exports = {
 							}
 							else if (func.checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) {
 								if (messageContent) {
-									settings.findOneAndUpdate({ _id: message.guild.name }, {
+									settings.findOneAndUpdate({ _id: message.guild.id}, {
 										$push: { "reminders": { $each: [{ id: message.id, day: func.capitalise(args[1].toLowerCase()), hour: args[2], minute: args[3], channel: channelTag[0], message: messageContent }] }
 										}}, { returnOriginal: false })
 									.then(r => {
@@ -107,18 +82,18 @@ module.exports = {
 					}
                     else {
 						message.channel.send(nEmbed("Permission Denied", "You do not have permission to add a Reminder!", colors.red_dark)
-						.addField("Only the following Roles & Users can:", join, true)
+						.addField("Only the following Roles & Users can:", perms.joinM, true)
 						.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
                     }
 				break;
 				case "remove":
-					if (permMod) {
+					if (perms.mod) {
 						let idCheck = [];
 						res.reminders.forEach(x => { idCheck.push(x.id) })
 						if (func.checkNum(args[1], 1, Infinity) && idCheck.includes(args[1])) {
 							message.channel.send(`Reminder \`${args[1]}\` has been deleted.`);
 							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Reminder: \`${args[1]}\``);
-							settings.updateOne({ _id: message.guild.name }, { $pull: { reminders: { id: args[1] } } })
+							settings.updateOne({ _id: message.guild.id}, { $pull: { reminders: { id: args[1] } } })
 						}
 						else if (!args[1]) {
 							message.channel.send(`You must provide an ID to remove.`);
@@ -129,12 +104,12 @@ module.exports = {
 					}
 					else {
 						message.channel.send(nEmbed("Permission Denied", "You do not have permission to remove a Reminder!", colors.red_dark)
-						.addField("Only the following Roles & Users can:", join, true)
+						.addField("Only the following Roles & Users can:", perms.joinM, true)
 						.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
 					}
 				break;
 				case "edit":
-					if (permMod) {
+					if (perms.mod) {
 						let editMessage = args.slice(3).join(" ");
 						let param = args.slice(2, 3).join("").toLowerCase()
 						let idCheck = [];
@@ -187,7 +162,7 @@ module.exports = {
 					}
 					else {
 						message.channel.send(nEmbed("Permission Denied", "You do not have permission to remove a Reminder!", colors.red_dark)
-						.addField("Only the following Roles & Users can:", join, true)
+						.addField("Only the following Roles & Users can:", perms.joinM, true)
 						.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
 					}
 				break;

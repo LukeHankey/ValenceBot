@@ -9,19 +9,15 @@ module.exports = {
 	description: ["Lists out the citadel commands.", "Toggles the citadel reset time & reminders on/off.", "Shows the current Citadel Reset Time.", "Allows a user to suggest the reset time - Sends info to the current Admin Channel.", "Sets the new Citadel Reset Time.", "Lists the current citadel reminders by ID.", "Adds a new citadel reminder.", "Adds a citadel reminder which sends the set message at reset +<date/time>.", "Removes a citadel reminder.", "Edit an existing citadel reminder by ID, then the field you want to change; then the updated value."],
 	aliases: ["c", "cit"],
 	usage:  ["", "on/off", "reset", "reset info", "reset set", "reminders", "reminders add <channel> <message>", "reminders add <channel> reset +<days/time> <message>", "reminders remove <id>", "reminders edit <id> <parameter> <new value>"],
+    permissions: ["Admin", "Mod"],
 	run: async (client, message, args, perms) => {
-        /*
-        * Not to be used in DSF
-        */
-
         if (message.guild.id === "420803245758480405") return
-
 
         const code = "```";
         const db = getDb();
         const settings = db.collection(`Settings`)
         
-        await settings.findOne({ _id: message.guild.name })
+        await settings.findOne({ _id: message.guild.id })
 		.then(async res => {
        
         const channelTagCit = [];
@@ -72,7 +68,7 @@ module.exports = {
                                             let dateHours = newDate.split(" ")[4].slice(0, 2);
                                             let dateMins = newDate.split(" ")[4].slice(3, 5); 
                                             if (messageContentCitR) {
-                                                settings.updateOne({ _id: message.guild.name }, {
+                                                settings.updateOne({ _id: message.guild.id }, {
                                                     $push: { "citadel_reset_time.reminders": { $each: [{ id: message.id, channel: args[2], dayReset: args[3], dayResetPlus: dateDay.slice(0, dateDay.indexOf("d")), hourResetPlus: dateHour.slice(0, dateHour.indexOf("h")), minResetPlus: dateMin.slice(1, dateMin.length - 1), message: messageContentCitR }] }}
                                                 })
                                                 message.channel.send(`A citadel reminder has been added to <#${args[2]}>. The reminder will be sent on \`${dateDays} ${dateHours}:${dateMins}\``)
@@ -89,7 +85,7 @@ module.exports = {
                                     }
                                 }
                                 else if (messageContentCit && args[3] !== "reset") {
-                                    settings.updateOne({ _id: message.guild.name }, {
+                                    settings.updateOne({ _id: message.guild.id }, {
                                         $push: { "citadel_reset_time.reminders": { $each: [{ id: message.id, channel: args[2], message: messageContentCit }] }}
                                     })
                                     message.channel.send(`A citadel reminder has been added to <#${args[2]}>. **NOTE:** This reminder is to let clan members know the citadel has been reset.`)
@@ -119,7 +115,7 @@ module.exports = {
                                             let dateHours = newDate.split(" ")[4].slice(0, 2);
                                             let dateMins = newDate.split(" ")[4].slice(3, 5); 
                                             if (messageContentCitR) {
-                                                settings.updateOne({ _id: message.guild.name }, {
+                                                settings.updateOne({ _id: message.guild.id }, {
                                                     $push: { "citadel_reset_time.reminders": { $each: [{ id: message.id, channel: channelTagCit[0], dayReset: args[3], dayResetPlus: dateDay.slice(0, dateDay.indexOf("d")), hourResetPlus: dateHour.slice(0, dateHour.indexOf("h")), minResetPlus: dateMin.slice(1, dateMin.length - 1), message: messageContentCitR }] }}
                                                 })
                                                 message.channel.send(`A citadel reminder has been added to <#${channelTagCit[0]}>. The reminder will be sent on \`${dateDays} ${dateHours}:${dateMins}\``)
@@ -136,7 +132,7 @@ module.exports = {
                                     }
                                 }
                                 else if (messageContentCit && args[3] !== "reset") {
-                                    settings.findOneAndUpdate({ _id: message.guild.name }, {
+                                    settings.findOneAndUpdate({ _id: message.guild.id }, {
                                         $push: { "citadel_reset_time.reminders": { $each: [{ id: message.id, channel: channelTagCit[0], message: messageContentCit }] }}
                                     })
                                     message.channel.send(`A citadel reminder has been added to <#${channelTagCit[0]}>. **NOTE:** This reminder is to let clan members know the citadel has been reset.`)
@@ -162,7 +158,7 @@ module.exports = {
                             if (func.checkNum(args[2], 1, Infinity) && idCheck.includes(args[2])) {
                                 message.channel.send(`Reminder \`${args[2]}\` has been deleted.`);
                                 client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Reminder: \`${args[2]}\``);
-                                settings.updateOne({ _id: message.guild.name }, { $pull: { "citadel_reset_time.reminders": { id: args[2] } } })
+                                settings.updateOne({ _id: message.guild.id }, { $pull: { "citadel_reset_time.reminders": { id: args[2] } } })
                             }
                             else if (!args[1]) {
                                 message.channel.send(`You must provide an ID to remove.`);
@@ -189,12 +185,12 @@ module.exports = {
                                         message.channel.send(`You need to specify a channel to change to. Either the channel ID or the channel Tag.`);	
                                     }
                                     else if (args[4].length > 18) {
-                                        settings.findOneAndUpdate({ _id: message.guild.name, "citadel_reset_time.reminders.id": args[2] }, { $set: { "citadel_reset_time.reminders.$.channel": args[4] } } )
+                                        settings.findOneAndUpdate({ _id: message.guild.id, "citadel_reset_time.reminders.id": args[2] }, { $set: { "citadel_reset_time.reminders.$.channel": args[4] } } )
                                         message.channel.send(`Reminder \`${args[2]}\` has had the channel changed to <#${args[4].slice(2, 20)}>`);
                                         client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``);
                                     }
                                     else {
-                                        settings.findOneAndUpdate({ _id: message.guild.name, "citadel_reset_time.reminders.id": args[2] }, { $set: { "citadel_reset_time.reminders.$.channel": args[4] } } )
+                                        settings.findOneAndUpdate({ _id: message.guild.id, "citadel_reset_time.reminders.id": args[2] }, { $set: { "citadel_reset_time.reminders.$.channel": args[4] } } )
                                         message.channel.send(`Reminder \`${args[2]}\` has had the channel changed to <#${args[4]}>`);
                                         client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``);}                                    
                                     }
@@ -203,7 +199,7 @@ module.exports = {
                                         message.channel.send(`You need to specify the message content you'd like to change.`);
                                     }
                                     else {
-                                        settings.findOneAndUpdate({ _id: message.guild.name, "citadel_reset_time.reminders.id": args[2] }, { $set: { "citadel_reset_time.reminders.$.message": editMessage } } )
+                                        settings.findOneAndUpdate({ _id: message.guild.id, "citadel_reset_time.reminders.id": args[2] }, { $set: { "citadel_reset_time.reminders.$.message": editMessage } } )
                                         message.channel.send(`Reminder \`${args[2]}\` has had the message changed to \`${editMessage}\``);
                                         client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``);
                                     }
@@ -264,7 +260,7 @@ module.exports = {
                     case "set":
                         if (perms.mod) {
                             if ((func.checkDate(args[2], 0, 6) || dayCheck.includes(args[2]) || dayCheck[new Date().getUTCDay()].substr(0, 3)) && func.checkDate(args[3], 0, 23) && func.checkDate(args[4], 0, 59) && args[2] && args[3] && args[4]) { // Setting reset by Day / Hour / Minute
-                                await settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "citadel_reset_time.day": dayCheck[args[2]] || args[2], "citadel_reset_time.hour": func.doubleDigits(args[3]), "citadel_reset_time.minute": func.doubleDigits(args[4]) }}, { returnOriginal: true })
+                                await settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "citadel_reset_time.day": dayCheck[args[2]] || args[2], "citadel_reset_time.hour": func.doubleDigits(args[3]), "citadel_reset_time.minute": func.doubleDigits(args[4]) }}, { returnOriginal: true })
                                     .then(r => {
                                         console.log(`Reset set: ${dayCheck[args[2]] || args[2]} ${func.doubleDigits(args[3])}:${func.doubleDigits(args[4])}`)
                                         message.channel.send(`The Citadel Reset Time has been changed to: ${dayCheck[args[2]] || args[2]} ${func.doubleDigits(args[3])}:${func.doubleDigits(args[4])}`)
@@ -273,7 +269,7 @@ module.exports = {
                                     })
                             }
                             else if (func.checkDate(args[2], 0, 23) && func.checkDate(args[3], 0, 59) && args[2] && args[3]) { // Setting by Hour / Minute
-                                await settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "citadel_reset_time.hour": func.doubleDigits(args[2]), "citadel_reset_time.minute": func.doubleDigits(args[3]) }}, { returnOriginal: true })
+                                await settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "citadel_reset_time.hour": func.doubleDigits(args[2]), "citadel_reset_time.minute": func.doubleDigits(args[3]) }}, { returnOriginal: true })
                                     .then(r => {
                                         console.log(`Reset set: ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${func.doubleDigits(args[2])}:${func.doubleDigits(args[3])}`)
                                         message.channel.send(`The Citadel Reset Time has been changed to: ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${func.doubleDigits(args[2])}:${func.doubleDigits(args[3])}`)
@@ -282,7 +278,7 @@ module.exports = {
                                     })
                             }
                             else if (func.checkDate(args[2], 00, 59) && args[2]) { // Setting by Minute
-                                await settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "citadel_reset_time.minute": func.doubleDigits(args[2]) }}, { returnOriginal: true })
+                                await settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "citadel_reset_time.minute": func.doubleDigits(args[2]) }}, { returnOriginal: true })
                                     .then(r => {
                                         console.log(`Reset set: ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${func.doubleDigits(r.value.citadel_reset_time.hour)}:${func.doubleDigits(args[2])}`)
                                         message.channel.send(`The Citadel Reset Time has been changed to: ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${func.doubleDigits(r.value.citadel_reset_time.hour)}:${func.doubleDigits(args[2])}`)
@@ -331,7 +327,7 @@ module.exports = {
 							if (args[5]) {
 								let array = ["gif", "jpeg", "tiff", "png", "webp", "bmp", "prnt.sc", "gyazo.com"]
 								if (array.some(x => args[5].includes(x))) {
-                                    settings.findOne({ _id: message.guild.name }, { $set: { resetInfoCount: 0 }})
+                                    settings.findOne({ _id: message.guild.id }, { $set: { resetInfoCount: 0 }})
                                     .then(r => {
                                         if (r.resetInfoCount == 0) {
                                             client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne.setImage(`${args[5]}`))
@@ -349,17 +345,17 @@ module.exports = {
                                                     let userRoles = message.member.roles
                                                     if (userRoles.cache.has(r.roles.modRole.slice(3, 21)) || userRoles.cache.has(r.roles.adminRole.slice(3, 21))) return
                                                     else {
-                                                        settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 1 }}, { returnOriginal: false})
+                                                        settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { resetInfoCount: 1 }}, { returnOriginal: false})
                                                         let timestamp = Date.now() + day
                                                         cron.schedule('0 */1 * * *', async () => { 
                                                             if (Date.now() > timestamp && (Date.now() - timestamp < day)) {
-                                                                settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 0 }})
+                                                                settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { resetInfoCount: 0 }})
                                                             }
                                                         })
                                                     } 
                                                 })
                                                 collectorC.on('collect', (r, u) => {
-                                                    settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 0 }})
+                                                    settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { resetInfoCount: 0 }})
                                                 })
                                             })
                                             message.delete();
@@ -375,7 +371,7 @@ module.exports = {
 								}
 							}
 							else {
-                                settings.findOne({ _id: message.guild.name }, { $set: { resetInfoCount: 0 }})
+                                settings.findOne({ _id: message.guild.id }, { $set: { resetInfoCount: 0 }})
                                 .then(r => {
                                     if (r.resetInfoCount == 0) {
                                         client.channels.cache.get(res.channels.adminChannel).send(infoEmbedOne)
@@ -393,17 +389,17 @@ module.exports = {
                                                 let userRoles = message.member.roles
                                                 if (userRoles.cache.has(r.roles.modRole.slice(3, 21)) || userRoles.cache.has(r.roles.adminRole.slice(3, 21))) return
                                                 else {
-                                                    settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 1 }}, { returnOriginal: false})
+                                                    settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { resetInfoCount: 1 }}, { returnOriginal: false})
                                                     let timestamp = Date.now() + day
                                                     cron.schedule('0 */1 * * *', async () => { 
                                                         if (Date.now() > timestamp && (Date.now() - timestamp < day)) {
-                                                            settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 0 }})
+                                                            settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { resetInfoCount: 0 }})
                                                         }
                                                     })
                                                 }
                                             })
                                             collectorC.on('collect', (r, u) => {
-                                                settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { resetInfoCount: 0 }})
+                                                settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { resetInfoCount: 0 }})
                                             })
                                         })
                                         message.delete();
@@ -447,7 +443,7 @@ module.exports = {
                         message.channel.send(`You must set your Admin Channel before you set the Citadel notifications.`)
                     } 
                     else {
-                        settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "citadel_reset_time.scheduled": true }}, { returnOriginal: true })
+                        settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "citadel_reset_time.scheduled": true }}, { returnOriginal: true })
                         .then(r => {
                             message.channel.send(`The Citadel Reset Time notifications have been toggled on!`)
                             client.channels.cache.get("731997087721586698")
@@ -463,7 +459,7 @@ module.exports = {
             break;
             case "off":
             if (perms.admin) {
-                settings.findOneAndUpdate({ _id: message.guild.name }, { $set: { "citadel_reset_time.scheduled": false }}, { returnOriginal: true })
+                settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "citadel_reset_time.scheduled": false }}, { returnOriginal: true })
                         .then(r => {
                             message.channel.send(`The Citadel Reset Time notifications have been toggled off!`)
                             client.channels.cache.get("731997087721586698")

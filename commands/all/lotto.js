@@ -9,9 +9,8 @@ description: ["Shows a list of everyone in the current months lottery.", "Shows 
 aliases: ["lottery"],
 usage: ["", "<user>", "add <amount> <collector> / <clanmate> / double (optional)"],
 guildSpecific: ["472448603642920973", "733164313744769024", "668330890790699079"],
+permissions: ["Mod"],
 run: async (client, message, args, perms) => {
-    if (message.guild.id !== "472448603642920973") return message.channel.send("You can't use that command in this server.")
-
     gsheet.googleClient.authorize(err => {
         if (err) console.error(err)
         googleSheets(gsheet.googleClient)

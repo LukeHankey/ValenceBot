@@ -3,6 +3,7 @@ module.exports = {
 	description: ["Deletes a number of previous messages in the current channel."],
 	aliases: [],
 	usage: ["<number>"],
+	permissions: [false],
 	run: async (client, message, args) => {
 		const amount = parseInt(args[0]) + 1; // Deletes itself + at least 1 other message
 

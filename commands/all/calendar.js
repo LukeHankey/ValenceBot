@@ -9,6 +9,7 @@ module.exports = {
 	aliases: ["cal"],
 	usage: ["create <month (optional)>", "add <month (optional)> <position (optional)> Date: <Date> Event: <event text> Time: <time> Announcement: <link> Host: <@member(s)/role>", "edit <month (optional)> <starting field> <event field> <new value>", "remove <month (optional)> <starting field> <delete count>", "move <month (optional)> <from position> <to position>"],
     guildSpecific: ["472448603642920973", "733164313744769024", "668330890790699079"],
+    permissions: ["Admin", "Mod"],
     run: async (client, message, args, perms) => {
 		if (!perms.mod) {
             return message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
@@ -41,7 +42,7 @@ module.exports = {
                     client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> created a new Calendar embed.`);
                     message.channel.send(embed(`Calendar for ${currentMonth}`))
                     .then(msg => {
-                        settings.findOneAndUpdate({ _id: message.guild.name }, 
+                        settings.findOneAndUpdate({ _id: message.guild.id }, 
                         { $push: { calendarID: { $each: [
                             { messageID: msg.id, month: `${currentMonth}`, year: new Date().getUTCFullYear() }
                         ]}}})
@@ -51,7 +52,7 @@ module.exports = {
                     client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> created a new Calendar embed.`);
                     message.channel.send(embed(`Calendar for ${func.capitalise(args[1])}`))
                     .then(msg => {
-                        settings.findOneAndUpdate({ _id: message.guild.name }, 
+                        settings.findOneAndUpdate({ _id: message.guild.id }, 
                         { $push: { calendarID: { $each: [
                             { messageID: msg.id, month: `${func.capitalise(args[1])}`, year: new Date().getUTCFullYear() }
                         ]}}})
@@ -64,7 +65,7 @@ module.exports = {
             }
             break;
             case "add": 
-            settings.findOne({ _id: message.guild.name }).then(async r => {
+            settings.findOne({ _id: message.guild.id }).then(async r => {
                 const monthInc = r.calendarID.filter(obj => obj.month.toLowerCase() === args[1].toLowerCase() || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase())
                 if (monthInc && monthInc.length !== 0) {
                     if (args[1].toLowerCase() === monthInc[0].month.toLowerCase() || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
@@ -102,12 +103,12 @@ module.exports = {
                             if (err.message === "Unknown Message") {
                             return message.channel.send(`Calendar not found. - It may have been deleted. Attempting to remove all calendars for the month of ${args[1]}...`)
                             .then(mes => {
-                                settings.findOne({ _id: message.guild.name })
+                                settings.findOne({ _id: message.guild.id })
                                 .then(async re => {
                                 let mObj = await re.calendarID.filter(x => x.month === args[1])
                                 let mID = mObj[mObj.length - 1].messageID
 
-                                settings.findOneAndUpdate({ _id: message.guild.name }, { $pull: { calendarID: { month: args[1] } } })
+                                settings.findOneAndUpdate({ _id: message.guild.id }, { $pull: { calendarID: { month: args[1] } } })
                                 message.channel.messages.fetch(mID)
                                 .then(m => m.delete())
                             })
@@ -155,12 +156,12 @@ module.exports = {
                         if (err.message === "Unknown Message") {
                             return message.channel.send(`Calendar not found. - It may have been deleted. Attempting to remove all calendars for the month of ${currentMonth}...`)
                             .then(mes => {
-                                settings.findOne({ _id: message.guild.name })
+                                settings.findOne({ _id: message.guild.id })
                                 .then(async re => {
                                 let mObj = await re.calendarID.filter(x => x.month === currentMonth)
                                 let mID = mObj[mObj.length - 1].messageID
 
-                                settings.findOneAndUpdate({ _id: message.guild.name }, { $pull: { calendarID: { month: currentMonth } } })
+                                settings.findOneAndUpdate({ _id: message.guild.id }, { $pull: { calendarID: { month: currentMonth } } })
                                 message.channel.messages.fetch(mID)
                                 .then(m => m.delete())
                             })
@@ -175,7 +176,7 @@ module.exports = {
             })
             break
             case "edit": 
-            settings.findOne({ _id: message.guild.name }).then(async r => {
+            settings.findOne({ _id: message.guild.id }).then(async r => {
                 const monthInc = r.calendarID.filter(obj => obj.month === args[1] || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase())
                 // Editing a specific month \\
                 if (monthInc && monthInc.length !== 0) {
@@ -262,7 +263,7 @@ module.exports = {
             })
             break;
             case "remove":
-            settings.findOne({ _id: message.guild.name }).then(async r => {
+            settings.findOne({ _id: message.guild.id }).then(async r => {
                 const monthInc = r.calendarID.filter(obj => obj.month === args[1] || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase())
                 if (monthInc && monthInc.length !== 0) {
                     if (args[1] === monthInc[0].month || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
@@ -299,7 +300,7 @@ module.exports = {
             })
             break;
             case "move":
-            settings.findOne({ _id: message.guild.name }).then(async r => {
+            settings.findOne({ _id: message.guild.id }).then(async r => {
                 const monthInc = r.calendarID.filter(obj => obj.month === args[1] || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase())
                 if (monthInc && monthInc.length !== 0) {
                     if (args[1] === monthInc[0].month || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
