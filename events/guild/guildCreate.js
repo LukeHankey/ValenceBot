@@ -8,12 +8,12 @@ const code = "```";
 
     collection.insertOne(
         {
-        _id: `${guild.name}`,
-        serverID: `${guild.id}`,
+        _id: `${guild.id}`,
+        serverName: `${guild.name}`,
         prefix: ";",
         roles: { 
-            modRole: `${guild.roles.highest}`,
-            adminRole: `${guild.roles.highest}`,
+            modRole: null,
+            adminRole: null,
             defaultAdminRole: `${guild.roles.highest}`
         },
         channels: { 
@@ -30,7 +30,7 @@ const code = "```";
     \n${code}diff\n
 + Server name: ${guild.name}
 + Server ID: ${guild.id}
-+ Owner: ${guild.owner}
++ Owner: ${guild.owner.nickname}
 + Channel count: ${guild.channels.cache.size}
 + Member count: ${guild.memberCount}${code}`);
 };

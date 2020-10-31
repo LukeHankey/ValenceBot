@@ -1,3 +1,4 @@
+const cron = require('node-cron');
 const getDb = require("../../mongodb").getDb;
 
 module.exports = async (client, message) => {
@@ -13,7 +14,28 @@ module.exports = async (client, message) => {
 	
 	if (message.guild.id === "472448603642920973" && blocked.length > 0) message.delete()
 
-	settingsColl.findOne({ serverID: `${message.guild.id}` })
+	/* DSF Reactions - TO DO  (Possibly)
+	* Add each messageID, timestamp as an object to an array
+	* Fetch the first array element, find the timestamp and add 10 minutes
+	* Use cron to check if Date.now() > above time. If so, add reaction and remove from database
+	*/
+
+	if (message.channel.id === "734477320672247869") {
+		const last = message.channel.lastMessage
+		const tenSeconds = 10 * 60 * 1000;
+		cron.schedule('* * * * *', async () => {
+			if (Date.now() >= (last.createdTimestamp + tenSeconds)) {
+				try {
+					await last.react('☠️')
+				}
+				catch (e) {
+					if (e.message === 'Unknown Message') return
+				}
+			}
+		})
+	}
+
+	settingsColl.findOne({ _id: `${message.guild.id}` })
 	.then(res => {
 		if (!message.content.startsWith(res.prefix)) return;
 
@@ -22,6 +44,13 @@ module.exports = async (client, message) => {
 
 		const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases
 		&& cmd.aliases.includes(commandName)); // Command object
+
+
+		// Find a way to make this work for joining new guilds without having to manually change the admin/mod roles in the DB.
+
+		if ((command.permissions.includes("Admin") && res.roles.adminRole === null) || (command.permissions.includes("Mod") && res.roles.modRole === null)) {
+			return message.channel.send("To use this command, you first need to set some permissions. Either your Admin or Mod role needs to be set.")
+		} 
 
 		// Admin Roles \\
 		const rID = res.roles.adminRole.slice(3, 21) // Get adminRole ID
