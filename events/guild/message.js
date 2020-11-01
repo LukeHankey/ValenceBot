@@ -27,8 +27,6 @@ module.exports = async (client, message) => {
 			for (let i = 1; i <= mReactCollection.size; i++) {
 				const lastID = mReactCollection.lastKey(i)[0];
 				const lastVal = mReactCollection.last(i)[0];
-				console.log(i, mReactCollection.lastKey(i)[0], mReactCollection.last(i)[0])
-
 				message.channel.messages.fetch(lastID)
 				.then(m => {
 					const check = Date.now() - lastVal.time > 600000
