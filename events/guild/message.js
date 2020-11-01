@@ -55,7 +55,7 @@ module.exports = async (client, message) => {
 		&& cmd.aliases.includes(commandName)); // Command object
 
 		
-		if (message.channel.id === '566338186406789123') return
+		if (command === undefined) return
 		// Find a way to make this work for joining new guilds without having to manually change the admin/mod roles in the DB.
 
 		if ((command.permissions.includes("Admin") && res.roles.adminRole === null) || (command.permissions.includes("Mod") && res.roles.modRole === null)) {
