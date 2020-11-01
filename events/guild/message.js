@@ -27,6 +27,7 @@ module.exports = async (client, message) => {
 			for (let i = 1; i <= mReactCollection.size; i++) {
 				const lastID = mReactCollection.lastKey(i)[0];
 				const lastVal = mReactCollection.last(i)[0];
+				console.log(i, mReactCollection.lastKey(i)[0], mReactCollection.last(i)[0])
 
 				message.channel.messages.fetch(lastID)
 				.then(m => {
@@ -41,6 +42,9 @@ module.exports = async (client, message) => {
 				})
 			}
 		})
+		message.content.match(/(?:(?:^|m|merch|merchant|w|world)(?:\s)*)(\d{1,3})(?:[^\d]|$)/)
+		? message.channel.send(`<@&670842187461820436>`).then(m => m.delete())
+		: message.delete()
 	}
 
 	settingsColl.findOne({ _id: `${message.guild.id}` })
