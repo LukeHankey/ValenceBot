@@ -24,7 +24,7 @@ run: async (client, message, args, perms) => {
         const gsapi = google.sheets({ version: "v4", auth: gClient })
         const opt = { // READ ONLY OPTIONS
             spreadsheetId: "1ZView14HaimCuCUg_durvI-3wiOn4Pf5mZRKYVwrHlY",
-            range: "October 2020!A2:C52",
+            range: "November 2020!A2:C52",
         }
 
         let userData = []; // Holds all fields in specified range
@@ -35,14 +35,14 @@ run: async (client, message, args, perms) => {
 
         const optW = { // WRITE OPTIONS
             spreadsheetId: "1ZView14HaimCuCUg_durvI-3wiOn4Pf5mZRKYVwrHlY",
-            range: "October 2020!A1:E52",
+            range: "November 2020!A1:E52",
             valueInputOption: "USER_ENTERED",
             resource: { values: newArr }
         }
 
         const optC = { // READ ONLY COLLECTORS
             spreadsheetId: "1ZView14HaimCuCUg_durvI-3wiOn4Pf5mZRKYVwrHlY",
-            range: "October 2020!H5:H17",
+            range: "November 2020!H5:H17",
         }
         let dataColl = await gsapi.spreadsheets.values.get(optC);
         let dataC = dataColl.data.values.filter(val => val.length !== 0).flat()
@@ -107,7 +107,7 @@ run: async (client, message, args, perms) => {
                                     return message.channel.send("Please provide the RSN of the lottery entree.")
                                 } else { // If there is an rsn
                                     if (dataArr.length > userData.length) {
-                                        let ranges = `October 2020!A${userData.length + 2}:F${dataArr.length + 1}`
+                                        let ranges = `November 2020!A${userData.length + 2}:F${dataArr.length + 1}`
                                         await gsapi.spreadsheets.values.clear({
                                             spreadsheetId: "1ZView14HaimCuCUg_durvI-3wiOn4Pf5mZRKYVwrHlY",
                                             range: ranges
@@ -144,7 +144,7 @@ run: async (client, message, args, perms) => {
                                     return message.channel.send("Please provide the RSN of the lottery entree.")
                                 } else { // If there is an rsn
                                     if (dataArr.length > userData.length) {
-                                        let ranges = `October 2020!A${userData.length + 2}:F${dataArr.length + 1}`
+                                        let ranges = `November 2020!A${userData.length + 2}:F${dataArr.length + 1}`
                                         await gsapi.spreadsheets.values.clear({
                                             spreadsheetId: "1ZView14HaimCuCUg_durvI-3wiOn4Pf5mZRKYVwrHlY",
                                             range: ranges
@@ -178,7 +178,7 @@ run: async (client, message, args, perms) => {
             case "total":
                 const optTotal = { // READ ONLY OPTIONS
                     spreadsheetId: "1ZView14HaimCuCUg_durvI-3wiOn4Pf5mZRKYVwrHlY", // Test Sheet
-                    range: "October 2020!H1:N2",
+                    range: "November 2020!H1:N2",
                 }
                 let dataTotals = await gsapi.spreadsheets.values.get(optTotal);
                 let arrTotal = dataTotals.data.values
