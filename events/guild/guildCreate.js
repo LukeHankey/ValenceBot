@@ -12,8 +12,8 @@ const code = "```";
         serverName: `${guild.name}`,
         prefix: ";",
         roles: { 
-            modRole: null,
-            adminRole: null,
+            modRole: `${guild.roles.highest}`,
+            adminRole: `${guild.roles.highest}`,
             defaultAdminRole: `${guild.roles.highest}`
         },
         channels: { 
