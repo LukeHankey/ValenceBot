@@ -15,34 +15,34 @@ module.exports = async (client, message) => {
 	
 	if (message.guild.id === "472448603642920973" && blocked.length > 0) message.delete()
 
-	if (message.channel.id === "566338186406789123") {
-		cron.schedule('* * * * *', async () => {
-			const mes = await message.channel.messages.fetch({ limit: 15 })
-			const log = [...mes.values()]
-			for (const messages in log) mReactCollection.set(log[messages].id, { 
-				content: log[messages].content,
-				time: log[messages].createdTimestamp 
+			if (message.channel.id === "566338186406789123") {
+			cron.schedule('* * * * *', async () => {
+				const mes = await message.channel.messages.fetch({ limit: 15 })
+				const log = [...mes.values()]
+				for (const messages in log) mReactCollection.set(log[messages].id, { 
+					content: log[messages].content,
+					time: log[messages].createdTimestamp 
+				})
+				for (let i = 1; i <= mReactCollection.size; i++) {
+					const lastID = mReactCollection.lastKey(i)[0];
+					const lastVal = mReactCollection.last(i)[0];
+					message.channel.messages.fetch(lastID)
+					.then(m => {
+						const check = Date.now() - lastVal.time > 600000
+						if (check) {
+							m.react('☠️')
+							mReactCollection.delete(lastID)
+						}
+					})
+					.catch(err => {
+						if (err.message === "Uknown Message") return
+					})
+				}
 			})
-			for (let i = 1; i <= mReactCollection.size; i++) {
-				const lastID = mReactCollection.lastKey(i)[0];
-				const lastVal = mReactCollection.last(i)[0];
-				message.channel.messages.fetch(lastID)
-				.then(m => {
-					const check = Date.now() - lastVal.time > 600000
-					if (check) {
-						m.react('☠️')
-						mReactCollection.delete(lastID)
-					}
-				})
-				.catch(err => {
-					if (err.message === "Uknown Message") return
-				})
-			}
-		})
-		message.content.match(/(?:(?:^|m|merch|merchant|w|world)(?:\s)*)(\d{1,3})(?:[^\d]|$)/)
-		? message.channel.send(`<@&670842187461820436>`).then(m => m.delete())
-		: message.delete()
-	}
+			message.content.match(/(?:(?:^|m|merch|merchant|w|world)(?:\s)*)(\d{1,3})(?:[^\d]|$)/i)
+			? message.channel.send(`<@&670842187461820436>`).then(m => m.delete())
+			: message.delete()
+		}
 
 	settingsColl.findOne({ _id: `${message.guild.id}` })
 	.then(res => {
