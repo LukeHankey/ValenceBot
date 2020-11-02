@@ -97,6 +97,7 @@ module.exports = async (client, message) => {
 
 	settingsColl.findOne({ _id: message.guild.id })
 		.then(res => {
+			if (res.merchChannel === undefined) return
 			if (message.channel.id === res.merchChannel.channelID) {
 				message.content.match(/(?:(?:^|m|merch|merchant|w|world)(?:\s)*)(\d{1,3})(?:[^\d]|$)/i)
 					? message.channel.send(`<@&670842187461820436>`).then(m => m.delete())
@@ -156,5 +157,8 @@ module.exports = async (client, message) => {
 					}
 				})
 			}
+		})
+		.catch(err => {
+			if (err) console.log(err)
 		})
 }
