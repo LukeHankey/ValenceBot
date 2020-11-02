@@ -94,65 +94,67 @@ module.exports = async (client, message) => {
 		})
 
 	// DSF - Merch Calls
-	const channelName = message.guild.channels.cache.find(c => c.name === "merch-calls")
 
-	if (message.channel.id === channelName.id) {
-		message.content.match(/(?:(?:^|m|merch|merchant|w|world)(?:\s)*)(\d{1,3})(?:[^\d]|$)/i)
-			? message.channel.send(`<@&670842187461820436>`).then(m => m.delete())
-			: message.delete()
-		cron.schedule('*/30 * * * * *', async () => {
-			try {
-				let mes = await message.channel.messages.fetch({ limit: 10 })
-				mes = mes.filter(m => {
-					if (m.reactions.cache.has('☠️')) {
-						return
-					} else return mes
-				})
-				const log = [...mes.values()]
-				for (const messages in log)
-					settingsColl.findOneAndUpdate({ _id: message.guild.id },
-						{
-							$addToSet: {
-								"merchChannel.messages": {
-									$each: [{
-										messageID: log[messages].id,
-										content: log[messages].content,
-										time: log[messages].createdTimestamp,
-										author: log[messages].author.username,
-									}],
+	settingsColl.findOne({ _id: message.guild.id })
+		.then(res => {
+			if (message.channel.id === res.merchChannel.channelID) {
+				message.content.match(/(?:(?:^|m|merch|merchant|w|world)(?:\s)*)(\d{1,3})(?:[^\d]|$)/i)
+					? message.channel.send(`<@&670842187461820436>`).then(m => m.delete())
+					: message.delete()
+				cron.schedule('*/30 * * * * *', async () => {
+					try {
+						let mes = await message.channel.messages.fetch({ limit: 10 })
+						mes = mes.filter(m => {
+							if (m.reactions.cache.has('☠️')) {
+								return
+							} else return mes
+						})
+						const log = [...mes.values()]
+						for (const messages in log)
+							settingsColl.findOneAndUpdate({ _id: message.guild.id },
+								{
+									$addToSet: {
+										"merchChannel.messages": {
+											$each: [{
+												messageID: log[messages].id,
+												content: log[messages].content,
+												time: log[messages].createdTimestamp,
+												author: log[messages].author.username,
+											}],
+										}
+									}
+								},
+								{ sort: { time: 1 } }
+							)
+						const count = await settingsColl.findOne({ _id: message.guild.id }).then(async res => {
+							return res.merchChannel.messages.length
+						})
+						for (let i = 0; i <= count; i++) {
+							settingsColl.findOne({ _id: message.guild.id }).then(async res => {
+								const doc = res.merchChannel.messages[i]
+								if (doc === undefined) return
+								const lastID = doc.messageID
+								const lastTime = doc.time
+
+								const fetched = await message.channel.messages.fetch(lastID)
+								try {
+									const check = Date.now() - lastTime > 600000
+									if (check) {
+										fetched.react('☠️')
+										await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: lastID } } })
+									}
+								} catch (err) {
+									if (err.code === 10008) {
+										return console.log("Error: Uknown Message - Deleted")
+									}
 								}
-							}
-						},
-						{ sort: { time: 1 } }
-					)
-				const count = await settingsColl.findOne({ _id: message.guild.id }).then(async res => {
-					return res.merchChannel.messages.length
-				})
-				for (let i = 0; i <= count; i++) {
-					settingsColl.findOne({ _id: message.guild.id }).then(async res => {
-						const doc = res.merchChannel.messages[i]
-						if (doc === undefined) return
-						const lastID = doc.messageID
-						const lastTime = doc.time
 
-						const fetched = await message.channel.messages.fetch(lastID)
-						try {
-							const check = Date.now() - lastTime > 600000
-							if (check) {
-								fetched.react('☠️')
-								await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: lastID } } })
-							}
-						} catch (err) {
-							if (err.code === 10008) {
-								return console.log("Error: Uknown Message - Deleted")
-							}
+							})
 						}
-
-					})
-				}
-			} catch (err) {
-				console.log(err)
+					} catch (err) {
+						console.log(err)
+					}
+				})
 			}
 		})
-	}
 }
