@@ -131,7 +131,7 @@ module.exports = async (client, message) => {
 								}
 							)
 							.then(async db => {
-								const messageArray = db.value.merchChannel.messages;
+								const messageArray = await db.value.merchChannel.messages;
 								if (messageArray[0].author === "Valence Bot") {
 									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: messageArray[0].messageID } } })
 								}
