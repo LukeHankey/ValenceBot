@@ -125,8 +125,17 @@ module.exports = async (client, message) => {
 										}
 									}
 								},
-								{ sort: { time: 1 } }
+								{ 
+									sort: { time: 1 },
+									returnNewDocument: true
+								}
 							)
+							.then(async db => {
+								const messageArray = db.value.merchChannel.messages;
+								if (messageArray[0].author === "Valence Bot") {
+									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: messageArray[0].messageID } } })
+								}
+							})
 						const count = await settingsColl.findOne({ _id: message.guild.id }).then(async res => {
 							return res.merchChannel.messages.length
 						})
@@ -137,8 +146,8 @@ module.exports = async (client, message) => {
 								const lastID = doc.messageID
 								const lastTime = doc.time
 
-								const fetched = await message.channel.messages.fetch(lastID)
 								try {
+									const fetched = await message.channel.messages.fetch(lastID)
 									const check = Date.now() - lastTime > 600000
 									if (check) {
 										fetched.react('☠️')
@@ -146,7 +155,7 @@ module.exports = async (client, message) => {
 									}
 								} catch (err) {
 									if (err.code === 10008) {
-										return console.log("Error: Uknown Message - Deleted")
+										return console.log("Error: Uknown Message - Deleted. Removing from DataBase...")
 									}
 								}
 
