@@ -37,7 +37,7 @@ module.exports = {
 		let rsn = rest.join(" ").slice(4, reasonSlice).trim()
 		let reason = rest.join(" ").slice(reasonSlice + 7).trim()
 
-		if (message.guild.id !== '733164313744769024' && message.channel.id !== '734477320672247869') {// Change these before commiting
+		if (message.guild.id !== '420803245758480405' && message.channel.id !== '773285098069426227') {
 			return
 		} else {
 			switch (args[0]) {
