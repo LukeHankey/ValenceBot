@@ -95,7 +95,7 @@ module.exports = async (client, message) => {
 
 	// DSF - Merch Calls
 
-	settingsColl.findOne({ _id: message.guild.id })
+	await settingsColl.findOne({ _id: message.guild.id })
 		.then(res => {
 			if (res.merchChannel === undefined) return
 			if (message.channel.id === res.merchChannel.channelID) {
@@ -106,13 +106,12 @@ module.exports = async (client, message) => {
 					try {
 						let mes = await message.channel.messages.fetch({ limit: 10 })
 						mes = mes.filter(m => {
-							if (m.reactions.cache.has('☠️')) {
-								return
-							} else return mes
+							if (m.reactions.cache.has('☠️')) return
+							else return mes
 						})
 						const log = [...mes.values()]
 						for (const messages in log)
-							settingsColl.findOneAndUpdate({ _id: message.guild.id },
+							await settingsColl.findOneAndUpdate({ _id: message.guild.id },
 								{
 									$addToSet: {
 										"merchChannel.messages": {
@@ -142,7 +141,7 @@ module.exports = async (client, message) => {
 							return res.merchChannel.messages.length
 						})
 						for (let i = 0; i <= count; i++) {
-							settingsColl.findOne({ _id: message.guild.id }).then(async res => {
+							await settingsColl.findOne({ _id: message.guild.id }).then(async res => {
 								const doc = res.merchChannel.messages[i]
 								if (doc === undefined) return
 								const lastID = doc.messageID
