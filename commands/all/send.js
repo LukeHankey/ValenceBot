@@ -1,7 +1,7 @@
 const func = require("../../functions.js")
 const colors = require('../../colors.json')
 const Discord = require('discord.js');
-const e = require("express");
+const getDb = require('../../mongodb').getDb
 
 module.exports = {
 	name: "send",
@@ -20,7 +20,10 @@ module.exports = {
 				.addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
 		}
 
-		const [messageID, ...rest] = args.slice(1)
+		const db = getDb();
+		const settings = db.collection("Settings")
+
+		const [param, num, ...rest] = args.slice(1)
 		const reasonRegex = /(:^|reason)+/gi
 		const rsnRegex = /(:^|rsn)+/gi
 		const paramRegex = /(:^|rsn|reason)+/gi
@@ -32,10 +35,11 @@ module.exports = {
 		// 	return
 		// } else {
 			switch (args[0]) {
-				case 'embed':
+				case 'embed': {
+					const [param, num] = args.slice(1)
 					const banEmbed = new Discord.MessageEmbed()
 						.setColor(colors.red_dark)
-						.setTitle(`${args[2]}. Ban List for WhirlpoolDnD`)
+						.setTitle(`${num}. Ban List for WhirlpoolDnD`)
 						.setDescription('A comprehensive list of all members that are banned with reasons.')
 						.setThumbnail('https://i.imgur.com/bnNTU4Z.png')
 						.setTimestamp()
@@ -43,70 +47,114 @@ module.exports = {
 
 					const friendEmbed = new Discord.MessageEmbed()
 						.setColor(colors.green_light)
-						.setTitle(`${args[2]}. Friends List for WhirlpoolDnD`)
+						.setTitle(`${num}. Friends List for WhirlpoolDnD`)
 						.setDescription('A comprehensive list of all members that are friends with reasons.')
 						.setThumbnail('https://i.imgur.com/nidMjPr.png')
 						.setTimestamp()
 						.setFooter(`${client.user.username} created by Luke_#8346`, message.guild.iconURL())
 
-					if (!args[2] || isNaN(args[2])) return message.channel.send(`Please provide a number to order the embeds.`)
-					args[1] === 'ban'
-						? message.channel.send(banEmbed)
-						: args[1] === 'friend'
-						? message.channel.send(friendEmbed)
+					if (!param) return message.channel.send('Please provide a parameter.')
+					if (!num || isNaN(num)) return message.channel.send(`Please provide a number to order the embeds.`)
+
+					param === 'ban'
+						? message.channel.send(banEmbed).then(async m => {
+							await settings.findOneAndUpdate({ '_id': message.guild.id }, {
+								$push: {
+									'logs': { 'id': num, 'messageID': m.id, 'type': param }
+								}
+							})
+						})
+						: param === 'friend'
+						? message.channel.send(friendEmbed).then(async m => {
+							await settings.findOneAndUpdate({ '_id': message.guild.id }, {
+								$push: {
+									'logs': { 'id': num, 'messageID': m.id, 'type': param }
+								}
+							})
+						})
 						: message.channel.send('Parameter must be either: \`ban\` or \`friend\`.')
+				}
 				break;
 				case 'info': {
-					const banPost = await message.channel.messages.fetch(messageID)
+					settings.findOne({ '_id': message.guild.id })
+					.then(async res => {
+						const find = await res.logs.find(log => log.id === num && log.type === param)
+						const embedPost = await message.channel.messages.fetch(find.messageID)
+					
+						if (!param || !num) return message.channel.send('Please specify the type (\`ban\` or \`friend\`) and the number of the embed.')
+						if (!rsn || message.content.match(rsnRegex) === null) return message.channel.send('Please enter the RSN as \`RSN: <rsn>\`.')
+						if (!reason || message.content.match(reasonRegex) === null) return message.channel.send('Please enter the reason. If there is no reason, use "Unknown".')
 
-					if (!messageID) return message.channel.send('Please specify a message ID to add the information.')
+						let infoEditPost = new Discord.MessageEmbed(embedPost.embeds[0])
+						.addField(`${rsn}`, `${reason}`, true)
 
-					if (!rsn || message.content.match(rsnRegex) === null) return message.channel.send('Please enter the RSN.')
-					if (!reason || message.content.match(reasonRegex) === null) return message.channel.send('Please enter the reason. If there is no reason, use "Unknown".')
-					let infoEditPost = new Discord.MessageEmbed(banPost.embeds[0])
-					.addField(`${rsn}`, `${reason}`, true)
+						embedPost.edit(infoEditPost)
+					})
+					.catch(async err => {
+						if (err.code === 10008){
+							const identifiers = err.path.split("/")
+							const found = await settings.findOne({ '_id': message.guild.id })
+							const findID = await found.logs.find(log => log.messageID === identifiers[4])
 
-					banPost.edit(infoEditPost)
+							message.channel.send(`Unable to find the embed to add to. - It must have been deleted! Removing it from the DataBase...`)
+							.then(async m => await m.delete({ timeout: 10000 }))
+
+							await settings.updateOne({ '_id': message.guild.id }, {
+								$pull: {
+									logs: { messageID: findID.messageID }
+								}
+							})
+						}
+						else console.log(err)
+					})
 				}
 				break;
 				case 'edit': {
-					const banPost = await message.channel.messages.fetch(messageID)
-					const paramSlice = rest.join(" ").search(paramRegex)
-					const editRsn = rest.join(" ").slice(0, paramSlice).trim()
-					const matched = message.content.match(paramRegex)
-					const fieldsParams = ["rsn", "reason"]
-					const parameter = fieldsParams.indexOf(matched[0].toLowerCase())
-					const changeRsn = rest.join(" ").slice(paramSlice + 4).trim()
-					const changeReason = rest.join(" ").slice(paramSlice + 7).trim()
-					let editPost = new Discord.MessageEmbed(banPost.embeds[0])
-					let fields = banPost.embeds[0].fields
-					let field = []
+					settings.findOne({ '_id': message.guild.id })
+					.then(async res => {
+						const find = await res.logs.find(log => log.id === num && log.type === param)
 
-					if (!messageID) return message.channel.send('Please specify a message ID to edit the information.')
-					if (!editRsn) return message.channel.send('Please enter the RSN to find.')
-					if (matched === null) return message.channel.send('Please enter a valid parameter to change. Either `RSN:` or `Reason:`.')
-					if (!changeReason || !changeRsn) return message.channel.send(`Please provide the value to change ${editRsn}'s ${parameter} to.`)
+						const embedPost = await message.channel.messages.fetch(find.messageID)
+						const paramSlice = rest.join(" ").search(paramRegex)
+						const editRsn = rest.join(" ").slice(0, paramSlice).trim()
+						const matched = message.content.match(paramRegex)
+						const fieldsParams = ["rsn", "reason"]
+						const parameter = fieldsParams.indexOf(matched[0].toLowerCase())
+						const changeRsn = rest.join(" ").slice(paramSlice + 4).trim()
+						const changeReason = rest.join(" ").slice(paramSlice + 7).trim()
+						let editPost = new Discord.MessageEmbed(embedPost.embeds[0])
+						let fields = embedPost.embeds[0].fields
+						let field = []
 
-					for (let i = 0; i < fields.length; i++) {
-						if (fields[i].name === editRsn) {
-							field.push(i, fields[i])
+						if (!param || !num) return message.channel.send(`Please specify the type (\`ban\` or \`friend\`) and the number of the embed.`)
+						if (!editRsn) return message.channel.send('Please enter the RSN to find.')
+						if (matched === null) return message.channel.send('Please enter a valid parameter to change. Either `RSN:` or `Reason:`.')
+						if (!changeReason || !changeRsn) return message.channel.send(`Please provide the value to change ${editRsn}'s ${parameter} to.`)
+
+						for (let i = 0; i < fields.length; i++) {
+							if (fields[i].name === editRsn) {
+								field.push(i, fields[i])
+							}
 						}
-					}
-					if (fieldsParams[0] === fieldsParams[parameter]) {
-						field[1].name = changeRsn;
-						editPost.spliceFields(field[0], 1, field[1])
-						return banPost.edit(editPost)
-					}
-					if (fieldsParams[1] === fieldsParams[parameter]) {
-						field[1].value = changeReason;
-						editPost.spliceFields(field[0], 1, field[1])
-						return banPost.edit(editPost)
-					}
+						if (fieldsParams[0] === fieldsParams[parameter]) {
+							if (field[1] === undefined) return message.channel.send('Make sure you type the RSN correctly, including any capitals.')
+							field[1].name = changeRsn;
+							editPost.spliceFields(field[0], 1, field[1])
+							return embedPost.edit(editPost)
+						}
+						if (fieldsParams[1] === fieldsParams[parameter]) {
+							if (field[1] === undefined) return message.channel.send('Make sure you type the RSN correctly, including any capitals.')
+							field[1].value = changeReason;
+							editPost.spliceFields(field[0], 1, field[1])
+							return embedPost.edit(editPost)
+						}
+					})
 				}
 				break;
 			}
 		// }
 
+		/*
 		if (func.checkNum(args[0], 1, Infinity)) { // Has valid ID
 			if (message.guild.channels.cache.has(args[0]) && content && message.author.id !== myID) { // Has content and channel is in same server
 				message.guild.channels.cache.get(args[0]).send(content);
@@ -126,6 +174,6 @@ module.exports = {
 		if (args[0] && !content) {
 			message.channel.send("You must provide a message to send.");
 		}
-		
+		*/
 	},
 };
