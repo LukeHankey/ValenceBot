@@ -9,7 +9,8 @@ module.exports = {
         const [...roleName] = args;
 
         const rName = roleName.join(" ").trim();
-        const highBotRoleID = '771973952562135042'
+        const botRole = message.guild.me.roles.cache.find(r => r.managed)
+        const highBotRoleID = botRole.id
         
         const check = (r, bP) => {
             const role = message.guild.roles.cache.find(role => role.name.toLowerCase() === r.toLowerCase());
