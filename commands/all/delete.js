@@ -7,6 +7,8 @@ module.exports = {
 	run: async (client, message, args) => {
 		const amount = parseInt(args[0]) + 1; // Deletes itself + at least 1 other message
 
+		if (!message.guild.me.hasPermission('MANAGE_MESSAGES')) return message.channel.send('Missing some permissions: \`MANAGE_MESSAGES\`.')
+
 		if (isNaN(amount)) {
 			return message.reply("Please enter a valid number.");
 		}
