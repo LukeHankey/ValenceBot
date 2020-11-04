@@ -133,6 +133,7 @@ module.exports = async (client, message) => {
 							.then(async db => {
 								const messageArray = await db.value.merchChannel.messages;
 								if (messageArray[0].author === "Valence Bot") {
+									console.log(messageArray[0].messageID)
 									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: messageArray[0].messageID } } })
 								}
 							})
@@ -155,7 +156,8 @@ module.exports = async (client, message) => {
 									}
 								} catch (err) {
 									if (err.code === 10008) {
-										return console.log("Error: Uknown Message - Deleted. Removing from DataBase...")
+										// console.log("Error: Uknown Message - Deleted. Removing from DataBase...")
+										// await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: messageArray[0].messageID } } })
 									}
 								}
 
