@@ -5,9 +5,9 @@ const e = require("express");
 
 module.exports = {
 	name: "send",
-	description: ["Sends a message to a channel.", "Creates a new embed for the Ban List.", "Adds an RSN to the ban list with a reason.", "Edits an rsn or reason by finding the given rsn. Example:\n```css\n;send edit <message ID> Guys Reason: Is a noob.```"],
+	description: ["Sends a message to a channel.", "Creates a new embed for the Ban/Friends List.", "Adds an RSN to the ban list with a reason.", "Edits an rsn or reason by finding the given rsn. Example:\n```css\n;send edit <message ID> Guys Reason: Is a noob.```"],
 	aliases: [""],
-	usage: ["<channel ID> <message content>", "embed", "info <message ID> RSN: <rsn> Reason: <reason>", "edit <message ID> <rsn> <RSN:/Reason:> <value>"],
+	usage: ["<channel ID> <message content>", "embed <ban/friend> <number>", "info <message ID> RSN: <rsn> Reason: <reason>", "edit <message ID> <rsn> <RSN:/Reason:> <value>"],
 	permissions: [false],
 	run: async (client, message, args, perms) => {
 
@@ -20,39 +20,45 @@ module.exports = {
 				.addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
 		}
 
-		/* Embed limits: 25 fields
-		* ;send embed > Sends blank embed to current channel
-		* ;send info messageID (of embed) RSN: title Reason: value
-		* ;send edit messageID (find the rsn) Reason: (set new reason) or RSN:
-		*/
 		const [messageID, ...rest] = args.slice(1)
 		const reasonRegex = /(:^|reason)+/gi
 		const rsnRegex = /(:^|rsn)+/gi
 		const paramRegex = /(:^|rsn|reason)+/gi
-		const banPost = await message.channel.messages.fetch(messageID)
-		const paramSlice = rest.join(" ").search(paramRegex)
-		const changeRsn = rest.join(" ").slice(paramSlice + 4).trim()
-		const changeReason = rest.join(" ").slice(paramSlice + 7).trim()
 		const reasonSlice = rest.join(" ").search(reasonRegex)
 		let rsn = rest.join(" ").slice(4, reasonSlice).trim()
 		let reason = rest.join(" ").slice(reasonSlice + 7).trim()
 
-		if (message.guild.id !== '420803245758480405' && message.channel.id !== '773285098069426227') {
-			return
-		} else {
+		// if (message.guild.id !== '420803245758480405' && message.channel.id !== '773285098069426227') {
+		// 	return
+		// } else {
 			switch (args[0]) {
 				case 'embed':
-					const embed = new Discord.MessageEmbed()
+					const banEmbed = new Discord.MessageEmbed()
 						.setColor(colors.red_dark)
-						.setTitle('Ban List for WhirlpoolDnD')
+						.setTitle(`${args[2]}. Ban List for WhirlpoolDnD`)
 						.setDescription('A comprehensive list of all members that are banned with reasons.')
 						.setThumbnail('https://i.imgur.com/bnNTU4Z.png')
 						.setTimestamp()
 						.setFooter(`${client.user.username} created by Luke_#8346`, message.guild.iconURL())
 
-					message.channel.send(embed)
+					const friendEmbed = new Discord.MessageEmbed()
+						.setColor(colors.green_light)
+						.setTitle(`${args[2]}. Friends List for WhirlpoolDnD`)
+						.setDescription('A comprehensive list of all members that are friends with reasons.')
+						.setThumbnail('https://i.imgur.com/nidMjPr.png')
+						.setTimestamp()
+						.setFooter(`${client.user.username} created by Luke_#8346`, message.guild.iconURL())
+
+					if (!args[2] || isNaN(args[2])) return message.channel.send(`Please provide a number to order the embeds.`)
+					args[1] === 'ban'
+						? message.channel.send(banEmbed)
+						: args[1] === 'friend'
+						? message.channel.send(friendEmbed)
+						: message.channel.send('Parameter must be either: \`ban\` or \`friend\`.')
 				break;
-				case 'info':
+				case 'info': {
+					const banPost = await message.channel.messages.fetch(messageID)
+
 					if (!messageID) return message.channel.send('Please specify a message ID to add the information.')
 
 					if (!rsn || message.content.match(rsnRegex) === null) return message.channel.send('Please enter the RSN.')
@@ -61,30 +67,31 @@ module.exports = {
 					.addField(`${rsn}`, `${reason}`, true)
 
 					banPost.edit(infoEditPost)
+				}
 				break;
 				case 'edit': {
-					if (!messageID) return message.channel.send('Please specify a message ID to edit the information.')
-					let editRsn = rest.join(" ").slice(0, paramSlice).trim()
-					if (!editRsn) return message.channel.send('Please enter the RSN to find.')
-
+					const banPost = await message.channel.messages.fetch(messageID)
+					const paramSlice = rest.join(" ").search(paramRegex)
+					const editRsn = rest.join(" ").slice(0, paramSlice).trim()
 					const matched = message.content.match(paramRegex)
-
 					const fieldsParams = ["rsn", "reason"]
-					if (matched === null) return message.channel.send('Please enter a valid parameter to change. Either `RSN:` or `Reason:`.')
 					const parameter = fieldsParams.indexOf(matched[0].toLowerCase())
-
-					if (!changeReason || !changeRsn) return message.channel.send(`Please provide the value to change ${editRsn}'s ${parameter} to.`)
-
+					const changeRsn = rest.join(" ").slice(paramSlice + 4).trim()
+					const changeReason = rest.join(" ").slice(paramSlice + 7).trim()
+					let editPost = new Discord.MessageEmbed(banPost.embeds[0])
 					let fields = banPost.embeds[0].fields
 					let field = []
+
+					if (!messageID) return message.channel.send('Please specify a message ID to edit the information.')
+					if (!editRsn) return message.channel.send('Please enter the RSN to find.')
+					if (matched === null) return message.channel.send('Please enter a valid parameter to change. Either `RSN:` or `Reason:`.')
+					if (!changeReason || !changeRsn) return message.channel.send(`Please provide the value to change ${editRsn}'s ${parameter} to.`)
 
 					for (let i = 0; i < fields.length; i++) {
 						if (fields[i].name === editRsn) {
 							field.push(i, fields[i])
 						}
 					}
-					let editPost = new Discord.MessageEmbed(banPost.embeds[0])
-
 					if (fieldsParams[0] === fieldsParams[parameter]) {
 						field[1].name = changeRsn;
 						editPost.spliceFields(field[0], 1, field[1])
@@ -98,15 +105,8 @@ module.exports = {
 				}
 				break;
 			}
-		}
+		// }
 
-
-
-
-
-
-
-		/*
 		if (func.checkNum(args[0], 1, Infinity)) { // Has valid ID
 			if (message.guild.channels.cache.has(args[0]) && content && message.author.id !== myID) { // Has content and channel is in same server
 				message.guild.channels.cache.get(args[0]).send(content);
@@ -126,6 +126,6 @@ module.exports = {
 		if (args[0] && !content) {
 			message.channel.send("You must provide a message to send.");
 		}
-		*/
+		
 	},
 };
