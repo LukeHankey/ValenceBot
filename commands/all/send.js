@@ -5,9 +5,9 @@ const getDb = require('../../mongodb').getDb
 
 module.exports = {
     name: "send",
-    description: ["Sends a message to a channel.", "Creates a new embed for the Ban/Friends List.", "Adds an RSN to the ban list with a reason.", "Edits an rsn or reason by finding the given rsn. Example:\n```css\n;send edit ban 1 Guys Reason: Is a noob.```"],
+    description: ["Sends a message to a channel.", "Creates a new embed for the Ban/Friends List.", "Adds an RSN to the ban list with a reason.", "Edits an rsn or reason by finding the given rsn. Example:\n```css\n;send edit ban 1 Guys Reason: Is a noob.```", "Removes a member from the ban or friends list by specifying their rsn and which embed they are in."],
     aliases: [""],
-    usage: ["<channel ID> <message content>", "embed <ban/friend> <number>", "info <ban/friend> <num> RSN: <rsn> Reason: <reason>", "edit <ban/friend> <num> <rsn> <RSN:/Reason:> <value>"],
+    usage: ["<channel ID> <message content>", "embed <ban/friend> <number>", "info <ban/friend> <num> RSN: <rsn> Reason: <reason>", "edit <ban/friend> <num> <rsn> <RSN:/Reason:> <value>", "remove <ban/friend> <num> <rsn>"],
     permissions: [false],
     run: async (client, message, args, perms) => {
 
