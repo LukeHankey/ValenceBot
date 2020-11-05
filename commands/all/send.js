@@ -54,9 +54,9 @@ module.exports = {
                 if (!param) return message.channel.send('Please provide a parameter.')
                 if (!num || isNaN(num)) return message.channel.send(`Please provide a number to order the embeds.`)
 
-                if (message.guild.id !== '420803245758480405' && message.channel.id !== '773285098069426227') {
-                    return
-                } else {
+                // if (message.guild.id !== '420803245758480405' && message.channel.id !== '773285098069426227') {
+                //     return
+                // } else {
                     param === 'ban'
                         ? message.channel.send(banEmbed).then(async m => {
                             await settings.findOneAndUpdate({ '_id': message.guild.id }, {
@@ -75,12 +75,12 @@ module.exports = {
                             })
                             : message.channel.send('Parameter must be either: \`ban\` or \`friend\`.')
                 }
-            }
+            // }
                 break;
             case 'info': {
-                if (message.guild.id !== '420803245758480405' && message.channel.id !== '773285098069426227') {
-                    return
-                } else {
+                // if (message.guild.id !== '420803245758480405' && message.channel.id !== '773285098069426227') {
+                //     return
+                // } else {
                     settings.findOne({ '_id': message.guild.id })
                         .then(async res => {
                             const find = await res.logs.find(log => log.id === num && log.type === param)
@@ -112,7 +112,7 @@ module.exports = {
                             }
                             else console.log(err)
                         })
-                }
+                // }
             }
                 break;
             case 'edit': {
@@ -160,8 +160,37 @@ module.exports = {
                         })
                 }
             }
-                break;
-            default:
+            break;
+            case 'remove': {
+                // if (message.guild.id !== '420803245758480405' && message.channel.id !== '773285098069426227') {
+                //     return
+                // } else {
+                    settings.findOne({ '_id': message.guild.id })
+                        .then(async res => {
+                            const find = await res.logs.find(log => log.id === num && log.type === param)
+                            const rsn = rest.join(" ")
+
+                            if (!param || !num || !find) return message.channel.send(`Please specify the type (\`ban\` or \`friend\`) and the number of the embed.`)
+
+                            const embedPost = await message.channel.messages.fetch(find.messageID)
+                            let editPost = new Discord.MessageEmbed(embedPost.embeds[0])
+                            let fields = embedPost.embeds[0].fields
+                            let field = []
+
+                            for (let i = 0; i < fields.length; i++) {
+                                if (fields[i].name === rsn) {
+                                    field.push(i, fields[i])
+                                }
+                            }
+                            field[1] === undefined
+                                ? message.channel.send('Make sure you type the RSN correctly, including any capitals.')
+                                : editPost.spliceFields(field[0], 1)
+                            embedPost.edit(editPost)
+                        })
+                // }
+            }   
+            break; 
+            default: {
                 if (func.checkNum(args[0], 1, Infinity)) { // Has valid ID
                     if (message.guild.channels.cache.has(args[0]) && content && message.author.id !== myID) { // Has content and channel is in same server
                         message.guild.channels.cache.get(args[0]).send(content);
@@ -175,12 +204,13 @@ module.exports = {
                     }
                 }
                 else { // No valid ID
-                    message.channel.send("You must provide a channel ID.");
+                    return message.channel.send("You must provide a channel ID.");
                 }
 
                 if (args[0] && !content) {
-                    message.channel.send("You must provide a message to send.");
+                    return message.channel.send("You must provide a message to send.");
                 }
+            }
         }
     },
 };
