@@ -96,11 +96,11 @@ module.exports = async (client, message) => {
 	// DSF - Merch Calls
 
 	await settingsColl.findOne({ _id: message.guild.id })
-		.then(res => {
-			if (res.merchChannel === undefined) return
-			if (message.channel.id === res.merchChannel.channelID) {
+		.then(async res => {
+			// if (res.merchChannel === undefined) return
+			if (message.channel.id === await res.merchChannel.channelID) {
 				message.content.match(/(?:(?:^|m|merch|merchant|w|world{1})(\s*))(\d{1,3})(?:[^\d]|$)/i)
-					? message.channel.send(`<@&670842187461820436>`).then(m => m.delete())
+					? message.channel.send(`<@&670842187461820436>`).then(async m => await m.delete())
 					: message.delete()
 				cron.schedule('*/30 * * * * *', async () => {
 					try {
@@ -110,7 +110,7 @@ module.exports = async (client, message) => {
 							else return mes
 						})
 						const log = [...mes.values()]
-						for (const messages in log)
+						for (const messages in log) {
 							await settingsColl.findOneAndUpdate({ _id: message.guild.id },
 								{
 									$addToSet: {
@@ -133,10 +133,10 @@ module.exports = async (client, message) => {
 								const messageArray = await db.value.merchChannel.messages;
 								if (messageArray[0] === undefined) return;
 								if (messageArray[0].author === "Valence Bot") {
-									console.log(messageArray[0].messageID)
 									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: messageArray[0].messageID } } })
 								}
 							})
+						}
 						const count = await settingsColl.findOne({ _id: message.guild.id }).then(async res => {
 							return res.merchChannel.messages.length
 						})
@@ -149,15 +149,16 @@ module.exports = async (client, message) => {
 
 								try {
 									const fetched = await message.channel.messages.fetch(lastID)
-									const check = Date.now() - lastTime > 600000
+									const check = Date.now() - lastTime > 60000
 									if (check) {
 										fetched.react('☠️')
 										await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: lastID } } })
 									}
 								} catch (err) {
 									if (err.code === 10008) {
-										// console.log("Error: Uknown Message - Deleted. Removing from DataBase...")
-										// await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: messageArray[0].messageID } } })
+										const messageID = err.path.split('/')
+										console.log("Error: Uknown Message - Deleted. Removing from DataBase...")
+										await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { 'messageID': messageID[4] } } })
 									}
 								}
 
