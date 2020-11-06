@@ -149,7 +149,7 @@ module.exports = async (client, message) => {
 
 								try {
 									const fetched = await message.channel.messages.fetch(lastID)
-									const check = Date.now() - lastTime > 60000
+									const check = Date.now() - lastTime > 600000
 									if (check) {
 										fetched.react('☠️')
 										await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: lastID } } })
