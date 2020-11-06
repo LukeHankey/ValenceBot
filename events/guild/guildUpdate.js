@@ -16,7 +16,6 @@ const code = "```";
     .then(async res => {
         client.channels.cache.get("731997087721586698").send(`The server name has been changed from ${oldGuild.name} to **${newGuild.name}**.\n${code}diff\n
 + Server Name: ${newGuild.name}
-+ Server ID: ${oldGuild.id}
-+ Owner: ${newGuild.owner ? newGuild.owner.nickname : oldGuild.owner.nickname}${code}`);
++ Server ID: ${oldGuild.id}${code}`);
 })
 };
