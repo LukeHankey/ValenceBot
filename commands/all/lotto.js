@@ -35,7 +35,7 @@ run: async (client, message, args, perms) => {
 
         const optW = { // WRITE OPTIONS
             spreadsheetId: "1ZView14HaimCuCUg_durvI-3wiOn4Pf5mZRKYVwrHlY",
-            range: "November 2020!A1:E52",
+            range: "November 2020!A1:F52",
             valueInputOption: "USER_ENTERED",
             resource: { values: newArr }
         }
