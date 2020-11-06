@@ -97,7 +97,7 @@ module.exports = async (client, message) => {
 
 	await settingsColl.findOne({ _id: message.guild.id })
 		.then(async res => {
-			// if (res.merchChannel === undefined) return
+			if (res.merchChannel === undefined) return
 			if (message.channel.id === await res.merchChannel.channelID) {
 				message.content.match(/(?:(?:^|m|merch|merchant|w|world{1})(\D+))(\s?)(\d{1,3})/i)
 					? message.channel.send(`<@&670842187461820436>`).then(async m => await m.delete())
