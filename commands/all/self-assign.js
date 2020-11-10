@@ -1,6 +1,6 @@
 module.exports = {
 	name: "self-assign",
-	description: ["Assign a role."],
+	description: ["Assigns or removes a role."],
 	aliases: ["sa"],
 	usage:  ["<role name>"],
 	permissions: [false],
