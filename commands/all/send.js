@@ -7,7 +7,7 @@ module.exports = {
     name: "send",
     description: ["Sends a message to a channel.", "Creates a new embed for the Ban/Friends List.", "Adds an RSN to the ban list with a reason.", "Edits an rsn or reason by finding the given rsn. Example:\n```css\n;send edit ban 1 Guys Reason: Is a noob.```", "Removes a member from the ban or friends list by specifying their rsn and which embed they are in."],
     aliases: [""],
-    usage: ["<channel ID> <message content>", "embed <ban/friend> <number>", "info <ban/friend> <num> RSN: <rsn> Reason: <reason>", "edit <ban/friend> <num> <rsn> <RSN:/Reason:> <value>", "remove <ban/friend> <num> <rsn>"],
+    usage: ["<channel ID> <message content>", "embed <ban/friend/affiliate> <number>", "info <ban/friend/affiliate> <num> RSN: <rsn> Reason: <reason>", "edit <ban/friend/affiliate> <num> <rsn> <RSN:/Reason:> <value>", "remove <ban/friend/affiliate> <num> <rsn>"],
     permissions: [false],
     run: async (client, message, args, perms) => {
 
@@ -51,6 +51,14 @@ module.exports = {
                     .setTimestamp()
                     .setFooter(`${client.user.username} created by Luke_#8346`, message.guild.iconURL())
 
+                const affiliateEmbed = new Discord.MessageEmbed()
+                    .setColor(colors.orange)
+                    .setTitle(`${num}. Affiliate List for WhirlpoolDnD`)
+                    .setDescription('A comprehensive list of all members that are affiliates with reasons (Discord/FC name).')
+                    .setThumbnail('https://cdn.discordapp.com/attachments/734477320672247869/776507717602115644/group.png')
+                    .setTimestamp()
+                    .setFooter(`${client.user.username} created by Luke_#8346`, message.guild.iconURL())
+
                 if (!param) return message.channel.send('Please provide a parameter.')
                 if (!num || isNaN(num)) return message.channel.send(`Please provide a number to order the embeds.`)
 
@@ -73,7 +81,15 @@ module.exports = {
                                     }
                                 })
                             })
-                            : message.channel.send('Parameter must be either: \`ban\` or \`friend\`.')
+                        : param === 'affiliate'
+                            ? message.channel.send(affiliateEmbed).then(async m => {
+                                await settings.findOneAndUpdate({ '_id': message.guild.id }, {
+                                    $push: {
+                                        'logs': { 'id': num, 'messageID': m.id, 'type': param }
+                                    }
+                                })
+                            })
+                        : message.channel.send('Parameter must be either: \`ban\`, \`friend\` or \`affiliate\`.')
                 }
             }
                 break;
@@ -86,7 +102,7 @@ module.exports = {
                             const find = await res.logs.find(log => log.id === num && log.type === param)
                             const embedPost = await message.channel.messages.fetch(find.messageID)
 
-                            if (!param || !num) return message.channel.send('Please specify the type (\`ban\` or \`friend\`) and the number of the embed.')
+                            if (!param || !num) return message.channel.send('Please specify the type (\`ban\`, \`friend\` or \`affiliate\`) and the number of the embed.')
                             if (!rsn || message.content.match(rsnRegex) === null) return message.channel.send('Please enter the RSN as \`RSN: <rsn>\`.')
                             if (!reason || message.content.match(reasonRegex) === null) return message.channel.send('Please enter the reason. If there is no reason, use "Unknown".')
 
@@ -135,7 +151,7 @@ module.exports = {
                             let fields = embedPost.embeds[0].fields
                             let field = []
 
-                            if (!param || !num) return message.channel.send(`Please specify the type (\`ban\` or \`friend\`) and the number of the embed.`)
+                            if (!param || !num) return message.channel.send(`Please specify the type (\`ban\`, \`friend\` or \`affiliate\`) and the number of the embed.`)
                             if (!editRsn) return message.channel.send('Please enter the RSN to find.')
                             if (matched === null) return message.channel.send('Please enter a valid parameter to change. Either `RSN:` or `Reason:`.')
                             if (!changeReason || !changeRsn) return message.channel.send(`Please provide the value to change ${editRsn}'s ${parameter} to.`)
@@ -145,13 +161,13 @@ module.exports = {
                                     field.push(i, fields[i])
                                 }
                             }
-                            if (fieldsParams[0] === fieldsParams[parameter]) {
+                            if (fieldsParams[0] === fieldsParams[parameter]) { // RSN
                                 if (field[1] === undefined) return message.channel.send('Make sure you type the RSN correctly, including any capitals.')
                                 field[1].name = changeRsn;
                                 editPost.spliceFields(field[0], 1, field[1])
                                 return embedPost.edit(editPost)
                             }
-                            if (fieldsParams[1] === fieldsParams[parameter]) {
+                            if (fieldsParams[1] === fieldsParams[parameter]) { // Reason
                                 if (field[1] === undefined) return message.channel.send('Make sure you type the RSN correctly, including any capitals.')
                                 field[1].value = changeReason;
                                 editPost.spliceFields(field[0], 1, field[1])
@@ -170,7 +186,7 @@ module.exports = {
                             const find = await res.logs.find(log => log.id === num && log.type === param)
                             const rsn = rest.join(" ")
 
-                            if (!param || !num || !find) return message.channel.send(`Please specify the type (\`ban\` or \`friend\`) and the number of the embed.`)
+                            if (!param || !num || !find) return message.channel.send(`Please specify the type (\`ban\`, \`friend\` or \`affiliate\`) and the number of the embed.`)
 
                             const embedPost = await message.channel.messages.fetch(find.messageID)
                             let editPost = new Discord.MessageEmbed(embedPost.embeds[0])
