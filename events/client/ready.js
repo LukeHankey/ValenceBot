@@ -1,7 +1,6 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 const Discord = require("discord.js");
-const connection = require("../../mongodb").initDb;
 const getDb = require("../../mongodb").getDb;
 const fetch = require("node-fetch");
 const cron = require('node-cron');
@@ -93,6 +92,7 @@ module.exports = async client => {
 		},
 		{ upsert: true },
 	);
+
 
 	const vFactsColl = db.collection("Facts");
 	const settings = db.collection("Settings");
