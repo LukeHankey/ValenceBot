@@ -17,6 +17,8 @@ module.exports = {
 		await settings.findOne({ _id: message.guild.id })
 		.then(async res => {
 
+		let roleName = message.guild.roles.cache.find(role => role.name === args[2]);
+
 		switch (args[0]) {
 			case "prefix":
 				switch (args[1]) {
@@ -105,10 +107,7 @@ module.exports = {
 					break;
 				default:
 					if (!args[1]) {
-						settings.findOne({ _id: `${message.guild.name}` })
-						.then(res => {
-							message.channel.send(`Your Admin Role is set as: ${res.roles.adminRole}`, { "allowedMentions": { "parse" : []}})
-						})
+						message.channel.send(`Your Admin Role is set as: ${res.roles.adminRole}`, { "allowedMentions": { "parse" : []}})
 					}
 				}
 				break;
@@ -153,7 +152,7 @@ module.exports = {
 					break;
 				default:
 					if (!args[1]) {
-							message.channel.send(`Your Mod Role is set as: ${res.roles.modRole}`, { "allowedMentions": { "parse" : []}})
+						message.channel.send(`Your Mod Role is set as: ${res.roles.modRole}`, { "allowedMentions": { "parse" : []}})
 					}
 				}
 			break;
