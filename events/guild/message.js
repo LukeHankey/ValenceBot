@@ -41,7 +41,7 @@ module.exports = async (client, message) => {
 					: message.channel.send("You cannot use that command in this server.")
 			}
 			catch (error) {
-				if (commandName !== command) message.channel.send("That's not a valid command!");
+				if (commandName !== command) return
 				console.error(error);
 			}
 		})
