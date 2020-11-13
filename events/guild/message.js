@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const getDb = require("../../mongodb").getDb;
-const { RolePerms } = require('../../permissions.js')
+const { Permissions, ScouterCheck } = require('../../classes.js')
 
 module.exports = async (client, message) => {
 	const db = getDb();
@@ -24,8 +24,8 @@ module.exports = async (client, message) => {
 			const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases
 				&& cmd.aliases.includes(commandName)); // Command object
 
-			let aR = new RolePerms('adminRole', res, message)
-			let mR = new RolePerms('modRole', res, message)
+			let aR = new Permissions('adminRole', res, message)
+			let mR = new Permissions('modRole', res, message)
 
 			let perms = {
 				admin: message.member.roles.cache.has(aR.memberRole()[0]) || message.member.roles.cache.has(aR.roleID()) || message.author.id === message.guild.ownerID,
@@ -49,8 +49,6 @@ module.exports = async (client, message) => {
 	// DSF - Merch Calls
 
 	/*
-	* New DB call to store all messages. Data: author.id, timestamp since last post, timestamp readable, count 
-	* Loop through messages, if author.id not found in array, add to array. If found, increase count and change timestamp
 	* 2 roles to reach. 
 	* Command to see who top 10-25 are (all, scouter, verified scouter + staff roles for activity)
 	*/
@@ -61,7 +59,7 @@ module.exports = async (client, message) => {
 			// if (res.merchChannel === '566338186406789123') return // Remove after
 			if (message.channel.id === await res.merchChannel.channelID) {
 				message.content.match(/(^(?:m|merch|merchant|w|world)+(\s?)(\d{1,3}))/i)
-					? message.channel.send(`<@&670842187461820436>`).then(async m => await m.delete())
+					? message.channel.send(`<@&670842187461820436>`).then(async m => await m.delete()) && console.log(1)
 					: message.delete()
 				cron.schedule('*/30 * * * * *', async () => {
 					try {
@@ -112,7 +110,7 @@ module.exports = async (client, message) => {
 
 								try {
 									const fetched = await message.channel.messages.fetch(lastID)
-									const check = Date.now() - lastTime > 60000
+									const check = Date.now() - lastTime > 600000
 									if (check) {
 										fetched.react('☠️')
 										await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: lastID } } })
@@ -145,7 +143,8 @@ module.exports = async (client, message) => {
 									$each: [{
 										userID: msg[0].author.id,
 										author: msg[0].author.username,
-										firstTimestamp: new Date(msg[0].createdTimestamp),
+										firstTimestamp: msg[0].createdTimestamp,
+										firstTimestampReadable: new Date(msg[0].createdTimestamp),
 										lastTimestamp: msg[0].createdTimestamp,
 										lastTimestampReadable: new Date(msg[0].createdTimestamp),
 										count: 1,
@@ -164,34 +163,28 @@ module.exports = async (client, message) => {
 						}
 					})
 				}
-				/* Testing for adding roles - won't work with dsf self assign system
-				* Cron job every hour to check if there are any people who meet the criteria of either role - Check this with 1 minute to see if it continuously posts about the same user
-				* Send to admin channel as a nice embed to let admins know
-				* Create a command as outlined above.
-
-				const scouterRole = message.guild.roles.cache.find(r => r.name === 'Scouter')
-				const scouterRoleV = message.guild.roles.cache.find(r => r.name === 'Verified Scouter')
-				const addRole = (count, role) => {
-					count.forEach(dbs => {
-						message.guild.members.fetch(dbs.userID).then(m => {
-							if (m.roles.cache.has(role.id)) return
-							return m.roles.add(role.id)
-						})
-					})
-				}
-				await settingsColl.findOne({ _id: message.guild.id })
-					.then(async r => {
-						const week = 1000 * 60;
-						const month = 1000 * 60 * 60 * 24 * 31;
-						const counterScout = await r.merchChannel.scoutTracker.filter(val => val.count >= 10 && val.lastTimestamp - val.firstTimestamp >= week)
-						const counterScoutV = await r.merchChannel.scoutTracker.filter(val => val.count >= 25 && val.lastTimestamp - val.firstTimestamp >= month)
-						addRole(counterScout, scouterRole)
-						addRole(counterScoutV, scouterRoleV)
-					})
-					*/
 			}
 		})
 		.catch(err => {
 			if (err) console.log(err)
 		})
+
+	// 	Create a command as outlined above.
+
+	// Run every 24 hours and filter the database for:
+	// - All entries where count && timestamps > valueForScouterRole && !assigned field ✅
+	// - If count > requiredAmount, create an embed, loop through the DB for the values to push to an array and add as fields to embed ✅
+	// - Send embed to admin channel for manual role addition. ✅
+	// - Think about if we dont want to give someone a role? > Stay on list and repeat or somehow remove (assigned = something)
+	// - From the filtered lot posted in the embed, check every 6 hours if they have the role assigned to them. If so, remove them from the list and insert a field: assigned: roleID/name
+	// - If 0 entries that pass the filter, return. ✅
+
+	/**
+	 * Set this in classes.js ✅
+	 * Add into ready.js ✅
+	 * Cron job it for every week to post updated values ✅
+	 * Also use in a command where the values can be changed
+	 * Look at the if/else if statement to see if hardcoded values can be changed to roles found in guild
+	 */
+	// scout.checkForScouts('scouter', 20)
 }
