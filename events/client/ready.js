@@ -1,11 +1,10 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-unused-vars */
 const Discord = require("discord.js");
 const getDb = require("../../mongodb").getDb;
 const fetch = require("node-fetch");
 const cron = require('node-cron');
 const randomColor = Math.floor(Math.random() * 16777215).toString(16);
 const func = require("../../functions")
+const { ScouterCheck } = require('../../classes.js')
 
 module.exports = async client => {
 	console.log("Ready!");
@@ -46,11 +45,10 @@ module.exports = async client => {
 		return JSON.parse(JSON.stringify(result)); // JSON
 	}
 
-
 	const db = getDb();
 	const usersColl = db.collection("Users");
 
-	async function getData() {
+	const getData = async() => {
 		const clanData = await fetch("http://services.runescape.com/m=clan-hiscores/members_lite.ws?clanName=Valence");
 		const text = clanData.text();
 		const json = text.then(body => csvJSON(body));
@@ -94,8 +92,8 @@ module.exports = async client => {
 	);
 
 
-	const vFactsColl = db.collection("Facts");
-	const settings = db.collection("Settings");
+	const vFactsColl = await db.collection("Facts");
+	const settings = await db.collection("Settings");
 	const code = "```";
 	cron.schedule('0 10 * * *', async () => {
 		const count = await vFactsColl.stats()
@@ -114,10 +112,11 @@ module.exports = async client => {
 		});
 	});		
 
-await settings.find({}).toArray().then(r => {
+	let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+	await settings.find({}).toArray().then(r => {
 	for (const document in r) {
 		cron.schedule(`*/1 * * * *`, async () => {
-			let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 			let today = new Date();
 			let today_num = today.getUTCDay();
 			let today_str = days[today_num];
@@ -166,7 +165,6 @@ await settings.find({}).toArray().then(r => {
 	// Normal Server Reminders //
 
 	cron.schedule(`*/5 * * * *`, async () => {
-		let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 		let today = new Date();
 		let today_num = today.getDay();
 		let today_str = days[today_num];
@@ -185,5 +183,41 @@ await settings.find({}).toArray().then(r => {
 				}
 			}
 		})
+	})
+
+
+	// await settings.find({}).toArray().then(async res => {
+	// 	for (const docs of await res) {
+	// 		let doc = [];
+	// 		if (docs.serverName === scout._guild_name) return doc.push(docs)
+	// 	}
+	// })
+
+	// cron.schedule('0 12 * * 5', async () => {
+	cron.schedule('*/10 * * * * *', async () => {
+		const res = await settings.find({}).toArray()
+			let scout = new ScouterCheck('Scouter')
+			let vScout = new ScouterCheck('Verified Scouter')
+
+			const classVars = async (name, serverName, db) => {
+				name._client = client;
+				name._guild_name = serverName;
+				name._db = await db.map(doc => {
+					if (doc.serverName === name._guild_name) return doc
+				}).filter(x => x)[0]
+				return name._client && name._guild_name && name._db
+			}
+
+			classVars(scout, `Luke's Server`, res)
+			classVars(vScout, `Luke's Server`, res)
+			// scout.send()
+			// vScout.send()
+
+			// const members = await scout.checkRolesAdded()
+			// members.forEach(x => console.log(x.user.username))
+		})
+
+	cron.schedule('* */6 * * *', async () => {
+		
 	})
 };
