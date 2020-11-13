@@ -1,5 +1,6 @@
 const getDb = require("../../mongodb").getDb;
 const func = require("../../functions.js")
+const colors = require('../../colors.json')
 
 module.exports = {
 	name: "reminders",
@@ -81,7 +82,7 @@ module.exports = {
 // 						}
 					}
                     else {
-						message.channel.send(nEmbed("Permission Denied", "You do not have permission to add a Reminder!", colors.red_dark)
+						message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to add a Reminder!", colors.red_dark)
 						.addField("Only the following Roles & Users can:", perms.joinM, true)
 						.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
                     }
@@ -103,7 +104,7 @@ module.exports = {
 						}
 					}
 					else {
-						message.channel.send(nEmbed("Permission Denied", "You do not have permission to remove a Reminder!", colors.red_dark)
+						message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to remove a Reminder!", colors.red_dark)
 						.addField("Only the following Roles & Users can:", perms.joinM, true)
 						.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
 					}
@@ -161,7 +162,7 @@ module.exports = {
 						}
 					}
 					else {
-						message.channel.send(nEmbed("Permission Denied", "You do not have permission to remove a Reminder!", colors.red_dark)
+						message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to remove a Reminder!", colors.red_dark)
 						.addField("Only the following Roles & Users can:", perms.joinM, true)
 						.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
 					}

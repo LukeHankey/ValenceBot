@@ -1,6 +1,6 @@
 const cron = require('node-cron');
-const { Collection } = require("discord.js");
 const getDb = require("../../mongodb").getDb;
+const { Permissions, ScouterCheck } = require('../../classes.js')
 
 module.exports = async (client, message) => {
 	const db = getDb();
@@ -24,61 +24,14 @@ module.exports = async (client, message) => {
 			const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases
 				&& cmd.aliases.includes(commandName)); // Command object
 
-			// Admin Roles \\
-			const rID = res.roles.adminRole.slice(3, 21) // Get adminRole ID
-			const adRole = message.guild.roles.cache.find(role => role.id === rID); // Grab the adminRole object by ID
-			const oRoles = message.guild.roles.cache.filter(roles => roles.rawPosition >= adRole.rawPosition); // Grab all roles rawPosition that are equal to or higher than the adminRole
-			const filterORoles = oRoles.map(role => role.id); // Finds the ID's of available roles
-			const abovePerm = []; // Roles on the member
-			const availPerm = []; // adminRole+ that the member doesn't have
-			const aboveRP = []; // rawPosition of each role on the member
-			filterORoles.forEach(id => {
-				if (message.member.roles.cache.has(id)) {
-					abovePerm.push(id)
-				}
-				else {
-					availPerm.push(id);
-				}
-			})
-			abovePerm.forEach(id => {
-				const abovePermRaw = message.guild.roles.cache.find(role => role.id === id)
-				const aboveRp = abovePermRaw.rawPosition + "";
-				aboveRp.split().forEach(rp => {
-					aboveRP.push(rp);
-				})
-			})
-			const allRoleIDs = availPerm.map(id => `<@&${id}>`);
-
-			// Mod Roles \\
-			const mrID = res.roles.modRole.slice(3, 21) // Get modRole ID
-			const modRole = message.guild.roles.cache.find(role => role.id === mrID); // Grab the modRole object by ID
-			const modRoles = message.guild.roles.cache.filter(roles => roles.rawPosition >= modRole.rawPosition); // Grab all roles' rawPositions that are equal to or higher than the modRole
-			const filterORolesM = modRoles.map(role => role.id); // Finds the ID's of available roles
-			const abovePermModArray = []; // All roles that the member has that is >= modRole
-			const availPermMod = []; // All the roles that the member doesn't have that are >= modRole
-			const aboveRPMod = [];
-			filterORolesM.forEach(id => {
-				if (message.member.roles.cache.has(id)) {
-					abovePermModArray.push(id)
-				}
-				else {
-					availPermMod.push(id);
-				}
-			})
-			abovePermModArray.forEach(id => {
-				const abovePermRawMod = message.guild.roles.cache.find(role => role.id === id)
-				const aboveRpMod = abovePermRawMod.rawPosition + "";
-				aboveRpMod.split().forEach(rp => {
-					aboveRPMod.push(rp);
-				})
-			})
-			const allModRoleIDs = availPermMod.map(id => `<@&${id}>`);
+			let aR = new Permissions('adminRole', res, message)
+			let mR = new Permissions('modRole', res, message)
 
 			let perms = {
-				admin: message.member.roles.cache.has(abovePerm[0]) || message.member.roles.cache.has(rID) || message.author.id === message.guild.ownerID,
-				mod: message.member.roles.cache.has(abovePermModArray[0]) || message.member.roles.cache.has(mrID) || aboveRPMod[0] >= modRole.rawPosition || message.author.id === message.guild.ownerID,
-				joinA: allRoleIDs.join(", "),
-				joinM: allModRoleIDs.join(", "),
+				admin: message.member.roles.cache.has(aR.memberRole()[0]) || message.member.roles.cache.has(aR.roleID()) || message.author.id === message.guild.ownerID,
+				mod: message.member.roles.cache.has(mR.memberRole()[0]) || message.member.roles.cache.has(mR.roleID()) || mR.modPlusRoles() >= mR._role.rawPosition || message.author.id === message.guild.ownerID,
+				joinA: aR.higherRoles().join(", "),
+				joinM: mR.higherRoles().join(", "),
 			}
 
 			try {
@@ -88,19 +41,25 @@ module.exports = async (client, message) => {
 					: message.channel.send("You cannot use that command in this server.")
 			}
 			catch (error) {
-				if (commandName !== command) message.channel.send("That's not a valid command!");
+				if (commandName !== command) return
 				console.error(error);
 			}
 		})
 
 	// DSF - Merch Calls
 
+	/*
+	* 2 roles to reach. 
+	* Command to see who top 10-25 are (all, scouter, verified scouter + staff roles for activity)
+	*/
+
 	await settingsColl.findOne({ _id: message.guild.id })
 		.then(async res => {
 			if (res.merchChannel === undefined) return
+			// if (res.merchChannel === '566338186406789123') return // Remove after
 			if (message.channel.id === await res.merchChannel.channelID) {
 				message.content.match(/(^(?:m|merch|merchant|w|world)+(\s?)(\d{1,3}))/i)
-					? message.channel.send(`<@&670842187461820436>`).then(async m => await m.delete())
+					? message.channel.send(`<@&670842187461820436>`).then(async m => await m.delete()) && console.log(1)
 					: message.delete()
 				cron.schedule('*/30 * * * * *', async () => {
 					try {
@@ -124,18 +83,20 @@ module.exports = async (client, message) => {
 										}
 									}
 								},
-								{ 
+								{
 									sort: { time: 1 },
 									returnNewDocument: true
 								}
 							)
-							.then(async db => {
-								const messageArray = await db.value.merchChannel.messages;
-								if (messageArray[0] === undefined) return;
-								if (messageArray[0].author === "Valence Bot") {
-									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: messageArray[0].messageID } } })
-								}
-							})
+								.then(async db => {
+									const messageArray = await db.value.merchChannel.messages;
+									if (messageArray[0] === undefined) return;
+									if (messageArray[0].author === "Valence Bot") {
+										await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: messageArray[0].messageID } } })
+									}
+								})
+
+
 						}
 						const count = await settingsColl.findOne({ _id: message.guild.id }).then(async res => {
 							return res.merchChannel.messages.length
@@ -168,9 +129,62 @@ module.exports = async (client, message) => {
 						console.log(err)
 					}
 				})
+				let mes = await message.channel.messages.fetch({ limit: 1 })
+				const log = [...mes.values()]
+				const msg = log.map(val => val)
+
+				if (res.merchChannel.scoutTracker === undefined) return
+				const findMessage = await res.merchChannel.scoutTracker.find(x => x.userID === msg[0].author.id)
+				if (!findMessage) {
+					await settingsColl.findOneAndUpdate({ _id: message.guild.id },
+						{
+							$addToSet: {
+								'merchChannel.scoutTracker': {
+									$each: [{
+										userID: msg[0].author.id,
+										author: msg[0].author.username,
+										firstTimestamp: msg[0].createdTimestamp,
+										firstTimestampReadable: new Date(msg[0].createdTimestamp),
+										lastTimestamp: msg[0].createdTimestamp,
+										lastTimestampReadable: new Date(msg[0].createdTimestamp),
+										count: 1,
+									}]
+								}
+							}
+						})
+				} else {
+					await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
+						$inc: {
+							'merchChannel.scoutTracker.$.count': 1,
+						},
+						$set: {
+							'merchChannel.scoutTracker.$.lastTimestamp': msg[0].createdTimestamp,
+							'merchChannel.scoutTracker.$.lastTimestampReadable': new Date(msg[0].createdTimestamp),
+						}
+					})
+				}
 			}
 		})
 		.catch(err => {
 			if (err) console.log(err)
 		})
+
+	// 	Create a command as outlined above.
+
+	// Run every 24 hours and filter the database for:
+	// - All entries where count && timestamps > valueForScouterRole && !assigned field ✅
+	// - If count > requiredAmount, create an embed, loop through the DB for the values to push to an array and add as fields to embed ✅
+	// - Send embed to admin channel for manual role addition. ✅
+	// - Think about if we dont want to give someone a role? > Stay on list and repeat or somehow remove (assigned = something)
+	// - From the filtered lot posted in the embed, check every 6 hours if they have the role assigned to them. If so, remove them from the list and insert a field: assigned: roleID/name
+	// - If 0 entries that pass the filter, return. ✅
+
+	/**
+	 * Set this in classes.js ✅
+	 * Add into ready.js ✅
+	 * Cron job it for every week to post updated values ✅
+	 * Also use in a command where the values can be changed
+	 * Look at the if/else if statement to see if hardcoded values can be changed to roles found in guild
+	 */
+	// scout.checkForScouts('scouter', 20)
 }
