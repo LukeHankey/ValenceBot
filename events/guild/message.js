@@ -59,7 +59,7 @@ module.exports = async (client, message) => {
 			// if (res.merchChannel === '566338186406789123') return // Remove after
 			if (message.channel.id === await res.merchChannel.channelID) {
 				message.content.match(/(^(?:m|merch|merchant|w|world)+(\s?)(\d{1,3}))/i)
-					? message.channel.send(`<@&670842187461820436>`).then(async m => await m.delete()) && console.log(1)
+					? message.channel.send(`<@&670842187461820436>`).then(async m => await m.delete())
 					: message.delete()
 				cron.schedule('*/30 * * * * *', async () => {
 					try {
