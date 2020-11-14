@@ -48,13 +48,18 @@ module.exports = async (client, message) => {
 
 	// DSF - Merch Calls
 
+	/*
+	* 2 roles to reach. 
+	* Command to see who top 10-25 are (all, scouter, verified scouter + staff roles for activity)
+	*/
+
 	await settingsColl.findOne({ _id: message.guild.id })
 		.then(async res => {
 			if (res.merchChannel === undefined) return
 			// if (res.merchChannel === '566338186406789123') return // Remove after
 			if (message.channel.id === await res.merchChannel.channelID) {
 				message.content.match(/(^(?:m|merch|merchant|w|world)+(\s?)(\d{1,3}))/i)
-					? message.channel.send(`<@&670842187461820436>`).then(async m => await m.delete())
+					? message.channel.send(`<@&670842187461820436>`).then(async m => await m.delete()) && console.log(1)
 					: message.delete()
 				cron.schedule('*/30 * * * * *', async () => {
 					try {
@@ -164,7 +169,6 @@ module.exports = async (client, message) => {
 		.catch(err => {
 			if (err) console.log(err)
 		})
-
 	
 	/*
 	* 2 roles to reach. 
@@ -179,6 +183,7 @@ module.exports = async (client, message) => {
 	// - Send embed to admin channel for manual role addition. ✅
 	// - Think about if we dont want to give someone a role? > Stay on list and repeat or somehow remove (assigned = something)
 	// - From the filtered lot posted in the embed, check every 6 hours if they have the role assigned to them. If so, remove them from the list and insert a field: assigned: roleID/name ✅
+
 	// - If 0 entries that pass the filter, return. ✅
 
 	/**

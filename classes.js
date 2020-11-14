@@ -57,7 +57,6 @@ class ScouterCheck {
         this.roleName = roleName;
         this.value = value;
     }
-
     set _client(c) {
         this.client = c
     }
@@ -188,7 +187,6 @@ class ScouterCheck {
             })
             return res(membersArray)
         })
-
     }
 }
 

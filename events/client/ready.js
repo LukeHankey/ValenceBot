@@ -48,6 +48,7 @@ module.exports = async client => {
 	const db = getDb();
 	const usersColl = db.collection("Users");
 
+
 	const getData = async () => {
 		const clanData = await fetch("http://services.runescape.com/m=clan-hiscores/members_lite.ws?clanName=Valence");
 		const text = clanData.text();
