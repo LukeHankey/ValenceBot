@@ -57,7 +57,6 @@ class ScouterCheck {
         this.roleName = roleName;
         this.value = value;
     }
-    
     set _client(c) {
         this.client = c
     }
@@ -85,22 +84,48 @@ class ScouterCheck {
     get guild() {
         return this._client.guilds.fetch(this.guildID.filter(g => g).first())
     }
-    get scouts()  {
+    get potentialScouts() {
         let scout;
         if (this.roleName.toLowerCase() === 'scouter') {
-            scout = this._db.merchChannel.scoutTracker.filter(val => this.check(val, this.value || 40, this.week))
+            scout = this._db.merchChannel.scoutTracker.filter(val => {
+                return this._checkScouts(val, 40, this.week)
+            })
         } else if (this.roleName.toLowerCase() === 'verified scouter') {
-            scout = this._db.merchChannel.scoutTracker.filter(val => this.check(val, this.value || 100, this.week))
+            scout = this._db.merchChannel.scoutTracker.filter(val => {
+                return this._checkVerifiedScouts(val, 100, this.week)
+            })
         } else return
         return scout
     }
-
-    check(filter, num, time) { // May be a problem with Verified Scouter since assigned will have either roleID or roleName
-        if (filter.count >= num && filter.lastTimestamp - filter.firstTimestamp >= time && filter.assigned === undefined) return filter
+    get role() {
+        return new Promise(async (res, rej) => {
+            let guild = await this.guild;
+            return res(guild.roles.cache.find(r => r.name.toLowerCase() === this.roleName.toLowerCase())); // Find the guild and then find the role
+        })
+    }
+    get scouts() {
+        return this._db.merchChannel.scoutTracker.filter(scouts => {
+            return scouts.assigned.length >= 1;
+        })
     }
 
-    async _checkForScouts() { 
-        const scouts = await this.scouts
+    _checkScouts(filter, num, time) {
+        if ((filter.count >= this.count || filter.count >= num) && filter.lastTimestamp - filter.firstTimestamp >= time && filter.assigned.length === 0) return filter
+    }
+    _checkVerifiedScouts(filter, num, time) {
+        if (filter.count >= this.count || filter.count >= num) {
+            if (filter.lastTimestamp - filter.firstTimestamp >= time) {
+                if (filter.assigned.length > 0 && filter.assigned.length < 2) {
+                    return filter
+                } else if (filter.assigned.length >= 2) {
+                    return
+                }
+            }
+        }
+    }
+
+    async _checkForScouts() {
+        const scouts = await this.potentialScouts
         const fields = [];
 
         for (const values of scouts) {
@@ -110,37 +135,55 @@ class ScouterCheck {
     }
 
     async send() {
-        let guild = await this.guild
-        let _scouterRole = guild.roles.cache.find(r => r.name.toLowerCase() === this.roleName.toLowerCase()); // Find the guild and then find the role
+        const role = await this.role;
+        const db = await this._db;
         const embed = new MessageEmbed()
             .setTitle(`Potential Scouters - ${this.roleName}`)
-            .setDescription(`List of members who have met the minimum to obtain the <@&${_scouterRole.id}> role.`)
+            .setDescription(`List of members who have met the minimum to obtain the <@&${role.id}> role.`)
             .setColor(colors.orange)
             .setFooter(`Review these members and manually assign the role to them.`, this._client.user.displayAvatarURL())
             .setTimestamp()
 
         const fields = await this._checkForScouts()
-        
+
         if (fields.length) { // Perhaps look at adding something if there are > 25
-            return this._client.channels.cache.get(this._db.channels.adminChannel).send(embed.addFields(fields))
+            return this._client.channels.cache.get(db.channels.adminChannel).send(embed.addFields(fields))
         }
         return
     }
 
     async checkRolesAdded() {
         const guild = await this.guild
-        const scouts = await this.scouts
-        const _scouterRole = guild.roles.cache.find(r => r.name.toLowerCase() === this.roleName.toLowerCase());
+        const scouts = await this.potentialScouts
+        const role = await this.role
 
         return new Promise(async (res, rej) => {
             const userID = scouts.map(doc => doc.userID)
             const memberFetch = await guild.members.fetch({ user: userID })
             const membersArray = []
             memberFetch.forEach(mem => {
-                if (mem.roles.cache.has(_scouterRole.id)) {
-                    return
+                if (mem.roles.cache.has(role.id)) {
+                    membersArray.push(mem)
                 }
-                membersArray.push(mem)                
+                return
+            })
+            return res(membersArray)
+        })
+    }
+
+    async checkRolesRemoved() {
+        const guild = await this.guild
+        const role = await this.role;
+
+        return new Promise(async (res, rej) => {
+            const userID = this.scouts.map(doc => doc.userID)
+            const memberFetch = await guild.members.fetch({ user: userID })
+            const membersArray = []
+            memberFetch.forEach(mem => {
+                if (!mem.roles.cache.has(role.id)) {
+                    membersArray.push(mem)
+                }
+                return
             })
             return res(membersArray)
         })
