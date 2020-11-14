@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const getDb = require("../../mongodb").getDb;
-const { Permissions, ScouterCheck } = require('../../classes.js')
+const { Permissions } = require('../../classes.js')
 
 module.exports = async (client, message) => {
 	const db = getDb();
@@ -48,18 +48,13 @@ module.exports = async (client, message) => {
 
 	// DSF - Merch Calls
 
-	/*
-	* 2 roles to reach. 
-	* Command to see who top 10-25 are (all, scouter, verified scouter + staff roles for activity)
-	*/
-
 	await settingsColl.findOne({ _id: message.guild.id })
 		.then(async res => {
 			if (res.merchChannel === undefined) return
 			// if (res.merchChannel === '566338186406789123') return // Remove after
 			if (message.channel.id === await res.merchChannel.channelID) {
 				message.content.match(/(^(?:m|merch|merchant|w|world)+(\s?)(\d{1,3}))/i)
-					? message.channel.send(`<@&670842187461820436>`).then(async m => await m.delete()) && console.log(1)
+					? message.channel.send(`<@&670842187461820436>`).then(async m => await m.delete())
 					: message.delete()
 				cron.schedule('*/30 * * * * *', async () => {
 					try {
@@ -148,6 +143,7 @@ module.exports = async (client, message) => {
 										lastTimestamp: msg[0].createdTimestamp,
 										lastTimestampReadable: new Date(msg[0].createdTimestamp),
 										count: 1,
+										assigned: [],
 									}]
 								}
 							}
@@ -160,7 +156,7 @@ module.exports = async (client, message) => {
 						$set: {
 							'merchChannel.scoutTracker.$.lastTimestamp': msg[0].createdTimestamp,
 							'merchChannel.scoutTracker.$.lastTimestampReadable': new Date(msg[0].createdTimestamp),
-						}
+						},
 					})
 				}
 			}
@@ -169,14 +165,20 @@ module.exports = async (client, message) => {
 			if (err) console.log(err)
 		})
 
-	// 	Create a command as outlined above.
+	
+	/*
+	* 2 roles to reach. 
+	* Command to see who top 10-25 are (all, scouter, verified scouter + staff roles for activity)
+	* ;dsf user [all, userID, mention(?)] > All to show top 25, maybe paginate
+	* ;dsf role [scouter, verified scouter, staff (all staff)]
+	*/
 
 	// Run every 24 hours and filter the database for:
 	// - All entries where count && timestamps > valueForScouterRole && !assigned field ✅
 	// - If count > requiredAmount, create an embed, loop through the DB for the values to push to an array and add as fields to embed ✅
 	// - Send embed to admin channel for manual role addition. ✅
 	// - Think about if we dont want to give someone a role? > Stay on list and repeat or somehow remove (assigned = something)
-	// - From the filtered lot posted in the embed, check every 6 hours if they have the role assigned to them. If so, remove them from the list and insert a field: assigned: roleID/name
+	// - From the filtered lot posted in the embed, check every 6 hours if they have the role assigned to them. If so, remove them from the list and insert a field: assigned: roleID/name ✅
 	// - If 0 entries that pass the filter, return. ✅
 
 	/**
@@ -184,7 +186,5 @@ module.exports = async (client, message) => {
 	 * Add into ready.js ✅
 	 * Cron job it for every week to post updated values ✅
 	 * Also use in a command where the values can be changed
-	 * Look at the if/else if statement to see if hardcoded values can be changed to roles found in guild
 	 */
-	// scout.checkForScouts('scouter', 20)
 }
