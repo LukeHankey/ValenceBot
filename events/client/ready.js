@@ -187,8 +187,8 @@ module.exports = async client => {
 	})
 
 	// DSF Activity Posts //
-	cron.schedule('*/10 * * * * *', async () => {
-		// cron.schedule('* */6 * * *', async () => {
+	// cron.schedule('*/10 * * * * *', async () => {
+		cron.schedule('* */6 * * *', async () => {
 		let scout = new ScouterCheck('Scouter')
 		let vScout = new ScouterCheck('Verified Scouter')
 
@@ -202,8 +202,8 @@ module.exports = async client => {
 		}
 		const res = await settings.find({}).toArray()
 
-		await classVars(scout, `Luke's Server`, res)
-		await classVars(vScout, `Luke's Server`, res)
+		await classVars(scout, `Deep Sea Fishing`, res)
+		await classVars(vScout, `Deep Sea Fishing`, res)
 
 		const addedRoles = async (name) => {
 			const members = await name.checkRolesAdded() // Role has been added
@@ -232,7 +232,8 @@ module.exports = async client => {
 		removedRoles(scout)
 		removedRoles(vScout)
 
-		if (new Date().getSeconds() === 30 || new Date().getSeconds() === 00) {
+		// if (new Date().getSeconds() === 30 || new Date().getSeconds() === 00) {
+		if (new Date().getDay() === 5 && new Date().getHours() === 12) { // Friday 12 midday
 			scout.send()
 			vScout.send()
 		}
