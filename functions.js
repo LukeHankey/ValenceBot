@@ -1,6 +1,5 @@
 const Discord = require("discord.js");
 const colors = require('./colors.json');
-const message = require("./events/guild/message");
 const day = 24 * 60 * 60 * 1000;
 const hour = 60 * 60 * 1000;
 const minute = 60 * 1000;
