@@ -51,10 +51,10 @@ module.exports = async (client, message) => {
 	* 2 roles to reach. 
 	* Command to see who top 10-25 are (all, scouter, verified scouter + staff roles for activity)
 	*/
-	settingsColl.findOne({ _id: message.guild.id })
+	settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } })
 		.then(async res => {
-			if (res.merchChannel === undefined) return // Undefined if a server doesn't have a merchChannel property
-			// if (res.merchChannel === '566338186406789123') return // Remove after
+			if (res === null) return // null if merchChannel property doesn't exist
+			if (res._id === '420803245758480405') return // Remove after
 			const merchID = await res.merchChannel.channelID
 			if (message.channel.id === merchID) {
 				try {
@@ -78,7 +78,7 @@ module.exports = async (client, message) => {
 												messageID: log[messages].id,
 												content: log[messages].content,
 												time: log[messages].createdTimestamp,
-												author: log[messages].member.nickname || log[messages].author.username,
+												author: log[messages].member.nickname ?? log[messages].author.username,
 											}],
 										}
 									}
@@ -144,7 +144,7 @@ module.exports = async (client, message) => {
 
 								try {
 									const fetched = await message.channel.messages.fetch(lastID)
-									const check = Date.now() - lastTime > 60000 // Update after
+									const check = Date.now() - lastTime > 600000 // Update after
 									if (check) {
 										fetched.react('☠️')
 										await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: lastID } } })
@@ -171,13 +171,15 @@ module.exports = async (client, message) => {
 	* Command to see who top 10-25 are (all, scouter, verified scouter + staff roles for activity)
 	* ;dsf user [all, userID, mention(?)] > All to show top 25, maybe paginate
 	* ;dsf role [scouter, verified scouter, staff (all staff)]
+	* ;profile (returns self)
+	* ;profile [all, userID, mention] || [scouter, verified scouter, staff]
 	*/
 
 	// Run every 24 hours and filter the database for:
 	// - All entries where count && timestamps > valueForScouterRole && !assigned field ✅
 	// - If count > requiredAmount, create an embed, loop through the DB for the values to push to an array and add as fields to embed ✅
 	// - Send embed to admin channel for manual role addition. ✅
-	// - Think about if we dont want to give someone a role? > Stay on list and repeat or somehow remove (assigned = something)
+	// - Think about if we dont want to give someone a role? > Stay on list and repeat or somehow remove (new field, either check if exists or assign boolean)
 	// - From the filtered lot posted in the embed, check every 6 hours if they have the role assigned to them. If so, remove them from the list and insert a field: assigned: roleID/name ✅
 
 	// - If 0 entries that pass the filter, return. ✅
