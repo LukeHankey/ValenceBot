@@ -40,7 +40,7 @@ module.exports = {
             .setDescription(`Current tracked stats in this server.`)
             .setColor(colors.aqua)
             .setThumbnail(message.author.displayAvatarURL())
-            .setFooter(`Something wrong or missing? Let a Moderator+ know!`, fetchedMember.user.displayAvatarURL())
+            .setFooter(`Something wrong or missing? Let a Moderator+ know!`, client.user.displayAvatarURL())
             .setTimestamp()
         const userData = uData.merchChannel.scoutTracker.filter(mem => mem.userID === id)
         const memberAssignedRoles = fetchedMember.roles.cache.filter(r => r.id !== message.guild.id && r.position > botRole.position).map(role => `<@&${role.id}>`)
