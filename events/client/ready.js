@@ -234,7 +234,7 @@ module.exports = async client => {
 		removedRoles(vScout)
 
 		// if (new Date().getSeconds() === 30 || new Date().getSeconds() === 00) {
-		if (new Date().getDay() === 5 && new Date().getHours() === 12) { // Friday 12 midday
+		if (new Date().getDay() === 3 && new Date().getHours() === 00) { // Weekly reset
 			scout.send()
 			vScout.send()
 		}
