@@ -4,13 +4,18 @@ const colors = require('../../colors.json')
 const ms = require('pretty-ms')
 const f = require('../../functions.js')
 
+/**
+ * 668330890790699079 - Valence Bot Server
+ * 733164313744769024 - Test Server
+ * 420803245758480405 - DSF
+ */
+
 module.exports = {
 	name: "profile",
 	description: ['Displays the members profile if one is found, otherwise has the option of creating one.', 'Displays the specified members profile if one is found.', 'Displays either the specified members profiile or everyone who has <@role>', 'Shows the top 25 in terms of scout count.'],
 	aliases: ['p'],
 	usage: ['', '<member ID>', '<@member/@role>', 'all'],
-    permissions: [false],
-    guildSpecific: ['420803245758480405'],
+    guildSpecific: ['420803245758480405', '733164313744769024', '668330890790699079'],
 	run: async (client, message, args, perms) => {
     /*
 	* 2 roles to reach. 
@@ -29,14 +34,14 @@ module.exports = {
 
 
     const sendUserInfo = async (id = memberID, uData = data) => {
+        const fetchedMember = await message.guild.members.fetch(id)
         const embed = new MessageEmbed()
             .setTitle(`Member Profile - ${id}`)
             .setDescription(`Current tracked stats in this server.`)
             .setColor(colors.aqua)
             .setThumbnail(message.author.displayAvatarURL())
-            .setFooter(`Something wrong or missing? Let a Moderator+ know!`, client.user.displayAvatarURL())
+            .setFooter(`Something wrong or missing? Let a Moderator+ know!`, fetchedMember.user.displayAvatarURL())
             .setTimestamp()
-        const fetchedMember = await message.guild.members.fetch(id)
         const userData = uData.merchChannel.scoutTracker.filter(mem => mem.userID === id)
         const memberAssignedRoles = fetchedMember.roles.cache.filter(r => r.id !== message.guild.id && r.position > botRole.position).map(role => `<@&${role.id}>`)
         const memberSelfRoles = fetchedMember.roles.cache.filter(r => r.id !== message.guild.id && r.position < botRole.position).map(role => `<@&${role.id}>`)
@@ -76,8 +81,8 @@ module.exports = {
         let memCollection = fetchRole.members.map(mem => mem.id)
         console.log(memCollection)
 
-        if (botRole.position > roleObj.position) return message.channel.send(`You can't view the stats for \`${roleObj.name}\`.`)
-        if (roleObj.position > memberRoles) return message.channel.send(`You don't have permission to view the stats for \`${roleObj.name}\`.`)
+        if (botRole.position > roleObj.position) return message.channel.send(`You can't view the stats for \`${roleObj.name}\`.`) // Self-assign roles
+        if (roleObj.position > memberRoles) return message.channel.send(`You don't have permission to view the stats for \`${roleObj.name}\`.`) // Only view their own role set
 
 
         let newArr = []

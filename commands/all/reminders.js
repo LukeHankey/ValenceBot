@@ -2,13 +2,18 @@ const getDb = require("../../mongodb").getDb;
 const func = require("../../functions.js")
 const colors = require('../../colors.json')
 
+/**
+ * 733164313744769024 - Test Server
+ * 668330890790699079 - Valence Bot Test
+ * 472448603642920973 - Valence
+ */
+
 module.exports = {
 	name: "reminders",
 	description: ["Shows a list of all reminders.", "Add a new reminder to a channel. Date format must be Day HH MM.", "Removes a reminder from the server by ID", "Edit a server reminder."],
 	aliases: ["rem"],
 	usage:  ["", "add <date> <channel> <message>", "remove <id>", "edit <id> <param> <new value>"],
 	guildSpecific: ["472448603642920973", "733164313744769024", "668330890790699079"],
-	permissions: ["Mod"],
 	run: async (client, message, args, perms) => {
 		const code = "```";
 

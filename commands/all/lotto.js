@@ -3,6 +3,12 @@ const { google } = require('googleapis');
 const func = require('../../functions')
 const colors = require('../../colors.json')
 
+/**
+ * 733164313744769024 - Test Server
+ * 668330890790699079 - Valence Bot Test
+ * 472448603642920973 - Valence
+ */
+
 module.exports = {
 name: "lotto",
 description: ["Shows a list of everyone in the current months lottery.", "Shows information about the <user> lottery entry.", "Adds a clanmate's lottery entry to google sheet.\nExample:\n```js\n;lotto add 1000000 clan bank / J ulian\n;lotto add 500000 clan bank / Guys / double```"],

@@ -1,9 +1,14 @@
+/**
+ * 668330890790699079 - Valence Bot Server
+ * 733164313744769024 - Test Server
+ */
+
 module.exports = {
 	name: "eval",
 	description: ["Evaluates code."],
 	aliases: [""],
 	usage:  ["<code>"],
-	permissions: [false],
+	guildSpecific: ['668330890790699079', '733164313744769024' ],
 	run: async (client, message, args) => {
 
 		if (message.author.id !== "212668377586597888") {

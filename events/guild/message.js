@@ -34,8 +34,7 @@ module.exports = async (client, message) => {
 				joinM: mR.higherRoles().join(", "),
 			}
 			try {
-				// undefined results in all guilds allowed
-				command.guildSpecific === undefined || command.guildSpecific.includes(message.guild.id)
+				command.guildSpecific === 'all' || command.guildSpecific.includes(message.guild.id)
 					? command.run(client, message, args, perms)
 					: message.channel.send("You cannot use that command in this server.")
 			}

@@ -3,13 +3,18 @@ const Discord = require("discord.js");
 const func = require('../../functions.js')
 const getDb = require("../../mongodb").getDb;
 
+/**
+ * 472448603642920973 - Valence
+ * 668330890790699079 - Valence Bot Test
+ * 733164313744769024 - Test Server
+ */
+
 module.exports = {
     name: "calendar",
     description: ["Creates an embed for a calender - defaults to the current month.", "Add an event to the current or specified calendar month. Position defaults to the end of the calendar. \nExample:\n ```css\n;calendar add 4 Date: 13th Event: New Event Title! Time: 20:00 - 21:00 Announcement: <link> Host: @everyone```", "Edit the current or specified calendar month by field name:\n Date: / Event: / Time: / Announcement: / Host:", "Removes 1 or more events from the current or specified calendar month.", "Moves one event from x position to y position in the current or specified calendar month."],
     aliases: ["cal"],
     usage: ["create <month (optional)>", "add <month (optional)> <position (optional)> Date: <Date> Event: <event text> Time: <time> Announcement: <link> Host: <@member(s)/role>", "edit <month (optional)> <starting field> <event field> <new value>", "remove <month (optional)> <starting field> <delete count>", "move <month (optional)> <from position> <to position>"],
     guildSpecific: ["472448603642920973", "733164313744769024", "668330890790699079"],
-    permissions: ["Admin", "Mod"],
     run: async (client, message, args, perms) => {
         if (!perms.mod) {
             return message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
