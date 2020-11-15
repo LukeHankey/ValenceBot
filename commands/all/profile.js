@@ -10,7 +10,7 @@ module.exports = {
 	aliases: ['p'],
 	usage: ['', '<member ID>', '<@member/@role>', 'all'],
     permissions: [false],
-    guildSpecific: ['733164313744769024'],
+    guildSpecific: ['420803245758480405'],
 	run: async (client, message, args, perms) => {
     /*
 	* 2 roles to reach. 
