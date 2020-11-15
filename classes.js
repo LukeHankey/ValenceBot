@@ -50,7 +50,7 @@ class Permissions {
 class ScouterCheck {
     constructor(roleName, value) {
         this.month = 1000 * 60 * 60 * 24 * 31;
-        this.week = 1000 * 60; // Update
+        this.week = 1000 * 60 * 60 * 24 * 7;
         this.client;
         this.db;
         this.guild_name;
