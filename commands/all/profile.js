@@ -78,12 +78,12 @@ module.exports = {
 
         const fetchRole = message.guild.roles.cache.get(id) ?? await message.guild.roles.fetch(id)
         const dbData = await rData.merchChannel.scoutTracker
-        let memCollection = fetchRole.members.map(mem => mem.id)
-        console.log(memCollection)
+        const allMem = await message.guild.members.fetch()
+        const fetchAllMem = allMem.filter(mem => mem.roles.cache.find(r => r.id === roleObj.id))
+        let memCollection = fetchAllMem.map(mem => mem.id) || fetchRole.members.map(mem => mem.id)
 
         if (botRole.position > roleObj.position) return message.channel.send(`You can't view the stats for \`${roleObj.name}\`.`) // Self-assign roles
         if (roleObj.position > memberRoles) return message.channel.send(`You don't have permission to view the stats for \`${roleObj.name}\`.`) // Only view their own role set
-
 
         let newArr = []
         const fields = [];
