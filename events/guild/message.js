@@ -61,7 +61,7 @@ module.exports = async (client, message) => {
 						? message.channel.send(`<@&670842187461820436>`).then(m => m.delete())
 						: message.delete()
 
-					const addToDB = cron.schedule('*/10 * * * * *', async () => {
+					const addToDB = cron.schedule('*/10 * * * * *', async () => { // Adding to the DB
 						let mes = await message.channel.messages.fetch({ limit: 10 })
 						mes = mes.filter(m => {
 							if (m.reactions.cache.has('☠️')) return
@@ -132,6 +132,8 @@ module.exports = async (client, message) => {
 							})
 							addToDB.stop()
 						}
+					})
+					cron.schedule('*/30 * * * * *', async () => { // Checking the DB and marking dead calls
 						const count = await settingsColl.findOne({ _id: message.guild.id }).then(res => {
 							return res.merchChannel.messages.length
 						})

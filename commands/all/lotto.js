@@ -157,14 +157,14 @@ run: async (client, message, args, perms) => {
                                         })
                                     }
                                     if (tag && tag === "double") {
-                                        newArr.push([userData.length + 1, rsn.trim().split(/ /g).join(" "), args[1], colName, "N/A", "Double Entry"])
+                                        newArr.push([userData.length + 1, rsn.trim().split(/ /g).join(" "), args[1], colName, "No", "Double Entry"])
                                         await gsapi.spreadsheets.values.append(optW)
                                         return message.channel.send(lottoEmbed
                                         .spliceFields(1, 1, { name: 'Amount:', value: `${args[1]}`, inline: true } )
                                         .spliceFields(0, 1, { name: `RuneScape Name:`, value: `${rsn.split(/ /g).slice(0, -1).join(" ")}`, inline: true })
                                         .addField("Double Entry:", "Yes", true))
                                     }
-                                    newArr.push([userData.length + 1, rsn.trim(), args[1], colName, "N/A"])
+                                    newArr.push([userData.length + 1, rsn.trim(), args[1], colName, "No"])
                                     await gsapi.spreadsheets.values.append(optW)
                                     return message.channel.send(lottoEmbed
                                     .spliceFields(1, 1, { name: 'Amount:', value: `${args[1]}`, inline: true } )
