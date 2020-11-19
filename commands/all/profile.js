@@ -182,7 +182,9 @@ module.exports = {
                 for (const values of items) {
                     fields.push({ name: `${values.author}`, value: `Scout count: ${values.count}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true })
                 }
-                    return message.channel.send(embed.addFields(fields))
+                fields = fields.slice(0, 26)
+
+                return message.channel.send(embed.addFields(fields))
                 } else return message.channel.send(f.nEmbed("Permission Denied", "You do not have permission to use this command! Only the following can:", colors.red_dark)
                 .addField("Roles:", perms.joinM, true)
                 .addField("Users:", `<@${message.guild.ownerID}>`, true))
