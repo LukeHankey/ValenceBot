@@ -162,29 +162,61 @@ module.exports = {
                 : message.channel.send(`You don't have permission to use this command.`)
         } else if (args[0] === 'all') {
             if (perms.mod) {
-                const embed = new MessageEmbed()
-                    .setTitle(`Member Profiles - Top Scouters`)
-                    .setDescription(`Current tracked stats in this server for the top 25 scouters.`)
-                    .setColor(colors.aqua)
-                    .setThumbnail(message.author.displayAvatarURL())
-                    .setFooter(`Something wrong or missing? Let a Moderator+ know!`, client.user.displayAvatarURL())
-                    .setTimestamp()
-
                 const data = await settings.findOne({ _id: message.guild.id })
                 const items = data.merchChannel.scoutTracker.sort((a, b) => b.count - a.count)
                 let fields = [];
 
-                function _text(text) {
-                    const code = '```';
-                    return `${code}fix\n${text}${code}`;
-                }
-
                 for (const values of items) {
                     fields.push({ name: `${values.author}`, value: `Scout count: ${values.count}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true })
                 }
-                fields = fields.slice(0, 26)
+                fields = fields.slice(0, 100)
+                let page = 0
+                const embeds = paginate(fields)
 
-                return message.channel.send(embed.addFields(fields))
+                function paginate(data) {
+                    const embeds = [];
+                    let k = 24;
+                    for (let i = 0; i < data.length; i += 24) {
+                        const current = data.slice(i, k);
+                        k += 24;
+                        const info = current
+                        const embed = new MessageEmbed()
+                            .setTitle(`Member Profiles - Top Scouters`)
+                            .setDescription(`Current tracked stats in this server for the top 24 scouters per page.`)
+                            .setColor(colors.aqua)
+                            .setThumbnail(message.author.displayAvatarURL())
+                            .setTimestamp()
+                            .addFields(info)
+                        embeds.push(embed)
+                    }
+                    return embeds;
+                }
+
+                message.channel.send(embeds[page].setFooter(`Page ${page+1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, client.user.displayAvatarURL()))
+                .then(async msg => {
+                    await msg.react('◀️')
+                    await msg.react('▶️')
+
+                    const react = (reaction, user) => ['◀️', '▶️'].includes(reaction.emoji.name) && user.id === message.author.id
+                    const collect = msg.createReactionCollector(react)
+
+                    collect.on('collect', (r, u) => {
+                        if (r.emoji.name === '▶️') {
+                            if (page < embeds.length) {
+                                msg.reactions.resolve('▶️').users.remove(u.id)
+                                page++
+                                if (page === embeds.length) --page
+                                msg.edit(embeds[page].setFooter(`Page ${page+1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, client.user.displayAvatarURL()))
+                            } else return
+                        } else if (r.emoji.name === '◀️') {
+                            if (page !== 0) {
+                                msg.reactions.resolve('◀️').users.remove(u.id)
+                                --page;
+                                msg.edit(embeds[page].setFooter(`Page ${page+1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, client.user.displayAvatarURL()))
+                            } else msg.reactions.resolve('◀️').users.remove(u.id)
+                        }
+                    })
+                })
                 } else return message.channel.send(f.nEmbed("Permission Denied", "You do not have permission to use this command! Only the following can:", colors.red_dark)
                 .addField("Roles:", perms.joinM, true)
                 .addField("Users:", `<@${message.guild.ownerID}>`, true))

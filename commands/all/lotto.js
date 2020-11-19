@@ -288,6 +288,7 @@ run: async (client, message, args, perms) => {
                                 if (page < embeds.length) {
                                     msg.reactions.resolve('▶️').users.remove(u.id)
                                     page++
+                                    if (page === embeds.length) --page
                                     msg.edit(embeds[page].setFooter(`Page ${page+1} of ${embeds.length}`))
                                 }
                             } else if (r.emoji.name === '◀️') {
@@ -295,7 +296,7 @@ run: async (client, message, args, perms) => {
                                     msg.reactions.resolve('◀️').users.remove(u.id)
                                     --page;
                                     msg.edit(embeds[page].setFooter(`Page ${page+1} of ${embeds.length}`))
-                                }
+                                } else msg.reactions.resolve('◀️').users.remove(u.id)
                             }
                         })
                     })
