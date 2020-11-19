@@ -140,7 +140,6 @@ module.exports = async (client, message) => {
 						})
 						await settingsColl.findOne({ _id: message.guild.id }).then(async data => {
 							for (let i = 0; i < count; i++) {
-								console.log(data.serverName)
 								const doc = await data.merchChannel.messages[i]
 								const lastID = doc.messageID
 								const lastTime = doc.time
