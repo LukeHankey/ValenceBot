@@ -15,9 +15,7 @@ module.exports = {
         let content = args.slice(1).join(" ");
         const code = "```";
         if (!perms.admin) {
-            return message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
-                .addField("Only the following Roles & Users can:", perms.joinA, true)
-                .addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
+            return message.channel.send(perms.errorA)
         }
 
         const db = getDb();

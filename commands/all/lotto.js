@@ -167,9 +167,7 @@ run: async (client, message, args, perms) => {
                     }
                 }
                 else {
-                    message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to add a lottery entry!", colors.red_dark)
-                    .addField("Only the following Roles & Users can:", perms.joinM, true)
-                    .addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
+                    message.channel.send(perms.errorM)
                 }
             break;
             case "total":

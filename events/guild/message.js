@@ -1,5 +1,7 @@
 const cron = require('node-cron');
 const getDb = require("../../mongodb").getDb;
+const func = require('../../functions')
+const colors = require('../../colors.json')
 const { Permissions } = require('../../classes.js')
 
 module.exports = async (client, message) => {
@@ -27,11 +29,12 @@ module.exports = async (client, message) => {
 			let aR = new Permissions('adminRole', res, message)
 			let mR = new Permissions('modRole', res, message)
 
+
 			let perms = {
 				admin: message.member.roles.cache.has(aR.memberRole()[0]) || message.member.roles.cache.has(aR.roleID()) || message.author.id === message.guild.ownerID,
 				mod: message.member.roles.cache.has(mR.memberRole()[0]) || message.member.roles.cache.has(mR.roleID()) || mR.modPlusRoles() >= mR._role.rawPosition || message.author.id === message.guild.ownerID,
-				joinA: aR.higherRoles().join(", "),
-				joinM: mR.higherRoles().join(", "),
+				errorM: mR.error(),
+				errorA: aR.error(),
 			}
 			try {
 				command.guildSpecific === 'all' || command.guildSpecific.includes(message.guild.id)
@@ -140,6 +143,7 @@ module.exports = async (client, message) => {
 						})
 						await settingsColl.findOne({ _id: message.guild.id }).then(async data => {
 							for (let i = 0; i < count; i++) {
+								console.log(data.serverName)
 								const doc = await data.merchChannel.messages[i]
 								const lastID = doc.messageID
 								const lastTime = doc.time

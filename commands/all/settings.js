@@ -39,9 +39,7 @@ module.exports = {
 									: message.channel.send(`What do you want to set the prefix to?`);
 							}
 							else {
-								return message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to change the prefix!", colors.red_dark)
-									.addField("Only the following roles can:", perms.joinA, true)
-									.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
+								return message.channel.send(perms.errorA)
 							}
 					break;
 					default:
@@ -86,9 +84,7 @@ module.exports = {
 								}
 							}
 							else {
-								message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to change the Admin Role!", colors.red_dark)
-									.addField("Only the following Roles & Users can:", perms.joinA, true)
-									.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
+								message.channel.send(perms.errorA)
 							}
 							break;
 						default:
@@ -131,9 +127,7 @@ module.exports = {
 								}
 							}
 							else {
-								message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to change the Mod Role!", colors.red_dark)
-									.addField("Only the following Roles & Users can:", perms.joinA, true)
-									.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
+								message.channel.send(perms.errorA)
 							}
 							break;
 						default:
@@ -177,9 +171,7 @@ module.exports = {
 								}
 							}
 							else {
-								message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to set the Admin Channel!", colors.red_dark)
-									.addField("Only the following Roles & Users can:", perms.joinA, true)
-									.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
+								message.channel.send(perms.errorA)
 							}
 							break;
 						default:

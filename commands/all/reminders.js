@@ -87,9 +87,7 @@ module.exports = {
 // 						}
 					}
                     else {
-						message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to add a Reminder!", colors.red_dark)
-						.addField("Only the following Roles & Users can:", perms.joinM, true)
-						.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
+						message.channel.send(perms.errorM)
                     }
 				break;
 				case "remove":
@@ -109,9 +107,7 @@ module.exports = {
 						}
 					}
 					else {
-						message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to remove a Reminder!", colors.red_dark)
-						.addField("Only the following Roles & Users can:", perms.joinM, true)
-						.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
+						message.channel.send(perms.errorM)
 					}
 				break;
 				case "edit":
@@ -167,9 +163,7 @@ module.exports = {
 						}
 					}
 					else {
-						message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to remove a Reminder!", colors.red_dark)
-						.addField("Only the following Roles & Users can:", perms.joinM, true)
-						.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
+						message.channel.send(perms.errorM)
 					}
 				break;
 			default:

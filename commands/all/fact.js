@@ -53,9 +53,7 @@ module.exports = {
 						}
 					}
 					else {
-						message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
-						.addField("Only the following Roles & Users can:", perms.joinA, true)
-						.addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
+						message.channel.send(perms.errorA)
 					}
 				break;
 				case "remove":
@@ -79,9 +77,7 @@ module.exports = {
 					}
 				}
 				else {
-					message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
-					.addField("Only the following Roles & Users can:", perms.joinA, true)
-					.addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
+					message.channel.send(perms.errorA)
 				}
 				break;
 				case "edit":
@@ -106,9 +102,7 @@ module.exports = {
 						}
 					}
 				else {
-					message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
-					.addField("Only the following Roles & Users can:", perms.joinA, true)
-					.addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
+					message.channel.send(perms.errorA)
 				}
 				break;
 				case "list":
@@ -119,9 +113,7 @@ module.exports = {
 						await message.channel.send(`${list.join("")}`, { split: true, code: `` });
 					}
 					else {
-						message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
-						.addField("Only the following Roles & Users can:", perms.joinM, true)
-						.addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
+						message.channel.send(perms.errorM)
 					}
 				break;
 				default:
@@ -135,9 +127,7 @@ module.exports = {
 					});
 				}
 				else {
-					message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
-					.addField("Only the following Roles & Users can:", perms.joinA, true)
-					.addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
+					message.channel.send(perms.errorA)
 				}
 			}
 		});

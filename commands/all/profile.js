@@ -217,9 +217,7 @@ module.exports = {
                         }
                     })
                 })
-                } else return message.channel.send(f.nEmbed("Permission Denied", "You do not have permission to use this command! Only the following can:", colors.red_dark)
-                .addField("Roles:", perms.joinM, true)
-                .addField("Users:", `<@${message.guild.ownerID}>`, true))
+                } else return message.channel.send(perms.errorM)
             }
         }
     },

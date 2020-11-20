@@ -17,9 +17,7 @@ module.exports = {
     guildSpecific: ["472448603642920973", "733164313744769024", "668330890790699079"],
     run: async (client, message, args, perms) => {
         if (!perms.mod) {
-            return message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
-                .addField("Only the following Roles & Users can:", perms.joinM, true)
-                .addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
+            return message.channel.send(perms.errorM)
         }
         let db = getDb()
         let settings = db.collection("Settings")
@@ -77,9 +75,7 @@ module.exports = {
                         })
                     }
                 } else {
-                    return message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
-                        .addField("Only the following Roles & Users can:", perms.joinA, true)
-                        .addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
+                    return message.channel.send(perms.errorA)
                 }
                 break;
             case "add":
