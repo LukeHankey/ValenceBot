@@ -1,5 +1,6 @@
 const { MessageEmbed } = require('discord.js');
 const colors = require('./colors.json')
+const func = require('./functions')
 const ms = require('pretty-ms')
 
 class Permissions {
@@ -38,7 +39,7 @@ class Permissions {
     modPlusRoles(num = 0) {
         const aboveMod = [];
         this.memberRole().forEach(id => {
-            const abovePermRawMod = message.guild.roles.cache.find(role => role.id === id)
+            const abovePermRawMod = this.msg.guild.roles.cache.find(role => role.id === id)
             const aboveRpMod = abovePermRawMod.rawPosition + "";
             aboveRpMod.split().forEach(rp => {
                 aboveMod.push(rp);
@@ -46,6 +47,13 @@ class Permissions {
         })
         return aboveMod[num]
     }
+
+    error() {
+        return func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
+        .addField("Only the following Roles & Users can:", this.higherRoles().join(', '), true)
+        .addField(`\u200b`, `<@${this.msg.guild.ownerID}>`, true)
+    }
+
 }
 class ScouterCheck {
     constructor(roleName, value) {
