@@ -3,6 +3,12 @@ const { google } = require('googleapis');
 const func = require('../../functions')
 const colors = require('../../colors.json')
 
+/**
+ * 733164313744769024 - Test Server
+ * 668330890790699079 - Valence Bot Test
+ * 472448603642920973 - Valence
+ */
+
 module.exports = {
 name: "lotto",
 description: ["Shows a list of everyone in the current months lottery.", "Shows information about the <user> lottery entry.", "Adds a clanmate's lottery entry to google sheet.\nExample:\n```js\n;lotto add 1000000 clan bank / J ulian\n;lotto add 500000 clan bank / Guys / double```"],
@@ -18,7 +24,6 @@ run: async (client, message, args, perms) => {
 
     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     const monthIndex = (new Date()).getUTCMonth() -1
-    let page = 1;
 
     async function googleSheets(gClient) {
         const gsapi = google.sheets({ version: "v4", auth: gClient })
@@ -54,14 +59,6 @@ run: async (client, message, args, perms) => {
                 userData.push(fields)
             }
         }
-
-        let gEmbed = func.nEmbed(
-            `Lottery Entrants for the month of ${months[monthIndex]}`,
-            `Those that appear twice in the list have paid for a double entry.`,
-            colors.green_light,
-            message.author.displayAvatarURL()
-            )
-            .setFooter(`Page ${page} of ${Math.floor(userData.length/24) + 1}`)
 
         let checkValue = function(value) {
             if (value.length === 6) {
@@ -151,14 +148,14 @@ run: async (client, message, args, perms) => {
                                         })
                                     }
                                     if (tag && tag === "double") {
-                                        newArr.push([userData.length + 1, rsn.trim().split(/ /g).join(" "), args[1], colName, "N/A", "Double Entry"])
+                                        newArr.push([userData.length + 1, rsn.trim().split(/ /g).join(" "), args[1], colName, "No", "Double Entry"])
                                         await gsapi.spreadsheets.values.append(optW)
                                         return message.channel.send(lottoEmbed
                                         .spliceFields(1, 1, { name: 'Amount:', value: `${args[1]}`, inline: true } )
                                         .spliceFields(0, 1, { name: `RuneScape Name:`, value: `${rsn.split(/ /g).slice(0, -1).join(" ")}`, inline: true })
                                         .addField("Double Entry:", "Yes", true))
                                     }
-                                    newArr.push([userData.length + 1, rsn.trim(), args[1], colName, "N/A"])
+                                    newArr.push([userData.length + 1, rsn.trim(), args[1], colName, "No"])
                                     await gsapi.spreadsheets.values.append(optW)
                                     return message.channel.send(lottoEmbed
                                     .spliceFields(1, 1, { name: 'Amount:', value: `${args[1]}`, inline: true } )
@@ -170,9 +167,7 @@ run: async (client, message, args, perms) => {
                     }
                 }
                 else {
-                    message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to add a lottery entry!", colors.red_dark)
-                    .addField("Only the following Roles & Users can:", perms.joinM, true)
-                    .addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
+                    message.channel.send(perms.errorM)
                 }
             break;
             case "total":
@@ -256,47 +251,53 @@ run: async (client, message, args, perms) => {
                     }
                 }
                 else if (!username) {
-                    if (userData.length <= 24) {
-                        message.channel.send(gEmbed
-                            .addFields(userData)
-                            .setFooter(`Page ${page} of ${Math.floor(userData.length/24) + 1}`)
-                            )
+                    let page = 0
+                    const embeds = paginate(userData)
+
+                    function paginate(data) {
+                        const embeds = [];
+                        let k = 24;
+                        for (let i = 0; i < data.length; i += 24) {
+                            const current = data.slice(i, k);
+                            k += 24;
+                            const info = current;
+                            let gEmbed = func.nEmbed(
+                                `Lottery Entrants for the month of ${months[monthIndex]}`,
+                                `Those that appear twice in the list have paid for a double entry.`,
+                                colors.green_light,
+                                message.author.displayAvatarURL()
+                                )
+                                .addFields(info)
+                            embeds.push(gEmbed)
+                        }
+                        return embeds;
                     }
-                    else if (userData.length >= 25 && userData.length <= 48) {
-                        message.channel.send(gEmbed
-                            .addFields(userData.slice(0, 24)))
-                        .then(async msg => {
-                            await msg.react('◀️')
-                            await msg.react('▶️')
-    
-                            const bReact = (reaction, user) => reaction.emoji.name === '◀️' && user.id === message.author.id
-                            const fReact = (reaction, user) => reaction.emoji.name === '▶️' && user.id === message.author.id
-    
-                            const bCollect = msg.createReactionCollector(bReact, { time: 30000})
-                            const fCollect = msg.createReactionCollector(fReact, { time: 30000})
-    
-                            let userDataOne = userData.slice(24)
-    
-                            fCollect.on('collect', (r, u) => {
-                                msg.reactions.resolve('▶️').users.remove(u.id)
-                                if (page == Math.floor(userData.length/24) +1) return
-                                page++;
-                                gEmbed.spliceFields(0, 24)
-                                gEmbed.spliceFields(0, 24, userDataOne)
-                                gEmbed.setFooter(`Page ${page} of ${Math.floor(userData.length/24) + 1}`)
-                                msg.edit(gEmbed)
-                            })
-    
-                            bCollect.on('collect', (r, u) => {
-                                msg.reactions.resolve('◀️').users.remove(u.id)
-                                if (page == 1) return
-                                page--;
-                                gEmbed.spliceFields(0, 24, userData.slice(0, 24))
-                                gEmbed.setFooter(`Page ${page} of ${Math.floor(userData.length/24) + 1}`)
-                                msg.edit(gEmbed)
-                            })
+
+                    message.channel.send(embeds[page].setFooter(`Page ${page+1} of ${embeds.length}`))
+                    .then(async msg => {
+                        await msg.react('◀️')
+                        await msg.react('▶️')
+
+                        const react = (reaction, user) => ['◀️', '▶️'].includes(reaction.emoji.name) && user.id === message.author.id
+                        const collect = msg.createReactionCollector(react)
+
+                        collect.on('collect', (r, u) => {
+                            if (r.emoji.name === '▶️') {
+                                if (page < embeds.length) {
+                                    msg.reactions.resolve('▶️').users.remove(u.id)
+                                    page++
+                                    if (page === embeds.length) --page
+                                    msg.edit(embeds[page].setFooter(`Page ${page+1} of ${embeds.length}`))
+                                }
+                            } else if (r.emoji.name === '◀️') {
+                                if (page !== 0) {
+                                    msg.reactions.resolve('◀️').users.remove(u.id)
+                                    --page;
+                                    msg.edit(embeds[page].setFooter(`Page ${page+1} of ${embeds.length}`))
+                                } else msg.reactions.resolve('◀️').users.remove(u.id)
+                            }
                         })
-                    }
+                    })
                 }
             }
         }

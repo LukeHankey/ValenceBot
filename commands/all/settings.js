@@ -2,13 +2,19 @@ const colors = require("../../colors.json");
 const getDb = require("../../mongodb").getDb;
 const func = require("../../functions.js")
 
+/**
+ * 472448603642920973 - Valence
+ * 668330890790699079 - Valence Bot Test
+ * 733164313744769024 - Test Server
+ * 420803245758480405 - DSF
+ */
+
 module.exports = {
 	name: "settings",
 	description: ["Displays the settings that you can change.", "Shows the current prefix.", "Sets the new prefix in the server.", "Shows the current admin role.", "Sets the new admin role in the server.", "Shows the current mod role.", "Sets the new mod role in the server.", "Shows the current admin channel.", "Sets the current admin channel."],
 	aliases: ["s"],
 	usage: ["", "prefix", "prefix set <new prefix>", "adminRole", "adminRole set <new role>", "modRole", "modRole set <new role>", "adminChannel", "adminChannel set <channel>"],
-	guildSpecific: ["472448603642920973", "733164313744769024", "668330890790699079"],
-	permissions: ["Admin", "Mod"],
+	guildSpecific: 'all',
 	run: async (client, message, args, perms) => {
 		const code = "```";
 		const db = getDb();
@@ -33,9 +39,7 @@ module.exports = {
 									: message.channel.send(`What do you want to set the prefix to?`);
 							}
 							else {
-								return message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to change the prefix!", colors.red_dark)
-									.addField("Only the following roles can:", perms.joinA, true)
-									.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
+								return message.channel.send(perms.errorA)
 							}
 					break;
 					default:
@@ -80,9 +84,7 @@ module.exports = {
 								}
 							}
 							else {
-								message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to change the Admin Role!", colors.red_dark)
-									.addField("Only the following Roles & Users can:", perms.joinA, true)
-									.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
+								message.channel.send(perms.errorA)
 							}
 							break;
 						default:
@@ -125,9 +127,7 @@ module.exports = {
 								}
 							}
 							else {
-								message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to change the Mod Role!", colors.red_dark)
-									.addField("Only the following Roles & Users can:", perms.joinA, true)
-									.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
+								message.channel.send(perms.errorA)
 							}
 							break;
 						default:
@@ -171,9 +171,7 @@ module.exports = {
 								}
 							}
 							else {
-								message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to set the Admin Channel!", colors.red_dark)
-									.addField("Only the following Roles & Users can:", perms.joinA, true)
-									.addField(`\u200b`, `<@${message.guild.ownerID}>`, true))
+								message.channel.send(perms.errorA)
 							}
 							break;
 						default:

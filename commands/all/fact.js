@@ -4,13 +4,18 @@ const randomColor = Math.floor(Math.random() * 16777215).toString(16);
 const func = require("../../functions.js")
 const colors = require("../../colors.json");
 
+/**
+ * 733164313744769024 - Test Server
+ * 668330890790699079 - Valence Bot Test
+ * 472448603642920973 - Valence
+ */
+
 module.exports = {
 	name: "fact",
 	description: ["Displays a random fact about Valence.", "Adds a Valence Fact to the DataBase.", "Removes a specified Fact from the DataBase.", "Edit the message by providing the Fact number." ,"Shows the entire list of Facts."],
 	aliases: ["f"],
 	usage:  ["", "add <fact>", "remove <number>", "edit <number>", "list"],
-	guildSpecific: ["472448603642920973", "733164313744769024"],
-	permissions: ["Admin", "Mod"],
+    guildSpecific: ['733164313744769024', '668330890790699079', '472448603642920973'],
 	run: async (client, message, args, perms) => {
 		const db = getDb();
 		const vFactsColl = db.collection("Facts");
@@ -48,9 +53,7 @@ module.exports = {
 						}
 					}
 					else {
-						message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
-						.addField("Only the following Roles & Users can:", perms.joinA, true)
-						.addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
+						message.channel.send(perms.errorA)
 					}
 				break;
 				case "remove":
@@ -74,9 +77,7 @@ module.exports = {
 					}
 				}
 				else {
-					message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
-					.addField("Only the following Roles & Users can:", perms.joinA, true)
-					.addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
+					message.channel.send(perms.errorA)
 				}
 				break;
 				case "edit":
@@ -101,9 +102,7 @@ module.exports = {
 						}
 					}
 				else {
-					message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
-					.addField("Only the following Roles & Users can:", perms.joinA, true)
-					.addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
+					message.channel.send(perms.errorA)
 				}
 				break;
 				case "list":
@@ -114,9 +113,7 @@ module.exports = {
 						await message.channel.send(`${list.join("")}`, { split: true, code: `` });
 					}
 					else {
-						message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
-						.addField("Only the following Roles & Users can:", perms.joinM, true)
-						.addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
+						message.channel.send(perms.errorM)
 					}
 				break;
 				default:
@@ -130,9 +127,7 @@ module.exports = {
 					});
 				}
 				else {
-					message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
-					.addField("Only the following Roles & Users can:", perms.joinA, true)
-					.addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
+					message.channel.send(perms.errorA)
 				}
 			}
 		});

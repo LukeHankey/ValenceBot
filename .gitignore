@@ -4,4 +4,11 @@ start.bat
 Webhook
 .eslintrc.json
 client_secret.json
+<<<<<<< HEAD
 test*
+||||||| 1ded478
+test*
+=======
+test*
+**/**/dsf_test.js
+>>>>>>> master

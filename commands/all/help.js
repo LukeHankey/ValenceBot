@@ -7,7 +7,7 @@ module.exports = {
 	description: ["List all of my commands or info about a specific command."],
 	aliases: ["commands"],
 	usage: ["command name"],
-	permissions: [false],
+	guildSpecific: 'all',
 	run: async (client, message, args) => {
 		const { commands } = message.client;
 
@@ -18,8 +18,13 @@ module.exports = {
 		settings.findOne({ _id: message.guild.id })
 		.then(res => {
 			if (!args.length) {
-				const com = commands.map(command => `\`${command.name}\``);
-				const join = com.join("|");
+				const com = commands.map(command => {
+					if (command.guildSpecific.includes(message.guild.id) || command.guildSpecific === 'all') {
+						return `\`${command.name}\``
+					}
+				});
+				const join = com.filter(x => x).join("|");
+				console.log(join)
 
 				message.channel.send(func.nEmbed(
 					"**Help Commands List**",
@@ -37,7 +42,7 @@ module.exports = {
 			else {
 				const name = args[0];
 				const command = commands.get(name) || commands.find(c => c.aliases && c.aliases.includes(name));
-				let otherView = ["Lotto", "Calendar"]
+				let otherView = ["Lotto", "Calendar", "Profile"]
 
 				const cName = func.capitalise(command.name);
 				const fields = [];

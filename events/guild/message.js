@@ -1,5 +1,7 @@
 const cron = require('node-cron');
 const getDb = require("../../mongodb").getDb;
+const func = require('../../functions')
+const colors = require('../../colors.json')
 const { Permissions } = require('../../classes.js')
 
 module.exports = async (client, message) => {
@@ -27,15 +29,15 @@ module.exports = async (client, message) => {
 			let aR = new Permissions('adminRole', res, message)
 			let mR = new Permissions('modRole', res, message)
 
+
 			let perms = {
 				admin: message.member.roles.cache.has(aR.memberRole()[0]) || message.member.roles.cache.has(aR.roleID()) || message.author.id === message.guild.ownerID,
 				mod: message.member.roles.cache.has(mR.memberRole()[0]) || message.member.roles.cache.has(mR.roleID()) || mR.modPlusRoles() >= mR._role.rawPosition || message.author.id === message.guild.ownerID,
-				joinA: aR.higherRoles().join(", "),
-				joinM: mR.higherRoles().join(", "),
+				errorM: mR.error(),
+				errorA: aR.error(),
 			}
 			try {
-				// undefined results in all guilds allowed
-				command.guildSpecific === undefined || command.guildSpecific.includes(message.guild.id)
+				command.guildSpecific === 'all' || command.guildSpecific.includes(message.guild.id)
 					? command.run(client, message, args, perms)
 					: message.channel.send("You cannot use that command in this server.")
 			}
@@ -51,10 +53,10 @@ module.exports = async (client, message) => {
 	* 2 roles to reach. 
 	* Command to see who top 10-25 are (all, scouter, verified scouter + staff roles for activity)
 	*/
-	settingsColl.findOne({ _id: message.guild.id })
+	settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } })
 		.then(async res => {
-			if (res.merchChannel === undefined) return // Undefined if a server doesn't have a merchChannel property
-			// if (res.merchChannel === '566338186406789123') return // Remove after
+			if (res === null) return // null if merchChannel property doesn't exist
+			// if (res._id === '420803245758480405') return // Remove after
 			const merchID = await res.merchChannel.channelID
 			if (message.channel.id === merchID) {
 				try {
@@ -62,7 +64,7 @@ module.exports = async (client, message) => {
 						? message.channel.send(`<@&670842187461820436>`).then(m => m.delete())
 						: message.delete()
 
-					const addToDB = cron.schedule('*/10 * * * * *', async () => {
+					const addToDB = cron.schedule('*/10 * * * * *', async () => { // Adding to the DB
 						let mes = await message.channel.messages.fetch({ limit: 10 })
 						mes = mes.filter(m => {
 							if (m.reactions.cache.has('☠️')) return
@@ -70,6 +72,7 @@ module.exports = async (client, message) => {
 						})
 						const log = [...mes.values()]
 						for (const messages in log) {
+							const authorName = log[messages].member.nickname ?? log[messages].author.username
 							await settingsColl.findOneAndUpdate({ _id: message.guild.id },
 								{
 									$addToSet: {
@@ -78,7 +81,7 @@ module.exports = async (client, message) => {
 												messageID: log[messages].id,
 												content: log[messages].content,
 												time: log[messages].createdTimestamp,
-												author: log[messages].member.nickname || log[messages].author.username,
+												author: authorName,
 											}],
 										}
 									}
@@ -133,18 +136,21 @@ module.exports = async (client, message) => {
 							})
 							addToDB.stop()
 						}
+					})
+					cron.schedule('*/30 * * * * *', async () => { // Checking the DB and marking dead calls
 						const count = await settingsColl.findOne({ _id: message.guild.id }).then(res => {
 							return res.merchChannel.messages.length
 						})
 						await settingsColl.findOne({ _id: message.guild.id }).then(async data => {
 							for (let i = 0; i < count; i++) {
+								console.log(data.serverName)
 								const doc = await data.merchChannel.messages[i]
 								const lastID = doc.messageID
 								const lastTime = doc.time
 
 								try {
 									const fetched = await message.channel.messages.fetch(lastID)
-									const check = Date.now() - lastTime > 60000 // Update after
+									const check = Date.now() - lastTime > 600000
 									if (check) {
 										fetched.react('☠️')
 										await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: lastID } } })
@@ -171,13 +177,15 @@ module.exports = async (client, message) => {
 	* Command to see who top 10-25 are (all, scouter, verified scouter + staff roles for activity)
 	* ;dsf user [all, userID, mention(?)] > All to show top 25, maybe paginate
 	* ;dsf role [scouter, verified scouter, staff (all staff)]
+	* ;profile (returns self)
+	* ;profile [all, userID, mention] || [scouter, verified scouter, staff]
 	*/
 
 	// Run every 24 hours and filter the database for:
 	// - All entries where count && timestamps > valueForScouterRole && !assigned field ✅
 	// - If count > requiredAmount, create an embed, loop through the DB for the values to push to an array and add as fields to embed ✅
 	// - Send embed to admin channel for manual role addition. ✅
-	// - Think about if we dont want to give someone a role? > Stay on list and repeat or somehow remove (assigned = something)
+	// - Think about if we dont want to give someone a role? > Stay on list and repeat or somehow remove (new field, either check if exists or assign boolean)
 	// - From the filtered lot posted in the embed, check every 6 hours if they have the role assigned to them. If so, remove them from the list and insert a field: assigned: roleID/name ✅
 
 	// - If 0 entries that pass the filter, return. ✅

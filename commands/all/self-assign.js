@@ -6,8 +6,8 @@ module.exports = {
     description: ["Assigns or removes a role."],
     aliases: ["sa"],
     usage: ["<role name>"],
-    permissions: [false],
-    run: async (client, message, args, perms) => {
+    guildSpecific: 'all',
+    run: async (client, message, args) => {
 
         const [...roleName] = args;
 

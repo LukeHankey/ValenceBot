@@ -8,16 +8,14 @@ module.exports = {
     description: ["Sends a message to a channel.", "Creates a new embed for the Ban/Friends List.", "Adds an RSN to the ban list with a reason.", "Edits an rsn or reason by finding the given rsn. Example:\n```css\n;send edit ban 1 Guys Reason: Is a noob.```", "Removes a member from the ban or friends list by specifying their rsn and which embed they are in."],
     aliases: [""],
     usage: ["<channel ID> <message content>", "embed <ban/friend/affiliate> <number>", "info <ban/friend/affiliate> <num> RSN: <rsn> Reason: <reason>", "edit <ban/friend/affiliate> <num> <rsn> <RSN:/Reason:> <value>", "remove <ban/friend/affiliate> <num> <rsn>"],
-    permissions: [false],
+    guildSpecific: 'all',
     run: async (client, message, args, perms) => {
 
         const myID = "212668377586597888";
         let content = args.slice(1).join(" ");
         const code = "```";
         if (!perms.admin) {
-            return message.channel.send(func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
-                .addField("Only the following Roles & Users can:", perms.joinA, true)
-                .addField(`\u200b`, `<@${message.guild.ownerID}>`, false))
+            return message.channel.send(perms.errorA)
         }
 
         const db = getDb();
