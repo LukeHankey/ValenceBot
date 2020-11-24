@@ -77,15 +77,15 @@ module.exports = {
                     return name._client && name._guild_name && name._db
                 }
                 const res = await settings.find({}).toArray()
-                await classVars(vScout, `Luke's Server`, res)
-                await classVars(scout, `Luke's Server`, res)
+                await classVars(vScout, message.guild.name, res)
+                await classVars(scout, message.guild.name, res)
                 const num = args[2]
 
                 switch (args[1]) {
                     case 'scouter':
                         if (num) {
                             scout = new ScouterCheck('Scouter', parseInt(num))
-                            await classVars(scout, `Luke's Server`, res)
+                            await classVars(scout, message.guild.name, res)
                             scout.send()
                         } else {
                             if (!scout._checkForScouts().length) {
@@ -96,7 +96,7 @@ module.exports = {
                     case 'verified':
                         if (num) {
                             vScout = new ScouterCheck('Verified Scouter', parseInt(num))
-                            await classVars(vScout, `Luke's Server`, res)
+                            await classVars(vScout, message.guild.name, res)
                             vScout.send()
                         } else {
                             if (!vScout._checkForScouts().length) {
