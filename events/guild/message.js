@@ -143,7 +143,6 @@ module.exports = async (client, message) => {
 						})
 						await settingsColl.findOne({ _id: message.guild.id }).then(async data => {
 							for (let i = 0; i < count; i++) {
-								console.log(data.serverName)
 								const doc = await data.merchChannel.messages[i]
 								const lastID = doc.messageID
 								const lastTime = doc.time
@@ -171,29 +170,4 @@ module.exports = async (client, message) => {
 				}
 			}
 		})
-
-	/*
-	* 2 roles to reach. 
-	* Command to see who top 10-25 are (all, scouter, verified scouter + staff roles for activity)
-	* ;dsf user [all, userID, mention(?)] > All to show top 25, maybe paginate
-	* ;dsf role [scouter, verified scouter, staff (all staff)]
-	* ;profile (returns self)
-	* ;profile [all, userID, mention] || [scouter, verified scouter, staff]
-	*/
-
-	// Run every 24 hours and filter the database for:
-	// - All entries where count && timestamps > valueForScouterRole && !assigned field ✅
-	// - If count > requiredAmount, create an embed, loop through the DB for the values to push to an array and add as fields to embed ✅
-	// - Send embed to admin channel for manual role addition. ✅
-	// - Think about if we dont want to give someone a role? > Stay on list and repeat or somehow remove (new field, either check if exists or assign boolean)
-	// - From the filtered lot posted in the embed, check every 6 hours if they have the role assigned to them. If so, remove them from the list and insert a field: assigned: roleID/name ✅
-
-	// - If 0 entries that pass the filter, return. ✅
-
-	/**
-	 * Set this in classes.js ✅
-	 * Add into ready.js ✅
-	 * Cron job it for every week to post updated values ✅
-	 * Also use in a command where the values can be changed
-	 */
 }
