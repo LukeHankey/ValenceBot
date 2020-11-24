@@ -88,7 +88,8 @@ module.exports = {
                             await classVars(scout, message.guild.name, res)
                             scout.send(message.channel.id)
                         } else {
-                            if (!scout._checkForScouts().length) {
+                            const scoutCheck = await scout._checkForScouts()
+                            if (!scoutCheck.length) {
                                 message.channel.send('None found.')
                             } else return scout.send(message.channel.id)
                         }
@@ -99,7 +100,8 @@ module.exports = {
                             await classVars(vScout, message.guild.name, res)
                             vScout.send(message.channel.id)
                         } else {
-                            if (!vScout._checkForScouts().length) {
+                            const verifiedCheck = await vScout._checkForScouts()
+                            if (!verifiedCheck.length) {
                                 message.channel.send('None found.')
                             } else return vScout.send(message.channel.id)
                         }
