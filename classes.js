@@ -117,10 +117,10 @@ class ScouterCheck {
         })
     }
 
-    _checkScouts(filter, num, time) {
+    _checkScouts(filter, num, time) { // Just takes merch count, not other count
         if ((filter.count >= this.count || filter.count >= num) && filter.lastTimestamp - filter.firstTimestamp >= time && filter.assigned.length === 0) return filter
     }
-    _checkVerifiedScouts(filter, num, time) {
+    _checkVerifiedScouts(filter, num, time) { // Just takes merch count, not other count
         if (filter.count >= this.count || filter.count >= num) {
             if (filter.lastTimestamp - filter.firstTimestamp >= time) {
                 if (filter.assigned.length > 0 && filter.assigned.length < 2) {
@@ -137,7 +137,7 @@ class ScouterCheck {
         const fields = [];
 
         for (const values of scouts) {
-            fields.push({ name: `${values.author}`, value: `ID: ${values.userID}\nCount: ${values.count}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true })
+            fields.push({ name: `${values.author}`, value: `ID: ${values.userID}\nMerch Count: ${values.count}\nOther Count: ${values.otherCount}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true })
         }
         return fields
     }
