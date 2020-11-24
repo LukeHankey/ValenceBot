@@ -29,7 +29,6 @@ module.exports = async (client, message) => {
 			let aR = new Permissions('adminRole', res, message)
 			let mR = new Permissions('modRole', res, message)
 
-
 			let perms = {
 				admin: message.member.roles.cache.has(aR.memberRole()[0]) || message.member.roles.cache.has(aR.roleID()) || message.author.id === message.guild.ownerID,
 				mod: message.member.roles.cache.has(mR.memberRole()[0]) || message.member.roles.cache.has(mR.roleID()) || mR.modPlusRoles() >= mR._role.rawPosition || message.author.id === message.guild.ownerID,
