@@ -50,7 +50,7 @@ class Permissions {
 
     error() {
         return func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
-        .addField("Only the following Roles & Users can:", this.higherRoles().join(', '), true)
+        .addField("Only the following Roles & Users can:", `${this.higherRoles().length > 0 ? this.higherRoles().join(', ') : '0'}`, true)
         .addField(`\u200b`, `<@${this.msg.guild.ownerID}>`, true)
     }
 
@@ -96,11 +96,11 @@ class ScouterCheck {
         let scout;
         if (this.roleName.toLowerCase() === 'scouter') {
             scout = this._db.merchChannel.scoutTracker.filter(val => {
-                return this._checkScouts(val, 40, this.week)
+                return this._checkScouts(val, this.value ?? 40, this.week)
             })
         } else if (this.roleName.toLowerCase() === 'verified scouter') {
             scout = this._db.merchChannel.scoutTracker.filter(val => {
-                return this._checkVerifiedScouts(val, 100, this.week)
+                return this._checkVerifiedScouts(val, this.value ?? 100, this.week)
             })
         } else return
         return scout

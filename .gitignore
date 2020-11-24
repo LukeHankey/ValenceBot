@@ -3,10 +3,5 @@ node_modules
 start.bat
 Webhook
 .eslintrc.json
-**/avatar.js
-**/*info.js
-**/*ban.json
-amRolePerms.js
 client_secret.json
 test*
-**/**/dsf_test.js
