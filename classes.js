@@ -96,11 +96,11 @@ class ScouterCheck {
         let scout;
         if (this.roleName.toLowerCase() === 'scouter') {
             scout = this._db.merchChannel.scoutTracker.filter(val => {
-                return this._checkScouts(val, 40, this.week)
+                return this._checkScouts(val, this.value ?? 40, this.week)
             })
         } else if (this.roleName.toLowerCase() === 'verified scouter') {
             scout = this._db.merchChannel.scoutTracker.filter(val => {
-                return this._checkVerifiedScouts(val, 100, this.week)
+                return this._checkVerifiedScouts(val, this.value ?? 100, this.week)
             })
         } else return
         return scout
