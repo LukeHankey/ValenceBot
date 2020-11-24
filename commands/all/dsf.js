@@ -86,22 +86,22 @@ module.exports = {
                         if (num) {
                             scout = new ScouterCheck('Scouter', parseInt(num))
                             await classVars(scout, message.guild.name, res)
-                            scout.send()
+                            scout.send(message.channel.id)
                         } else {
                             if (!scout._checkForScouts().length) {
                                 message.channel.send('None found.')
-                            } else return scout.send()
+                            } else return scout.send(message.channel.id)
                         }
                         break;
                     case 'verified':
                         if (num) {
                             vScout = new ScouterCheck('Verified Scouter', parseInt(num))
                             await classVars(vScout, message.guild.name, res)
-                            vScout.send()
+                            vScout.send(message.channel.id)
                         } else {
                             if (!vScout._checkForScouts().length) {
                                 message.channel.send('None found.')
-                            } else return vScout.send()
+                            } else return vScout.send(message.channel.id)
                         }
                 }
             break;

@@ -142,9 +142,8 @@ class ScouterCheck {
         return fields
     }
 
-    async send() {
+    async send(chan = this._db.channels.adminChannel) {
         const role = await this.role;
-        const db = await this._db;
         const embed = new MessageEmbed()
             .setTitle(`Potential Scouters - ${this.roleName}`)
             .setDescription(`List of members who have met the minimum to obtain the <@&${role.id}> role.`)
@@ -155,7 +154,7 @@ class ScouterCheck {
         const fields = await this._checkForScouts()
 
         if (fields.length) { // Perhaps look at adding something if there are > 25
-            return this._client.channels.cache.get(db.channels.adminChannel).send(embed.addFields(fields))
+            return this._client.channels.cache.get(chan).send(embed.addFields(fields))
         }
         return
     }
