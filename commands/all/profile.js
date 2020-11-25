@@ -17,21 +17,13 @@ module.exports = {
 	usage: ['', '<member ID>', '<@member/@role>', 'all'],
     guildSpecific: ['420803245758480405', '733164313744769024', '668330890790699079'],
 	run: async (client, message, args, perms) => {
-    /*
-	* 2 roles to reach. 
-	* Command to see who top 10-25 are (all, scouter, verified scouter + staff roles for activity)
-	* ;dsf user [all, userID, mention(?)] > All to show top 25, maybe paginate
-	* ;dsf role [scouter, verified scouter, staff (all staff)]
-	* ;profile (returns self) ✅
-	* ;profile [all, userID, mention] || [scouter, verified scouter, staff]
-    */
+
     const db = getDb()
     const settings = db.collection("Settings")
     const memberID = message.member.id
     const data = await settings.findOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': memberID })
     const botRole = message.guild.me.roles.cache.find(r => r.managed)
     const memberRoles = message.member.roles.highest.position
-
 
     const sendUserInfo = async (id = memberID, uData = data) => {
         const fetchedMember = await message.guild.members.fetch(id)
@@ -56,7 +48,7 @@ module.exports = {
 
         for (const values of userData) {
             fields.push(
-                { name: `${values.author}`, value: `Scout count: ${values.count}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true },
+                { name: `${values.author}`, value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true },
                 { name: `Assigned Roles:`, value: `${memberAssignedRoles.join(', ') || _text('None')}`, inline: true },
                 { name: '\u200B', value: '\u200B', inline: true },
                 { name: `Self-Assign Roles:`, value: `${memberSelfRoles.join(', ') || _text('None')}`, inline: true },
@@ -123,6 +115,7 @@ module.exports = {
                                     lastTimestamp: col.createdTimestamp,
                                     lastTimestampReadable: new Date(col.createdTimestamp),
                                     count: 0,
+                                    otherCount: 0,
                                     assigned: [],
                                 }
                             }
@@ -167,7 +160,7 @@ module.exports = {
                 let fields = [];
 
                 for (const values of items) {
-                    fields.push({ name: `${values.author}`, value: `Scout count: ${values.count}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true })
+                    fields.push({ name: `${values.author}`, value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true })
                 }
                 fields = fields.slice(0, 100)
                 let page = 0
