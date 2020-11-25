@@ -88,13 +88,13 @@ module.exports = async (client, message) => {
 									returnNewDocument: true
 								}
 							)
-							.then(async db => {
-								const messageArray = await db.value.merchChannel.messages;
-								if (messageArray[0] === undefined) return; // Undefined if bot spams the merch call
-								if (messageArray[0].author === "Valence Bot" || messageArray[0].author === null) {
-									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: messageArray[0].messageID } } })
-								}
-							})
+								.then(async db => {
+									const messageArray = await db.value.merchChannel.messages;
+									if (messageArray[0] === undefined) return; // Undefined if bot spams the merch call
+									if (messageArray[0].author === "Valence Bot" || messageArray[0].author === null) {
+										await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: messageArray[0].messageID } } })
+									}
+								})
 						}
 						const mesOne = await message.channel.messages.fetch({ limit: 1 })
 						const logOne = [...mesOne.values()]
@@ -167,72 +167,76 @@ module.exports = async (client, message) => {
 				}
 			} else if (message.channel.id === otherID) {
 				const addToDBOther = cron.schedule('*/10 * * * * *', async () => { // Adding to the DB
-					const mesOne = await message.channel.messages.fetch({ limit: 1 })
-					const logOne = [...mesOne.values()]
-					const msg = logOne.map(val => val)
-					const tracker = await res.merchChannel.scoutTracker
+					try {
+						const mesOne = await message.channel.messages.fetch({ limit: 1 })
+						const logOne = [...mesOne.values()]
+						const msg = logOne.map(val => val)
+						const tracker = await res.merchChannel.scoutTracker
 
-					const findMessage = tracker.find(x => x.userID === msg[0].author.id)
-					if (!findMessage) {
-						await settingsColl.findOneAndUpdate({ _id: message.guild.id },
-							{
-								$addToSet: {
-									'merchChannel.scoutTracker': {
-										$each: [{
-											userID: msg[0].author.id,
-											author: msg[0].member.nickname ?? msg[0].author.username,
-											firstTimestamp: msg[0].createdTimestamp,
-											firstTimestampReadable: new Date(msg[0].createdTimestamp),
-											lastTimestamp: msg[0].createdTimestamp,
-											lastTimestampReadable: new Date(msg[0].createdTimestamp),
-											count: 0,
-											otherCount: 1,
-											assigned: [],
-										}]
+						const findMessage = await tracker.find(x => x.userID === msg[0].author.id)
+						if (!findMessage) {
+							await settingsColl.findOneAndUpdate({ _id: message.guild.id },
+								{
+									$addToSet: {
+										'merchChannel.scoutTracker': {
+											$each: [{
+												userID: msg[0].author.id,
+												author: msg[0].member.nickname ?? msg[0].author.username,
+												firstTimestamp: msg[0].createdTimestamp,
+												firstTimestampReadable: new Date(msg[0].createdTimestamp),
+												lastTimestamp: msg[0].createdTimestamp,
+												lastTimestampReadable: new Date(msg[0].createdTimestamp),
+												count: 0,
+												otherCount: 1,
+												assigned: [],
+											}]
+										}
 									}
-								}
+								})
+							addToDBOther.stop()
+						} else {
+							await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
+								$inc: {
+									'merchChannel.scoutTracker.$.otherCount': 1,
+								},
+								$set: {
+									'merchChannel.scoutTracker.$.lastTimestamp': msg[0].createdTimestamp,
+									'merchChannel.scoutTracker.$.lastTimestampReadable': new Date(msg[0].createdTimestamp),
+								},
 							})
-						addToDBOther.stop()
-					} else {
-						await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
-							$inc: {
-								'merchChannel.scoutTracker.$.otherCount': 1,
-							},
-							$set: {
-								'merchChannel.scoutTracker.$.lastTimestamp': msg[0].createdTimestamp,
-								'merchChannel.scoutTracker.$.lastTimestampReadable': new Date(msg[0].createdTimestamp),
-							},
-						})
-						addToDBOther.stop()
+							addToDBOther.stop()
+						}
+					} catch (e) {
+						console.log(e)
 					}
 				})
 			} else return
-			
-		// Update DB
-		// try {
-		// 	await settingsColl.find({ _id: message.guild.id }).forEach(async doc => { // Updates all by removing a field
-		// 	let arr = doc.merchChannel.scoutTracker;
-		// 	let length = arr.length;
-		// 	for (let i = 0; i < length; i++) {
-		// 		delete arr[i]["assigned"];
-		// 	}
-		// 	// await settingsColl.save(doc);
-		// 	await settingsColl.update({ _id: message.guild.id }, { // Updates all by adding a field
-		// 		$set: {
-		// 			'merchChannel.scoutTracker.$[].otherCount': 0,
-		// 		},
-		// 	})
-		// })
-		
-		// Finds a profile and adds to it
-		// await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.author': 'Attaining'}, {
-		// 	$inc: {
-		// 		'merchChannel.scoutTracker.$.otherCount': 85,
-		// 	},
-		// })
 
-		// } catch (err) {
-		// 	console.log(err)
-		// }
-	})
+			// Update DB
+			// try {
+			// 	await settingsColl.find({ _id: message.guild.id }).forEach(async doc => { // Updates all by removing a field
+			// 	let arr = doc.merchChannel.scoutTracker;
+			// 	let length = arr.length;
+			// 	for (let i = 0; i < length; i++) {
+			// 		delete arr[i]["assigned"];
+			// 	}
+			// 	// await settingsColl.save(doc);
+			// 	await settingsColl.update({ _id: message.guild.id }, { // Updates all by adding a field
+			// 		$set: {
+			// 			'merchChannel.scoutTracker.$[].otherCount': 0,
+			// 		},
+			// 	})
+			// })
+
+			// Finds a profile and adds to it
+			// await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.author': 'Attaining'}, {
+			// 	$inc: {
+			// 		'merchChannel.scoutTracker.$.otherCount': 85,
+			// 	},
+			// })
+
+			// } catch (err) {
+			// 	console.log(err)
+			// }
+		})
 }
