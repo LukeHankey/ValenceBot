@@ -69,7 +69,7 @@ module.exports = async (client, message) => {
 						})
 						const log = [...mes.values()]
 						for (const messages in log) {
-							const authorName = log[messages].member.nickname ?? log[messages].author.username
+							const authorName = log[messages].member?.nickname ?? log[messages].author.username
 							await settingsColl.findOneAndUpdate({ _id: message.guild.id },
 								{
 									$addToSet: {
