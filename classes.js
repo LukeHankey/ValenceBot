@@ -100,7 +100,7 @@ class ScouterCheck {
             })
         } else if (this.roleName.toLowerCase() === 'verified scouter') {
             scout = this._db.merchChannel.scoutTracker.filter(val => {
-                return this._checkVerifiedScouts(val, this.value ?? 100, this.week)
+                return this._checkVerifiedScouts(val, this.value ?? 100, this.month)
             })
         } else return
         return scout
