@@ -12,9 +12,9 @@ const { ScouterCheck } = require('../../classes.js')
 
 module.exports = {
     name: "dsf",
-    description: ['Displays all of the current stored messages.', 'Clears all of the current stored messages.', 'Shows the list of potential scouters/verified scouters with the set scout count, or count adjusted.'],
+    description: ['Displays all of the current stored messages.', 'Clears all of the current stored messages.', 'Shows the list of potential scouters/verified scouters with the set scout count, or count adjusted.', 'Add 1 or <num> merch count to the member provided.', 'Remove 1 or <num> merch count to the member provided.'],
     aliases: [],
-    usage: ['messages|m view', 'messages|m clear', 'view scouter|verified <num (optional)>'],
+    usage: ['messages view', 'messages clear', 'view scouter/verified <num (optional)>', 'user memberID/@member add <num (optional)>', 'user memberID/@member remove <num (optional)>'],
     guildSpecific: ['733164313744769024', '420803245758480405'],
     run: async (client, message, args, perms) => {
         const db = getDb()
@@ -107,11 +107,64 @@ module.exports = {
                         }
                 }
             break;
+            case 'user': {
+                let [userID, param, num] = args.slice(1)
+                const checkMem = message.guild.members.cache.has(userID)
+                func.checkNum(userID) && checkMem ? userID = userID : userID = undefined
+                const userMention = message.mentions.members.first()?.user.id ?? userID
+
+                if (userMention === undefined) return message.channel.send(`Please provide a valid member ID or member mention.`)
+                switch(param) {
+                    case 'add':
+                        if (!num) {
+                            await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention}, {
+                                $inc: {
+                                    'merchChannel.scoutTracker.$.count': 1,
+                                },
+                            })
+                        } else {
+                            if (isNaN(parseInt(num))) {
+                                return message.channel.send(`\`${num}\` is not a number.`)
+                             } else num = +num
+                            await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention}, {
+                                $inc: {
+                                    'merchChannel.scoutTracker.$.count': num,
+                                },
+                            })
+                        }
+                    break;
+                    case 'remove':
+                        if (!num) {
+                            await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention}, {
+                                $inc: {
+                                    'merchChannel.scoutTracker.$.count': -1,
+                                },
+                            })
+                        } else {
+                            if (isNaN(parseInt(num))) {
+                                return message.channel.send(`\`${num}\` is not a number.`)
+                             } else num = +num
+                            await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention}, {
+                                $inc: {
+                                    'merchChannel.scoutTracker.$.count': -num,
+                                },
+                            })
+                        }
+                    break;
+                    default:
+                        return message.channel.send(`Valid params are \`add\` or \`remove\`.`)
+                }
+                await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': 'Attaining'}, {
+                    $inc: {
+                        'merchChannel.scoutTracker.$.otherCount': 85,
+                    },
+                })
+            }
             default:
                 if (!perms.admin) return message.channel.send(perms.errorA)
                 return message.channel.send(func.nEmbed(
-                    "**DSF List**",
-                    "Here's a list of all the DSF commands you can use:\n\n\`messages|m view\`\n\`messages|m clear\`\n\`view scouter <num (optional)>\`\n\`view verified <num (optional)>\`",
+                    "**DSF Admin Commands List**",
+                    "Here's a list of all the DSF commands you can use. Any parameter in \`<>\` are optional:\n\n\`messages|m view\`\n\`messages|m clear\`\n\`view scouter <num>\`\n\`view verified <num>\`\n\`user memberID/@member add <num>\`\n\`user memberID/@member remove <num>\`",
                     colors.cyan,
                     client.user.displayAvatarURL()
                 ))
