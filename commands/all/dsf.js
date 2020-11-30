@@ -109,7 +109,15 @@ module.exports = {
             break;
             case 'user': {
                 let [userID, param, num] = args.slice(1)
-                const checkMem = message.guild.members.cache.has(userID)
+                cacheCheck = (user) => {
+                    if (!message.guild.members.cache.has(user)) {
+                        console.log(!!message.guild.members.fetch(user), 1)
+                        return !!message.guild.members.fetch(user)
+                    } else {
+                        return true
+                    }
+                }
+                let checkMem = cacheCheck(userID)
                 func.checkNum(userID) && checkMem ? userID = userID : userID = undefined
                 const userMention = message.mentions.members.first()?.user.id ?? userID
 
@@ -140,6 +148,7 @@ module.exports = {
                                     'merchChannel.scoutTracker.$.count': -1,
                                 },
                             })
+                            return message.react('✅')
                         } else {
                             if (isNaN(parseInt(num))) {
                                 return message.channel.send(`\`${num}\` is not a number.`)
@@ -149,16 +158,12 @@ module.exports = {
                                     'merchChannel.scoutTracker.$.count': -num,
                                 },
                             })
+                            return message.react('✅')
                         }
                     break;
                     default:
                         return message.channel.send(`Valid params are \`add\` or \`remove\`.`)
                 }
-                await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': 'Attaining'}, {
-                    $inc: {
-                        'merchChannel.scoutTracker.$.otherCount': 85,
-                    },
-                })
             }
             default:
                 if (!perms.admin) return message.channel.send(perms.errorA)
