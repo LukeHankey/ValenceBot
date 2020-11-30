@@ -29,7 +29,7 @@ run: async (client, message, args, perms) => {
         const gsapi = google.sheets({ version: "v4", auth: gClient })
         const opt = { // READ ONLY OPTIONS
             spreadsheetId: "1ZView14HaimCuCUg_durvI-3wiOn4Pf5mZRKYVwrHlY",
-            range: "November 2020!A2:C52",
+            range: "November 2020!A2:C100",
         }
 
         let userData = []; // Holds all fields in specified range
@@ -40,7 +40,7 @@ run: async (client, message, args, perms) => {
 
         const optW = { // WRITE OPTIONS
             spreadsheetId: "1ZView14HaimCuCUg_durvI-3wiOn4Pf5mZRKYVwrHlY",
-            range: "November 2020!A1:F52",
+            range: "November 2020!A1:F100",
             valueInputOption: "USER_ENTERED",
             resource: { values: newArr }
         }
