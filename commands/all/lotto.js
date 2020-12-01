@@ -86,7 +86,7 @@ run: async (client, message, args, perms) => {
                 .addFields(
                     { name: `RuneScape Name:`, value: `${rsn || undefined}`, inline: true },
                     { name: `Amount:`, value: `500,000`, inline: true },
-                    { name: `To:`, value: `${colName}`, inline: true }, // Change to colName
+                    { name: `To:`, value: `${colName}`, inline: true }, 
                     { name: `Donations Updated:`, value: `N/A`, inline: true },
                 )
                 if (perms.mod) {
@@ -160,6 +160,7 @@ run: async (client, message, args, perms) => {
                                     return message.channel.send(lottoEmbed
                                     .spliceFields(1, 1, { name: 'Amount:', value: `${args[1]}`, inline: true } )
                                     .spliceFields(2, 1, { name: `To:`, value: `${colName}`, inline: true })
+                                    .spliceFields(3, 1, { name: `Donations Updated:`, value: `No`, inline: true })
                                     )
                                 }
                             }
