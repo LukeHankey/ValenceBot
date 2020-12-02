@@ -58,7 +58,7 @@ module.exports = async (client, message) => {
 			if (message.channel.id === merchID) {
 				try {
 					message.content.match(/(^(?:m|merch|merchant|w|world)+(\s?)(\d{1,3}))/i)
-						? message.channel.send(`<@&670842187461820436>`).then(m => m.delete())
+						? message.channel.send(`<@&670842187461820436> - ${message.content}`).then(m => m.delete())
 						: message.delete()
 
 					const addToDB = cron.schedule('*/10 * * * * *', async () => { // Adding to the DB
