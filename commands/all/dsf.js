@@ -1,6 +1,5 @@
 const func = require('../../functions')
 const colors = require('../../colors.json')
-const Discord = require('discord.js')
 const getDb = require('../../mongodb').getDb
 const { ScouterCheck } = require('../../classes.js')
 
@@ -17,6 +16,7 @@ module.exports = {
     usage: ['messages view', 'messages clear', 'view scouter/verified <num (optional)>', 'user memberID/@member add <num (optional)>', 'user memberID/@member remove <num (optional)>'],
     guildSpecific: ['733164313744769024', '420803245758480405'],
     run: async (client, message, args, perms) => {
+        if (!perms.admin) return message.channel.send(perms.errorA)
         const db = getDb()
         const settings = db.collection('Settings')
 
@@ -25,46 +25,35 @@ module.exports = {
             case 'messages':
                 switch (args[1]) {
                     case 'view':
-                        if (!perms.admin) {
-                            return message.channel.send(perms.errorA)
-                        } else {
-                            await settings.findOne({ _id: message.guild.id }).then(async res => {
-                                const fields = []
-                                let data = await res.merchChannel.messages
-                                let embed = func.nEmbed('List of messages currently stored in the DB',
-                                    'There shouldn\'t be too many as they get automatically deleted after 10 minutes. If the bot errors out, please clear all of them using \`;dsf messages clear\`.',
-                                    colors.cream,
-                                    message.member.user.displayAvatarURL(),
-                                    client.user.displayAvatarURL())
+                        await settings.findOne({ _id: message.guild.id }).then(async res => {
+                            const fields = []
+                            let data = await res.merchChannel.messages
+                            let embed = func.nEmbed('List of messages currently stored in the DB',
+                                'There shouldn\'t be too many as they get automatically deleted after 10 minutes. If the bot errors out, please clear all of them using \`;dsf messages clear\`.',
+                                colors.cream,
+                                message.member.user.displayAvatarURL(),
+                                client.user.displayAvatarURL())
 
-                                for (const values of data) {
-                                    let date = new Date(values.time)
-                                    date = date.toString().split(' ')
-                                    fields.push({ name: `${values.author}`, value: `**Time:** ${date.slice(0, 5).join(' ')}\n**Content:** [${values.content}](https://discordapp.com/channels/${message.guild.id}/${res.merchChannel.channelID}/${values.messageID} 'Click me to go to the message.')`, inline: false })
-                                }
-                                return message.channel.send(embed.addFields(fields))
-                            })
-                        }
+                            for (const values of data) {
+                                let date = new Date(values.time)
+                                date = date.toString().split(' ')
+                                fields.push({ name: `${values.author}`, value: `**Time:** ${date.slice(0, 5).join(' ')}\n**Content:** [${values.content}](https://discordapp.com/channels/${message.guild.id}/${res.merchChannel.channelID}/${values.messageID} 'Click me to go to the message.')`, inline: false })
+                            }
+                            return message.channel.send(embed.addFields(fields))
+                        })
                         break;
                     case 'clear':
-                        if (!perms.admin) {
-                            return message.channel.send(perms.errorA)
-                        } else {
-                            await settings.findOneAndUpdate({ _id: message.guild.id },
-                                {
-                                    $pull: {
-                                        'merchChannel.messages': { time: { $gt: 0 } }
-                                    }
+                        await settings.findOneAndUpdate({ _id: message.guild.id },
+                            {
+                                $pull: {
+                                    'merchChannel.messages': { time: { $gt: 0 } }
                                 }
-                            )
-                            message.react('✅')
-                        }
+                            }
+                        )
+                        message.react('✅')
                 }
                 break;
             case 'view':
-                if (!perms.admin) {
-                    return message.channel.send(perms.errorA)
-                }
                 let scout = new ScouterCheck('Scouter')
                 let vScout = new ScouterCheck('Verified Scouter')
 
@@ -106,7 +95,7 @@ module.exports = {
                             } else return vScout.send(message.channel.id)
                         }
                 }
-            break;
+                break;
             case 'user': {
                 let [userID, param, num] = args.slice(1)
                 cacheCheck = (user) => {
@@ -122,10 +111,10 @@ module.exports = {
                 const userMention = message.mentions.members.first()?.user.id ?? userID
 
                 if (userMention === undefined) return message.channel.send(`Please provide a valid member ID or member mention.`)
-                switch(param) {
+                switch (param) {
                     case 'add':
                         if (!num) {
-                            await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention}, {
+                            await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
                                 $inc: {
                                     'merchChannel.scoutTracker.$.count': 1,
                                 },
@@ -133,17 +122,17 @@ module.exports = {
                         } else {
                             if (isNaN(parseInt(num))) {
                                 return message.channel.send(`\`${num}\` is not a number.`)
-                             } else num = +num
-                            await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention}, {
+                            } else num = +num
+                            await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
                                 $inc: {
                                     'merchChannel.scoutTracker.$.count': num,
                                 },
                             })
                         }
-                    break;
+                        break;
                     case 'remove':
                         if (!num) {
-                            await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention}, {
+                            await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
                                 $inc: {
                                     'merchChannel.scoutTracker.$.count': -1,
                                 },
@@ -152,21 +141,20 @@ module.exports = {
                         } else {
                             if (isNaN(parseInt(num))) {
                                 return message.channel.send(`\`${num}\` is not a number.`)
-                             } else num = +num
-                            await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention}, {
+                            } else num = +num
+                            await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
                                 $inc: {
                                     'merchChannel.scoutTracker.$.count': -num,
                                 },
                             })
                             return message.react('✅')
                         }
-                    break;
+                        break;
                     default:
                         return message.channel.send(`Valid params are \`add\` or \`remove\`.`)
                 }
             }
             default:
-                if (!perms.admin) return message.channel.send(perms.errorA)
                 return message.channel.send(func.nEmbed(
                     "**DSF Admin Commands List**",
                     "Here's a list of all the DSF commands you can use. Any parameter in \`<>\` are optional:\n\n\`messages|m view\`\n\`messages|m clear\`\n\`view scouter <num>\`\n\`view verified <num>\`\n\`user memberID/@member add <num>\`\n\`user memberID/@member remove <num>\`",
