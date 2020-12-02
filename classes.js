@@ -48,6 +48,20 @@ class Permissions {
         return aboveMod[num]
     }
 
+    get owner() {
+        const id = '212668377586597888';
+        return id;
+    }
+
+    botOwner() {
+        this.msg.member.id === this.owner ? true : false
+    }
+
+    ownerError() {
+        return func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
+        .addField("Only the bot owner can:", `<@!${this.owner}>`)
+    }
+
     error() {
         return func.nEmbed("Permission Denied", "You do not have permission to use this command!", colors.red_dark)
         .addField("Only the following Roles & Users can:", `${this.higherRoles().length > 0 ? this.higherRoles().join(', ') : '0'}`, true)
