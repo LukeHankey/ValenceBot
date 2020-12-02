@@ -58,7 +58,7 @@ class Permissions {
     }
 
     botOwner() {
-        this.msg.member.id === this.owner ? true : false
+        return this.msg.member.id === this.owner ? true : false
     }
 
     ownerError() {
