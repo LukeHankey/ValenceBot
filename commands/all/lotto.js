@@ -60,21 +60,6 @@ run: async (client, message, args, perms) => {
             }
         }
 
-        let checkValue = function(value) {
-            if (value.length === 6) {
-                return [value.slice(0, 3), ",", value.slice(3)].join("")
-            }
-            else if (value.length === 7) {
-                return [value.slice(0, 1), ",", value.slice(1, 4), ",", value.slice(4)].join("")
-            }
-            else if (value.length === 8) {
-                return [value.slice(0, 2), ",", value.slice(2, 5), ",", value.slice(5)].join("")
-            }
-            else if (value.length === 9) {
-                return [value.slice(0, 3), ",", value.slice(3, 6), ",", value.slice(6)].join("")
-            }
-        }
-
         let [colNameArgs, rsn] = args.slice(2).join(" ").split("/")
         colNameArgs = colNameArgs.trim()
         let tag = args.slice(-1).join("")
@@ -193,7 +178,6 @@ run: async (client, message, args, perms) => {
                     let fields = { name: values[0], value: values[1], inline: true }
                     totalValues.push(fields)
                 }
-                
                 message.channel.send(totalEmbed.addFields(totalValues).spliceFields(2, 0, { name: `\u200B`, value: `\u200B`, inline: true }))
             break;
             default:
@@ -273,7 +257,7 @@ run: async (client, message, args, perms) => {
                         }
                         return embeds;
                     }
-
+                    message.channel.startTyping()
                     message.channel.send(embeds[page].setFooter(`Page ${page+1} of ${embeds.length}`))
                     .then(async msg => {
                         await msg.react('◀️')
@@ -299,6 +283,7 @@ run: async (client, message, args, perms) => {
                             }
                         })
                     })
+                    message.channel.stopTyping()
                 }
             }
         }
