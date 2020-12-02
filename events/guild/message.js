@@ -1,9 +1,6 @@
 const cron = require('node-cron');
 const getDb = require("../../mongodb").getDb;
-const func = require('../../functions')
-const colors = require('../../colors.json')
 const { Permissions } = require('../../classes.js');
-const { settings } = require('cluster');
 
 module.exports = async (client, message) => {
 	const db = getDb();
@@ -29,10 +26,13 @@ module.exports = async (client, message) => {
 
 			let aR = new Permissions('adminRole', res, message)
 			let mR = new Permissions('modRole', res, message)
+			let owner = new Permissions('owner', res, message)
 
 			let perms = {
-				admin: message.member.roles.cache.has(aR.memberRole()[0]) || message.member.roles.cache.has(aR.roleID()) || message.author.id === message.guild.ownerID,
-				mod: message.member.roles.cache.has(mR.memberRole()[0]) || message.member.roles.cache.has(mR.roleID()) || mR.modPlusRoles() >= mR._role.rawPosition || message.author.id === message.guild.ownerID,
+				owner: owner.botOwner(),
+				admin: message.member.roles.cache.has(aR.memberRole()[0]) || message.member.roles.cache.has(aR.roleID) || message.author.id === message.guild.ownerID,
+				mod: message.member.roles.cache.has(mR.memberRole()[0]) || message.member.roles.cache.has(mR.roleID) || mR.modPlusRoles() >= mR._role.rawPosition || message.author.id === message.guild.ownerID,
+				errorO: owner.ownerError(),
 				errorM: mR.error(),
 				errorA: aR.error(),
 			}

@@ -188,8 +188,7 @@ module.exports = async client => {
 	})
 
 	// DSF Activity Posts //
-	// cron.schedule('*/10 * * * * *', async () => {
-		const checks = cron.schedule('* */6 * * *', async () => {
+	cron.schedule('* */6 * * *', async () => {
 		let scout = new ScouterCheck('Scouter')
 		let vScout = new ScouterCheck('Verified Scouter')
 
@@ -233,7 +232,6 @@ module.exports = async client => {
 		removedRoles(scout)
 		removedRoles(vScout)
 
-		// if (new Date().getSeconds() === 30 || new Date().getSeconds() === 00) {
 		if (new Date().getDay() === 3 && new Date().getHours() === 00 && new Date().getMinutes() === 01) { // Weekly reset
 			scout.send()
 			vScout.send()

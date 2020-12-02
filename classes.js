@@ -8,12 +8,16 @@ class Permissions {
         this.name = name;
         this.db = db;
         this.msg = msg;
-        this._role = this.msg.guild.roles.cache.find(role => role.id === this.roleID());
-        this._position = this.msg.guild.roles.cache.filter(roles => roles.rawPosition >= this._role.rawPosition);
+        this._role = this.msg.guild.roles.cache.find(role => role.id === this.roleID);
+        this._position = this.msg.guild.roles.cache.filter(roles => {
+            if (this._role === undefined) return
+            else return roles.rawPosition >= this._role.rawPosition
+        });
     }
 
-    roleID() {
-        return this.db.roles[this.name].slice(3, 21)
+    get roleID() {
+        if (this.db.roles[this.name] === undefined) return
+        else return this.db.roles[this.name].slice(3, 21)
     }
 
     memberRole() { // abovePermModArray
