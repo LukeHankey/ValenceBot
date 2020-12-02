@@ -6,6 +6,8 @@ module.exports = async (client, message) => {
 	const db = getDb();
 	const settingsColl = db.collection("Settings");
 
+	// Valence - Filter
+
 	if (message.author.bot) return;
 	const filterWords = ["retard", "nigger"]
 	const blocked = filterWords.filter(word => {
@@ -13,39 +15,6 @@ module.exports = async (client, message) => {
 	});
 
 	if (message.guild.id === "472448603642920973" && blocked.length > 0) message.delete()
-
-	settingsColl.findOne({ _id: `${message.guild.id}` })
-		.then(res => {
-			if (!message.content.startsWith(res.prefix)) return;
-
-			const args = message.content.slice(res.prefix.length).split(/ +/g);
-			const commandName = args.shift().toLowerCase();
-
-			const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases
-				&& cmd.aliases.includes(commandName)); // Command object
-
-			let aR = new Permissions('adminRole', res, message)
-			let mR = new Permissions('modRole', res, message)
-			let owner = new Permissions('owner', res, message)
-
-			let perms = {
-				owner: owner.botOwner(),
-				admin: message.member.roles.cache.has(aR.memberRole()[0]) || message.member.roles.cache.has(aR.roleID) || message.author.id === message.guild.ownerID,
-				mod: message.member.roles.cache.has(mR.memberRole()[0]) || message.member.roles.cache.has(mR.roleID) || mR.modPlusRoles() >= mR._role.rawPosition || message.author.id === message.guild.ownerID,
-				errorO: owner.ownerError(),
-				errorM: mR.error(),
-				errorA: aR.error(),
-			}
-			try {
-				command.guildSpecific === 'all' || command.guildSpecific.includes(message.guild.id)
-					? command.run(client, message, args, perms)
-					: message.channel.send("You cannot use that command in this server.")
-			}
-			catch (error) {
-				if (commandName !== command) return
-				console.error(error);
-			}
-		})
 
 	// DSF - Merch Calls
 
@@ -212,32 +181,66 @@ module.exports = async (client, message) => {
 					}
 				})
 			} else return
-
-			// Update DB
-			// try {
-			// 	await settingsColl.find({ _id: message.guild.id }).forEach(async doc => { // Updates all by removing a field
-			// 	let arr = doc.merchChannel.scoutTracker;
-			// 	let length = arr.length;
-			// 	for (let i = 0; i < length; i++) {
-			// 		delete arr[i]["assigned"];
-			// 	}
-			// 	// await settingsColl.save(doc);
-			// 	await settingsColl.update({ _id: message.guild.id }, { // Updates all by adding a field
-			// 		$set: {
-			// 			'merchChannel.scoutTracker.$[].otherCount': 0,
-			// 		},
-			// 	})
-			// })
-
-			// Finds a profile and adds to it
-			// await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.author': 'Attaining'}, {
-			// 	$inc: {
-			// 		'merchChannel.scoutTracker.$.otherCount': 85,
-			// 	},
-			// })
-
-			// } catch (err) {
-			// 	console.log(err)
-			// }
 		})
+
+	// Commands
+
+	settingsColl.findOne({ _id: `${message.guild.id}` })
+		.then(res => {
+			if (!message.content.startsWith(res.prefix)) return;
+
+			const args = message.content.slice(res.prefix.length).split(/ +/g);
+			const commandName = args.shift().toLowerCase();
+
+			const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases
+				&& cmd.aliases.includes(commandName)); // Command object
+
+			let aR = new Permissions('adminRole', res, message)
+			let mR = new Permissions('modRole', res, message)
+			let owner = new Permissions('owner', res, message)
+
+			let perms = {
+				owner: owner.botOwner(),
+				admin: message.member.roles.cache.has(aR.memberRole()[0]) || message.member.roles.cache.has(aR.roleID) || message.author.id === message.guild.ownerID,
+				mod: message.member.roles.cache.has(mR.memberRole()[0]) || message.member.roles.cache.has(mR.roleID) || mR.modPlusRoles() >= mR._role.rawPosition || message.author.id === message.guild.ownerID,
+				errorO: owner.ownerError(),
+				errorM: mR.error(),
+				errorA: aR.error(),
+			}
+			try {
+				command.guildSpecific === 'all' || command.guildSpecific.includes(message.guild.id)
+					? command.run(client, message, args, perms)
+					: message.channel.send("You cannot use that command in this server.")
+			}
+			catch (error) {
+				if (commandName !== command) return
+				console.error(error);
+			}
+		})
+	// Update DB
+	// try {
+	// 	await settingsColl.find({ _id: message.guild.id }).forEach(async doc => { // Updates all by removing a field
+	// 	let arr = doc.merchChannel.scoutTracker;
+	// 	let length = arr.length;
+	// 	for (let i = 0; i < length; i++) {
+	// 		delete arr[i]["assigned"];
+	// 	}
+	// 	// await settingsColl.save(doc);
+	// 	await settingsColl.update({ _id: message.guild.id }, { // Updates all by adding a field
+	// 		$set: {
+	// 			'merchChannel.scoutTracker.$[].otherCount': 0,
+	// 		},
+	// 	})
+	// })
+
+	// Finds a profile and adds to it
+	// await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.author': 'Attaining'}, {
+	// 	$inc: {
+	// 		'merchChannel.scoutTracker.$.otherCount': 85,
+	// 	},
+	// })
+
+	// } catch (err) {
+	// 	console.log(err)
+	// }
 }
