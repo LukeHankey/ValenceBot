@@ -55,7 +55,8 @@ module.exports = {
                 // Think about if there is anything else to view in the user profile stats
                 )
         }
-        return message.channel.send(embed.addFields(fields))
+        message.channel.startTyping()
+        return message.channel.send(embed.addFields(fields)) && message.channel.stopTyping()
     }
 
     const sendRoleInfo = async (id, rData = data) => {
@@ -90,7 +91,8 @@ module.exports = {
         for (const values of newArr) {
             fields.push({ name: `${values.author}`, value: `Scout count: ${values.count}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true })
         }
-        return message.channel.send(embed.addFields(fields))
+        message.channel.startTyping()
+        return message.channel.send(embed.addFields(fields)) && message.channel.stopTyping()
     }
 
     if (!args.length) {
@@ -155,6 +157,7 @@ module.exports = {
                 : message.channel.send(`You don't have permission to use this command.`)
         } else if (args[0] === 'all') {
             if (perms.mod) {
+                message.channel.startTyping()
                 const data = await settings.findOne({ _id: message.guild.id })
                 const items = data.merchChannel.scoutTracker.sort((a, b) => b.count - a.count)
                 let fields = [];
@@ -184,7 +187,6 @@ module.exports = {
                     }
                     return embeds;
                 }
-
                 message.channel.send(embeds[page].setFooter(`Page ${page+1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, client.user.displayAvatarURL()))
                 .then(async msg => {
                     await msg.react('◀️')
@@ -210,6 +212,7 @@ module.exports = {
                         }
                     })
                 })
+                message.channel.stopTyping()
                 } else return message.channel.send(perms.errorM)
             }
         }
