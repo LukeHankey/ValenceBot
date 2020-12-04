@@ -26,7 +26,8 @@ module.exports = async (client, message) => {
 			const otherID = await res.merchChannel.otherChannelID
 			if (message.channel.id === merchID) {
 				try {
-					message.content.match(/(^(?:m|merch|merchant|w|world)+(\s?)(\d{1,3}))/i)
+					const merchRegex = /(^(?:m|merch|merchant|w|world){1}(\s?)(?!3$|7$|8$|11$|13$|17|19|20|29|33|34|38|41|43|47|57|61|75|80|81|90|93|94|101|102|10[7-9]|11[0-3]|12[0-2]|12[5-9]|13[0-3]|135|136)([1-9]\d?|1[0-3]\d|140)(\s?|\s+\w*)*$)/i
+					message.content.match(merchRegex)
 						? message.channel.send(`<@&670842187461820436> - ${message.content}`).then(m => m.delete())
 						: message.delete()
 
