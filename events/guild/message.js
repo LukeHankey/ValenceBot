@@ -1,6 +1,8 @@
 const cron = require('node-cron');
 const getDb = require("../../mongodb").getDb;
+const colors = require('../../colors.json')
 const { Permissions } = require('../../classes.js');
+const { MessageEmbed } = require('discord.js')
 
 module.exports = async (client, message) => {
 	const db = getDb();
@@ -106,14 +108,21 @@ module.exports = async (client, message) => {
 							addToDB.stop()
 						}
 					})
-					cron.schedule('*/30 * * * * *', async () => { // Checking the DB and marking dead calls
-						const count = await settingsColl.findOne({ _id: message.guild.id }).then(res => {
-							return res.merchChannel.messages.length
-						})
+					cron.schedule('*/30 * * * * *', async () => { // Checking the DB and marking dead calls & posting error logs
 						await settingsColl.findOne({ _id: message.guild.id }).then(async data => {
-							for (let i = 0; i < count; i++) {
-								const doc = await data.merchChannel.messages[i]
-								if (doc === undefined) return
+							const errorEmbed = (document, error) => {
+								const embed = new MessageEmbed()
+									.setTitle(`Error: Unknown Message - 10008`)
+									.setDescription(`Message has been deleted. Removing from the DataBase. - **${data.serverName}**`)
+									.setColor(colors.red_dark)
+									.addField(`Content:`, `${document.content}`, true)
+									.addField(`Author:`, `${document.author}`, true)
+									.addField(`Message ID:`, `${document.messageID}`, true)
+									.addField(`Stack Trace`, `\`\`\`js\n${error.stack}\`\`\``)
+								return embed
+							}
+							const errorSet = new Set()
+							for await (const doc of data.merchChannel.messages) {
 								const lastID = doc.messageID
 								const lastTime = doc.time
 
@@ -125,12 +134,17 @@ module.exports = async (client, message) => {
 										await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: lastID } } })
 									}
 								} catch (err) {
-									const messageID = err.path.split('/')
 									if (err.code === 10008) {
-										errorLog.first().send(`${err.message} - ${err.code}:\n\`\`\`${err.stack}\n\nDeleted. Removing from DataBase...\`\`\``)
-										return await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { 'messageID': messageID[4] } } })
+										errorSet.add(doc).add(err)
 									}
 								}
+							}
+							const errs = []
+							errorSet.forEach(x => errs.push(x))
+							if (errs.length) {
+								errorLog.first().send(`${data.serverName === 'Deep Sea Fishing' ? '<@!212668377586597888>' : ''}`, errorEmbed(errs[0], errs[1]))
+								await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { 'messageID': errs[0].messageID } } })
+								errorSet.clear()
 							}
 						})
 					})
