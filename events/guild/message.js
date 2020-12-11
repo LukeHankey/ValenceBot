@@ -135,17 +135,18 @@ module.exports = async (client, message) => {
 									}
 								} catch (err) {
 									if (err.code === 10008) {
-										errorSet.add(doc).add(err)
+										errorSet.add({ document: doc, error: err })
 									}
 								}
 							}
-							const errs = []
-							errorSet.forEach(x => errs.push(x))
-							if (errs.length) {
-								errorLog.first().send(`${data.serverName === 'Deep Sea Fishing' ? '<@!212668377586597888>' : ''}`, errorEmbed(errs[0], errs[1]))
-								await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { 'messageID': errs[0].messageID } } })
-								errorSet.clear()
-							}
+							const errValues = errorSet.values()
+							const errNext = errValues.next().value
+
+							if (errorSet.size) {
+								errorLog.first().send(`${data.serverName === 'Deep Sea Fishing' ? '<@!212668377586597888>' : ''}`, errorEmbed(errNext.document, errNext.error))
+								await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { 'messageID': errNext.document.messageID } } })
+								errorSet.delete({document: errNext.document, error: errNext.error })
+							} else return
 						})
 					})
 				} catch (err) {
