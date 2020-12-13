@@ -116,7 +116,7 @@ module.exports = async (client, message) => {
 									.setDescription(`Message has been deleted. Removing from the DataBase. - **${data.serverName}**`)
 									.setColor(colors.red_dark)
 									.addField(`Content:`, `${document.content}`, true)
-									.addField(`Author:`, `${document.author}`, true)
+									.addField(`Author: ${document.author}`, `${document.userID}`, true)
 									.addField(`Message ID:`, `${document.messageID}`, true)
 									.addField(`Stack Trace`, `\`\`\`js\n${error.stack}\`\`\``)
 								return embed
