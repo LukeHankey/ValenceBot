@@ -108,7 +108,7 @@ module.exports = async (client, message) => {
 							addToDB.stop()
 						}
 					})
-					cron.schedule('*/30 * * * * *', async () => { // Checking the DB and marking dead calls & posting error logs
+					const tab = cron.schedule('*/30 * * * * *', async () => { // Checking the DB and marking dead calls & posting error logs
 						await settingsColl.findOne({ _id: message.guild.id }).then(async data => {
 							const errorEmbed = (document, error) => {
 								const embed = new MessageEmbed()
@@ -122,6 +122,9 @@ module.exports = async (client, message) => {
 								return embed
 							}
 							const errorSet = new Set()
+							const errValues = errorSet.values()
+							const errNext = errValues.next().value
+
 							for await (const doc of data.merchChannel.messages) {
 								const lastID = doc.messageID
 								const lastTime = doc.time
@@ -139,13 +142,16 @@ module.exports = async (client, message) => {
 									}
 								}
 							}
-							const errValues = errorSet.values()
-							const errNext = errValues.next().value
 
 							if (errorSet.size) {
-								errorLog.first().send(`${data.serverName === 'Deep Sea Fishing' ? '<@!212668377586597888>' : ''}`, errorEmbed(errNext.document, errNext.error))
-								await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { 'messageID': errNext.document.messageID } } })
-								errorSet.delete({document: errNext.document, error: errNext.error })
+								return () => {
+									errorLog.first().send(`${data.serverName === 'Deep Sea Fishing' ? '<@!212668377586597888>' : ''}`, errorEmbed(errNext.document, errNext.error))
+									.then(async x => {
+										await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { 'messageID': errNext.document.messageID } } })
+										errorSet.delete({document: errNext.document, error: errNext.error })
+										tab.stop()
+									})
+								}
 							} else return
 						})
 					})
