@@ -99,7 +99,8 @@ module.exports = {
                         .then(async res => {
                             const find = await res.logs.find(log => log.id === num && log.type === param)
 
-                            if (!param || !num) return message.channel.send('Please specify the type (\`ban\`, \`friend\` or \`affiliate\`) and the number of the embed.')
+                            if (!param) return message.channel.send('Please specify the type (\`ban\`, \`friend\` or \`affiliate\`).')
+                            if (!num || isNaN(num)) return message.channel.send(`Please provide a number to specify which embed you want to send information to.`)
                             if (!rsn || message.content.match(rsnRegex) === null) return message.channel.send('Please enter the RSN as \`RSN: <rsn>\`.')
                             if (!reason || message.content.match(reasonRegex) === null) return message.channel.send('Please enter the reason. If there is no reason, use "Unknown".')
                             const embedPost = await message.channel.messages.fetch(find.messageID)
