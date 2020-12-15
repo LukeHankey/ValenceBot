@@ -31,7 +31,12 @@ module.exports = async (client, message) => {
 			if (message.channel.id === merchID) {
 				const merchRegex = /(^(?:m|merch|merchant|w|world){1}(\s?)(?!3$|7$|8$|11$|13$|17|19|20|29|33|34|38|41|43|47|57|61|75|80|81|90|93|94|101|102|10[7-9]|11[0-3]|12[0-2]|12[5-9]|13[0-3]|135|136)([1-9]\d?|1[0-3]\d|140)(\s?|\s+\w*)*$)/i
 				message.content.match(merchRegex)
-					? message.channel.send(`<@&670842187461820436> - ${message.content}`).then(m => m.delete({ timeout: 500 })).catch(err => console.log(`Unable to delete my own message`, err))
+					? message.channel.send(`<@&670842187461820436> - ${message.content}`).then(m => m.delete({ timeout: 1000 })).catch(async err => {
+						const messageID = err.path.split('/')
+						const fetched = await message.channel.fetch(messageID[4])
+						fetched.delete()
+						console.log(`Unable to delete my own message`, err)
+					})
 					: message.delete()
 				try {
 					const addToDB = cron.schedule('*/10 * * * * *', async () => { // Adding to the DB
