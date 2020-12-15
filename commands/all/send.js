@@ -98,11 +98,11 @@ module.exports = {
                     settings.findOne({ '_id': message.guild.id })
                         .then(async res => {
                             const find = await res.logs.find(log => log.id === num && log.type === param)
-                            const embedPost = await message.channel.messages.fetch(find.messageID)
 
                             if (!param || !num) return message.channel.send('Please specify the type (\`ban\`, \`friend\` or \`affiliate\`) and the number of the embed.')
                             if (!rsn || message.content.match(rsnRegex) === null) return message.channel.send('Please enter the RSN as \`RSN: <rsn>\`.')
                             if (!reason || message.content.match(reasonRegex) === null) return message.channel.send('Please enter the reason. If there is no reason, use "Unknown".')
+                            const embedPost = await message.channel.messages.fetch(find.messageID)
 
                             let infoEditPost = new Discord.MessageEmbed(embedPost.embeds[0])
                                 .addField(`${rsn}`, `${reason}`, true)
