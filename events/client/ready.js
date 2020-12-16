@@ -11,7 +11,7 @@ module.exports = async client => {
 
 	client.user.setPresence({
 		status: "idle",
-		activity: { type: "WATCHING", name: "Over Valence" }
+		activity: { type: "LISTENING", name: "DMs for Bot Help!" }
 	})
 
 	const factEmbed = function (factMessage) {

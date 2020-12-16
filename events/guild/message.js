@@ -48,9 +48,18 @@ module.exports = async (client, message) => {
 		})
 	}
 
-	// Valence - Filter
+	// Merch Posts Publish
+
+	if (message.channel.id === '770307127557357648') {
+		if (message.author.bot) {
+			message.crosspost()
+		}
+	}
 
 	if (message.author.bot) return;
+
+	// Valence - Filter
+
 	const filterWords = ["retard", "nigger"]
 	const blocked = filterWords.filter(word => {
 		return message.content.toLowerCase().includes(word)
@@ -71,7 +80,7 @@ module.exports = async (client, message) => {
 			if (message.channel.id === merchID) {
 				const merchRegex = /(^(?:m|merch|merchant|w|world){1}(\s?)(?!3$|7$|8$|11$|13$|17|19|20|29|33|34|38|41|43|47|57|61|75|80|81|90|93|94|101|102|10[7-9]|11[0-3]|12[0-2]|12[5-9]|13[0-3]|135|136)([1-9]\d?|1[0-3]\d|140)(\s?|\s+\w*)*$)/i
 				message.content.match(merchRegex)
-					? message.channel.send(`<@&670842187461820436> - ${message.content}`).then(m => m.delete({ timeout: 1000 })).catch(async err => {
+					? message.channel.send(`<@&670842187461820436> - ${message.content}`).then(m => m.delete()).catch(async err => {
 						const messageID = err.path.split('/')
 						const fetched = await message.channel.fetch(messageID[4])
 						fetched.delete()
@@ -154,7 +163,7 @@ module.exports = async (client, message) => {
 							addToDB.stop()
 						}
 					})
-					cron.schedule('*/30 * * * * *', async () => { // Checking the DB and marking dead calls
+					cron.schedule('*/20 * * * * *', async () => { // Checking the DB and marking dead calls
 					await settingsColl.findOne({ _id: message.guild.id }).then(async data => {
 							for await (const doc of data.merchChannel.messages) {
 								const lastID = doc.messageID
@@ -169,7 +178,8 @@ module.exports = async (client, message) => {
 										await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: lastID } } })
 									}
 								} catch (e) {
-									return
+									const messageID = e.path.split('/')
+									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: messageID[4] } } })
 								}
 								
 							}
