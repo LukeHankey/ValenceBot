@@ -8,6 +8,46 @@ module.exports = async (client, message) => {
 	const db = getDb();
 	const settingsColl = db.collection("Settings");
 
+	// Handling DMs
+
+	if (message.guild === null) {
+		const dm = message.channel
+		let dmMessages = await dm.messages.fetch({ limit: 1 })
+		const dmPerson = dm.recipient // User object
+		const dmMsg = []
+		dmMessages = [...dmMessages.values()]
+
+		for (const val in dmMessages) {
+			if (dmMessages[val].author.id === '668330399033851924') return
+			dmMsg.push(dmMessages[val].content)
+		}
+
+		const embed = new MessageEmbed()
+			.setTitle(`New DM Recieved`)
+			.setDescription(`${dmPerson.tag} sent me a DM.`)
+			.setColor(colors.blue_dark)
+			.addField(`User ID`, `${dmPerson.id}`, false)
+			.addField('Message contents', `${dmMsg.join('\n')}`)
+			.setTimestamp()
+
+		return client.channels.cache.get('788525524782940187').send(embed)
+		.then(async msg => {
+			const mFilter = m => m.content.length > 0
+			msg.channel.awaitMessages(mFilter, { max: 1, time: 3600000, errors: ['time'] })
+			.then(async m => {
+				const u = await client.users.fetch(dmPerson.id)
+				return u.send(m.first().content)
+			})
+			.catch(async col => {
+				let lastMessage = await msg.channel.fetch()
+				lastMessage = lastMessage.messages.cache.last().content
+				if (!lastMessage) return
+				const u = await client.users.fetch(dmPerson.id)
+				return u.send(lastMessage)
+			})
+		})
+	}
+
 	// Valence - Filter
 
 	if (message.author.bot) return;
