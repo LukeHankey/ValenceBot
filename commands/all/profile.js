@@ -86,7 +86,7 @@ module.exports = {
             })
             newArr.push(x)
         })
-       newArr = newArr.flat()
+       newArr = newArr.flat().sort((a, b) => b.count - a.count)
 
         for (const values of newArr) {
             fields.push({ name: `${values.author}`, value: `Scout count: ${values.count}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true })
