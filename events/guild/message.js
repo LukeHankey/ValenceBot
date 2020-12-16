@@ -197,6 +197,7 @@ module.exports = async (client, message) => {
 								await message.channel.messages.fetch(lastID)
 							} catch (err) {
 								if (err.code === 10008) {
+									if (doc.userID === '668330399033851924') return
 									errorSet.add({ document: doc, error: err })
 								}
 							}
