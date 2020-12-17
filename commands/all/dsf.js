@@ -13,7 +13,7 @@ module.exports = {
     name: "dsf",
     description: ['Displays all of the current stored messages.', 'Clears all of the current stored messages.', 'Shows the list of potential scouters/verified scouters with the set scout count, or count adjusted.', 'Add 1 or <num> merch count to the member provided.', 'Remove 1 or <num> merch count to the member provided.'],
     aliases: [],
-    usage: ['messages view', 'messages clear', 'view scouter/verified <num (optional)>', 'user memberID/@member add <num (optional)>', 'user memberID/@member remove <num (optional)>'],
+    usage: ['messages view', 'messages clear', 'view scouter/verified <num (optional)>', 'user memberID/@member add <num (optional)> <other>', 'user memberID/@member remove <num (optional)> <other>'],
     guildSpecific: ['733164313744769024', '420803245758480405'],
     run: async (client, message, args, perms) => {
         if (!perms.admin) return message.channel.send(perms.errorA)
@@ -100,7 +100,6 @@ module.exports = {
                 let [userID, param, num] = args.slice(1)
                 cacheCheck = (user) => {
                     if (!message.guild.members.cache.has(user)) {
-                        console.log(!!message.guild.members.fetch(user), 1)
                         return !!message.guild.members.fetch(user)
                     } else {
                         return true
@@ -119,17 +118,35 @@ module.exports = {
                                     'merchChannel.scoutTracker.$.count': 1,
                                 },
                             })
+                            return message.react('✅')
+                        } else if (num === 'other') {
+                            await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+                                $inc: {
+                                    'merchChannel.scoutTracker.$.otherCount': 1,
+                                },
+                            })
+                            return message.react('✅')
                         } else {
                             if (isNaN(parseInt(num))) {
                                 return message.channel.send(`\`${num}\` is not a number.`)
                             } else num = +num
-                            await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
-                                $inc: {
-                                    'merchChannel.scoutTracker.$.count': num,
-                                },
-                            })
+                            const other = args.slice(4)
+                            if (other[0] === 'other') {
+                                await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+                                    $inc: {
+                                        'merchChannel.scoutTracker.$.otherCount': +num,
+                                    },
+                                })
+                                return message.react('✅')
+                            } else {
+                                await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+                                    $inc: {
+                                        'merchChannel.scoutTracker.$.count': +num,
+                                    },
+                                })
+                                return message.react('✅')
+                            }
                         }
-                        break;
                     case 'remove':
                         if (!num) {
                             await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
@@ -138,20 +155,7 @@ module.exports = {
                                 },
                             })
                             return message.react('✅')
-                        } else {
-                            if (isNaN(parseInt(num))) {
-                                return message.channel.send(`\`${num}\` is not a number.`)
-                            } else num = +num
-                            await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
-                                $inc: {
-                                    'merchChannel.scoutTracker.$.count': -num,
-                                },
-                            })
-                            message.react('✅')
-                        }
-                        break;
-                    case 'other':
-                        if (!num) {
+                        } else if (num === 'other') {
                             await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
                                 $inc: {
                                     'merchChannel.scoutTracker.$.otherCount': -1,
@@ -162,14 +166,23 @@ module.exports = {
                             if (isNaN(parseInt(num))) {
                                 return message.channel.send(`\`${num}\` is not a number.`)
                             } else num = +num
-                            await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
-                                $inc: {
-                                    'merchChannel.scoutTracker.$.otherCount': -num,
-                                },
-                            })
-                            message.react('✅')
+                            const other = args.slice(4)
+                            if (other[0] === 'other') {
+                                await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+                                    $inc: {
+                                        'merchChannel.scoutTracker.$.otherCount': -num,
+                                    },
+                                })
+                                return message.react('✅')
+                            } else {
+                                await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+                                    $inc: {
+                                        'merchChannel.scoutTracker.$.count': -num,
+                                    },
+                                })
+                                return message.react('✅')
+                            }
                         }
-                        break;
                     default:
                         return message.channel.send(`Valid params are \`add\` or \`remove\`.`)
                 }

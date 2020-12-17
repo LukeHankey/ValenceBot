@@ -137,7 +137,7 @@ module.exports = async (client, message) => {
 										'merchChannel.scoutTracker': {
 											$each: [{
 												userID: msg[0].author.id,
-												author: msg[0].member.nickname ?? msg[0].author.username,
+												author: msg[0].member?.nickname ?? msg[0].author.username,
 												firstTimestamp: msg[0].createdTimestamp,
 												firstTimestampReadable: new Date(msg[0].createdTimestamp),
 												lastTimestamp: msg[0].createdTimestamp,
