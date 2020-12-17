@@ -147,7 +147,27 @@ module.exports = {
                                     'merchChannel.scoutTracker.$.count': -num,
                                 },
                             })
+                            message.react('✅')
+                        }
+                        break;
+                    case 'other':
+                        if (!num) {
+                            await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+                                $inc: {
+                                    'merchChannel.scoutTracker.$.otherCount': -1,
+                                },
+                            })
                             return message.react('✅')
+                        } else {
+                            if (isNaN(parseInt(num))) {
+                                return message.channel.send(`\`${num}\` is not a number.`)
+                            } else num = +num
+                            await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+                                $inc: {
+                                    'merchChannel.scoutTracker.$.otherCount': -num,
+                                },
+                            })
+                            message.react('✅')
                         }
                         break;
                     default:
