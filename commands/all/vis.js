@@ -78,7 +78,17 @@ module.exports = {
                         })
                     } catch (e) {
                         // Catch errors for a guild where the bot isn't in. Same for channel or message
-                        console.log(e)
+                        if (e.code === 50001) {
+                            if (e.code === 50001 &&e.path.includes('guilds')) {
+                                return message.channel.send('I am not in that server so I cannot access that message link.')
+                            } else {
+                                return message.channel.send('I do not have access to that channel to view the message.')
+                            }
+                        } else if (e.code === 10008) {
+                            if (e.message === 'Unknown Message') {
+                                return message.channel.send('I am unable to find that message. Maybe it has been deleted?')
+                            }
+                        }
                     }
                 } else if (args[0] === 'new') {
                     if (!perms.admin) return message.channel.send(perms.errorA)
