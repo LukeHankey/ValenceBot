@@ -163,7 +163,7 @@ module.exports = async (client, message) => {
 							addToDB.stop()
 						}
 					})
-					cron.schedule('*/20 * * * * *', async () => { // Checking the DB and marking dead calls
+					cron.schedule('*/30 * * * * *', async () => { // Checking the DB and marking dead calls
 					await settingsColl.findOne({ _id: message.guild.id }).then(async data => {
 							for await (const doc of data.merchChannel.messages) {
 								const lastID = doc.messageID
