@@ -50,11 +50,11 @@ module.exports = async (client, message) => {
 
 	// Merch Posts Publish
 
-	if (message.channel.id === '770307127557357648') {
-		if (message.author.bot) {
-			message.crosspost()
-		}
-	}
+	// if (message.channel.id === '770307127557357648') {
+	// 	if (message.author.bot) {
+	// 		message.crosspost()
+	// 	}
+	// }
 
 	if (message.author.bot) return;
 
