@@ -180,6 +180,10 @@ module.exports = async (client, message) => {
 								} catch (e) {
 									const messageID = e.path.split('/')
 									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: messageID[4] } } })
+
+									if (err.code === 500) {
+										console.log('Unable to fetch message to add death reaction. It has been deleted.')
+									}
 								}
 								
 							}
