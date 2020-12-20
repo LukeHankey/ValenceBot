@@ -78,7 +78,7 @@ module.exports = async (client, message) => {
 			const errorLog = await client.channels.cache.get('784543962174062608').fetchWebhooks()
 
 			if (message.channel.id === merchID) {
-				const merchRegex = /(^(?:m|merch|merchant|w|world){1}(\s?)(?!3$|7$|8$|11$|13$|17|19|20|29|33|34|38|41|43|47|57|61|75|80|81|90|93|94|101|102|10[7-9]|11[0-3]|12[0-2]|12[5-9]|13[0-3]|135|136)([1-9]\d?|1[0-3]\d|140)(\.\s?|\s+\w*)*$)/i
+				const merchRegex = /(^(?:m|merch|merchant|w|world){1}(\s?)(?!3$|7$|8$|11$|13$|17|19|20|29|33|34|38|41|43|47|57|61|75|80|81|90|93|94|101|102|10[7-9]|11[0-3]|12[0-2]|12[5-9]|13[0-3]|135|136)([1-9]\d?|1[0-3]\d|140)([,.\s]?|\s+\w*)*$)/i
 				message.content.match(merchRegex)
 					? message.channel.send(`<@&670842187461820436> - ${message.content}`).then(m => m.delete()).catch(async err => {
 						const messageID = err.path.split('/')
@@ -181,7 +181,7 @@ module.exports = async (client, message) => {
 									const messageID = e.path.split('/')
 									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: messageID[4] } } })
 
-									if (err.code === 500) {
+									if (e.code === 500) {
 										console.log('Unable to fetch message to add death reaction. It has been deleted.')
 									}
 								}
