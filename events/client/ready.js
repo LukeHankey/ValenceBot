@@ -230,7 +230,6 @@ module.exports = async client => {
 
 		const removeInactives = async (name) => {
 			const inactives = await name.removeInactive()
-			console.log(inactives)
 			const many = inactives.length
 			const manyNames = []
 			inactives.map(async doc => {
