@@ -188,7 +188,7 @@ module.exports = async client => {
 	})
 
 	// DSF Activity Posts //
-	cron.schedule('* */6 * * *', async () => {
+	cron.schedule('* * * * *', async () => {
 		let scout = new ScouterCheck('Scouter')
 		let vScout = new ScouterCheck('Verified Scouter')
 
@@ -227,10 +227,29 @@ module.exports = async client => {
 				})
 			})
 		}
-		addedRoles(scout)
-		addedRoles(vScout)
-		removedRoles(scout)
-		removedRoles(vScout)
+
+		const removeInactives = async (name) => {
+			const inactives = await name.removeInactive()
+			console.log(inactives)
+			const many = inactives.length
+			const manyNames = []
+			inactives.map(async doc => {
+				manyNames.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count})`)
+				await settings.updateOne(
+					{ serverName: name._guild_name },
+					{ $pull: { 'merchChannel.scoutTracker': { 'userID': doc.userID } } },
+				  )
+			})
+			if (manyNames.length) {
+				return client.channels.cache.get("731997087721586698").send(`${many} profiles removed.\n\`\`\`${manyNames.join('\n')}\`\`\``);
+			}
+		}
+
+		[scout, vScout].forEach(x => {
+			addedRoles(x)
+			removedRoles(x)
+		})
+		removeInactives(scout)
 
 		if (new Date().getDay() === 3 && new Date().getHours() === 00 && new Date().getMinutes() === 01) { // Weekly reset
 			scout.send()
