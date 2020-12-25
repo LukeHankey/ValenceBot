@@ -67,6 +67,41 @@ module.exports = async (client, message) => {
 
 	if (message.guild.id === "472448603642920973" && blocked.length > 0) message.delete()
 
+	// Commands
+
+	settingsColl.findOne({ _id: `${message.guild.id}` })
+		.then(res => {
+			if (!message.content.startsWith(res.prefix)) return;
+
+			const args = message.content.slice(res.prefix.length).split(/ +/g);
+			const commandName = args.shift().toLowerCase();
+
+			const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases
+				&& cmd.aliases.includes(commandName)); // Command object
+
+			let aR = new Permissions('adminRole', res, message)
+			let mR = new Permissions('modRole', res, message)
+			let owner = new Permissions('owner', res, message)
+
+			let perms = {
+				owner: owner.botOwner(),
+				admin: message.member.roles.cache.has(aR.memberRole()[0]) || message.member.roles.cache.has(aR.roleID) || message.author.id === message.guild.ownerID,
+				mod: message.member.roles.cache.has(mR.memberRole()[0]) || message.member.roles.cache.has(mR.roleID) || mR.modPlusRoles() >= mR._role.rawPosition || message.author.id === message.guild.ownerID,
+				errorO: owner.ownerError(),
+				errorM: mR.error(),
+				errorA: aR.error(),
+			}
+			try {
+				command.guildSpecific === 'all' || command.guildSpecific.includes(message.guild.id)
+					? command.run(client, message, args, perms)
+					: message.channel.send("You cannot use that command in this server.")
+			}
+			catch (error) {
+				if (commandName !== command) return
+				console.error(error);
+			}
+		})	
+
 	// DSF - Merch Calls
 
 	await settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } })
@@ -181,7 +216,7 @@ module.exports = async (client, message) => {
 									const messageID = e.path.split('/')
 									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: messageID[4] } } })
 
-									if (e.code === 500) {
+									if (e.code === 500 || (e.code === 10008 && e.method === 'put')) {
 										console.log('Unable to fetch message to add death reaction. It has been deleted.')
 									}
 								}
@@ -279,40 +314,6 @@ module.exports = async (client, message) => {
 			} else return
 		})
 
-	// Commands
-
-	settingsColl.findOne({ _id: `${message.guild.id}` })
-		.then(res => {
-			if (!message.content.startsWith(res.prefix)) return;
-
-			const args = message.content.slice(res.prefix.length).split(/ +/g);
-			const commandName = args.shift().toLowerCase();
-
-			const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases
-				&& cmd.aliases.includes(commandName)); // Command object
-
-			let aR = new Permissions('adminRole', res, message)
-			let mR = new Permissions('modRole', res, message)
-			let owner = new Permissions('owner', res, message)
-
-			let perms = {
-				owner: owner.botOwner(),
-				admin: message.member.roles.cache.has(aR.memberRole()[0]) || message.member.roles.cache.has(aR.roleID) || message.author.id === message.guild.ownerID,
-				mod: message.member.roles.cache.has(mR.memberRole()[0]) || message.member.roles.cache.has(mR.roleID) || mR.modPlusRoles() >= mR._role.rawPosition || message.author.id === message.guild.ownerID,
-				errorO: owner.ownerError(),
-				errorM: mR.error(),
-				errorA: aR.error(),
-			}
-			try {
-				command.guildSpecific === 'all' || command.guildSpecific.includes(message.guild.id)
-					? command.run(client, message, args, perms)
-					: message.channel.send("You cannot use that command in this server.")
-			}
-			catch (error) {
-				if (commandName !== command) return
-				console.error(error);
-			}
-		})
 	// Update DB
 	// try {
 	// 	await settingsColl.find({ _id: message.guild.id }).forEach(async doc => { // Updates all by removing a field
