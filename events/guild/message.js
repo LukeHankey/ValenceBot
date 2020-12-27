@@ -31,21 +31,6 @@ module.exports = async (client, message) => {
 			.setTimestamp()
 
 		return client.channels.cache.get('788525524782940187').send(embed)
-		.then(async msg => {
-			const mFilter = m => m.content.length > 0
-			msg.channel.awaitMessages(mFilter, { max: 1, time: 3600000, errors: ['time'] })
-			.then(async m => {
-				const u = await client.users.fetch(dmPerson.id)
-				return u.send(m.first().content)
-			})
-			.catch(async col => {
-				let lastMessage = await msg.channel.fetch()
-				lastMessage = lastMessage.messages.cache.last().content
-				if (!lastMessage) return
-				const u = await client.users.fetch(dmPerson.id)
-				return u.send(lastMessage)
-			})
-		})
 	}
 
 	// Merch Posts Publish
