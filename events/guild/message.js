@@ -92,7 +92,7 @@ module.exports = async (client, message) => {
 	await settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } })
 		.then(async res => {
 			if (res === null) return // null if merchChannel property doesn't exist
-			if (res._id === '420803245758480405') return // Remove after
+			// if (res._id === '420803245758480405') return // Remove after
 			const merchID = await res.merchChannel.channelID
 			const otherID = await res.merchChannel.otherChannelID
 			const errorLog = await client.channels.cache.get('784543962174062608').fetchWebhooks()
@@ -187,7 +187,7 @@ module.exports = async (client, message) => {
 
 								try {
 									const fetched = await message.channel.messages.fetch(lastID)
-									const check = Date.now() - lastTime > 60000 // add 0
+									const check = Date.now() - lastTime > 600000
 
 									if (check) {
 										fetched.react('☠️')
