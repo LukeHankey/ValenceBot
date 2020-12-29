@@ -119,7 +119,7 @@ module.exports = async client => {
 	// Citadel Server Reminders //
 	await settings.find({}).toArray().then(r => {
 		for (const document in r) {
-			cron.schedule(`*/1 * * * *`, async () => {
+			cron.schedule(`*/5 * * * *`, async () => {
 				let today = new Date();
 				let today_num = today.getUTCDay();
 				let today_str = days[today_num];
@@ -188,7 +188,7 @@ module.exports = async client => {
 	})
 
 	// DSF Activity Posts //
-	cron.schedule('* * * * *', async () => {
+	cron.schedule('* */6 * * *', async () => {
 		let scout = new ScouterCheck('Scouter')
 		let vScout = new ScouterCheck('Verified Scouter')
 
