@@ -350,13 +350,7 @@ module.exports = {
                                                     let userRoles = message.member.roles
                                                     if (userRoles.cache.has(r.roles.modRole.slice(3, 21)) || userRoles.cache.has(r.roles.adminRole.slice(3, 21))) return
                                                     else {
-                                                        settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { resetInfoCount: 1 }}, { returnOriginal: false})
-                                                        let timestamp = Date.now() + day
-                                                        cron.schedule('0 */1 * * *', async () => { 
-                                                            if (Date.now() > timestamp && (Date.now() - timestamp < day)) {
-                                                                settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { resetInfoCount: 0 }})
-                                                            }
-                                                        })
+                                                        settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { resetInfoCount: 1, resetInfoTime: message.createdTimestamp }}, { returnOriginal: false})
                                                     } 
                                                 })
                                                 collectorC.on('collect', (r, u) => {
@@ -372,7 +366,7 @@ module.exports = {
                                     })
 								}
 								else {
-									message.channel.send(`That is not a valid image URL`)
+									message.channel.send(`That is not a valid image URL.`)
 								}
 							}
 							else {
@@ -394,13 +388,7 @@ module.exports = {
                                                 let userRoles = message.member.roles
                                                 if (userRoles.cache.has(r.roles.modRole.slice(3, 21)) || userRoles.cache.has(r.roles.adminRole.slice(3, 21))) return
                                                 else {
-                                                    settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { resetInfoCount: 1 }}, { returnOriginal: false})
-                                                    let timestamp = Date.now() + day
-                                                    cron.schedule('0 */1 * * *', async () => { 
-                                                        if (Date.now() > timestamp && (Date.now() - timestamp < day)) {
-                                                            settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { resetInfoCount: 0 }})
-                                                        }
-                                                    })
+                                                    settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { resetInfoCount: 1, resetInfoTime: message.createdTimestamp }}, { returnOriginal: false})
                                                 }
                                             })
                                             collectorC.on('collect', (r, u) => {
@@ -410,7 +398,7 @@ module.exports = {
                                         message.delete();
 							        	message.reply(`Thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!`)	
                                     }
-                                    else if (r.resetInfoCount == 1) {
+                                    else if (r.resetInfoCount === 1) {
                                         message.channel.send("You can't use that command again. Please wait until the next reset!")
                                     }
                                 })
