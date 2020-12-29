@@ -54,38 +54,49 @@ module.exports = async (client, message) => {
 
 	// Commands
 
-	settingsColl.findOne({ _id: `${message.guild.id}` })
-		.then(res => {
-			if (!message.content.startsWith(res.prefix)) return;
+	const commandDB = await settingsColl.findOne({ _id: `${message.guild.id}` })
+	const globalDB = await settingsColl.findOne({ _id: 'Globals'})
+	try {
+		if (!message.content.startsWith(commandDB.prefix)) return;
 
-			const args = message.content.slice(res.prefix.length).split(/ +/g);
-			const commandName = args.shift().toLowerCase();
+		const args = message.content.slice(commandDB.prefix.length).split(/ +/g);
+		const commandName = args.shift().toLowerCase();
 
-			const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases
-				&& cmd.aliases.includes(commandName)); // Command object
+		const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases
+			&& cmd.aliases.includes(commandName)); // Command object
 
-			let aR = new Permissions('adminRole', res, message)
-			let mR = new Permissions('modRole', res, message)
-			let owner = new Permissions('owner', res, message)
+		let aR = new Permissions('adminRole', commandDB, message)
+		let mR = new Permissions('modRole', commandDB, message)
+		let owner = new Permissions('owner', commandDB, message)
 
-			let perms = {
-				owner: owner.botOwner(),
-				admin: message.member.roles.cache.has(aR.memberRole()[0]) || message.member.roles.cache.has(aR.roleID) || message.author.id === message.guild.ownerID,
-				mod: message.member.roles.cache.has(mR.memberRole()[0]) || message.member.roles.cache.has(mR.roleID) || mR.modPlusRoles() >= mR._role.rawPosition || message.author.id === message.guild.ownerID,
-				errorO: owner.ownerError(),
-				errorM: mR.error(),
-				errorA: aR.error(),
-			}
-			try {
-				command.guildSpecific === 'all' || command.guildSpecific.includes(message.guild.id)
-					? command.run(client, message, args, perms)
-					: message.channel.send("You cannot use that command in this server.")
-			}
-			catch (error) {
-				if (commandName !== command) return
-				console.error(error);
-			}
-		})
+		let perms = {
+			owner: owner.botOwner(),
+			admin: message.member.roles.cache.has(aR.memberRole()[0]) || message.member.roles.cache.has(aR.roleID) || message.author.id === message.guild.ownerID,
+			mod: message.member.roles.cache.has(mR.memberRole()[0]) || message.member.roles.cache.has(mR.roleID) || mR.modPlusRoles() >= mR._role.rawPosition || message.author.id === message.guild.ownerID,
+			errorO: owner.ownerError(),
+			errorM: mR.error(),
+			errorA: aR.error(),
+		}
+
+		const channels = {
+			vis: globalDB.channels.vis,
+			errors: globalDB.channels.errors,
+			logs: globalDB.channels.logs,
+		}
+
+		try {
+			command.guildSpecific === 'all' || command.guildSpecific.includes(message.guild.id)
+				? command.run(client, message, args, perms, channels)
+				: message.channel.send("You cannot use that command in this server.")
+		}
+		catch (error) {
+			if (commandName !== command) return
+		}
+	}
+	catch (err) {
+		console.error(err)
+	}
+		
 
 	// DSF - Merch Calls
 
