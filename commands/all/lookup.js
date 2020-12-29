@@ -25,6 +25,7 @@ module.exports = {
         const dataIndex = val.merchChannel.scoutTracker.findIndex(mem => {
             return mem.userID === args[0]
         })
+        const allData = val.merchChannel.scoutTracker.length
         const member = val.merchChannel.scoutTracker.filter(mem => mem.userID === args[0])
         val.merchChannel.scoutTracker.filter(mem => {
             if (mem.userID === args[0]) {
@@ -39,7 +40,7 @@ module.exports = {
             }
         })
 
-        const embed = func.nEmbed(`Diagnostic DB Lookup - ${member[0].author} [${dataIndex}]`, `Testing command to lookup user info for DSF in DB.`, colors.gold)
+        const embed = func.nEmbed(`Diagnostic DB Lookup - ${member[0].author} [${dataIndex}/${allData}]`, `Testing command to lookup user info for DSF in DB.`, colors.gold)
         message.channel.send(embed.addFields(fields))
     }
 }
