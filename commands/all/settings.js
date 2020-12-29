@@ -15,7 +15,7 @@ module.exports = {
 	aliases: ["s"],
 	usage: ["", "prefix", "prefix set <new prefix>", "adminRole", "adminRole set <new role>", "modRole", "modRole set <new role>", "adminChannel", "adminChannel set <channel>"],
 	guildSpecific: 'all',
-	run: async (client, message, args, perms) => {
+	run: async (client, message, args, perms, channels) => {
 		const code = "```";
 		const db = getDb();
 		const settings = db.collection(`Settings`)
@@ -34,7 +34,7 @@ module.exports = {
 									? settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { prefix: args[2] } }, { returnOriginal: true })
 									.then(r => {
 										message.channel.send(`Prefix has been changed from \`${r.value.prefix}\` to \`${args[2]}\``)
-										client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> changed the bot Prefix in server: **${message.guild.name}**\n${code}diff\n- ${r.value.prefix}\n+ ${args[2]}${code}`);
+										client.channels.cache.get(channels.logs).send(`<@${message.author.id}> changed the bot Prefix in server: **${message.guild.name}**\n${code}diff\n- ${r.value.prefix}\n+ ${args[2]}${code}`);
 									})
 									: message.channel.send(`What do you want to set the prefix to?`);
 							}
@@ -56,7 +56,7 @@ module.exports = {
 									settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "roles.adminRole": `<@&${args[2]}>` } }, { returnOriginal: true })
 										.then(r => {
 											message.channel.send(`The Admin Role has been changed to: <@&${args[2]}>`, { "allowedMentions": { "parse": [] } })
-											client.channels.cache.get("731997087721586698")
+											client.channels.cache.get(channels.logs)
 												.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.roles.adminRole}\n+ <@&${args[2]}>${code}`);
 										})
 								}
@@ -64,7 +64,7 @@ module.exports = {
 									settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "roles.adminRole": `<@&${roleName.id}>` } }, { returnOriginal: true })
 										.then(r => {
 											message.channel.send(`The Admin Role has been changed to: <@&${roleName.id}>`, { "allowedMentions": { "parse": [] } })
-											client.channels.cache.get("731997087721586698")
+											client.channels.cache.get(channels.logs)
 												.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.roles.adminRole}\n+ ${roleName.id}${code}`);
 										})
 								}
@@ -74,7 +74,7 @@ module.exports = {
 									settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "roles.adminRole": args[2] } }, { returnOriginal: true })
 										.then(r => {
 											message.channel.send(`The Admin Role has been changed to: ${args[2]}`, { "allowedMentions": { "parse": [] } })
-											client.channels.cache.get("731997087721586698")
+											client.channels.cache.get(channels.logs)
 												.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.roles.adminRole}\n+ ${args[2]}${code}`);
 										})
 								}
@@ -101,7 +101,7 @@ module.exports = {
 									settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "roles.modRole": `<@&${args[2]}>` } }, { returnOriginal: true })
 										.then(r => {
 											message.channel.send(`The Mod Role has been changed to: <@&${args[2]}>`, { "allowedMentions": { "parse": [] } })
-											client.channels.cache.get("731997087721586698")
+											client.channels.cache.get(channels.logs)
 												.send(`<@${message.author.id}> changed the modRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.roles.modRole}\n+ <@&${args[2]}>${code}`);
 										})
 								}
@@ -109,7 +109,7 @@ module.exports = {
 									settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "roles.modRole": `<@&${roleName.id}>` } }, { returnOriginal: true })
 										.then(r => {
 											message.channel.send(`The Mod Role has been changed to: <@&${roleName.id}>`, { "allowedMentions": { "parse": [] } })
-											client.channels.cache.get("731997087721586698")
+											client.channels.cache.get(channels.logs)
 												.send(`<@${message.author.id}> changed the modRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.roles.modRole}\n+ ${roleName}${code}`);
 										})
 								}
@@ -117,7 +117,7 @@ module.exports = {
 									settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "roles.modRole": args[2] } }, { returnOriginal: true })
 										.then(r => {
 											message.channel.send(`The Mod Role has been changed to: ${args[2]}`, { "allowedMentions": { "parse": [] } })
-											client.channels.cache.get("731997087721586698")
+											client.channels.cache.get(channels.logs)
 												.send(`<@${message.author.id}> changed the modRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.roles.modRole}\n+ ${args[2]}${code}`);
 										})
 								}
@@ -153,7 +153,7 @@ module.exports = {
 									settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "channels.adminChannel": args[2] } }, { returnOriginal: true })
 										.then(r => {
 											message.channel.send(`The Admin Channel has been set to: <#${args[2]}>`)
-											client.channels.cache.get("731997087721586698")
+											client.channels.cache.get(channels.logs)
 												.send(`<@${message.author.id}> set the Admin Channel in server: **${message.guild.name}** from <#${r.value.channels.adminChannel}> to <#${args[2]}>`);
 										})
 								}
@@ -161,7 +161,7 @@ module.exports = {
 									settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "channels.adminChannel": channelTag[0] } }, { returnOriginal: true })
 										.then(r => {
 											message.channel.send(`The Admin Channel has been set to: <#${channelTag[0]}>`)
-											client.channels.cache.get("731997087721586698")
+											client.channels.cache.get(channels.logs)
 												.send(`<@${message.author.id}> set the Admin Channel in server: **${message.guild.name}** from <#${r.value.channels.adminChannel}> to <#${channelTag[0]}>`);
 										})
 								}

@@ -16,7 +16,7 @@ module.exports = {
 	aliases: ["f"],
 	usage:  ["", "add <fact>", "remove <number>", "edit <number>", "list"],
     guildSpecific: ['733164313744769024', '668330890790699079', '472448603642920973'],
-	run: async (client, message, args, perms) => {
+	run: async (client, message, args, perms, channels) => {
 		const db = getDb();
 		const vFactsColl = db.collection("Facts");
 		const settings = db.collection("Settings")
@@ -25,7 +25,6 @@ module.exports = {
 		.then(async res => {
 		
 		const count = await vFactsColl.stats().then(res => res.count);
-		
 		const random = Math.floor((Math.random() * count) + 1);
 		const fact = args.slice(1).join(" ");
 		const code = "```";
@@ -49,7 +48,7 @@ module.exports = {
 						} else {
 							await vFactsColl.insertOne({ Message: fact,	number: count+1, })
 							message.channel.send(`Fact #${count+1} has been added to the list!\n${code}${count+1}. ${fact}${code}`);
-							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> added a Fact: ${code}#${count+1}. ${fact}${code}`);
+							client.channels.cache.get(channels.logs).send(`<@${message.author.id}> added a Fact: ${code}#${count+1}. ${fact}${code}`);
 						}
 					}
 					else {
@@ -65,7 +64,7 @@ module.exports = {
 								vFactsColl.updateMany({ number: { $gt: r.number }}, { $inc: { number: -1 }});
 								console.log(`Total facts decreased to: ${count-1}`);
 								message.channel.send(`Fact #${r.number} has been deleted from the list!\n${code}${r.number}. ${r.Message}${code}`);
-								client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Fact: ${code}#${r.number}. ${r.Message}${code}`);
+								client.channels.cache.get(channels.logs).send(`<@${message.author.id}> removed a Fact: ${code}#${r.number}. ${r.Message}${code}`);
 							});
 						vFactsColl.deleteOne({ number: Number(args[1]) });
 						} else {
@@ -89,7 +88,7 @@ module.exports = {
 								vFactsColl.findOne({ number: r.value.number })
 								.then(rs => {
 									message.channel.send(`Fact #${rs.number} has been edited successfully!\n${code}${r.value.number}. ${r.value.Message} >>> ${rs.Message}${code}`);
-									client.channels.cache.get("731997087721586698")
+									client.channels.cache.get(channels.logs)
 									.send(`<@${message.author.id}> edited Fact #${rs.number}: ${code}diff\n- ${r.value.Message}\n+ ${rs.Message}${code}`);
 								})
 							})
@@ -122,7 +121,7 @@ module.exports = {
 					.then(r => {
 							message.delete();
 							message.channel.send(factEmbed(r.Message));
-							client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> used the Fact command in <#${message.channel.id}>. https://discordapp.com/channels/${message.guild.id}/${message.channel.id}/${message.channel.lastMessageID} ${code}#${r.number}. ${r.Message}${code}`);
+							client.channels.cache.get(channels.logs).send(`<@${message.author.id}> used the Fact command in <#${message.channel.id}>. https://discordapp.com/channels/${message.guild.id}/${message.channel.id}/${message.channel.lastMessageID} ${code}#${r.number}. ${r.Message}${code}`);
 							console.log(`Fact command used by ${message.author.username} : ${r.Message}`);
 					});
 				}

@@ -10,10 +10,8 @@ module.exports = {
 	guildSpecific: 'all',
 	run: async (client, message, args) => {
 		const { commands } = message.client;
-
 		const db = getDb();
 		const settings = db.collection(`Settings`)
-		console.log(client.commands.size)
 		
 		settings.findOne({ _id: message.guild.id })
 		.then(res => {

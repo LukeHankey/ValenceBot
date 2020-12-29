@@ -15,7 +15,7 @@ module.exports = {
     aliases: ["cal"],
     usage: ["create <month (optional)>", "add <month (optional)> <position (optional)> Date: <Date> Event: <event text> Time: <time> Announcement: <link> Host: <@member(s)/role>", "edit <month (optional)> <starting field> <event field> <new value>", "remove <month (optional)> <starting field> <delete count>", "move <month (optional)> <from position> <to position>"],
     guildSpecific: ["472448603642920973", "733164313744769024", "668330890790699079"],
-    run: async (client, message, args, perms) => {
+    run: async (client, message, args, perms, channels) => {
         if (!perms.mod) {
             return message.channel.send(perms.errorM)
         }
@@ -43,7 +43,7 @@ module.exports = {
                     }
 
                     if (!args[1]) {
-                        client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> created a new Calendar embed.`);
+                        client.channels.cache.get(channels.logs).send(`<@${message.author.id}> created a new Calendar embed.`);
                         message.channel.send(embed(`Calendar for ${currentMonth}`))
                         .then(msg => {
                             settings.findOneAndUpdate({ _id: message.guild.id },
@@ -59,7 +59,7 @@ module.exports = {
                         })
                     }
                     else {
-                        client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> created a new Calendar embed.`);
+                        client.channels.cache.get(channels.logs).send(`<@${message.author.id}> created a new Calendar embed.`);
                         message.channel.send(embed(`Calendar for ${func.capitalise(args[1])}`))
                         .then(msg => {
                             settings.findOneAndUpdate({ _id: message.guild.id },
@@ -110,7 +110,7 @@ module.exports = {
                                         )
                                         m.edit(editEmbed)
                                     }
-                                    client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
+                                    client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
                                 }
                             }
                             catch (err) {
@@ -165,7 +165,7 @@ module.exports = {
                                     )
                                     m.edit(editEmbed)
                                 }
-                                client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
+                                client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
                             }
                         }
                         catch (err) {
@@ -232,7 +232,7 @@ module.exports = {
                                         editE.edit(n)
                                     }
                                 }
-                                client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
+                                client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
                             }
                             else {
                                 message.channel.send(`You must provide the event number you want to edit as well as the field. Examples: ${code}1 Time: 14:00 - 15:00. - Gets the 1st event and edits the Time field to the new value.\n3 Date: 5th. - Gets the 3rd event and edits the Date field to the new value.${code}`)
@@ -273,7 +273,7 @@ module.exports = {
                                     editE.edit(n)
                                 }
                             }
-                            client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
+                            client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
                         }
                         else {
                             message.channel.send(`You must provide the event number you want to edit as well as the field. Examples: ${code}1 Time: 14:00 - 15:00. - Gets the 1st event and edits the Time field to the new value.\n3 Date: 5th. - Gets the 3rd event and edits the Date field to the new value.${code}`)
@@ -297,7 +297,7 @@ module.exports = {
                             let log = removeE.embeds[0].fields.splice(args[2] - 1, args[3])
                             let logValues = log.map(values => `${values.name}\n${values.value}\n`)
                             let remaining = n.fields.map(values => `${values.name}\n${values.value}\n`)
-                            client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} removed event: ${code}diff\n- Removed\n${logValues.join("\n")}\n+ Remaining\n ${remaining.join("\n")}${code}`);
+                            client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} removed event: ${code}diff\n- Removed\n${logValues.join("\n")}\n+ Remaining\n ${remaining.join("\n")}${code}`);
                         }
                     }
                     else {
@@ -313,7 +313,7 @@ module.exports = {
                         let log = removeE.embeds[0].fields.splice(args[1] - 1, args[2])
                         let logValues = log.map(values => `${values.name}\n${values.value}\n`)
                         let remaining = n.fields.map(values => `${values.name}\n${values.value}\n`)
-                        client.channels.cache.get("731997087721586698").send(`Calendar updated - ${message.author} removed event: ${code}diff\n- Removed\n${logValues.join("\n")}\n+ Remaining\n ${remaining.join("\n")}${code}`);
+                        client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} removed event: ${code}diff\n- Removed\n${logValues.join("\n")}\n+ Remaining\n ${remaining.join("\n")}${code}`);
                     }
                 })
                 break;

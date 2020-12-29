@@ -14,7 +14,7 @@ module.exports = {
     aliases: ["lu"],
     usage: [""],
     guildSpecific: ['420803245758480405', '733164313744769024', '668330890790699079'],
-    run: async (client, message, args, perms) => {
+    run: async (client, message, args, perms, channels) => {
         if (!perms.owner) return message.channel.send(perms.errorO) 
         if (!args[0]) return message.channel.send('Please provide a User ID')
         const db = getDb()

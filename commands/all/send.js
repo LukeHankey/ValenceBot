@@ -9,7 +9,7 @@ module.exports = {
     aliases: [""],
     usage: ["<channel ID> <message content>", "embed <ban/friend/affiliate> <number>", "info <ban/friend/affiliate> <num> RSN: <rsn> Reason: <reason>", "edit <ban/friend/affiliate> <num> <rsn> <RSN:/Reason:> <value>", "remove <ban/friend/affiliate> <num> <rsn>"],
     guildSpecific: 'all',
-    run: async (client, message, args, perms) => {
+    run: async (client, message, args, perms, channels) => {
 
         const myID = "212668377586597888";
         let content = args.slice(1).join(" ");
@@ -215,7 +215,7 @@ module.exports = {
                     }
                     else if (message.author.id !== myID && content && !message.guild.channels.cache.has(args[0])) { // Checks for non-owner, message content and if ID is not in same server
                         message.channel.send("You are not able to send a message to a channel in another server.");
-                        client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> tried to send a message to another Server, from Channel: <#${message.channel.id}> to <#${args[0]}>: ${code}Server Name: ${message.guild.name}\nServer ID:${message.guild.id}\nMessage content: ${content}${code}`);
+                        client.channels.cache.get(channels.logs).send(`<@${message.author.id}> tried to send a message to another Server, from Channel: <#${message.channel.id}> to <#${args[0]}>: ${code}Server Name: ${message.guild.name}\nServer ID:${message.guild.id}\nMessage content: ${content}${code}`);
                     }
                 }
                 else { // No valid ID

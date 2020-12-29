@@ -16,7 +16,7 @@ module.exports = {
 	aliases: ["c", "cit"],
 	usage:  ["", "on/off", "reset", "reset info", "reset set", "reminders", "reminders add <channel> <message>", "reminders add <channel> reset +<days/time> <message>", "reminders remove <id>", "reminders edit <id> <parameter> <new value>"],
     guildSpecific: ['733164313744769024', '668330890790699079', '472448603642920973'],
-	run: async (client, message, args, perms) => {
+	run: async (client, message, args, perms, channels) => {
 
         const code = "```";
         const db = getDb();
@@ -77,7 +77,7 @@ module.exports = {
                                                     $push: { "citadel_reset_time.reminders": { $each: [{ id: message.id, channel: args[2], dayReset: args[3], dayResetPlus: dateDay.slice(0, dateDay.indexOf("d")), hourResetPlus: dateHour.slice(0, dateHour.indexOf("h")), minResetPlus: dateMin.slice(1, dateMin.length - 1), message: messageContentCitR }] }}
                                                 })
                                                 message.channel.send(`A citadel reminder has been added to <#${args[2]}>. The reminder will be sent on \`${dateDays} ${dateHours}:${dateMins}\``)
-                                                client.channels.cache.get("731997087721586698")
+                                                client.channels.cache.get(channels.logs)
                                                 .send(`<@${message.author.id}> added a custom Citadel Reminder in server: **${message.guild.name}** - <#${args[2]}>\n${code}diff\n+ ${messageContentCitR}${code}`);
                                             }
                                             else {
@@ -94,7 +94,7 @@ module.exports = {
                                         $push: { "citadel_reset_time.reminders": { $each: [{ id: message.id, channel: args[2], message: messageContentCit }] }}
                                     })
                                     message.channel.send(`A citadel reminder has been added to <#${args[2]}>. **NOTE:** This reminder is to let clan members know the citadel has been reset.`)
-                                    client.channels.cache.get("731997087721586698")
+                                    client.channels.cache.get(channels.logs)
                                     .send(`<@${message.author.id}> added a Citadel Reminder in server: **${message.guild.name}** - <#${args[2]}>\n${code}diff\n+ ${messageContentCit}${code}`);
                                 }
                             }
@@ -124,7 +124,7 @@ module.exports = {
                                                     $push: { "citadel_reset_time.reminders": { $each: [{ id: message.id, channel: channelTagCit[0], dayReset: args[3], dayResetPlus: dateDay.slice(0, dateDay.indexOf("d")), hourResetPlus: dateHour.slice(0, dateHour.indexOf("h")), minResetPlus: dateMin.slice(1, dateMin.length - 1), message: messageContentCitR }] }}
                                                 })
                                                 message.channel.send(`A citadel reminder has been added to <#${channelTagCit[0]}>. The reminder will be sent on \`${dateDays} ${dateHours}:${dateMins}\``)
-                                                client.channels.cache.get("731997087721586698")
+                                                client.channels.cache.get(channels.logs)
                                                 .send(`<@${message.author.id}> added a custom Citadel Reminder in server: **${message.guild.name}** - <#${channelTagCit[0]}>\n${code}diff\n+ ${messageContentCitR}${code}`);
                                             }
                                             else {
@@ -141,7 +141,7 @@ module.exports = {
                                         $push: { "citadel_reset_time.reminders": { $each: [{ id: message.id, channel: channelTagCit[0], message: messageContentCit }] }}
                                     })
                                     message.channel.send(`A citadel reminder has been added to <#${channelTagCit[0]}>. **NOTE:** This reminder is to let clan members know the citadel has been reset.`)
-                                    client.channels.cache.get("731997087721586698")
+                                    client.channels.cache.get(channels.logs)
                                     .send(`<@${message.author.id}> added a Citadel Reminder in server: **${message.guild.name}** - <#${channelTagCit[0]}>\n${code}diff\n+ ${messageContentCit}${code}`);
                                 }
                             }
@@ -162,7 +162,7 @@ module.exports = {
                             res.citadel_reset_time.reminders.forEach(x => { idCheck.push(x.id) })
                             if (func.checkNum(args[2], 1, Infinity) && idCheck.includes(args[2])) {
                                 message.channel.send(`Reminder \`${args[2]}\` has been deleted.`);
-                                client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> removed a Reminder: \`${args[2]}\``);
+                                client.channels.cache.get(channels.logs).send(`<@${message.author.id}> removed a Reminder: \`${args[2]}\``);
                                 settings.updateOne({ _id: message.guild.id }, { $pull: { "citadel_reset_time.reminders": { id: args[2] } } })
                             }
                             else if (!args[1]) {
@@ -192,12 +192,12 @@ module.exports = {
                                     else if (args[4].length > 18) {
                                         settings.findOneAndUpdate({ _id: message.guild.id, "citadel_reset_time.reminders.id": args[2] }, { $set: { "citadel_reset_time.reminders.$.channel": args[4] } } )
                                         message.channel.send(`Reminder \`${args[2]}\` has had the channel changed to <#${args[4].slice(2, 20)}>`);
-                                        client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``);
+                                        client.channels.cache.get(channels.logs).send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``);
                                     }
                                     else {
                                         settings.findOneAndUpdate({ _id: message.guild.id, "citadel_reset_time.reminders.id": args[2] }, { $set: { "citadel_reset_time.reminders.$.channel": args[4] } } )
                                         message.channel.send(`Reminder \`${args[2]}\` has had the channel changed to <#${args[4]}>`);
-                                        client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``);}                                    
+                                        client.channels.cache.get(channels.logs).send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``);}                                    
                                     }
                                 else if (param === "message") {
                                     if (!editMessage) {
@@ -206,7 +206,7 @@ module.exports = {
                                     else {
                                         settings.findOneAndUpdate({ _id: message.guild.id, "citadel_reset_time.reminders.id": args[2] }, { $set: { "citadel_reset_time.reminders.$.message": editMessage } } )
                                         message.channel.send(`Reminder \`${args[2]}\` has had the message changed to \`${editMessage}\``);
-                                        client.channels.cache.get("731997087721586698").send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``);
+                                        client.channels.cache.get(channels.logs).send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``);
                                     }
                                 } 
                                 else {
@@ -269,7 +269,7 @@ module.exports = {
                                     .then(r => {
                                         console.log(`Reset set: ${dayCheck[args[2]] || args[2]} ${func.doubleDigits(args[3])}:${func.doubleDigits(args[4])}`)
                                         message.channel.send(`The Citadel Reset Time has been changed to: ${dayCheck[args[2]] || args[2]} ${func.doubleDigits(args[3])}:${func.doubleDigits(args[4])}`)
-                                        client.channels.cache.get("731997087721586698")
+                                        client.channels.cache.get(channels.logs)
                                         .send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.guild.name}**\n${code}diff\n- ${r.value.citadel_reset_time.day} ${r.value.citadel_reset_time.hour}:${r.value.citadel_reset_time.minute}\n+ ${dayCheck[args[2]] || args[2]} ${func.doubleDigits(args[3])}:${func.doubleDigits(args[4])} ${code}`);
                                     })
                             }
@@ -278,7 +278,7 @@ module.exports = {
                                     .then(r => {
                                         console.log(`Reset set: ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${func.doubleDigits(args[2])}:${func.doubleDigits(args[3])}`)
                                         message.channel.send(`The Citadel Reset Time has been changed to: ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${func.doubleDigits(args[2])}:${func.doubleDigits(args[3])}`)
-                                        client.channels.cache.get("731997087721586698")
+                                        client.channels.cache.get(channels.logs)
                                         .send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.guild.name}**\n${code}diff\n- ${r.value.citadel_reset_time.day} ${r.value.citadel_reset_time.hour}:${r.value.citadel_reset_time.minute}\n+ ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${func.doubleDigits(args[2])}:${func.doubleDigits(args[3])}${code}`);
                                     })
                             }
@@ -287,7 +287,7 @@ module.exports = {
                                     .then(r => {
                                         console.log(`Reset set: ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${func.doubleDigits(r.value.citadel_reset_time.hour)}:${func.doubleDigits(args[2])}`)
                                         message.channel.send(`The Citadel Reset Time has been changed to: ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${func.doubleDigits(r.value.citadel_reset_time.hour)}:${func.doubleDigits(args[2])}`)
-                                        client.channels.cache.get("731997087721586698")
+                                        client.channels.cache.get(channels.logs)
                                         .send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.guild.name}**\n${code}diff\n- ${r.value.citadel_reset_time.day} ${r.value.citadel_reset_time.hour}:${r.value.citadel_reset_time.minute}\n+ ${dayCheck[r.value.citadel_reset_time.day] || r.value.citadel_reset_time.day} ${func.doubleDigits(r.value.citadel_reset_time.hour)}:${func.doubleDigits(args[2])}${code}`);
                                     })
                             }
@@ -451,7 +451,7 @@ module.exports = {
                         settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "citadel_reset_time.scheduled": true }}, { returnOriginal: true })
                         .then(r => {
                             message.channel.send(`The Citadel Reset Time notifications have been toggled on!`)
-                            client.channels.cache.get("731997087721586698")
+                            client.channels.cache.get(channels.logs)
                             .send(`<@${message.author.id}> toggled the Citadel Reset Time to on in server: **${message.guild.name}**\n${code}diff\n- ${r.value.citadel_reset_time.scheduled}\n+ true${code}`);
                         })
                     }
@@ -467,7 +467,7 @@ module.exports = {
                 settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { "citadel_reset_time.scheduled": false }}, { returnOriginal: true })
                         .then(r => {
                             message.channel.send(`The Citadel Reset Time notifications have been toggled off!`)
-                            client.channels.cache.get("731997087721586698")
+                            client.channels.cache.get(channels.logs)
                             .send(`<@${message.author.id}> toggled the Citadel Reset Time to on in server: **${message.guild.name}**\n${code}diff\n- ${r.value.citadel_reset_time.scheduled}\n+ false${code}`);
                         })
             }
