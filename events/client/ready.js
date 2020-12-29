@@ -104,7 +104,7 @@ module.exports = async client => {
 			});
 		const random = Math.floor((Math.random() * count) + 1);
 
-		vFactsColl.findOne({ number: random })
+		await vFactsColl.findOne({ number: random })
 			.then(res => {
 				const ID = ["732014449182900247", "473235620991336468"] //#test-channel & #good-chats
 
@@ -121,7 +121,7 @@ module.exports = async client => {
 		for (const document in r) {
 			if (!r[document].citadel_reset_time) return
 			cron.schedule(`*/5 * * * *`, async () => {
-				let today = new Date();
+			let today = new Date();
 				let today_num = today.getUTCDay();
 				let today_str = days[today_num];
 				const newDates = function (days, hours, minutes, timer) {
@@ -190,6 +190,7 @@ module.exports = async client => {
 
 	// DSF Activity Posts //
 	cron.schedule('0 */6 * * *', async () => {
+		// cron.schedule('*/15 * * * * *', async () => { // Test
 		let scout = new ScouterCheck('Scouter')
 		let vScout = new ScouterCheck('Verified Scouter')
 
@@ -205,6 +206,8 @@ module.exports = async client => {
 
 		await classVars(scout, `Deep Sea Fishing`, res)
 		await classVars(vScout, `Deep Sea Fishing`, res)
+		// await classVars(scout, `Luke's Server`, res) // Test
+		// await classVars(vScout, `Luke's Server`, res) // Test
 
 		const addedRoles = async (name) => {
 			const members = await name.checkRolesAdded() // Role has been added
@@ -238,7 +241,7 @@ module.exports = async client => {
 				await settings.updateOne(
 					{ serverName: name._guild_name },
 					{ $pull: { 'merchChannel.scoutTracker': { 'userID': doc.userID } } },
-				  )
+				)
 			})
 			if (manyNames.length) {
 				return client.channels.cache.get("731997087721586698").send(`${many} profiles removed.\n\`\`\`${manyNames.join('\n')}\`\`\``);
@@ -255,5 +258,21 @@ module.exports = async client => {
 			scout.send()
 			vScout.send()
 		}
+
+		// Reset Info Count back to 0 to allow use of command
+
+		await settings.find({}).toArray().then(r => {
+			r = r.filter(doc => doc.resetInfoCount >= 0)
+			for (const doc in r) {
+				if (r[doc].resetInfoCount === 1 && r[doc].resetInfoTime < r[doc].resetInfoTime + 86400000) {
+					return settings.updateOne({ 'serverName': r[doc].serverName }, {
+						$set: {
+							resetInfoCount: 0,
+						}
+					})
+				}
+			}
+		})
+
 	})
 };
