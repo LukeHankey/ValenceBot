@@ -156,11 +156,15 @@ module.exports = async (client, message) => {
 
 									if (check) {
 										fetched.react('☠️')
-										await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: lastID } } })
+										.then(async x => {
+											await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: lastID } } })
+										})
+										.catch(e => {
+											console.error(1, e)
+										})
 									}
 								} catch (e) {
 									const messageID = e.path.split('/')
-									console.log(1)
 									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: messageID[4] } } })
 								}
 							}
