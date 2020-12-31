@@ -98,16 +98,21 @@ module.exports = {
                 break;
             case 'user': {
                 let [userID, param, num] = args.slice(1)
-                cacheCheck = (user) => {
+                cacheCheck = async (user) => {
                     if (!message.guild.members.cache.has(user)) {
-                        return !!message.guild.members.fetch(user)
+                        return await message.guild.members.fetch(user)
+                            .then(user => true)
+                            .catch(e => false)
                     } else {
                         return true
                     }
                 }
                 let checkMem = cacheCheck(userID)
+                const reaction = await checkMem
                 func.checkNum(userID) && checkMem ? userID = userID : userID = undefined
                 const userMention = message.mentions.members.first()?.user.id ?? userID
+
+                console.log(userMention)
 
                 if (userMention === undefined) return message.channel.send(`Please provide a valid member ID or member mention.`)
                 switch (param) {
@@ -118,14 +123,16 @@ module.exports = {
                                     'merchChannel.scoutTracker.$.count': 1,
                                 },
                             })
-                            return message.react('✅')
+                            if (reaction) return message.react('✅')
+                            else return message.react('❌')
                         } else if (num === 'other') {
                             await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
                                 $inc: {
                                     'merchChannel.scoutTracker.$.otherCount': 1,
                                 },
                             })
-                            return message.react('✅')
+                            if (reaction) return message.react('✅')
+                            else return message.react('❌')
                         } else {
                             if (isNaN(parseInt(num))) {
                                 return message.channel.send(`\`${num}\` is not a number.`)
@@ -137,14 +144,16 @@ module.exports = {
                                         'merchChannel.scoutTracker.$.otherCount': +num,
                                     },
                                 })
-                                return message.react('✅')
+                                if (reaction) return message.react('✅')
+                                else return message.react('❌')
                             } else {
                                 await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
                                     $inc: {
                                         'merchChannel.scoutTracker.$.count': +num,
                                     },
                                 })
-                                return message.react('✅')
+                                if (reaction) return message.react('✅')
+                                else return message.react('❌')
                             }
                         }
                     case 'remove':
@@ -154,14 +163,16 @@ module.exports = {
                                     'merchChannel.scoutTracker.$.count': -1,
                                 },
                             })
-                            return message.react('✅')
+                            if (reaction) return message.react('✅')
+                            else return message.react('❌')
                         } else if (num === 'other') {
                             await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
                                 $inc: {
                                     'merchChannel.scoutTracker.$.otherCount': -1,
                                 },
                             })
-                            return message.react('✅')
+                            if (reaction) return message.react('✅')
+                            else return message.react('❌')
                         } else {
                             if (isNaN(parseInt(num))) {
                                 return message.channel.send(`\`${num}\` is not a number.`)
@@ -173,14 +184,16 @@ module.exports = {
                                         'merchChannel.scoutTracker.$.otherCount': -num,
                                     },
                                 })
-                                return message.react('✅')
+                                if (reaction) return message.react('✅')
+                                else return message.react('❌')
                             } else {
                                 await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
                                     $inc: {
                                         'merchChannel.scoutTracker.$.count': -num,
                                     },
                                 })
-                                return message.react('✅')
+                                if (reaction) return message.react('✅')
+                                else return message.react('❌')
                             }
                         }
                     default:
@@ -190,11 +203,10 @@ module.exports = {
             default:
                 return message.channel.send(func.nEmbed(
                     "**DSF Admin Commands List**",
-                    "Here's a list of all the DSF commands you can use. Any parameter in \`<>\` are optional:\n\n\`messages|m view\`\n\`messages|m clear\`\n\`view scouter <num>\`\n\`view verified <num>\`\n\`user memberID/@member add <num>\`\n\`user memberID/@member remove <num>\`",
+                    "Here's a list of all the DSF commands you can use. Any parameter(s) in \`<>\` are optional:\n\n\`messages|m view\`\n\`messages|m clear\`\n\`view scouter <num>\`\n\`view verified <num>\`\n\`user memberID/@member add <num>\`\n\`user memberID/@member remove <other> <num>\`",
                     colors.cyan,
                     client.user.displayAvatarURL()
                 ))
         }
     }
-
 }
