@@ -60,7 +60,10 @@ module.exports = async (client, message) => {
 			// if (res._id === '420803245758480405') return // Remove after
 			const merchID = await res.merchChannel.channelID
 			const otherID = await res.merchChannel.otherChannelID
-			const errorLog = await client.channels.cache.get('784543962174062608').fetchWebhooks()
+			const errorLog = [];
+			const botServerWebhook = await client.channels.cache.get('734477320672247869').fetchWebhooks()
+			const dsfServerWebhook = await client.channels.cache.get('794608385106509824').fetchWebhooks()
+			errorLog.push(dsfServerWebhook.first(), botServerWebhook.first())
 
 			if (message.channel.id === merchID) {
 				const merchRegex = /(^(?:m|merch|merchant|w|world){1}(\s?)(?!3$|7$|8$|11$|13$|17|19|20|29|33|34|38|41|43|47|57|61|75|80|81|90|93|94|101|102|10[7-9]|11[0-3]|12[0-2]|12[5-9]|13[0-3]|135|136)([1-9]\d?|1[0-3]\d|140)([,.\s]?|\s+\w*)*$)/i
@@ -139,6 +142,7 @@ module.exports = async (client, message) => {
 								'merchChannel.scoutTracker.$.count': 1,
 							},
 							$set: {
+								'merchChannel.scoutTracker.$.author': msg[0].member?.nickname ?? msg[0].author.username,
 								'merchChannel.scoutTracker.$.lastTimestamp': msg[0].createdTimestamp,
 								'merchChannel.scoutTracker.$.lastTimestampReadable': new Date(msg[0].createdTimestamp),
 							},
@@ -177,9 +181,9 @@ module.exports = async (client, message) => {
 								.setTitle(`Error: Unknown Message`)
 								.setDescription(`Message has been deleted. Removing from the DataBase. - **${data.serverName}**`)
 								.setColor(colors.red_dark)
-								.addField(`Content:`, `${document.content}`, true)
-								.addField(`Author: ${document.author}`, `${document.userID}`, true)
-								.addField(`Message ID:`, `${document.messageID}`, true)
+								.addField(`Message ID/Content:`, `${document.messageID}\n${document.content}`, true)
+								.addField(`Author ID/Tag:`, `${document.userID}\n<@!${document.userID}>`, true)
+								.addField(`Message Timestamp:`, `${new Date(document.time).toString().split(' ').slice(0, -4).join(' ')}`, true)
 								.addField(`Stack Trace`, `\`\`\`js\n${error.stack}\`\`\``)
 							return embed
 						}
@@ -201,12 +205,14 @@ module.exports = async (client, message) => {
 						const errNext = errValues.next().value
 
 						if (errorSet.size) {
-							return errorLog.first().send(`${data.serverName === 'Deep Sea Fishing' ? '<@!212668377586597888>' : ''}`, errorEmbed(errNext.document, errNext.error))
+							return errorLog.forEach(id => {
+								id.send(errorEmbed(errNext.document, errNext.error).addField('Notes:', `- Mark with ✅ when complete so we know if it has been looked at or not.\n- Mark with ❌ if it doesn't need doing.`))
 								.then(async x => {
 									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { 'messageID': errNext.document.messageID } } })
 									errorSet.delete({ document: errNext.document, error: errNext.error })
 									errorSet.clear()
 								})
+							})
 						} else return
 					})
 				} catch (err) {
@@ -245,6 +251,7 @@ module.exports = async (client, message) => {
 								'merchChannel.scoutTracker.$.otherCount': 1,
 							},
 							$set: {
+								'merchChannel.scoutTracker.$.author': msg[0].member?.nickname ?? msg[0].author.username,
 								'merchChannel.scoutTracker.$.lastTimestamp': msg[0].createdTimestamp,
 								'merchChannel.scoutTracker.$.lastTimestampReadable': new Date(msg[0].createdTimestamp),
 							},
