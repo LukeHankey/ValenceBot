@@ -22,7 +22,7 @@ module.exports = {
 
         const res = await settings.findOne({ _id: "Globals" })
         const visChannel = channels.vis;
-        if (!args.length) {
+        if (!args.length && !message.attachments.size) {
             try {
                 let currentDate = new Date().toUTCString()
                 currentDate = currentDate.split(' ')
@@ -36,19 +36,33 @@ module.exports = {
                             vis: null,
                         }
                     })
-                } else {
-                    return message.channel.send(`**Image uploaded at:** ${res.visTime}`, {
-                        files: [`${res.vis}`]
-                    })
                 }
+                const isNull = await settings.findOne({ _id: 'Globals' })
+                if (isNull.vis === null) {
+                    return message.channel.send(`No current Vis out yet! Use \`;vis [Image URL or Message Link]\` to update the command for others if you have the current stock.`)
+                }
+                return message.channel.send(`**Image uploaded at:** ${res.visTime}`, {
+                    files: [`${res.vis}`]
+                })
             }
             catch (err) {
                 return message.channel.send(`No current Vis out yet! Use \`;vis [Image URL or Message Link]\` to update the command for others if you have the current stock.`)
             }
-
         } else { // Image URL
             let array = ["gif", "jpeg", "tiff", "png", "webp", "bmp", "prnt.sc", "gyazo.com"]
-            if (array.some(x => attachment[0].includes(x))) {
+            if (message.attachments.size) {
+                message.react('✅')
+                return client.channels.cache.get(visChannel).send(embed.setImage(message.attachments.first().url))
+                    .then(async m => {
+                        return await settings.updateOne({ _id: "Globals" }, {
+                            $set: {
+                                vis: message.attachments.first().url,
+                                visTime: message.createdAt
+                            }
+                        })
+                    })
+            } else if (array.some(x => attachment[0].includes(x))) {
+                message.react('✅')
                 return client.channels.cache.get(visChannel).send(embed.setImage(attachment[0]))
                     .then(async m => {
                         return await settings.updateOne({ _id: "Globals" }, {
