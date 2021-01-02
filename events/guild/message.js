@@ -61,7 +61,7 @@ module.exports = async (client, message) => {
 			const merchID = await res.merchChannel.channelID
 			const otherID = await res.merchChannel.otherChannelID
 			const errorLog = [];
-			const botServerWebhook = await client.channels.cache.get('734477320672247869').fetchWebhooks()
+			const botServerWebhook = await client.channels.cache.get('784543962174062608').fetchWebhooks()
 			const dsfServerWebhook = await client.channels.cache.get('794608385106509824').fetchWebhooks()
 			errorLog.push(dsfServerWebhook.first(), botServerWebhook.first())
 
