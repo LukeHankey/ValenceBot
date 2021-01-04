@@ -22,7 +22,6 @@ module.exports = {
 					}
 				});
 				const join = com.filter(x => x).join("|");
-				console.log(join)
 
 				message.channel.send(func.nEmbed(
 					"**Help Commands List**",

@@ -70,9 +70,8 @@ module.exports = async (client, message) => {
 				message.content.match(merchRegex)
 					? message.channel.send(`<@&670842187461820436> - ${message.content}`).then(m => m.delete()).catch(async err => {
 						const messageID = err.path.split('/')
-						const fetched = await message.channel.messages.fetch(messageID[4])
-						fetched.delete()
 						console.log(`Unable to delete my own message`, err)
+						return await message.channel.messages.fetch(messageID[4]).then(x => x.delete()).catch(e => console.error(1, e))
 					})
 					: message.delete()
 				try {
