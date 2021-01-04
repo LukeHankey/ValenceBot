@@ -112,8 +112,6 @@ module.exports = {
                 func.checkNum(userID) && checkMem ? userID = userID : userID = undefined
                 const userMention = message.mentions.members.first()?.user.id ?? userID
 
-                console.log(userMention)
-
                 if (userMention === undefined) return message.channel.send(`Please provide a valid member ID or member mention.`)
                 switch (param) {
                     case 'add':
