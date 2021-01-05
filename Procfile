@@ -1,1 +1,1 @@
-node --max_old_space_size=4096 --optimize_for_size index.js
+node index.js
