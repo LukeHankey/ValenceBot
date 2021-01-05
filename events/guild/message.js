@@ -70,8 +70,7 @@ module.exports = async (client, message) => {
 				message.content.match(merchRegex)
 					? message.channel.send(`<@&670842187461820436> - ${message.content}`).then(m => m.delete()).catch(async err => {
 						const messageID = err.path.split('/')
-						console.log(`Unable to delete my own message`, err)
-						return await message.channel.messages.fetch(messageID[4]).then(x => x.delete()).catch(e => console.error(1, e))
+						return await message.channel.messages.fetch(messageID[4]).then(x => x.delete()).catch(e => console.log('Unable to delete message'))
 					})
 					: message.delete()
 				try {
@@ -163,7 +162,7 @@ module.exports = async (client, message) => {
 											await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: lastID } } })
 										})
 										.catch(e => {
-											console.error(1, e)
+											console.error('Unable to fetch message to react with.')
 										})
 									}
 								} catch (e) {
@@ -174,7 +173,7 @@ module.exports = async (client, message) => {
 						})
 					})
 
-					await settingsColl.findOne({ _id: message.guild.id }).then(async data => { // Posts only 1 error to the error channel
+					await settingsColl.findOne({ _id: message.guild.id }).then(async data => { // Posts only error to the error channel
 						const errorEmbed = (document, error) => {
 							const embed = new MessageEmbed()
 								.setTitle(`Error: Unknown Message`)
