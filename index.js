@@ -1,6 +1,7 @@
 const { Client, Collection } = require("discord.js");
 const connection = require("./mongodb").initDb;
 require("dotenv").config();
+require('newrelic');
 
 const client = new Client();
 client.commands = new Collection();
