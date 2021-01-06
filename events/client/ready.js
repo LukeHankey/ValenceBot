@@ -167,26 +167,26 @@ module.exports = async client => {
 	})
 
 	// Normal Server Reminders //
-	cron.schedule(`*/5 * * * *`, async () => {
-		let today = new Date();
-		let today_num = today.getDay();
-		let today_str = days[today_num];
-		await settings.find({}).toArray().then(res => {
-			for (const document in res) {
-				for (const remDoc in res[document].reminders) {
-					if (res[document].reminders[remDoc].day !== undefined) {
-						if (+res[document].reminders[remDoc].day === today_num || res[document].reminders[remDoc].day.toLowerCase() === today_str.toLowerCase() || res[document].reminders[remDoc].day.toLowerCase() === today_str.substr(0, 3).toLowerCase()) {
-							if (today.getUTCHours() == +res[document].reminders[remDoc].hour) {
-								if (+res[document].reminders[remDoc].minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].reminders[remDoc].minute + 1)) {
-									client.channels.cache.get(res[document].reminders[remDoc].channel).send(res[document].reminders[remDoc].message)
-								}
-							}
-						}
-					}
-				}
-			}
-		})
-	})
+	// cron.schedule(`*/5 * * * *`, async () => {
+	// 	let today = new Date();
+	// 	let today_num = today.getDay();
+	// 	let today_str = days[today_num];
+	// 	await settings.find({}).toArray().then(res => {
+	// 		for (const document in res) {
+	// 			for (const remDoc in res[document].reminders) {
+	// 				if (res[document].reminders[remDoc].day !== undefined) {
+	// 					if (+res[document].reminders[remDoc].day === today_num || res[document].reminders[remDoc].day.toLowerCase() === today_str.toLowerCase() || res[document].reminders[remDoc].day.toLowerCase() === today_str.substr(0, 3).toLowerCase()) {
+	// 						if (today.getUTCHours() == +res[document].reminders[remDoc].hour) {
+	// 							if (+res[document].reminders[remDoc].minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].reminders[remDoc].minute + 1)) {
+	// 								client.channels.cache.get(res[document].reminders[remDoc].channel).send(res[document].reminders[remDoc].message)
+	// 							}
+	// 						}
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	})
+	// })
 
 	// DSF Activity Posts //
 	cron.schedule('0 */6 * * *', async () => {
