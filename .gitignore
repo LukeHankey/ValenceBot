@@ -5,3 +5,4 @@ Webhook
 .eslintrc.json
 client_secret.json
 test*
+reminders*
