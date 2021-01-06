@@ -146,7 +146,7 @@ module.exports = async (client, message) => {
 							},
 						})
 					}
-					cron.schedule('*/30 * * * * *', async () => { // Checking the DB and marking dead calls
+					const timer = cron.schedule('*/30 * * * * *', async () => { // Checking the DB and marking dead calls
 						await settingsColl.findOne({ _id: message.guild.id }).then(async data => {
 							for await (const doc of data.merchChannel.messages) {
 								const lastID = doc.messageID
@@ -163,11 +163,13 @@ module.exports = async (client, message) => {
 										})
 										.catch(e => {
 											console.error('Unable to fetch message to react with.')
+											timer.stop()
 										})
 									}
 								} catch (e) {
 									const messageID = e.path.split('/')
 									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: messageID[4] } } })
+									timer.stop()
 								}
 							}
 						})
