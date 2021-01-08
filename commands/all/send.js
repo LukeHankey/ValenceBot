@@ -1,6 +1,6 @@
 const func = require("../../functions.js")
 const colors = require('../../colors.json')
-const Discord = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 const getDb = require('../../mongodb').getDb
 
 module.exports = {
@@ -29,11 +29,10 @@ module.exports = {
         let rsn = rest.join(" ").slice(4, reasonSlice).trim()
         let reason = rest.join(" ").slice(reasonSlice + 7).trim()
 
-
         switch (args[0]) {
             case 'embed': {
                 const [param, num] = args.slice(1)
-                const banEmbed = new Discord.MessageEmbed()
+                const banEmbed = new MessageEmbed()
                     .setColor(colors.red_dark)
                     .setTitle(`${num}. Ban List for WhirlpoolDnD`)
                     .setDescription('A comprehensive list of all members that are banned with reasons.')
@@ -41,7 +40,7 @@ module.exports = {
                     .setTimestamp()
                     .setFooter(`${client.user.username} created by Luke_#8346`, message.guild.iconURL())
 
-                const friendEmbed = new Discord.MessageEmbed()
+                const friendEmbed = new MessageEmbed()
                     .setColor(colors.green_light)
                     .setTitle(`${num}. Friends List for WhirlpoolDnD`)
                     .setDescription('A comprehensive list of all members that are friends with reasons.')
@@ -49,7 +48,7 @@ module.exports = {
                     .setTimestamp()
                     .setFooter(`${client.user.username} created by Luke_#8346`, message.guild.iconURL())
 
-                const affiliateEmbed = new Discord.MessageEmbed()
+                const affiliateEmbed = new MessageEmbed()
                     .setColor(colors.orange)
                     .setTitle(`${num}. Affiliate List for WhirlpoolDnD`)
                     .setDescription('A comprehensive list of all members that are affiliates with reasons (Discord/FC name).')
@@ -105,10 +104,11 @@ module.exports = {
                             if (!reason || message.content.match(reasonRegex) === null) return message.channel.send('Please enter the reason. If there is no reason, use "Unknown".')
                             const embedPost = await message.channel.messages.fetch(find.messageID)
 
-                            let infoEditPost = new Discord.MessageEmbed(embedPost.embeds[0])
+                            let infoEditPost = new MessageEmbed(embedPost.embeds[0])
                                 .addField(`${rsn}`, `${reason}`, true)
 
                             embedPost.edit(infoEditPost)
+                            return message.react('✅')
                         })
                         .catch(async err => {
                             if (err.code === 10008) {
@@ -146,7 +146,7 @@ module.exports = {
                             const parameter = fieldsParams.indexOf(matched[0].toLowerCase())
                             const changeRsn = rest.join(" ").slice(paramSlice + 4).trim()
                             const changeReason = rest.join(" ").slice(paramSlice + 7).trim()
-                            let editPost = new Discord.MessageEmbed(embedPost.embeds[0])
+                            let editPost = new MessageEmbed(embedPost.embeds[0])
                             let fields = embedPost.embeds[0].fields
                             let field = []
 
@@ -164,13 +164,15 @@ module.exports = {
                                 if (field[1] === undefined) return message.channel.send('Make sure you type the RSN correctly, including any capitals.')
                                 field[1].name = changeRsn;
                                 editPost.spliceFields(field[0], 1, field[1])
-                                return embedPost.edit(editPost)
+                                embedPost.edit(editPost)
+                                return message.react('✅')
                             }
                             if (fieldsParams[1] === fieldsParams[parameter]) { // Reason
                                 if (field[1] === undefined) return message.channel.send('Make sure you type the RSN correctly, including any capitals.')
                                 field[1].value = changeReason;
                                 editPost.spliceFields(field[0], 1, field[1])
-                                return embedPost.edit(editPost)
+                                embedPost.edit(editPost)
+                                return message.react('✅')
                             }
                         })
                 }
@@ -188,7 +190,7 @@ module.exports = {
                             if (!param || !num || !find) return message.channel.send(`Please specify the type (\`ban\`, \`friend\` or \`affiliate\`) and the number of the embed.`)
 
                             const embedPost = await message.channel.messages.fetch(find.messageID)
-                            let editPost = new Discord.MessageEmbed(embedPost.embeds[0])
+                            let editPost = new MessageEmbed(embedPost.embeds[0])
                             let fields = embedPost.embeds[0].fields
                             let field = []
 
@@ -201,6 +203,7 @@ module.exports = {
                                 ? message.channel.send('Make sure you type the RSN correctly, including any capitals.')
                                 : editPost.spliceFields(field[0], 1)
                             embedPost.edit(editPost)
+                            return message.react('✅')
                         })
                 }
             }
