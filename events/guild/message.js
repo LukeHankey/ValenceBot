@@ -263,49 +263,97 @@ module.exports = async (client, message) => {
 			} else return
 		})
 
-		// Commands
+	// Valence Events Channel
+
+	/**
+	 * Save channel to DB
+	 * Grab the last message of the event channel
+	 * Add reactions ❌ and ✅
+	 *  	❌ - Remove all reactions (Not event post)
+	 * 		✅ - Remove all reactions, add 📌 and ✅:
+	 * 			> Save this message to DB (ID) [{ ID: id }]
+	 * 			> Create a role (@event_name #12345 OR @event_name (event)) (Save role ID to DB) [{ ID: id, roleID: roleID, eventTag: 12345 }]
+	 * 			> Add to calendar
+	 * 				> First line of post === event name
+	 * 				> use regex to find date/time
+	 * 				> Any information missing, fill in with a default 'Not specified' or don't add to calendar, then message in admin channel to event poster that information is missing
+	 *			📌 - Allows sign ups:
+	 *				> Adds role to user
+	 *				> Save to DB [{ ID: id, roleID: roleID, eventTag: 12345, members: [userIDs] }]
+	 *				> Test when message is cached and uncached. Fetch if not cached, partials possibly for reactions and user data
+	 *			✅ - Completes event:
+	 *				> Removes all associated event data from DB
+	 */
+	try {
+		const database =  await settingsColl.findOne({ _id: `${message.guild.id}` })
+		const eventChannel = database.channels.events
+		
+		if (message.channel.id === eventChannel) {
+			const last = message.channel.lastMessage
+			await last.react('❌')
+			await last.react('✅')
+
+			const filter = (reaction, user) => ['❌', '✅'].includes(reaction.emoji.name) && user.id === message.author.id
+			const collectOne = await message.awaitReactions(filter, { max: 1, time: 3000, errors: ['time'] })
+			const collectOneReaction = collectOne.first()
+			if (collectOneReaction.emoji.name === '❌') {
+				return collectOneReaction.message.reactions.removeAll()
+			} else if (collectOneReaction.emoji.name === '✅') {
+				await settingsColl.updateOne({ _id: message.guild.id }, {  })
+				await collectOneReaction.message.reactions.removeAll()
+				await last.react('📌')
+				await last.react('✅')
+			} else return
+		}
+	}
+	catch (err) {
+		console.error(err)
+	}
+	
+
+	// Commands
+	try {
+		const commandDB = await settingsColl.findOne({ _id: `${message.guild.id}` })
+		const globalDB = await settingsColl.findOne({ _id: 'Globals'})
+		if (!message.content.startsWith(commandDB.prefix)) return;
+
+		const args = message.content.slice(commandDB.prefix.length).split(/ +/g);
+		const commandName = args.shift().toLowerCase();
+
+		const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases
+			&& cmd.aliases.includes(commandName)); // Command object
+
+		let aR = new Permissions('adminRole', commandDB, message)
+		let mR = new Permissions('modRole', commandDB, message)
+		let owner = new Permissions('owner', commandDB, message)
+
+		let perms = {
+			owner: owner.botOwner(),
+			admin: message.member.roles.cache.has(aR.memberRole()[0]) || message.member.roles.cache.has(aR.roleID) || message.author.id === message.guild.ownerID,
+			mod: message.member.roles.cache.has(mR.memberRole()[0]) || message.member.roles.cache.has(mR.roleID) || mR.modPlusRoles() >= mR._role.rawPosition || message.author.id === message.guild.ownerID,
+			errorO: owner.ownerError(),
+			errorM: mR.error(),
+			errorA: aR.error(),
+		}
+
+		const channels = {
+			vis: globalDB.channels.vis,
+			errors: globalDB.channels.errors,
+			logs: globalDB.channels.logs,
+		}
+
 		try {
-			const commandDB = await settingsColl.findOne({ _id: `${message.guild.id}` })
-			const globalDB = await settingsColl.findOne({ _id: 'Globals'})
-			if (!message.content.startsWith(commandDB.prefix)) return;
-	
-			const args = message.content.slice(commandDB.prefix.length).split(/ +/g);
-			const commandName = args.shift().toLowerCase();
-	
-			const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases
-				&& cmd.aliases.includes(commandName)); // Command object
-	
-			let aR = new Permissions('adminRole', commandDB, message)
-			let mR = new Permissions('modRole', commandDB, message)
-			let owner = new Permissions('owner', commandDB, message)
-	
-			let perms = {
-				owner: owner.botOwner(),
-				admin: message.member.roles.cache.has(aR.memberRole()[0]) || message.member.roles.cache.has(aR.roleID) || message.author.id === message.guild.ownerID,
-				mod: message.member.roles.cache.has(mR.memberRole()[0]) || message.member.roles.cache.has(mR.roleID) || mR.modPlusRoles() >= mR._role.rawPosition || message.author.id === message.guild.ownerID,
-				errorO: owner.ownerError(),
-				errorM: mR.error(),
-				errorA: aR.error(),
-			}
-	
-			const channels = {
-				vis: globalDB.channels.vis,
-				errors: globalDB.channels.errors,
-				logs: globalDB.channels.logs,
-			}
-	
-			try {
-				command.guildSpecific === 'all' || command.guildSpecific.includes(message.guild.id)
-					? command.run(client, message, args, perms, channels)
-					: message.channel.send("You cannot use that command in this server.")
-			}
-			catch (error) {
-				if (commandName !== command) return
-			}
+			command.guildSpecific === 'all' || command.guildSpecific.includes(message.guild.id)
+				? command.run(client, message, args, perms, channels)
+				: message.channel.send("You cannot use that command in this server.")
 		}
-		catch (err) {
-			console.error(err)
+		catch (error) {
+			if (commandName !== command) return
 		}
+	}
+	catch (err) {
+		console.error(err)
+	}
 
 	// Update DB
 	// try {

@@ -1,9 +1,8 @@
-require('newrelic');
-const { Client, Collection } = require("discord.js");
+const { Client, Collection, Intents } = require("discord.js");
 const connection = require("./mongodb").initDb;
 require("dotenv").config();
 
-const client = new Client();
+const client = new Client({ ws: { intents: [ Intents.NON_PRIVILEGED, "GUILD_MEMBERS"] }});
 client.commands = new Collection();
 
 ["commands", "events"].forEach(x => require(`./handlers/${x}`)(client));
