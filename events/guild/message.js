@@ -1,36 +1,37 @@
+/* eslint-disable no-inline-comments */
 const cron = require('node-cron');
-const getDb = require("../../mongodb").getDb;
-const colors = require('../../colors.json')
+const getDb = require('../../mongodb').getDb;
+const colors = require('../../colors.json');
 const { Permissions } = require('../../classes.js');
-const { MessageEmbed } = require('discord.js')
+const { MessageEmbed } = require('discord.js');
 
 module.exports = async (client, message) => {
 	const db = getDb();
-	const settingsColl = db.collection("Settings");
+	const settingsColl = db.collection('Settings');
 
 	// Handling DMs
 
 	if (message.guild === null) {
-		const dm = message.channel
-		let dmMessages = await dm.messages.fetch({ limit: 1 })
-		const dmPerson = dm.recipient // User object
-		const dmMsg = []
-		dmMessages = [...dmMessages.values()]
+		const dm = message.channel;
+		let dmMessages = await dm.messages.fetch({ limit: 1 });
+		const dmPerson = dm.recipient; // User object
+		const dmMsg = [];
+		dmMessages = [...dmMessages.values()];
 
 		for (const val in dmMessages) {
-			if (dmMessages[val].author.id === '668330399033851924') return
-			dmMsg.push(dmMessages[val].content)
+			if (dmMessages[val].author.id === '668330399033851924') return;
+			dmMsg.push(dmMessages[val].content);
 		}
 
 		const embed = new MessageEmbed()
-			.setTitle(`New DM Recieved`)
+			.setTitle('New DM Recieved')
 			.setDescription(`${dmPerson.tag} sent me a DM.`)
 			.setColor(colors.blue_dark)
-			.addField(`User ID`, `${dmPerson.id}`, false)
+			.addField('User ID', `${dmPerson.id}`, false)
 			.addField('Message contents', `${dmMsg.join('\n')}`)
-			.setTimestamp()
+			.setTimestamp();
 
-		return client.channels.cache.get('788525524782940187').send(embed)
+		return client.channels.cache.get('788525524782940187').send(embed);
 	}
 
 	// Merch Posts Publish
@@ -45,76 +46,77 @@ module.exports = async (client, message) => {
 
 	// Valence - Filter
 
-	const filterWords = ["retard", "nigger"]
+	const filterWords = ['retard', 'nigger'];
 	const blocked = filterWords.filter(word => {
-		return message.content.toLowerCase().includes(word)
+		return message.content.toLowerCase().includes(word);
 	});
 
-	if (message.guild.id === "472448603642920973" && blocked.length > 0) message.delete()
+	if (message.guild.id === '472448603642920973' && blocked.length > 0) message.delete();
 
 	// DSF - Merch Calls
 
 	await settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } })
 		.then(async res => {
-			if (res === null) return // null if merchChannel property doesn't exist
+			if (res === null) return; // null if merchChannel property doesn't exist
 			// if (res._id === '420803245758480405') return // Remove after
-			const merchID = await res.merchChannel.channelID
-			const otherID = await res.merchChannel.otherChannelID
+			const merchID = await res.merchChannel.channelID;
+			const otherID = await res.merchChannel.otherChannelID;
 			const errorLog = [];
-			const botServerWebhook = await client.channels.cache.get('784543962174062608').fetchWebhooks()
-			const dsfServerWebhook = await client.channels.cache.get('794608385106509824').fetchWebhooks()
-			errorLog.push(dsfServerWebhook.first(), botServerWebhook.first())
+			const botServerWebhook = await client.channels.cache.get('784543962174062608').fetchWebhooks();
+			const dsfServerWebhook = await client.channels.cache.get('794608385106509824').fetchWebhooks();
+			errorLog.push(dsfServerWebhook.first(), botServerWebhook.first());
 
 			if (message.channel.id === merchID) {
-				const merchRegex = /(^(?:m|merch|merchant|w|world){1}(\s?)(?!3$|7$|8$|11$|13$|17|19|20|29|33|34|38|41|43|47|57|61|75|80|81|90|93|94|101|102|10[7-9]|11[0-3]|12[0-2]|12[5-9]|13[0-3]|135|136)([1-9]\d?|1[0-3]\d|140)([,.\s]?|\s+\w*)*$)/i
+				const merchRegex = /(^(?:m|merch|merchant|w|world){1}(\s?)(?!3$|7$|8$|11$|13$|17|19|20|29|33|34|38|41|43|47|57|61|75|80|81|90|93|94|101|102|10[7-9]|11[0-3]|12[0-2]|12[5-9]|13[0-3]|135|136)([1-9]\d?|1[0-3]\d|140)([,.\s]?|\s+\w*)*$)/i;
 				message.content.match(merchRegex)
 					? message.channel.send(`<@&670842187461820436> - ${message.content}`).then(m => m.delete()).catch(async err => {
-						const messageID = err.path.split('/')
-						return await message.channel.messages.fetch(messageID[4]).then(x => x.delete()).catch(e => console.log('Unable to delete message'))
+						const messageID = err.path.split('/');
+						return await message.channel.messages.fetch(messageID[4]).then(x => x.delete()).catch(() => console.log('Unable to delete message'));
 					})
-					: message.delete()
+					: message.delete();
 				try {
-					let mes = await message.channel.messages.fetch({ limit: 10 })
+					let mes = await message.channel.messages.fetch({ limit: 10 });
 					mes = mes.filter(m => {
-						if (m.reactions.cache.has('☠️')) return
-						else return mes
-					})
-					const log = [...mes.values()]
+						if (m.reactions.cache.has('☠️')) return;
+						else return mes;
+					});
+					const log = [...mes.values()];
 					for (const messages in log) {
-						const authorName = log[messages].member?.nickname ?? log[messages].author.username
+						const authorName = log[messages].member?.nickname ?? log[messages].author.username;
 						await settingsColl.findOneAndUpdate({ _id: message.guild.id },
 							{
 								$addToSet: {
-									"merchChannel.messages": {
+									'merchChannel.messages': {
 										$each: [{
 											messageID: log[messages].id,
 											content: log[messages].content,
 											time: log[messages].createdTimestamp,
 											author: authorName,
-											userID: log[messages].member?.id ?? log[messages].author.id
+											userID: log[messages].member?.id ?? log[messages].author.id,
 										}],
-									}
-								}
+									},
+								},
 							},
 							{
 								sort: { time: 1 },
-								returnNewDocument: true
-							}
+								returnNewDocument: true,
+							},
 						)
+							// eslint-disable-next-line no-shadow
 							.then(async db => {
 								const messageArray = await db.value.merchChannel.messages;
 								if (messageArray[0] === undefined) return; // Undefined if bot spams the merch call
-								if (messageArray[0].author === "Valence Bot" || messageArray[0].author === null) {
-									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: messageArray[0].messageID } } })
+								if (messageArray[0].author === 'Valence Bot' || messageArray[0].author === null) {
+									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageArray[0].messageID } } });
 								}
-							})
+							});
 					}
-					const mesOne = await message.channel.messages.fetch({ limit: 1 })
-					const logOne = [...mesOne.values()]
-					const msg = logOne.map(val => val)
-					const tracker = await res.merchChannel.scoutTracker
+					const mesOne = await message.channel.messages.fetch({ limit: 1 });
+					const logOne = [...mesOne.values()];
+					const msg = logOne.map(val => val);
+					const tracker = await res.merchChannel.scoutTracker;
 
-					const findMessage = tracker.find(x => x.userID === msg[0].author.id)
+					const findMessage = tracker.find(x => x.userID === msg[0].author.id);
 					if (!findMessage) {
 						await settingsColl.findOneAndUpdate({ _id: message.guild.id },
 							{
@@ -130,11 +132,12 @@ module.exports = async (client, message) => {
 											count: 1,
 											otherCount: 0,
 											assigned: [],
-										}]
-									}
-								}
-							})
-					} else {
+										}],
+									},
+								},
+							});
+					}
+					else {
 						await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
 							$inc: {
 								'merchChannel.scoutTracker.$.count': 1,
@@ -144,88 +147,93 @@ module.exports = async (client, message) => {
 								'merchChannel.scoutTracker.$.lastTimestamp': msg[0].createdTimestamp,
 								'merchChannel.scoutTracker.$.lastTimestampReadable': new Date(msg[0].createdTimestamp),
 							},
-						})
+						});
 					}
 					const timer = cron.schedule('*/30 * * * * *', async () => { // Checking the DB and marking dead calls
 						await settingsColl.findOne({ _id: message.guild.id }).then(async data => {
 							for await (const doc of data.merchChannel.messages) {
-								const lastID = doc.messageID
-								const lastTime = doc.time
+								const lastID = doc.messageID;
+								const lastTime = doc.time;
 
 								try {
-									const fetched = await message.channel.messages.fetch(lastID)
-									const check = Date.now() - lastTime > 600000
+									const fetched = await message.channel.messages.fetch(lastID);
+									const check = Date.now() - lastTime > 600000;
 
 									if (check) {
 										fetched.react('☠️')
-										.then(async x => {
-											await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: lastID } } })
-										})
-										.catch(e => {
-											console.error('Unable to fetch message to react with.')
-											timer.stop()
-										})
+											.then(async () => {
+												await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: lastID } } });
+											})
+											.catch(() => {
+												console.error('Unable to fetch message to react with.');
+												timer.stop();
+											});
 									}
-								} catch (e) {
-									const messageID = e.path.split('/')
-									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { messageID: messageID[4] } } })
-									timer.stop()
+								}
+								catch (e) {
+									const messageID = e.path.split('/');
+									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID[4] } } });
+									timer.stop();
 								}
 							}
-						})
-					})
+						});
+					});
 
 					await settingsColl.findOne({ _id: message.guild.id }).then(async data => { // Posts only error to the error channel
 						const errorEmbed = (document, error) => {
 							const embed = new MessageEmbed()
-								.setTitle(`Error: Unknown Message`)
+								.setTitle('Error: Unknown Message')
 								.setDescription(`Message has been deleted. Removing from the DataBase. - **${data.serverName}**`)
 								.setColor(colors.red_dark)
-								.addField(`Message ID/Content:`, `${document.messageID}\n${document.content}`, true)
-								.addField(`Author ID/Tag:`, `${document.userID}\n<@!${document.userID}>`, true)
-								.addField(`Message Timestamp:`, `${new Date(document.time).toString().split(' ').slice(0, -4).join(' ')}`, true)
-								.addField(`Stack Trace`, `\`\`\`js\n${error.stack}\`\`\``)
-							return embed
-						}
-						const errorSet = new Set()
+								.addField('Message ID/Content:', `${document.messageID}\n${document.content}`, true)
+								.addField('Author ID/Tag:', `${document.userID}\n<@!${document.userID}>`, true)
+								.addField('Message Timestamp:', `${new Date(document.time).toString().split(' ').slice(0, -4).join(' ')}`, true)
+								.addField('Stack Trace', `\`\`\`js\n${error.stack}\`\`\``);
+							return embed;
+						};
+						const errorSet = new Set();
 
 						for await (const doc of data.merchChannel.messages) {
-							const lastID = doc.messageID
+							const lastID = doc.messageID;
 
 							try {
-								await message.channel.messages.fetch(lastID)
-							} catch (err) {
+								await message.channel.messages.fetch(lastID);
+							}
+							catch (err) {
 								if (err.code === 10008) {
-									if (doc.userID === '668330399033851924') return
-									errorSet.add({ document: doc, error: err })
+									if (doc.userID === '668330399033851924') return;
+									errorSet.add({ document: doc, error: err });
 								}
 							}
 						}
-						const errValues = errorSet.values()
-						const errNext = errValues.next().value
+						const errValues = errorSet.values();
+						const errNext = errValues.next().value;
 
 						if (errorSet.size) {
 							return errorLog.forEach(id => {
-								id.send(errorEmbed(errNext.document, errNext.error).addField('Notes:', `- Mark with ✅ when complete so we know if it has been looked at or not.\n- Mark with ❌ if it doesn't need doing.`))
-								.then(async x => {
-									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { "merchChannel.messages": { 'messageID': errNext.document.messageID } } })
-									errorSet.delete({ document: errNext.document, error: errNext.error })
-									errorSet.clear()
-								})
-							})
-						} else return
-					})
-				} catch (err) {
-					console.log(err)
+								id.send(errorEmbed(errNext.document, errNext.error).addField('Notes:', '- Mark with ✅ when complete so we know if it has been looked at or not.\n- Mark with ❌ if it doesn\'t need doing.'))
+									.then(async () => {
+										await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { 'messageID': errNext.document.messageID } } });
+										errorSet.delete({ document: errNext.document, error: errNext.error });
+										errorSet.clear();
+									});
+							});
+						}
+						else {return;}
+					});
 				}
-			} else if (message.channel.id === otherID) {
+				catch (err) {
+					console.log(err);
+				}
+			}
+			else if (message.channel.id === otherID) {
 				try {
-					const mesOne = await message.channel.messages.fetch({ limit: 1 })
-					const logOne = [...mesOne.values()]
-					const msg = logOne.map(val => val)
-					const tracker = await res.merchChannel.scoutTracker
+					const mesOne = await message.channel.messages.fetch({ limit: 1 });
+					const logOne = [...mesOne.values()];
+					const msg = logOne.map(val => val);
+					const tracker = await res.merchChannel.scoutTracker;
 
-					const findMessage = await tracker.find(x => x.userID === msg[0].author.id)
+					const findMessage = await tracker.find(x => x.userID === msg[0].author.id);
 					if (!findMessage) {
 						await settingsColl.findOneAndUpdate({ _id: message.guild.id },
 							{
@@ -241,11 +249,12 @@ module.exports = async (client, message) => {
 											count: 0,
 											otherCount: 1,
 											assigned: [],
-										}]
-									}
-								}
-							})
-					} else {
+										}],
+									},
+								},
+							});
+					}
+					else {
 						await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
 							$inc: {
 								'merchChannel.scoutTracker.$.otherCount': 1,
@@ -255,13 +264,15 @@ module.exports = async (client, message) => {
 								'merchChannel.scoutTracker.$.lastTimestamp': msg[0].createdTimestamp,
 								'merchChannel.scoutTracker.$.lastTimestampReadable': new Date(msg[0].createdTimestamp),
 							},
-						})
+						});
 					}
-				} catch (e) {
-					console.log(e)
 				}
-			} else return
-		})
+				catch (e) {
+					console.log(e);
+				}
+			}
+			else {return;}
+		});
 
 	// Valence Events Channel
 
@@ -285,36 +296,38 @@ module.exports = async (client, message) => {
 	 *				> Removes all associated event data from DB
 	 */
 	try {
-		const database =  await settingsColl.findOne({ _id: `${message.guild.id}` })
-		const eventChannel = database.channels.events
-		
-		if (message.channel.id === eventChannel) {
-			const last = message.channel.lastMessage
-			await last.react('❌')
-			await last.react('✅')
+		const database = await settingsColl.findOne({ _id: `${message.guild.id}` });
+		const eventChannel = database.channels.events;
 
-			const filter = (reaction, user) => ['❌', '✅'].includes(reaction.emoji.name) && user.id === message.author.id
-			const collectOne = await message.awaitReactions(filter, { max: 1, time: 3000, errors: ['time'] })
-			const collectOneReaction = collectOne.first()
+		if (message.channel.id === eventChannel) {
+			const last = message.channel.lastMessage;
+			await last.react('❌');
+			await last.react('✅');
+
+			const filter = (reaction, user) => ['❌', '✅'].includes(reaction.emoji.name) && user.id === message.author.id;
+			const collectOne = await message.awaitReactions(filter, { max: 1, time: 3000, errors: ['time'] });
+			const collectOneReaction = collectOne.first();
 			if (collectOneReaction.emoji.name === '❌') {
-				return collectOneReaction.message.reactions.removeAll()
-			} else if (collectOneReaction.emoji.name === '✅') {
-				await settingsColl.updateOne({ _id: message.guild.id }, {  })
-				await collectOneReaction.message.reactions.removeAll()
-				await last.react('📌')
-				await last.react('✅')
-			} else return
+				return collectOneReaction.message.reactions.removeAll();
+			}
+			else if (collectOneReaction.emoji.name === '✅') {
+				await settingsColl.updateOne({ _id: message.guild.id }, { });
+				await collectOneReaction.message.reactions.removeAll();
+				await last.react('📌');
+				await last.react('✅');
+			}
+			else {return;}
 		}
 	}
 	catch (err) {
-		console.error(err)
+		console.error(err);
 	}
-	
+
 
 	// Commands
 	try {
-		const commandDB = await settingsColl.findOne({ _id: `${message.guild.id}` })
-		const globalDB = await settingsColl.findOne({ _id: 'Globals'})
+		const commandDB = await settingsColl.findOne({ _id: `${message.guild.id}` });
+		const globalDB = await settingsColl.findOne({ _id: 'Globals' });
 		if (!message.content.startsWith(commandDB.prefix)) return;
 
 		const args = message.content.slice(commandDB.prefix.length).split(/ +/g);
@@ -323,36 +336,36 @@ module.exports = async (client, message) => {
 		const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases
 			&& cmd.aliases.includes(commandName)); // Command object
 
-		let aR = new Permissions('adminRole', commandDB, message)
-		let mR = new Permissions('modRole', commandDB, message)
-		let owner = new Permissions('owner', commandDB, message)
+		const aR = new Permissions('adminRole', commandDB, message);
+		const mR = new Permissions('modRole', commandDB, message);
+		const owner = new Permissions('owner', commandDB, message);
 
-		let perms = {
+		const perms = {
 			owner: owner.botOwner(),
 			admin: message.member.roles.cache.has(aR.memberRole()[0]) || message.member.roles.cache.has(aR.roleID) || message.author.id === message.guild.ownerID,
 			mod: message.member.roles.cache.has(mR.memberRole()[0]) || message.member.roles.cache.has(mR.roleID) || mR.modPlusRoles() >= mR._role.rawPosition || message.author.id === message.guild.ownerID,
 			errorO: owner.ownerError(),
 			errorM: mR.error(),
 			errorA: aR.error(),
-		}
+		};
 
 		const channels = {
 			vis: globalDB.channels.vis,
 			errors: globalDB.channels.errors,
 			logs: globalDB.channels.logs,
-		}
+		};
 
 		try {
 			command.guildSpecific === 'all' || command.guildSpecific.includes(message.guild.id)
 				? command.run(client, message, args, perms, channels)
-				: message.channel.send("You cannot use that command in this server.")
+				: message.channel.send('You cannot use that command in this server.');
 		}
 		catch (error) {
-			if (commandName !== command) return
+			if (commandName !== command) return;
 		}
 	}
 	catch (err) {
-		console.error(err)
+		console.error(err);
 	}
 
 	// Update DB
@@ -381,4 +394,4 @@ module.exports = async (client, message) => {
 	// } catch (err) {
 	// 	console.log(err)
 	// }
-}
+};
