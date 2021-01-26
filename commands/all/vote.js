@@ -3,7 +3,7 @@ const colors = require('../../colors.json')
 
 module.exports = {
 	name: "vote",
-	description: ["Provides a voting message in which people can react with ✅ or ❌."],
+	description: ["Poll a message in which people can react with ✅ or ❌ or ❓."],
 	aliases: [],
 	usage: ["<question>"],
 	guildSpecific: 'all',
@@ -20,6 +20,7 @@ module.exports = {
         message.channel.send(embed).then(async m => {
             await m.react('✅')
             await m.react('❌')
+            await m.react('❓')
         })
 	},
 };
