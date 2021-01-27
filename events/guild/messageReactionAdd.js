@@ -22,4 +22,9 @@ module.exports = async (client, reaction, user) => {
 		message.guild.roles.fetch(data[0].roleID).then(r => r.delete());
 		settingsColl.findOneAndUpdate({ _id: message.guild.id }, { $pull: { events: { messageID: message.id } } });
 	}
+	else if (reaction.emoji.name === '📌') {
+		const userFetch = await message.guild.members.fetch(user.id);
+		userFetch.roles.add(data[0].roleID);
+		await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'events.messageID': data[0].messageID }, { $addToSet: { 'events.$.members': user.id } });
+	}
 };
