@@ -65,8 +65,7 @@ module.exports = async (client, message) => {
 	await settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } })
 		.then(async res => {
 			if (res === null) return; // null if merchChannel property doesn't exist
-			// if (res._id === '420803245758480405') return // Remove after
-			if (res.serverName !== 'Luke\'s Server') return;
+			if (res.serverName !== 'Luke\'s Server') return; // Remove after
 
 			const merchID = await res.merchChannel.channelID;
 			const otherID = await res.merchChannel.otherChannelID;
@@ -314,6 +313,12 @@ module.exports = async (client, message) => {
 
 		if (message.channel.id === eventChannel) {
 			const last = message.channel.lastMessage;
+
+			/**
+			 * Test here with 2 posts in the same channel. Which is considered last? Will it update the very last one or update separately
+			 * Check this with uncached messages too. See if I need to fetch them
+			 */
+
 			const eventTitle = last.content.split('\n').map(e => {
 				if (e.includes('*')) {
 					return e.replace(/\*|_/g, '');
@@ -325,7 +330,7 @@ module.exports = async (client, message) => {
 			await last.react('✅');
 
 			const filter = (reaction, user) => ['❌', '✅'].includes(reaction.emoji.name) && user.id === message.author.id;
-			const collectOne = await message.awaitReactions(filter, { max: 1, time: 3000, errors: ['time'] });
+			const collectOne = await message.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] });
 			const collectOneReaction = collectOne.first();
 
 			if (collectOneReaction.emoji.name === '❌') {
@@ -352,7 +357,6 @@ module.exports = async (client, message) => {
 						date[4] === ':' ? date = date.slice(6).trim() : date = date.slice(5).trim();
 					}
 					if (time !== 'null') {
-						console.log(5, time, typeof time);
 						time[4] === ':' ? time = time.slice(6).trim() : time = time.slice(5).trim();
 					}
 					if (time === 'null' || date === 'null') {
@@ -384,22 +388,6 @@ module.exports = async (client, message) => {
 				await collectOneReaction.message.reactions.removeAll();
 				await last.react('📌');
 				await last.react('✅');
-
-				// const reaction = (r, u) => ['📌', '✅'].includes(r.emoji.name) && u.id === last.author.id;
-				// const collector = last.createReactionCollector(reaction, { time: 1814400000 });
-
-				// collector.on('collect', (r, u) => {
-				// 	if (r.emoji.name === '✅') {
-				// 		if (u.id !== last.author.id) {
-				// 			last.reactions.resolve('✅').users.remove(u.id);
-				// 			return;
-				// 		}
-				// 		r.message.reactions.removeAll();
-				// 		settingsColl.findOneAndUpdate({ _id: message.guild.id }, { $pull: { events: { messageID: last.id } } });
-				// 	}
-				// });
-
-
 			}
 			else {return;}
 		}
