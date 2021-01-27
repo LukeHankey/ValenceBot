@@ -4,6 +4,7 @@ const gsheet = require('../../gsheets');
 const { google } = require('googleapis');
 const func = require('../../functions');
 const colors = require('../../colors.json');
+const getDb = require('../../mongodb').getDb;
 
 /**
  * 733164313744769024 - Test Server
@@ -23,10 +24,13 @@ module.exports = {
 			if (err) console.error(err);
 			googleSheets(gsheet.googleClient);
 		});
+		const db = getDb();
+		const settingsColl = db.collection('Settings');
+		const database = await settingsColl.findOne({ _id: message.guild.id });
 
 		const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 		const monthIndex = (new Date()).getUTCMonth();
-		const rangeName = 'Jan 2021 Lotto';
+		const rangeName = await database.lottoSheet;
 
 		async function googleSheets(gClient) {
 			const gsapi = google.sheets({ version: 'v4', auth: gClient });
@@ -186,6 +190,22 @@ module.exports = {
 					totalValues.push(fields);
 				}
 				message.channel.send(totalEmbed.addFields(totalValues).spliceFields(2, 0, { name: '\u200B', value: '\u200B', inline: true }));
+				break;
+			case 'sheet':
+				if (perms.mod) {
+					const newSheet = args.slice(1).join(' ');
+					if (newSheet) {
+						settingsColl.findOneAndUpdate({ _id: message.guild.id }, { $set: { lottoSheet: newSheet } });
+					}
+					else {
+						const newName = await settingsColl.findOne({ _id: message.guild.id });
+						return message.channel.send(`The current Lotto Sheet name is : \`${newName.lottoSheet}\``);
+					}
+					return;
+				}
+				else {
+					message.channel.send(perms.errorM);
+				}
 				break;
 			default:
 				const username = args.join(' ');
