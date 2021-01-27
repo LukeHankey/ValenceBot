@@ -14,11 +14,10 @@ const getDb = require('../../mongodb').getDb;
 
 module.exports = {
 	name: 'lotto',
-	description: ['Shows a list of everyone in the current months lottery.', 'Shows information about the <user> lottery entry.', 'Adds a clanmate\'s lottery entry to google sheet.\nExample:\n```js\n;lotto add 1000000 clan bank / J ulian\n;lotto add 500000 clan bank / Guys / double```'],
+	description: ['Shows a list of everyone in the current months lottery.', 'Displays the current total pot for the Lottery!', 'Updates the google sheet name.', 'Shows information about the <user> lottery entry.', 'Adds a clanmate\'s lottery entry to google sheet.\nExample:\n```js\n;lotto add 1000000 clan bank / J ulian\n;lotto add 500000 clan bank / Guys / double```'],
 	aliases: ['lottery'],
-	usage: ['', '<user>', 'add <amount> <collector> / <clanmate> / double (optional)'],
+	usage: ['', 'total', 'sheet <Google Sheet Name>', '<user>', 'add <amount> <collector> / <clanmate> / double (optional)'],
 	guildSpecific: ['472448603642920973', '733164313744769024', '668330890790699079'],
-	permissions: ['Mod'],
 	run: async (client, message, args, perms) => {
 		gsheet.googleClient.authorize(err => {
 			if (err) console.error(err);
@@ -201,7 +200,6 @@ module.exports = {
 						const newName = await settingsColl.findOne({ _id: message.guild.id });
 						return message.channel.send(`The current Lotto Sheet name is : \`${newName.lottoSheet}\``);
 					}
-					return;
 				}
 				else {
 					message.channel.send(perms.errorM);
