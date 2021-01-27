@@ -137,7 +137,7 @@ module.exports = {
 					}
 				}
 				else {
-					const currentMonthMessage = r.calendarID.filter((obj) => obj.month === currentMonth);
+					const currentMonthMessage = r.calendarID.filter((obj) => obj.year === new Date().getUTCFullYear() && obj.month === currentMonth);
 					try {
 						const [...rest] = args.slice(1);
 						const m = await message.channel.messages.fetch(currentMonthMessage[0].messageID);
@@ -149,11 +149,11 @@ module.exports = {
 						const host = hostCollection.join(' ') || message.mentions.roles.first();
 
 						if (!date || !event || !time || !link || !host) {
-							message.channel.send(`Please provide the content that you would like to add to the calendar. Acceptable format below:\n${code}\n21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include <Date> Event: / Time: / Announcement: / Host: \nStarting with capitals and including the colon.${code}`);
+							message.channel.send(`Please provide the content that you would like to add to the calendar. Acceptable format below:\n${code}\nDate: 21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include Date: / Event: / Time: / Announcement: / Host: \nStarting with capitals and including the colon.${code}`);
 						}
 						else {
 							const editEmbed = new Discord.MessageEmbed(m.embeds[0]);
-							if (args[2] !== 'Date:' && func.checkNum(args[2], 1)) {
+							if (args[1] !== 'Date:' && func.checkNum(args[1], 1)) {
 								editEmbed.spliceFields(args[1] - 1, 0, { name: date, value: `Event: ${event}\nTime: ${time}\n[Announcement](${link})\nHost: ${host}` });
 								m.edit(editEmbed);
 							}
