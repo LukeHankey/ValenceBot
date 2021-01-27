@@ -285,7 +285,7 @@ module.exports = async (client, message) => {
 	await settingsColl.findOne({ _id: message.guild.id, 'channels.events': { $exists: true } })
 		.then(async (DB) => {
 			// eslint-disable-next-line no-useless-escape
-			if (!DB) return message.channel.send('You haven\'t set your events channel up. Use the \`;settings\` command.');
+			if (!DB) return;
 			const eventChannel = DB.channels.events;
 
 			const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
