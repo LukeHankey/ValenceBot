@@ -238,7 +238,7 @@ module.exports = {
 							client.user.displayAvatarURL(),
 						)
 							.addFields(
-								{ name: '**Settings**', value: '`prefix`\n`adminRole`\n`modRole`\n`adminChannel`', inline: false },
+								{ name: '**Settings**', value: '`prefix`\n`adminRole`\n`modRole`\n`adminChannel`\n`eventsChannel`', inline: false },
 							));
 					}
 					else {
