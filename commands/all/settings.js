@@ -229,6 +229,53 @@ module.exports = {
 						}
 					}
 					break;
+				case 'modChannel':
+					switch (args[1]) {
+					case 'set':
+						if (perms.admin) {
+							const channelTag = [];
+							if (args[2] === undefined) {
+								channelTag.push('false');
+							}
+							else {
+								channelTag.push(args[2].slice(2, 20));
+							}
+							if (func.checkNum(args[2], 1, Infinity) && message.guild.channels.cache.has(args[2]) && message.guild.id !== args[2]) { // Check by ID
+								settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { 'channels.mod': args[2] } }, { returnOriginal: true })
+									.then(r => {
+										message.channel.send(`The Mod Channel has been set to: <#${args[2]}>`);
+										client.channels.cache.get(channels.logs)
+											.send(`<@${message.author.id}> set the Mod Channel in server: **${message.guild.name}** from <#${r.value.channels.mod}> to <#${args[2]}>`);
+									});
+							}
+							else if (func.checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) { // Check by #Channel
+								settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { 'channels.mod': channelTag[0] } }, { returnOriginal: true })
+									.then(r => {
+										message.channel.send(`The Mod Channel has been set to: <#${channelTag[0]}>`);
+										client.channels.cache.get(channels.logs)
+											.send(`<@${message.author.id}> set the Mod Channel in server: **${message.guild.name}** from <#${r.value.channels.mod}> to <#${channelTag[0]}>`);
+									});
+							}
+							else {
+								message.channel.send('What do you want to set the Mod Channel to? Acceptable values:');
+								message.channel.send(`${code}diff\n+ Channel ID (18 Digits)\n+ Channel tag (#<Channel name>)${code}`);
+							}
+						}
+						else {
+							message.channel.send(perms.errorA);
+						}
+						break;
+					default:
+						if (!args[1] && perms.admin) {
+							res.channels.mod === null || res.channels.mod === undefined
+								? message.channel.send('Your Mod Channel is set as: `Null`')
+								: message.channel.send(`Your Mod Channel is set as: <#${res.channels.mod}>`);
+						}
+						else {
+							message.channel.send(func.nEmbed('Permission Denied', 'You do not have permission to see the Admin Channel!', colors.red_dark));
+						}
+					}
+					break;
 				default:
 					if (!args[0]) {
 						message.channel.send(func.nEmbed(
@@ -238,7 +285,7 @@ module.exports = {
 							client.user.displayAvatarURL(),
 						)
 							.addFields(
-								{ name: '**Settings**', value: '`prefix`\n`adminRole`\n`modRole`\n`adminChannel`\n`eventsChannel`', inline: false },
+								{ name: '**Settings**', value: '`prefix`\n`adminRole`\n`modRole`\n`adminChannel`\n`eventsChannel`\n`modChannel`', inline: false },
 							));
 					}
 					else {

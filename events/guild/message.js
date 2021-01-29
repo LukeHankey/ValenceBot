@@ -320,7 +320,7 @@ module.exports = async (client, message) => {
 						const dateRegex = /^(Date(:)?\s)+((3[0-1]|2\d|1\d|[1-9])(st|nd|rd|th)?)+\s?(-|to)+\s?((3[0-1]|2\d|1\d|[1-9])(st|nd|rd|th)?)+$/im;
 						const timeRegex = /^(Time(:)?\s)+(([1-6]+(\s)?(day(s)?|week(s)?|month(s)?)$)?|(([0-1]\d|2[0-3]):([0-5]\d)\s)?(-|to)+\s?(([0-1]\d|2[0-3]):([0-5]\d))?)$/im;
 						const link = `https://discord.com/channels/${last.guild.id}/${last.channel.id}/${last.id}`;
-						const thisCal = DB.calendarID.filter(prop => (prop.year === new Date().getUTCFullYear()) && prop.month === months[monthIndex]);
+						const thisCal = await DB.calendarID.filter(prop => (prop.year === new Date().getUTCFullYear()) && prop.month === months[monthIndex]);
 						const m = await calChannel.messages.fetch(thisCal[0].messageID);
 						let dateR, timeR;
 
