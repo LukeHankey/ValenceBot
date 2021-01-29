@@ -305,7 +305,7 @@ module.exports = async (client, message) => {
 
 				try {
 					const filter = (reaction, user) => ['❌', '✅'].includes(reaction.emoji.name) && user.id === message.author.id;
-					const collectOne = await message.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] });
+					const collectOne = await message.awaitReactions(filter, { max: 1, time: 300000, errors: ['time'] });
 					const collectOneReaction = collectOne.first();
 
 					if (collectOneReaction.emoji.name === '❌') {
