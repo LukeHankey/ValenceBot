@@ -336,11 +336,11 @@ module.exports = async (client, message) => {
 							}
 							if (time === 'null' || date === 'null') {
 								if (time === 'null' && date === 'null') {
-									client.channels.cache.get(DB.channels.adminChannel).send(`${last.author}, there was an error with both the  \`Time\` and \`Date\` parameters and they have been set as null. Please go update the calendar for your event.`);
+									client.channels.cache.get(DB.channels.mod).send(`${last.author}, there was an error with both the  \`Time\` and \`Date\` parameters and they have been set as null. Please go update the calendar for your event.`);
 								}
 								else {
 									// eslint-disable-next-line no-useless-escape
-									client.channels.cache.get(DB.channels.adminChannel).send(`${last.author}, ${time === 'null' ? 'there was an error with the  \`Time\` parameter and it has been set as null. Please go update the calendar for your event.' : 'there was an error with the  \`Date\` parameter and it has been set as null. Please go update the calendar for your event.'}`);
+									client.channels.cache.get(DB.channels.mod).send(`${last.author}, ${time === 'null' ? 'there was an error with the  \`Time\` parameter and it has been set as null. Please go update the calendar for your event.' : 'there was an error with the  \`Date\` parameter and it has been set as null. Please go update the calendar for your event.'}`);
 								}
 							}
 
