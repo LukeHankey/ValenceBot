@@ -81,43 +81,9 @@ module.exports = async (client, message) => {
 						return await message.channel.messages.fetch(messageID[4]).then(x => x.delete()).catch(() => console.log('Unable to delete message'));
 					})
 					: message.delete();
+
 				try {
-					let mes = await message.channel.messages.fetch({ limit: 10 });
-					mes = mes.filter(m => {
-						if (m.reactions.cache.has('☠️')) return;
-						else return mes;
-					});
-					const log = [...mes.values()];
-					for (const messages in log) {
-						const authorName = log[messages].member?.nickname ?? log[messages].author.username;
-						await settingsColl.findOneAndUpdate({ _id: message.guild.id },
-							{
-								$addToSet: {
-									'merchChannel.messages': {
-										$each: [{
-											messageID: log[messages].id,
-											content: log[messages].content,
-											time: log[messages].createdTimestamp,
-											author: authorName,
-											userID: log[messages].member?.id ?? log[messages].author.id,
-										}],
-									},
-								},
-							},
-							{
-								sort: { time: 1 },
-								returnNewDocument: true,
-							},
-						)
-							// eslint-disable-next-line no-shadow
-							.then(async db => {
-								const messageArray = await db.value.merchChannel.messages;
-								if (messageArray[0] === undefined) return; // Undefined if bot spams the merch call
-								if (messageArray[0].author === 'Valence Bot' || messageArray[0].author === null) {
-									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageArray[0].messageID } } });
-								}
-							});
-					}
+					// Adding count to members
 					const mesOne = await message.channel.messages.fetch({ limit: 1 });
 					const logOne = [...mesOne.values()];
 					const msg = logOne.map(val => val);
@@ -156,37 +122,47 @@ module.exports = async (client, message) => {
 							},
 						});
 					}
-					const timer = cron.schedule('*/30 * * * * *', async () => { // Checking the DB and marking dead calls
-						await settingsColl.findOne({ _id: message.guild.id }).then(async data => {
-							for await (const doc of data.merchChannel.messages) {
-								const lastID = doc.messageID;
-								const lastTime = doc.time;
 
-								try {
-									const fetched = await message.channel.messages.fetch(lastID);
-									const check = Date.now() - lastTime > 600000;
-
-									if (check) {
-										fetched.react('☠️')
-											.then(async () => {
-												await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: lastID } } });
-											})
-											.catch(() => {
-												console.error('Unable to fetch message to react with.');
-												timer.stop();
-											});
-									}
-								}
-								catch (e) {
-									const messageID = e.path.split('/');
-									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID[4] } } });
-									timer.stop();
-								}
-							}
-						});
+					// Database logging for merch worlds
+					let mes = await message.channel.messages.fetch({ limit: 10 });
+					mes = mes.filter(m => {
+						if (m.reactions.cache.has('☠️')) return;
+						else return mes;
 					});
+					const log = [...mes.values()];
+					for (const messages in log) {
+						const authorName = log[messages].member?.nickname ?? log[messages].author.username;
+						await settingsColl.findOneAndUpdate({ _id: message.guild.id },
+							{
+								$addToSet: {
+									'merchChannel.messages': {
+										$each: [{
+											messageID: log[messages].id,
+											content: log[messages].content,
+											time: log[messages].createdTimestamp,
+											author: authorName,
+											userID: log[messages].member?.id ?? log[messages].author.id,
+										}],
+									},
+								},
+							},
+							{
+								sort: { time: 1 },
+								returnNewDocument: true,
+							},
+						)
+							// eslint-disable-next-line no-shadow
+							.then(async db => {
+								const messageArray = await db.value.merchChannel.messages;
+								if (messageArray[0] === undefined) return; // Undefined if bot spams the merch call
+								if (messageArray[0].author === 'Valence Bot' || messageArray[0].author === null) {
+									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageArray[0].messageID } } });
+								}
+							});
+					}
 
-					await settingsColl.findOne({ _id: message.guild.id }).then(async data => { // Posts only error to the error channel
+					// Posts only error to the error channel
+					await settingsColl.findOne({ _id: message.guild.id }).then(async data => {
 						const errorEmbed = (document, error) => {
 							const embed = new MessageEmbed()
 								.setTitle('Error: Unknown Message')
@@ -228,12 +204,44 @@ module.exports = async (client, message) => {
 						}
 						else {return;}
 					});
+
+					// Checking the DB and marking dead calls
+					const timer = cron.schedule('*/30 * * * * *', async () => {
+						await settingsColl.findOne({ _id: message.guild.id }).then(async data => {
+							for await (const doc of data.merchChannel.messages) {
+								const lastID = doc.messageID;
+								const lastTime = doc.time;
+
+								try {
+									const fetched = await message.channel.messages.fetch(lastID);
+									const check = Date.now() - lastTime > 600000;
+
+									if (check) {
+										fetched.react('☠️')
+											.then(async () => {
+												await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: lastID } } });
+											})
+											.catch(() => {
+												console.error('Unable to fetch message to react with.');
+												timer.stop();
+											});
+									}
+								}
+								catch (e) {
+									const messageID = e.path.split('/');
+									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID[4] } } });
+									timer.stop();
+								}
+							}
+						});
+					});
 				}
 				catch (err) {
 					console.log(err);
 				}
 			}
 			else if (message.channel.id === otherID) {
+				// Adds count for other events channel
 				try {
 					const mesOne = await message.channel.messages.fetch({ limit: 1 });
 					const logOne = [...mesOne.values()];
