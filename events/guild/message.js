@@ -227,8 +227,7 @@ module.exports = async (client, message) => {
 												await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: lastID } } });
 											})
 											.catch(() => {
-												console.error('Unable to fetch message to react with.');
-												timer.stop();
+												return timer.stop();
 											});
 									}
 								}
