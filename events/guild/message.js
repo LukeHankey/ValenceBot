@@ -65,7 +65,6 @@ module.exports = async (client, message) => {
 	await settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } })
 		.then(async res => {
 			if (res === null) return; // null if merchChannel property doesn't exist
-			if (res._id !== '733164313744769024') return;
 			const merchID = await res.merchChannel.channelID;
 			const otherID = await res.merchChannel.otherChannelID;
 			const errorLog = [];
@@ -111,6 +110,8 @@ module.exports = async (client, message) => {
 							});
 					}
 					else {
+						const userN = findMessage.userID;
+						console.log(message.guild.members.cache.get(userN).user.usernmae);
 						await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
 							$inc: {
 								'merchChannel.scoutTracker.$.count': 1,
