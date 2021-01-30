@@ -81,6 +81,8 @@ module.exports = async (client, message) => {
 					})
 					: message.delete();
 
+				if (message.author.bot) return;
+
 				try {
 					// Adding count to members
 					const mesOne = await message.channel.messages.fetch({ limit: 1 });
@@ -90,6 +92,8 @@ module.exports = async (client, message) => {
 
 					const findMessage = tracker.find(x => x.userID === msg[0].author.id);
 					if (!findMessage) {
+						const userN = await message.guild.members.fetch(message.member.id);
+						console.log(`New: ${userN.user.username} (${message.content})`, message.member.id);
 						await settingsColl.findOneAndUpdate({ _id: message.guild.id },
 							{
 								$addToSet: {
@@ -110,8 +114,8 @@ module.exports = async (client, message) => {
 							});
 					}
 					else {
-						const userN = findMessage.userID;
-						console.log(message.guild.members.cache.get(userN).user.usernmae);
+						const userN = await message.guild.members.fetch(message.member.id);
+						console.log(`Old: ${userN.user.username} (${message.content})`, findMessage.userID === userN.id, findMessage.userID);
 						await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
 							$inc: {
 								'merchChannel.scoutTracker.$.count': 1,
