@@ -7,7 +7,8 @@ module.exports = {
 	aliases: [],
 	usage: ['<question>'],
 	guildSpecific: 'all',
-	run: async (client, message, args) => {
+	run: async (client, message, args, perms) => {
+		if (!perms.mod) return message.channel.send(perms.errorM);
 		const content = args.join(' ');
 
 		const embed = new MessageEmbed()
