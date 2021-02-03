@@ -55,6 +55,7 @@ module.exports = {
 									},
 								});
 						});
+					message.delete();
 				}
 				else {
 					client.channels.cache.get(channels.logs).send(`<@${message.author.id}> created a new Calendar embed.`);
@@ -71,6 +72,7 @@ module.exports = {
 									},
 								});
 						});
+					message.delete();
 				}
 			}
 			else {
@@ -109,6 +111,7 @@ module.exports = {
 									);
 									m.edit(editEmbed);
 								}
+								message.delete();
 								client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
 							}
 						}
@@ -163,6 +166,7 @@ module.exports = {
 								);
 								m.edit(editEmbed);
 							}
+							message.delete();
 							client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
 						}
 					}
@@ -196,42 +200,47 @@ module.exports = {
 				const monthInc = r.calendarID.filter((obj) => obj.month === args[1] || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase());
 				// Editing a specific month \\
 				if (monthInc && monthInc.length !== 0) {
-					if (args[1] === monthInc[0].month || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
+					if (args[1].toLowerCase() === monthInc[0].month.toLowerCase() || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
 						const [...rest] = args.slice(3);
 						const fieldParams = ['date:', 'event:', 'time:', 'announcement:', 'host:'];
 						const parameter = fieldParams.indexOf(args[3].toLowerCase());
 
-						const editE = await message.channel.messages.fetch(monthInc[0].messageID)
-							.catch(() => message.channel.send('Try again in the <#626172209051860992> channel.'));
-						const n = new Discord.MessageEmbed(editE.embeds[0]);
+						try {
+							const editE = await message.channel.messages.fetch(monthInc[0].messageID);
+							const n = new Discord.MessageEmbed(editE.embeds[0]);
 
-						const fields = n.fields[args[2] - 1];
-						if (fieldParams.includes(args[2].toLowerCase())) {
-							if (fieldParams[0] === rest[0].toLowerCase()) {
-								n.spliceFields(args[2] - 1, 1, { name: rest.slice(1).join(' '), value: fields.value });
-								editE.edit(n);
-							}
-							else if (fieldParams[parameter] === rest[0].toLowerCase() && rest[0].toLowerCase() !== fieldParams[0]) {
-								const values = fields.value.split('\n');
-								let newValue = ` ${rest.slice(1).join(' ')}`;
-								if (fieldParams[parameter] !== fieldParams[3]) {
-									const value = values.filter((val) => val.toLowerCase().includes(fieldParams[parameter]));
-									// eslint-disable-next-line no-inline-comments
-									const fieldValue = value.join(' ').split(`${func.capitalise(fieldParams[parameter])}`); // Doesn't work for announcement
-									n.spliceFields(args[2] - 1, 1, { name: fields.name, value: fields.value.replace(fieldValue[1], newValue) });
+							const fields = n.fields[args[2] - 1];
+							if (fieldParams.includes(args[3].toLowerCase())) {
+								if (fieldParams[0] === rest[0].toLowerCase()) {
+									n.spliceFields(args[2] - 1, 1, { name: rest.slice(1).join(' '), value: fields.value });
 									editE.edit(n);
 								}
-								else {
-									const annVal = values[2].split('](');
-									newValue = ` ${rest.slice(1).join(' ')})`;
-									n.spliceFields(args[2] - 1, 1, { name: fields.name, value: fields.value.replace(annVal[1], newValue) });
-									editE.edit(n);
+								else if (fieldParams[parameter] === rest[0].toLowerCase() && rest[0].toLowerCase() !== fieldParams[0]) {
+									const values = fields.value.split('\n');
+									let newValue = ` ${rest.slice(1).join(' ')}`;
+									if (fieldParams[parameter] !== fieldParams[3]) {
+										const value = values.filter((val) => val.toLowerCase().includes(fieldParams[parameter]));
+										// eslint-disable-next-line no-inline-comments
+										const fieldValue = value.join(' ').split(`${func.capitalise(fieldParams[parameter])}`); // Doesn't work for announcement
+										n.spliceFields(args[2] - 1, 1, { name: fields.name, value: fields.value.replace(fieldValue[1], newValue) });
+										editE.edit(n);
+									}
+									else {
+										const annVal = values[2].split('](');
+										newValue = ` ${rest.slice(1).join(' ')})`;
+										n.spliceFields(args[2] - 1, 1, { name: fields.name, value: fields.value.replace(annVal[1], newValue) });
+										editE.edit(n);
+									}
 								}
+								message.delete();
+								client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
 							}
-							client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
+							else {
+								message.channel.send(`You must provide the event number you want to edit as well as the field. Examples: ${code}1 Time: 14:00 - 15:00. - Gets the 1st event and edits the Time field to the new value.\n3 Date: 5th. - Gets the 3rd event and edits the Date field to the new value.${code}`);
+							}
 						}
-						else {
-							message.channel.send(`You must provide the event number you want to edit as well as the field. Examples: ${code}1 Time: 14:00 - 15:00. - Gets the 1st event and edits the Time field to the new value.\n3 Date: 5th. - Gets the 3rd event and edits the Date field to the new value.${code}`);
+						catch (err) {
+							if (err.code === 10008) message.channel.send('Try again in the <#626172209051860992> channel.');
 						}
 					}
 				}
@@ -268,6 +277,7 @@ module.exports = {
 								editE.edit(n);
 							}
 						}
+						message.delete();
 						client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
 					}
 					else {
@@ -290,6 +300,7 @@ module.exports = {
 						const log = removeE.embeds[0].fields.splice(args[2] - 1, args[3]);
 						const logValues = log.map((values) => `${values.name}\n${values.value}\n`);
 						const remaining = n.fields.map((values) => `${values.name}\n${values.value}\n`);
+						message.delete();
 						client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} removed event: ${code}diff\n- Removed\n${logValues.join('\n')}\n+ Remaining\n ${remaining.join('\n')}${code}`);
 					}
 				}
@@ -304,6 +315,7 @@ module.exports = {
 					const log = removeE.embeds[0].fields.splice(args[1] - 1, args[2]);
 					const logValues = log.map((values) => `${values.name}\n${values.value}\n`);
 					const remaining = n.fields.map((values) => `${values.name}\n${values.value}\n`);
+					message.delete();
 					client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} removed event: ${code}diff\n- Removed\n${logValues.join('\n')}\n+ Remaining\n ${remaining.join('\n')}${code}`);
 				}
 			});
@@ -312,7 +324,7 @@ module.exports = {
 			settings.findOne({ _id: message.guild.id }).then(async (r) => {
 				const monthInc = r.calendarID.filter((obj) => obj.month === args[1] || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase());
 				if (monthInc && monthInc.length !== 0) {
-					if (args[1] === monthInc[0].month || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
+					if (args[1].toLowerCase() === monthInc[0].month.toLowerCase() || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
 						const moveE = await message.channel.messages.fetch(monthInc[0].messageID)
 							.catch(() => message.channel.send('Try again in the <#626172209051860992> channel.'));
 						const n = new Discord.MessageEmbed(moveE.embeds[0]);
@@ -321,6 +333,7 @@ module.exports = {
 							.spliceFields(args[3] - 1, 0, { name: fields.name, value: fields.value });
 						moveE.edit(n);
 					}
+					message.delete();
 				}
 				else {
 					const currentMonthMessage = r.calendarID.filter((obj) => obj.month === currentMonth);
@@ -331,6 +344,7 @@ module.exports = {
 					n.spliceFields(args[1] - 1, 1)
 						.spliceFields(args[2] - 1, 0, { name: fields.name, value: fields.value });
 					moveE.edit(n);
+					message.delete();
 				}
 			});
 		}
