@@ -218,7 +218,12 @@ module.exports = async (client, message) => {
 								const lastTime = doc.time;
 
 								try {
+									if (doc.userID === '668330399033851924') {
+										await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: doc.messageID } } });
+									}
+
 									const fetched = await message.channel.messages.fetch(lastID);
+									console.log(doc);
 									const check = Date.now() - lastTime > 600000;
 
 									if (check) {
