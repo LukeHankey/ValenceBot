@@ -223,7 +223,6 @@ module.exports = async (client, message) => {
 									}
 
 									const fetched = await message.channel.messages.fetch(lastID);
-									console.log(doc);
 									const check = Date.now() - lastTime > 600000;
 
 									if (check) {
