@@ -92,6 +92,7 @@ module.exports = async (client, message) => {
 
 					const findMessage = tracker.find(x => x.userID === msg[0].author.id);
 					if (!findMessage) {
+						if (!merchRegex.test(message.content)) return;
 						const userN = await message.guild.members.fetch(message.member.id);
 						console.log(`New: ${userN.user.username} (${message.content})`, message.member.id);
 						await settingsColl.findOneAndUpdate({ _id: message.guild.id },
