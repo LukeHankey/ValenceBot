@@ -120,6 +120,13 @@ module.exports = async (client, reaction, user) => {
 				 * Have the post auto-update every few minutes or so if there is anything to update. Store message ID in DB
 				 * Check on the post who is above the threshold and if no role has been added to them, keep thier profile + message ID to refer back to.
 				 * Send new post every 12 hours with old data ^ & if there are any new data. 12 hours || any message with users.length > 5 && (reactions.length > 5 || total reaction > 10 individually)
+				 *
+				 * Remove posts in DB 1 hour after they were sent unless they have reaction spamming on
+				 *
+				 *
+				 * Maybe add:
+				 * Check every minute for each user if they have the grounded role added to them.
+				 * If so, remove their reactions on the post(s). Or, disable ;sa command and add grounded role myself depending on different criteria
 				 */
 
 			}
