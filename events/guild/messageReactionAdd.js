@@ -41,7 +41,7 @@ module.exports = async (client, reaction, user) => {
 			const dataFields = [];
 			usersList.forEach(u => {
 				// Filters added here
-				if (u.totalCount > 3 || u.reactions.length > 4) {
+				if (u.totalCount > 9 || u.reactions.length > 4) {
 					const emojis = u.reactions.map(e => { return `${e.emoji} **- ${e.count}**`; });
 					dataFields.push({ name: `${u.user.username} - ${u.user.id}`, value: `Mention: <@!${u.user.id}>\nTotal Reacts (${u.skullCount}/${u.totalCount})\n\n${emojis.join('  |   ')}`, inline: true });
 				}

@@ -292,7 +292,7 @@ class Paginate {
 
 	get membersAboveThreshold() {
 		return this.users.flat().map(u => {
-			if (u.totalCount > 3 || u.reactions.length > 4) {
+			if (u.totalCount > 9 || u.reactions.length > 4) {
 				return { member: u.user, msg: u.msg };
 			}
 		});
