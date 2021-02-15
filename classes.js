@@ -237,7 +237,138 @@ class ScouterCheck {
 	}
 }
 
+class Paginate {
+	constructor(reaction, database, data) {
+		this.reaction = reaction;
+		this.message = this.reaction.message;
+		this.database = database;
+		this.data = data;
+		this.embeds = [];
+		this.page = 0;
+	}
+
+	paginate() {
+		const pageEmbeds = [];
+		const data = this.data.flat();
+		let k = 8;
+		for (let i = 0; i < data.length; i += 8) {
+			const current = data.slice(i, k);
+			k += 8;
+			const info = current;
+			const embed = new MessageEmbed()
+				.setTitle('Reaction Spammers Incoming!')
+				.setDescription('Threholds are 10 reactions clicked (can be the same one) or 5 different reactions clicked. Clicking any of the reactions will update the post, though it will be updated everytime someone reacts to any of the messages listed below.')
+				.setThumbnail(this.message.guild.discoverySplashURL() || this.message.guild.iconURL())
+				.setColor(colors.orange)
+				.setTimestamp()
+				.addFields(info);
+			pageEmbeds.push(embed);
+		}
+		return pageEmbeds;
+	}
+
+	getData() {
+		return this.data;
+	}
+
+	set spamPost(post) {
+		this._spamPost = post;
+	}
+
+	edit(embed) {
+		return this._spamPost.edit(embed);
+	}
+
+	spamMessages() {
+		return this.database.merchChannel.spamProtection.map(obj => {
+			if (obj.messageID === this.message.id) return obj;
+		}).filter(m => m);
+	}
+
+	/**
+	 * @property {Array} users - Users above a threshold
+	 * @returns {Array} Includes undefined and objects of members who meet the thresholds.
+	 */
+
+	get membersAboveThreshold() {
+		return this.users.flat().map(u => {
+			if (u.totalCount > 3 || u.reactions.length > 4) {
+				return { member: u.user, msg: u.msg };
+			}
+		});
+	}
+
+	get membersBelowThreshold() {
+		return this.database.merchChannel.spamProtection.map(obj => {
+			if (!obj.users.length) {
+				return { member: { id: null, usernmae: null }, msg: obj.messageID };
+			}
+			return obj.users.map(u => {
+				if (u.count <= 3 && u.reactions.length <= 4) {
+					return { member: { id: u.id, usernmae: u.username }, msg: obj.messageID };
+				}
+			}).filter(o => o);
+		}).filter(o => o).flat();
+	}
+
+	/**
+	 * @returns {Array} Nested array, use .flat()
+	 */
+
+	get users() {
+		return this.spamMessages().map(m => {
+			return m.users.map(userObj => {
+				return { totalCount: userObj.count, user: { id: userObj.id, username: userObj.username }, msg: m.messageID, reactions: userObj.reactions };
+			});
+		});
+	}
+
+	get thresholdMembers() {
+		return this.membersAboveThreshold.map(o => {
+			if (o === undefined) return;
+			o = o.member.id;
+			return o;
+		}).filter(id => id);
+	}
+
+	get thresholdMessages() {
+		const messages = this.membersAboveThreshold.map(o => {
+			if (o === undefined) return;
+			o = o.msg;
+			return o;
+		}).filter(msg => msg);
+		return messages;
+	}
+
+	get fetchedMembers() {
+		return this.message.guild.members.fetch({ user: this.thresholdMembers });
+	}
+
+	async checkGroundedRoles() {
+		// Collection of members - Checking the first one
+		const members = await this.fetchedMembers;
+		const groundedRole = this.message.guild.roles.cache.find(r => r.name === 'Grounded');
+		if (!members.size) return;
+		return members.map(mem => {
+			return { result: mem._roles.includes(groundedRole.id), messageID: this.thresholdMessages[0], id: mem.user.id };
+		});
+	}
+
+	set updatedDB(doc) {
+		this._updateDB = doc;
+	}
+
+	usersCheck() {
+		return this._updateDB.merchChannel.spamProtection.map(obj => {
+			if (((Date.now() - obj.time) >= 900000) && !obj.users.length) {
+				return obj.messageID;
+			}
+		});
+	}
+}
+
 module.exports = {
 	Permissions,
 	ScouterCheck,
+	Paginate,
 };
