@@ -307,6 +307,7 @@ module.exports = async (client, reaction, user) => {
 					if (page === embeds.length) --page;
 					spamPostID.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`));
 				}
+				else { spamPostID.reactions.resolve('▶️').users.remove(user.id); }
 			}
 			else if (reaction.emoji.name === '◀️') {
 				if (page !== 0) {
