@@ -12,8 +12,6 @@ module.exports = async (client, reaction, user) => {
 
 	if (message.partial) await message.fetch().catch(err => console.log(12, err));
 	const database = await settingsColl.findOne({ _id: `${message.guild.id}` });
-	if (!database.events || !database.merchChannel) return;
-	const data = database.events.filter(m => m.messageID === message.id);
 	const modChannel = message.guild.channels.cache.find(ch => ch.name === 'moderator');
 
 	const embedData = await database.merchChannel.spamProtection.map(obj => {
@@ -67,6 +65,10 @@ module.exports = async (client, reaction, user) => {
 
 	switch (message.channel.id) {
 	case database.channels.events:
+		if(!database.events) return;
+		// eslint-disable-next-line no-case-declarations
+		const data = database.events.filter(m => m.messageID === message.id);
+
 		// Will only work for reactions where the message ID is inside the DB
 		// Valence Events
 
@@ -87,6 +89,7 @@ module.exports = async (client, reaction, user) => {
 		}
 		break;
 	case database.merchChannel.channelID: {
+		if (!database.merchChannel) return;
 		// DSF Merch Reactions
 		const groundedRole = message.guild.roles.cache.find(r => r.name === 'Grounded');
 		const groundedCheck = async () => {
