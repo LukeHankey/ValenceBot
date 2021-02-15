@@ -14,7 +14,7 @@ module.exports = async (client, reaction, user) => {
 	const database = await settingsColl.findOne({ _id: `${message.guild.id}` });
 	if (!database.events || !database.merchChannel) return;
 	const data = database.events.filter(m => m.messageID === message.id);
-	const modChannel = message.guild.channels.cache.find(ch => ch.id === '734477320672247869');
+	const modChannel = message.guild.channels.cache.find(ch => ch.name === 'moderator');
 
 	const embedData = await database.merchChannel.spamProtection.map(obj => {
 		// obj = messageID, content, time, author, userID, users[]
