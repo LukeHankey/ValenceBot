@@ -298,6 +298,7 @@ module.exports = async (client, reaction, user) => {
 	}
 		break;
 	default: {
+		if (message.channel.id !== modChannel.id) return;
 		const spamPostID = await modChannel.messages.fetch(database.merchChannel.spamMessagePost.id);
 		if (!spamPostID) {return;}
 		if (spamPostID.id === message.id) {
