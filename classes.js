@@ -304,7 +304,7 @@ class Paginate {
 				return { member: { id: null, usernmae: null }, msg: obj.messageID };
 			}
 			return obj.users.map(u => {
-				if (u.count <= 3 && u.reactions.length <= 4) {
+				if (u.count <= 9 && u.reactions.length <= 4) {
 					return { member: { id: u.id, usernmae: u.username }, msg: obj.messageID };
 				}
 			}).filter(o => o);

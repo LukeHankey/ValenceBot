@@ -218,17 +218,21 @@ module.exports = async (client, reaction, user) => {
 					const spamPost = await database.merchChannel.spamMessagePost;
 					const getMessage = modChannel.messages.cache.get(spamPost.id) ?? await modChannel.messages.fetch(spamPost.id);
 					try {
+						// Edit the embed every time there is someone who meets the treshhold
 						pagination.spamPost = getMessage;
-
 						const editEmbed = new MessageEmbed(embeds[0]);
 						editEmbed.spliceFields(0, 9, embeds[page].fields);
 						pagination.edit(editEmbed);
 
+						// Every 2 minutes, check members who are on the embed
 						const reactTimer = cron.schedule('*/2 * * * *', async () => {
+							// Check if they have the grounded role
 							const result = await pagination.checkGroundedRoles();
 							const [x] = result.filter(o => o.result);
 							if (!x) return;
+							// If they do have the role
 							if (x.result) {
+								// Remove them from the database for that message
 								const memberID = pagination.thresholdMembers.find(id => id === x.id);
 								await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': x.messageID }, {
 									$pull: {
@@ -237,6 +241,7 @@ module.exports = async (client, reaction, user) => {
 								});
 								const update = await settingsColl.findOne({ _id: message.guild.id });
 								pagination.updatedDB = update;
+								// Check if that post is older than 15 minutes and has no more users reacting to it, if so remove it from DB
 								await pagination.usersCheck().forEach(m => {
 									settingsColl.updateOne({ _id: message.guild.id }, {
 										$pull: {
@@ -250,10 +255,12 @@ module.exports = async (client, reaction, user) => {
 						reactTimer.start();
 
 						if (Date.now() - spamPost.timestamp >= 3600000) {
+							// Go through all messages in DB and get the members who are below the threshold in each message
 							pagination.membersBelowThreshold.map(async mem => {
 								message.channel.messages.fetch(mem.msg).then(m => {
 									return m.reactions.removeAll().then(m => m.react('☠️'));
 								});
+								// null if the message has no users that reacted to the post
 								if (mem.member.id !== null) {
 									await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': mem.msg }, {
 										$pull: {
@@ -265,7 +272,9 @@ module.exports = async (client, reaction, user) => {
 									.then(updated => {
 										const db = updated.merchChannel.spamProtection;
 										db.map(obj => {
+											// Go through each message and match that to the message where there are members who are below the threshold
 											if (obj.messageID === mem.msg) {
+												// If not null from above, remove the message
 												if (!obj.users.length) {
 													settingsColl.findOneAndUpdate({ _id: message.guild.id }, {
 														$pull: {
@@ -290,10 +299,6 @@ module.exports = async (client, reaction, user) => {
 								getMessage.delete();
 								settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.spamProtection': { messageID: getMessage.id } }, $set: { 'merchChannel.spamMessagePost': { id: '', timestamp: '' } } });
 							}
-							if (err.code === 10008) {
-								const messageID = err.path.split('/')[4];
-								settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.spamProtection': { messageID: messageID } } });
-							}
 						}
 					}
 				}
@@ -312,20 +317,21 @@ module.exports = async (client, reaction, user) => {
 					embeds = pagination.paginate();
 					if (reaction.emoji.name === '▶️') {
 						if (page < embeds.length) {
+							console.log(spamMessage);
 							spamPostID.reactions.resolve('▶️').users.remove(user.id);
 							page++;
 							if (page === embeds.length) --page;
-							spamPostID.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`));
+							spamMessage.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`));
 						}
-						else { spamPostID.reactions.resolve('▶️').users.remove(user.id); }
+						else { spamMessage.reactions.resolve('▶️').users.remove(user.id); }
 					}
 					else if (reaction.emoji.name === '◀️') {
 						if (page !== 0) {
-							spamPostID.reactions.resolve('◀️').users.remove(user.id);
+							spamMessage.reactions.resolve('◀️').users.remove(user.id);
 							--page;
-							spamPostID.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`));
+							spamMessage.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`));
 						}
-						else { spamPostID.reactions.resolve('◀️').users.remove(user.id); }
+						else { spamMessage.reactions.resolve('◀️').users.remove(user.id); }
 					}
 					else {
 						return;
