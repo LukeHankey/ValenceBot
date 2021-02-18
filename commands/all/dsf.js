@@ -1,8 +1,9 @@
+/* eslint-disable no-shadow */
 /* eslint-disable no-useless-escape */
 const func = require('../../functions');
 const colors = require('../../colors.json');
 const getDb = require('../../mongodb').getDb;
-const { ScouterCheck } = require('../../classes.js');
+const { ScouterCheck, Paginate } = require('../../classes.js');
 
 /**
  * 733164313744769024 - Test Server
@@ -25,7 +26,7 @@ module.exports = {
 		case 'm':
 		case 'messages':
 			switch (args[1]) {
-			case 'view':
+			default: {
 				await settings.findOne({ _id: message.guild.id }).then(async res => {
 					const fields = [];
 					const data = await res.merchChannel.messages;
@@ -42,6 +43,7 @@ module.exports = {
 					}
 					return message.channel.send(embed.addFields(fields));
 				});
+			}
 				break;
 			case 'clear':
 				await settings.findOneAndUpdate({ _id: message.guild.id },
@@ -53,6 +55,112 @@ module.exports = {
 				);
 				message.react('✅');
 			}
+
+			break;
+		case 'reacts': {
+			switch (args[1]) {
+			case 'clear': {
+				const database = await settings.findOne({ _id: message.guild.id });
+				const pagination = new Paginate(message, database, null);
+				pagination.membersBelowThreshold.map(async mem => {
+					const channelID = database.merchChannel.channelID;
+					const channel = client.channels.cache.get(channelID);
+					channel.messages.fetch(mem.msg).then(m => {
+						return m.reactions.removeAll().then(m => m.react('☠️'));
+					});
+					// null if the message has no users that reacted to the post
+					if (mem.member.id !== null) {
+						await settings.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': mem.msg }, {
+							$pull: {
+								'merchChannel.spamProtection.$.users': { id: mem.member.id },
+							},
+						});
+					}
+					await settings.findOne({ _id: message.guild.id })
+						.then(updated => {
+							const db = updated.merchChannel.spamProtection;
+							db.map(async obj => {
+								// Go through each message and match that to the message where there are members who are below the threshold
+								if (obj.messageID === mem.msg) {
+									// If not null from above, remove the message
+									if (!obj.users.length) {
+										await settings.updateOne({ _id: message.guild.id }, {
+											$pull: {
+												'merchChannel.spamProtection': { messageID: obj.messageID },
+											},
+										});
+									}
+									else {return;}
+								}
+							});
+						});
+
+				});
+				message.react('✅');
+			}
+				break;
+			default: {
+				await settings.findOne({ _id: message.guild.id }).then(async res => {
+					let page = 0;
+					const fields = [];
+					const spamData = await res.merchChannel.spamProtection;
+
+					for (const values of spamData) {
+						let date = new Date(values.time);
+						date = date.toString().split(' ');
+						fields.push({ name: `${values.author}`, value: `**Time:** ${date.slice(0, 5).join(' ')}\n**Content:** [${values.content}](https://discordapp.com/channels/${message.guild.id}/${res.merchChannel.channelID}/${values.messageID} 'Click me to go to the message.')`, inline: false });
+					}
+					const paginate = (dataFields) => {
+						const pageEmbeds = [];
+						const data = dataFields;
+						let k = 12;
+						for (let i = 0; i < data.length; i += 12) {
+							const current = data.slice(i, k);
+							k += 12;
+							const info = current;
+							const embed = func.nEmbed('List of reaction messages currently stored in the DB that have had reactions added too',
+								'There may be quite a few and if there are, clear them out using \`;dsf reacts clear\`.',
+								colors.cream,
+								message.member.user.displayAvatarURL(),
+								client.user.displayAvatarURL());
+							embed.setTimestamp().addFields(info);
+							pageEmbeds.push(embed);
+						}
+						return pageEmbeds;
+					};
+					const embeds = paginate(fields);
+
+					return message.channel.send(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`))
+						.then(async msg => {
+							await msg.react('◀️');
+							await msg.react('▶️');
+
+							const react = (reaction, user) => ['◀️', '▶️'].includes(reaction.emoji.name) && user.id === message.author.id;
+							const collect = msg.createReactionCollector(react);
+
+							collect.on('collect', (r, u) => {
+								if (r.emoji.name === '▶️') {
+									if (page < embeds.length) {
+										msg.reactions.resolve('▶️').users.remove(u.id);
+										page++;
+										if (page === embeds.length) --page;
+										msg.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`));
+									}
+								}
+								else if (r.emoji.name === '◀️') {
+									if (page !== 0) {
+										msg.reactions.resolve('◀️').users.remove(u.id);
+										--page;
+										msg.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`));
+									}
+									else {msg.reactions.resolve('◀️').users.remove(u.id);}
+								}
+							});
+						});
+				});
+			}
+			}
+		}
 			break;
 		case 'view': {
 			let scout = new ScouterCheck('Scouter');
