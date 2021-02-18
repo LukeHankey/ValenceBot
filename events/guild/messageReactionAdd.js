@@ -286,7 +286,10 @@ module.exports = async (client, reaction, user) => {
 				// DSF as default
 				let spamPostID;
 				if (database.merchChannel.spamMessagePost) {
-					spamPostID = database.merchChannel.spamMessagePost.id;
+					if (database.merchChannel.spamMessagePost.id) {
+						spamPostID = database.merchChannel.spamMessagePost.id;
+					}
+					else { return; }
 				}
 				else {return;}
 				const spamMessage = await modChannel.messages.fetch(spamPostID);
