@@ -62,11 +62,14 @@ module.exports = {
 			case 'clear': {
 				const database = await settings.findOne({ _id: message.guild.id });
 				const pagination = new Paginate(message, database, null);
+
 				pagination.membersBelowThreshold.map(async mem => {
 					const channelID = database.merchChannel.channelID;
 					const channel = client.channels.cache.get(channelID);
 					channel.messages.fetch(mem.msg).then(m => {
-						return m.reactions.removeAll().then(m => m.react('☠️'));
+						if (Date.now() - m.createdTimestamp >= 3600000) {
+							return m.reactions.removeAll().then(m => m.react('☠️'));
+						}
 					});
 					// null if the message has no users that reacted to the post
 					if (mem.member.id !== null) {
@@ -129,6 +132,9 @@ module.exports = {
 						return pageEmbeds;
 					};
 					const embeds = paginate(fields);
+					if (!embeds.length) {
+						return message.channel.send('There are no messages stored that have reactions added.');
+					}
 
 					return message.channel.send(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`))
 						.then(async msg => {
@@ -159,6 +165,7 @@ module.exports = {
 						});
 				});
 			}
+				break;
 			}
 		}
 			break;
