@@ -55,12 +55,6 @@ module.exports = async (client, reaction, user) => {
 					return { totalCount: userObj.count, skullCount: skullsCount, user: { id: userObj.id, username: userObj.username }, reactions: userObj.reactions };
 				});
 
-				/**
-				 * Filters to not spam add to the embed
-				 * If any data gets through filters, check reactions and work total count out
-				 * Filters: (reactions.length > 5 || total reaction > 10 individually)
-				 * reactions.length seems to not be 100% accurate but the total and skull counts are.
-				 */
 				const fieldGenerator = () => {
 					const first = { name: '\u200B', value: `Grouped below are for [this message from ${obj.author} | ${obj.content}.](${messageLink})` };
 					const dataFields = [];
@@ -184,22 +178,6 @@ module.exports = async (client, reaction, user) => {
 					}
 				});
 				if (await groundedCheck()) return;
-				/**
-				 * Take into account the number of times the skulls have been reacted to.
-				 * Display Total times reactions have been clicked, the different reactions and number of each
-				 * If above a threshold, ground them/send message to moderators to handle.
-				 *
-				 * Have the post auto-update every few minutes or so if there is anything to update. Store message ID in DB
-				 * Check on the post who is above the threshold and if no role has been added to them, keep thier profile + message ID to refer back to.
-				 * Send new post every 12 hours with old data ^ & if there are any new data. 12 hours || any message with users.length > 5 && (reactions.length > 5 || total reaction > 10 individually)
-				 *
-				 * Remove posts in DB 1 hour after they were sent unless they have reaction spamming on
-				 *
-				 *
-				 * Maybe add:
-				 * Check every minute for each user if they have the grounded role added to them.
-				 * If so, remove their reactions on the post(s). Or, disable ;sa command and add grounded role myself depending on different criteria
-				 */
 
 				if (!database.merchChannel.spamMessagePost || !database.merchChannel.spamMessagePost.id) {
 					embeds = pagination.paginate();
