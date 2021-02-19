@@ -235,36 +235,43 @@ module.exports = async (client, reaction, user) => {
 						if (Date.now() - spamPost.timestamp >= 3600000) {
 							// Go through all messages in DB and get the members who are below the threshold in each message
 							pagination.membersBelowThreshold.map(async mem => {
-								message.channel.messages.fetch(mem.msg).then(m => {
-									return m.reactions.removeAll().then(m => m.react('☠️'));
-								});
-								// null if the message has no users that reacted to the post
-								if (mem.member.id !== null) {
-									await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': mem.msg }, {
-										$pull: {
-											'merchChannel.spamProtection.$.users': { id: mem.member.id },
-										},
+								const channelID = database.merchChannel.channelID;
+								const channel = client.channels.cache.get(channelID);
+								channel.messages.fetch(mem.msg)
+									.then(m => {
+										if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size !== 1) {
+											return m.reactions.removeAll().then(m => m.react('☠️'));
+										}
+									})
+									.then(async () => {
+										if (mem.member.id !== null) {
+											await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': mem.msg }, {
+												$pull: {
+													'merchChannel.spamProtection.$.users': { id: mem.member.id },
+												},
+											});
+										}
+									})
+									.then(async () => {
+										await settingsColl.findOne({ _id: message.guild.id })
+											.then(updated => {
+												const db = updated.merchChannel.spamProtection;
+												db.map(async obj => {
+													// Go through each message and match that to the message where there are members who are below the threshold
+													if (obj.messageID === mem.msg) {
+														// If not null from above, remove the message
+														if (!obj.users.length) {
+															await settingsColl.updateOne({ _id: message.guild.id }, {
+																$pull: {
+																	'merchChannel.spamProtection': { messageID: obj.messageID },
+																},
+															});
+														}
+														else {return;}
+													}
+												});
+											});
 									});
-								}
-								settingsColl.findOne({ _id: message.guild.id })
-									.then(updated => {
-										const db = updated.merchChannel.spamProtection;
-										db.map(obj => {
-											// Go through each message and match that to the message where there are members who are below the threshold
-											if (obj.messageID === mem.msg) {
-												// If not null from above, remove the message
-												if (!obj.users.length) {
-													settingsColl.findOneAndUpdate({ _id: message.guild.id }, {
-														$pull: {
-															'merchChannel.spamProtection': { messageID: obj.messageID },
-														},
-													});
-												}
-												else {return;}
-											}
-										});
-									});
-
 							});
 							getMessage.delete();
 							settingsColl.findOneAndUpdate({ _id: message.guild.id }, { $set: { 'merchChannel.spamMessagePost': { id: '', timestamp: '' } } });
