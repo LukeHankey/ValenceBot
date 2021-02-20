@@ -67,7 +67,7 @@ module.exports = {
 					const channelID = database.merchChannel.channelID;
 					const channel = client.channels.cache.get(channelID);
 
-					const removeUsersFromDB = async () => {
+					const removeUsersAndMessages = async () => {
 						if (mem.member.id !== null) {
 							await settings.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': mem.msg }, {
 								$pull: {
@@ -75,59 +75,48 @@ module.exports = {
 								},
 							});
 						}
-					};
-
-					const removeMessagesFromDB = async () => {
-						await settings.findOne({ _id: message.guild.id })
-							.then(updated => {
-								const db = updated.merchChannel.spamProtection;
-								db.map(async obj => {
-									// Go through each message and match that to the message where there are members who are below the threshold
-									if (obj.messageID === mem.msg) {
-										// If not null from above, remove the message
-										if (!obj.users.length) {
-											await settings.updateOne({ _id: message.guild.id }, {
-												$pull: {
-													'merchChannel.spamProtection': { messageID: obj.messageID },
-												},
-											});
-										}
-										else {return;}
-									}
-								});
+						const removeMessages = async () => {
+							const db = await settings.findOne({ _id: message.guild.id });
+							db.merchChannel.spamProtection.forEach(obj => {
+								if (obj.messageID !== mem.msg) return;
+								if (!obj.users.length) {
+									settings.updateOne({ _id: message.guild.id }, {
+										$pull: {
+											'merchChannel.spamProtection': { messageID: obj.messageID },
+										},
+									});
+								}
+								else {return;}
 							});
+						};
+						return await removeMessages();
 					};
 
-					channel.messages.fetch(mem.msg)
-						.then(m => {
-							if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size !== 1) {
-								m.reactions.removeAll().then(m => m.react('☠️'));
-							}
-							else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
-								removeUsersFromDB();
-								removeMessagesFromDB();
-							}
-							else {return;}
-						})
-						.then(async () => {
-							removeUsersFromDB();
-						})
-						.then(async () => {
-							removeMessagesFromDB();
-						})
-						.then(() => message.react('✅'))
-						.catch(async e => {
-							if (e.code === 10008) {
-								const messageID = e.path.split('/')[4];
-								await settings.updateOne({ _id: message.guild.id }, {
-									$pull: {
-										'merchChannel.spamProtection': { messageID: messageID },
-									},
-								});
-							}
-							else {console.error(e);}
-
-						});
+					try {
+						const m = await channel.messages.fetch(mem.msg);
+						// Remove all reactions if there is > 1. Then add a skull.
+						if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size > 1) {
+							await m.reactions.removeAll();
+							await m.react('☠️');
+						}
+						// If there is only a skull, remove users and message from DB
+						else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
+							removeUsersAndMessages();
+						}
+						else {return;}
+						await message.react('✅');
+					}
+					catch (e) {
+						if (e.code === 10008) {
+							const messageID = e.path.split('/')[4];
+							await settings.updateOne({ _id: message.guild.id }, {
+								$pull: {
+									'merchChannel.spamProtection': { messageID: messageID },
+								},
+							});
+						}
+						else {console.error(e);}
+					}
 				});
 			}
 				break;
