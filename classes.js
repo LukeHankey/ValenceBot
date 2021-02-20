@@ -238,18 +238,59 @@ class ScouterCheck {
 }
 
 class Paginate {
-	constructor(reaction, database, data) {
+	constructor(reaction, database) {
 		this.reaction = reaction;
 		this.message = this.reaction.message;
 		this.database = database;
-		this.data = data;
 		this.embeds = [];
 		this.page = 0;
 	}
 
+	embedData() {
+		return this.database.merchChannel.spamProtection.map(obj => {
+			// obj = messageID, content, time, author, userID, users[]
+			const messageLink = `https://discord.com/channels/${this.message.guild.id}/${this.database.merchChannel.channelID}/${obj.messageID}`;
+			const usersList = obj.users.map(userObj => {
+				// userObj = User, total count, skull count, reactions[]
+				let skullsCount = 0;
+				userObj.reactions.filter(r => {
+					if (['☠️', '💀', '<:skull:805917068670402581>'].includes(r.emoji)) {
+						skullsCount = skullsCount + r.count;
+					}
+				});
+				return { totalCount: userObj.count, skullCount: skullsCount, user: { id: userObj.id, username: userObj.username }, reactions: userObj.reactions };
+			});
+
+			const fieldGenerator = () => {
+				const first = { name: '\u200B', value: `Grouped below are for [this message from ${obj.author} | ${obj.content}.](${messageLink})` };
+				const dataFields = [];
+				usersList.forEach(u => {
+					// Filters added here
+					if (u.totalCount > 9 || u.reactions.length > 4) {
+						const emojis = u.reactions.map(e => { return `${e.emoji} **- ${e.count}**`; });
+						dataFields.push({ name: `${u.user.username} - ${u.user.id}`, value: `Mention: <@!${u.user.id}>\nTotal Reacts (${u.skullCount}/${u.totalCount})\n\n${emojis.join('  |   ')}`, inline: true });
+					}
+					else { return; }
+				});
+				if (dataFields.length) {
+					dataFields.unshift(first);
+					if (dataFields.length > 8) {
+						// Pagination
+						dataFields.splice(9, 0, first);
+					}
+				}
+				return dataFields;
+			};
+			const fields = [];
+			fields.push(...fieldGenerator());
+			return fields;
+		});
+	}
+
 	paginate() {
 		const pageEmbeds = [];
-		const data = this.data.flat();
+		if (!this.embedData()) return;
+		const data = this.embedData().flat();
 		let k = 8;
 		for (let i = 0; i < data.length; i += 8) {
 			const current = data.slice(i, k);
@@ -268,7 +309,7 @@ class Paginate {
 	}
 
 	getData() {
-		return this.data;
+		return this.embedData();
 	}
 
 	set spamPost(post) {

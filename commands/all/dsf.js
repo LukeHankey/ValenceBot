@@ -61,7 +61,7 @@ module.exports = {
 			switch (args[1]) {
 			case 'clear': {
 				const database = await settings.findOne({ _id: message.guild.id });
-				const pagination = new Paginate(message, database, null);
+				const pagination = new Paginate(message, database);
 
 				pagination.membersBelowThreshold.map(async mem => {
 					const channelID = database.merchChannel.channelID;
@@ -119,7 +119,6 @@ module.exports = {
 						.catch(async e => {
 							if (e.code === 10008) {
 								const messageID = e.path.split('/')[4];
-								console.log(messageID);
 								await settings.updateOne({ _id: message.guild.id }, {
 									$pull: {
 										'merchChannel.spamProtection': { messageID: messageID },

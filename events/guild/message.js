@@ -138,6 +138,7 @@ module.exports = async (client, message) => {
 					const log = [...mes.values()];
 					for (const messages in log) {
 						const authorName = log[messages].member?.nickname ?? log[messages].author.username;
+						if (authorName === 'Valence Bot' || authorName === null) return;
 						await settingsColl.findOneAndUpdate({ _id: message.guild.id },
 							{
 								$addToSet: {
@@ -150,21 +151,20 @@ module.exports = async (client, message) => {
 											userID: log[messages].member?.id ?? log[messages].author.id,
 										}],
 									},
+									'merchChannel.spamProtection': {
+										$each: [{
+											messageID: log[messages].id,
+											content: log[messages].content,
+											time: log[messages].createdTimestamp,
+											author: authorName,
+											userID: log[messages].member?.id ?? log[messages].author.id,
+											users: [],
+										}],
+									},
 								},
+
 							},
-							{
-								sort: { time: 1 },
-								returnNewDocument: true,
-							},
-						)
-							// eslint-disable-next-line no-shadow
-							.then(async db => {
-								const messageArray = await db.value.merchChannel.messages;
-								if (messageArray[0] === undefined) return; // Undefined if bot spams the merch call
-								if (messageArray[0].author === 'Valence Bot' || messageArray[0].author === null) {
-									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageArray[0].messageID } } });
-								}
-							});
+						);
 					}
 
 					// Posts only error to the error channel

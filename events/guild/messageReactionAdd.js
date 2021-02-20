@@ -41,158 +41,127 @@ module.exports = async (client, reaction, user) => {
 		// DSF & Test servers
 		else if (database._id === '420803245758480405' || database._id === '733164313744769024') {
 			const modChannel = message.guild.channels.cache.find(ch => ch.name === 'moderator');
-			const embedData = await database.merchChannel.spamProtection.map(obj => {
-				// obj = messageID, content, time, author, userID, users[]
-				const messageLink = `https://discord.com/channels/${message.guild.id}/${database.merchChannel.channelID}/${obj.messageID}`;
-				const usersList = obj.users.map(userObj => {
-					// userObj = User, total count, skull count, reactions[]
-					let skullsCount = 0;
-					userObj.reactions.filter(r => {
-						if (['☠️', '💀', '<:skull:805917068670402581>'].includes(r.emoji)) {
-							skullsCount = skullsCount + r.count;
-						}
-					});
-					return { totalCount: userObj.count, skullCount: skullsCount, user: { id: userObj.id, username: userObj.username }, reactions: userObj.reactions };
-				});
-
-				const fieldGenerator = () => {
-					const first = { name: '\u200B', value: `Grouped below are for [this message from ${obj.author} | ${obj.content}.](${messageLink})` };
-					const dataFields = [];
-					usersList.forEach(u => {
-						// Filters added here
-						if (u.totalCount > 9 || u.reactions.length > 4) {
-							const emojis = u.reactions.map(e => { return `${e.emoji} **- ${e.count}**`; });
-							dataFields.push({ name: `${u.user.username} - ${u.user.id}`, value: `Mention: <@!${u.user.id}>\nTotal Reacts (${u.skullCount}/${u.totalCount})\n\n${emojis.join('  |   ')}`, inline: true });
-						}
-						else { return; }
-					});
-					if (dataFields.length) {
-						dataFields.unshift(first);
-						if (obj.users.length > 8) {
-							// Pagination
-							dataFields.splice(9, 0, first);
-						}
-					}
-					return dataFields;
-				};
-				const fields = [];
-				// Cron here to maybe for the 12 hour timer
-				fields.push(...fieldGenerator());
-				return fields;
-			});
-			const pagination = new Paginate(reaction, database, embedData);
+			const groundedRole = message.guild.roles.cache.find(r => r.name === 'Grounded');
+			const pagination = new Paginate(reaction, database);
 			let embeds = pagination.embeds;
 			let page = pagination.page;
 
 			switch (message.channel.id) {
 			case database.merchChannel.channelID: {
-				// DSF Merch Reactions
-				const groundedRole = message.guild.roles.cache.find(r => r.name === 'Grounded');
-				const groundedCheck = async () => {
-					const fetchReactor = await message.guild.members.fetch(user.id);
-					return fetchReactor.roles.cache.has(groundedRole.id);
-				};
+				const spamProtection = database.merchChannel.spamProtection;
 				if (user.bot) return;
-				const dataMessages = database.merchChannel.messages;
-				dataMessages.map(x => x.users = []);
-				// If messages are in DB and are reacted to, add them to spamProtection DB
-				const index = database.merchChannel.messages.findIndex(x => x.messageID === message.id);
-				if (database.merchChannel.messages.map(x => x.messageID === message.id)[index]) {
-					if (!database.merchChannel.spamProtection.some(msg => msg.messageID === message.id)) {
-						settingsColl.findOneAndUpdate({ _id: message.guild.id }, {
-							$addToSet: {
-								'merchChannel.spamProtection': {
-									$each: dataMessages,
-								},
-							},
-						});
+
+				// Return if a member has the grounded role
+				message.guild.members.fetch(user.id).then(mem => {
+					if (mem.roles.cache.has(groundedRole.id)) {
+						return;
 					}
-				}
-				database.merchChannel.spamProtection.map(async msg => {
+				});
+
+				// Remove bot messages
+				spamProtection.forEach(msg => {
 					if (msg.author === 'Valence Bot') {
-						settingsColl.findOneAndUpdate({ _id: message.guild.id }, {
+						settingsColl.updateOne({ _id: message.guild.id }, {
 							$pull: {
 								'merchChannel.spamProtection': { author: 'Valence Bot' },
 							},
 						});
 					}
+				});
+
+				// Adding users to the DB + counts
+				spamProtection.map(async msg => {
 					if (message.id === msg.messageID) {
-						user.count = 1;
-						user.reactions = [{ emoji: reaction.emoji.name, count: 1 }];
+						const newUser = {
+							id: user.id,
+							username: user.username,
+							count: 1,
+							reactions: [{ emoji: reaction.emoji.name, count: 1 }],
+						};
 
-						try {
-							const dbReactions = database.merchChannel.spamProtection.filter(m => m.messageID === msg.messageID);
-							const spamUsersDB = dbReactions.map(u => u.users);
-
-							if (await groundedCheck() === false) {
-							// If there are no members added or none that match the member who reacted, add them.
-								if (!spamUsersDB.flat().length || !spamUsersDB.flat().some(obj => obj?.id === user.id)) {
+						for (let i = 0; i < spamProtection.length; i++) {
+							if (!spamProtection[i].users.length) {
+								// If no users, add them to the DB unless they're already in the DB
+								await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': msg.messageID }, {
+									$addToSet: {
+										'merchChannel.spamProtection.$.users': {
+											$each: [
+												newUser,
+											],
+										},
+									},
+								});
+							}
+							for (let j = 0; j < spamProtection[i].users.length; j++) {
+								if (spamProtection[i].users[j].id !== user.id) {
+									// If there are users, add them to the array as long as they're not already added
 									await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': msg.messageID }, {
 										$addToSet: {
 											'merchChannel.spamProtection.$.users': {
 												$each: [
-													user,
+													newUser,
 												],
 											},
 										},
 									});
 								}
+								else if (spamProtection[i].users[j].id === user.id) {
+									if (spamProtection[i].users[j].reactions.some(e => e.emoji === reaction.emoji.name)) {
+										await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.users.id': spamProtection[i].users[j].id }, {
+											$inc: {
+												'merchChannel.spamProtection.$.users.$[userObj].reactions.$[reaction].count': 1,
+												'merchChannel.spamProtection.$.users.$[userObj].count': 1,
+											},
+										}, {
+											arrayFilters: [{ 'reaction.count': { $gte: 0 }, 'reaction.emoji': reaction.emoji.name }, { 'userObj.count': { $gte: 0 }, 'userObj.id': user.id }],
+										});
+									}
+									else {
+										await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.users.id': spamProtection[i].users[j].id }, {
+											$inc: {
+												'merchChannel.spamProtection.$.users.$[userObj].count': 1,
+											},
+											$addToSet: {
+												'merchChannel.spamProtection.$.users.$[userObj].reactions': {
+													$each: [{ emoji: reaction.emoji.name, count: 1 }],
+												},
+											},
+										}, {
+											arrayFilters: [{ 'userObj.count': { $gte: 0 }, 'userObj.id': user.id }],
+										});
+									}
+								}
+								else {break;}
 							}
-							else { return;}
-
-							if (!spamUsersDB.flat().length) return;
-							const match = spamUsersDB.flat().filter(obj => obj?.id === user.id);
-
-							// False if reaction has not been added in DB before
-							const [existingReactions] = spamUsersDB.flat().map(obj => obj?.reactions.some(e => [e.emoji].includes(reaction.emoji.name)));
-
-							if (existingReactions) {
-								await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.users': match[0] }, {
-									$inc: {
-										'merchChannel.spamProtection.$.users.$[userObj].reactions.$[reaction].count': 1,
-										'merchChannel.spamProtection.$.users.$[userObj].count': 1,
-									},
-								}, {
-									arrayFilters: [{ 'reaction.count': { $gte: 0 }, 'reaction.emoji': reaction.emoji.name }, { 'userObj.count': { $gte: 0 }, 'userObj.id': user.id }],
-								});
-							}
-							else {
-							// More than 1 reaction, add to the DB
-								await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.users': match[0] }, {
-									$inc: {
-										'merchChannel.spamProtection.$.users.$[userObj].count': 1,
-									},
-									$addToSet: {
-										'merchChannel.spamProtection.$.users.$[userObj].reactions': {
-											$each: [{ emoji: reaction.emoji.name, count: 1 }],
-										},
-									},
-								}, {
-									arrayFilters: [{ 'userObj.count': { $gte: 0 }, 'userObj.id': user.id }],
-								});
-							}
-						}
-						catch (err) {
-							console.log(err);
 						}
 					}
 				});
-				if (await groundedCheck()) return;
+				embeds = pagination.paginate();
 
-				if (!database.merchChannel.spamMessagePost || !database.merchChannel.spamMessagePost.id) {
-					embeds = pagination.paginate();
-					if (!embeds.length) return;
-					const msg = await modChannel.send(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`));
-					await settingsColl.findOneAndUpdate({ _id: message.guild.id }, {
-						$set: {
-							'merchChannel.spamMessagePost': { id: msg.id, timestamp: msg.createdTimestamp },
-						},
-					}, { upsert: true });
-					await msg.react('◀️');
-					await msg.react('▶️');
-				}
-				else {
-					embeds = pagination.paginate();
+				// Checking every x seconds if there is a messageID stored where the emebds can add to and if someone who has met the threshold
+				const checkMessageinDB = client.setInterval(() => {
+					settingsColl.findOne({ _id: message.guild.id })
+						.then(async db => {
+							if (!db.merchChannel.spamMessagePost.id.length) {
+								if (embeds.length) {
+									const msg = await modChannel.send(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`));
+									await msg.react('◀️');
+									await msg.react('▶️');
+									await settingsColl.findOneAndUpdate({ _id: message.guild.id }, {
+										$set: {
+											'merchChannel.spamMessagePost': { id: msg.id, timestamp: msg.createdTimestamp },
+										},
+									});
+								}
+								else {return client.clearInterval(checkMessageinDB);}
+							}
+							else {return client.clearInterval(checkMessageinDB);}
+						});
+				}, 20000);
+
+				// If the messageID has been added to the DB, clear the interval for every new react to prevent new messages being posted
+				if (database.merchChannel.spamMessagePost.id.length) {
+					client.clearInterval(checkMessageinDB);
 					const spamPost = await database.merchChannel.spamMessagePost;
 					const getMessage = modChannel.messages.cache.get(spamPost.id) ?? await modChannel.messages.fetch(spamPost.id);
 					try {
@@ -206,6 +175,7 @@ module.exports = async (client, reaction, user) => {
 						const reactTimer = cron.schedule('*/2 * * * *', async () => {
 							// Check if they have the grounded role
 							const result = await pagination.checkGroundedRoles();
+							if (!result) return;
 							const [x] = result.filter(o => o.result);
 							if (!x) return;
 							// If they do have the role
@@ -252,12 +222,12 @@ module.exports = async (client, reaction, user) => {
 									await settingsColl.findOne({ _id: message.guild.id })
 										.then(updated => {
 											const db = updated.merchChannel.spamProtection;
-											db.map(async obj => {
+											db.forEach(obj => {
 												// Go through each message and match that to the message where there are members who are below the threshold
 												if (obj.messageID === mem.msg) {
 													// If not null from above, remove the message
 													if (!obj.users.length) {
-														await settingsColl.updateOne({ _id: message.guild.id }, {
+														settingsColl.updateOne({ _id: message.guild.id }, {
 															$pull: {
 																'merchChannel.spamProtection': { messageID: obj.messageID },
 															},
@@ -290,7 +260,6 @@ module.exports = async (client, reaction, user) => {
 									.catch(async e => {
 										if (e.code === 10008) {
 											const messageID = e.path.split('/')[4];
-											console.log(messageID);
 											await settingsColl.updateOne({ _id: message.guild.id }, {
 												$pull: {
 													'merchChannel.spamProtection': { messageID: messageID },
@@ -333,8 +302,7 @@ module.exports = async (client, reaction, user) => {
 					embeds = pagination.paginate();
 					if (reaction.emoji.name === '▶️') {
 						if (page < embeds.length) {
-							console.log(spamMessage);
-							spamPostID.reactions.resolve('▶️').users.remove(user.id);
+							spamMessage.reactions.resolve('▶️').users.remove(user.id);
 							page++;
 							if (page === embeds.length) --page;
 							spamMessage.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`));
