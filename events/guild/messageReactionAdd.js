@@ -60,10 +60,10 @@ module.exports = async (client, reaction, user) => {
 
 				// Remove bot messages
 				spamProtection.forEach(msg => {
-					if (msg.author === 'Valence Bot') {
+					if (msg.author === 'Skully' || msg.userID === '668330399033851924') {
 						settingsColl.updateOne({ _id: message.guild.id }, {
 							$pull: {
-								'merchChannel.spamProtection': { author: 'Valence Bot' },
+								'merchChannel.spamProtection': { id: '668330399033851924' },
 							},
 						});
 					}
