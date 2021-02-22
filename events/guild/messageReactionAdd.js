@@ -58,30 +58,32 @@ module.exports = async (client, reaction, user) => {
 					}
 				});
 
-				// Remove bot messages
-				spamProtection.forEach(msg => {
-					if (msg.author === 'Skully' || msg.userID === '668330399033851924') {
-						settingsColl.updateOne({ _id: message.guild.id }, {
+				const newUser = {
+					id: user.id,
+					username: user.username,
+					count: 1,
+					reactions: [{
+						emoji: reaction.emoji.name,
+						count: 1,
+					}],
+				};
+
+				// Adding users to the DB + counts
+				spamProtection.map(async msg => {
+					if (msg.userID === '668330399033851924') {
+						settingsColl.findOneAndUpdate({ _id: message.guild.id }, {
 							$pull: {
 								'merchChannel.spamProtection': { id: '668330399033851924' },
 							},
 						});
 					}
-				});
-
-				// Adding users to the DB + counts
-				spamProtection.map(async msg => {
 					if (message.id === msg.messageID) {
-						const newUser = {
-							id: user.id,
-							username: user.username,
-							count: 1,
-							reactions: [{ emoji: reaction.emoji.name, count: 1 }],
-						};
+						try {
+							const dbReactions = spamProtection.filter(m => m.messageID === msg.messageID);
+							const spamUsersDB = dbReactions.flatMap(u => u.users);
 
-						for (let i = 0; i < spamProtection.length; i++) {
-							if (!spamProtection[i].users.length) {
-								// If no users, add them to the DB unless they're already in the DB
+							// If there are no members added or none that match the member who reacted, add them.
+							if (!spamUsersDB.length || !spamUsersDB.some(obj => obj.id === user.id)) {
 								await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': msg.messageID }, {
 									$addToSet: {
 										'merchChannel.spamProtection.$.users': {
@@ -92,47 +94,41 @@ module.exports = async (client, reaction, user) => {
 									},
 								});
 							}
-							for (let j = 0; j < spamProtection[i].users.length; j++) {
-								if (spamProtection[i].users[j].id !== user.id) {
-									// If there are users, add them to the array as long as they're not already added
-									await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': msg.messageID }, {
-										$addToSet: {
-											'merchChannel.spamProtection.$.users': {
-												$each: [
-													newUser,
-												],
-											},
-										},
-									});
-								}
-								else if (spamProtection[i].users[j].id === user.id) {
-									if (spamProtection[i].users[j].reactions.some(e => e.emoji === reaction.emoji.name)) {
-										await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.users.id': spamProtection[i].users[j].id }, {
-											$inc: {
-												'merchChannel.spamProtection.$.users.$[userObj].reactions.$[reaction].count': 1,
-												'merchChannel.spamProtection.$.users.$[userObj].count': 1,
-											},
-										}, {
-											arrayFilters: [{ 'reaction.count': { $gte: 0 }, 'reaction.emoji': reaction.emoji.name }, { 'userObj.count': { $gte: 0 }, 'userObj.id': user.id }],
-										});
-									}
-									else {
-										await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.users.id': spamProtection[i].users[j].id }, {
-											$inc: {
-												'merchChannel.spamProtection.$.users.$[userObj].count': 1,
-											},
-											$addToSet: {
-												'merchChannel.spamProtection.$.users.$[userObj].reactions': {
-													$each: [{ emoji: reaction.emoji.name, count: 1 }],
-												},
-											},
-										}, {
-											arrayFilters: [{ 'userObj.count': { $gte: 0 }, 'userObj.id': user.id }],
-										});
-									}
-								}
-								else {break;}
+
+							if (!spamUsersDB.length) return;
+							const match = spamUsersDB.filter(obj => obj?.id === user.id);
+
+							// False if reaction has not been added in DB before
+							const [existingReactions] = spamUsersDB.map(obj => obj?.reactions.some(e => [e.emoji].includes(reaction.emoji.name)));
+
+							if (existingReactions) {
+								await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.users': match[0] }, {
+									$inc: {
+										'merchChannel.spamProtection.$.users.$[userObj].reactions.$[reaction].count': 1,
+										'merchChannel.spamProtection.$.users.$[userObj].count': 1,
+									},
+								}, {
+									arrayFilters: [{ 'reaction.count': { $gte: 0 }, 'reaction.emoji': reaction.emoji.name }, { 'userObj.count': { $gte: 0 }, 'userObj.id': user.id }],
+								});
 							}
+							else {
+							// More than 1 reaction, add to the DB
+								await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.users': match[0] }, {
+									$inc: {
+										'merchChannel.spamProtection.$.users.$[userObj].count': 1,
+									},
+									$addToSet: {
+										'merchChannel.spamProtection.$.users.$[userObj].reactions': {
+											$each: [{ emoji: reaction.emoji.name, count: 1 }],
+										},
+									},
+								}, {
+									arrayFilters: [{ 'userObj.count': { $gte: 0 }, 'userObj.id': user.id }],
+								});
+							}
+						}
+						catch (err) {
+							console.log(err);
 						}
 					}
 				});
