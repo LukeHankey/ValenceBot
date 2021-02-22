@@ -115,6 +115,7 @@ module.exports = async (client, message) => {
 							});
 					}
 					else {
+						if (!merchRegex.test(message.content)) return;
 						const userN = await message.guild.members.fetch(message.member.id);
 						console.log(`Old: ${userN.user.username} (${message.content})`, findMessage.userID === userN.id, findMessage.userID);
 						await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {

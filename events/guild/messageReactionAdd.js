@@ -73,7 +73,7 @@ module.exports = async (client, reaction, user) => {
 					if (msg.userID === '668330399033851924') {
 						settingsColl.findOneAndUpdate({ _id: message.guild.id }, {
 							$pull: {
-								'merchChannel.spamProtection': { id: '668330399033851924' },
+								'merchChannel.spamProtection': { userID: '668330399033851924' },
 							},
 						});
 					}
