@@ -192,7 +192,6 @@ module.exports = async (client, reaction, user) => {
 				});
 				embeds = pagination.paginate();
 
-				// If the messageID has been added to the DB, clear the interval for every new react to prevent new messages being posted
 				if (database.merchChannel.spamMessagePost.id.length) {
 					const spamPost = await database.merchChannel.spamMessagePost;
 					const getMessage = modChannel.messages.cache.get(spamPost.id) ?? await modChannel.messages.fetch(spamPost.id);
@@ -212,7 +211,7 @@ module.exports = async (client, reaction, user) => {
 							const [x] = result.filter(o => o.result);
 							// If they do have the role
 							if (x && x.result) {
-								// Remove them from the database for that message
+								// Remove them from the database in all messages
 								spamProtection.map(async obj => {
 									if (obj.users.some(u => u.id === x.id)) {
 										if (!obj.users.length) return;

@@ -192,10 +192,10 @@ module.exports = async client => {
 	// 	})
 	// })
 
-	const dsfSpamMessage = cron.schedule('*/15 * * * * *', async () => {
+	const dsfSpamMessage = cron.schedule('*/10 * * * *', async () => {
 		settings.findOne({ _id: '420803245758480405' })
 			.then(async dsf => {
-				const modChannel = client.channels.cache.get('734477320672247869'); // 643109949114679317
+				const modChannel = client.channels.cache.get('643109949114679317');
 				const embed = new Discord.MessageEmbed()
 					.setTitle('Reaction Spammers Incoming!')
 					.setDescription('Threholds are 10 reactions clicked (can be the same one) or 5 different reactions clicked. Clicking any of the reactions will update the post, though it will be updated everytime someone reacts to any of the messages listed below.')
