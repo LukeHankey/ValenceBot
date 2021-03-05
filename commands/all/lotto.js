@@ -24,13 +24,18 @@ module.exports = {
 		const database = await settingsColl.findOne({ _id: message.guild.id });
 
 		const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+		const altMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 		const monthIndex = (new Date()).getUTCMonth();
 		try {
 			gsheet.googleClient.authorize(err => {
 				if (err) console.error(err);
 				googleSheets(gsheet.googleClient);
 			});
-			const rangeName = await database.lottoSheet;
+			let rangeName;
+			if (database.lottoSheet === null) {
+				rangeName = `${altMonths[monthIndex]} ${new Date().getUTCFullYear()} Lotto`;
+			}
+			console.log(rangeName);
 
 			// eslint-disable-next-line no-inner-declarations
 			async function googleSheets(gClient) {
@@ -196,7 +201,8 @@ module.exports = {
 					if (perms.mod) {
 						const newSheet = args.slice(1).join(' ');
 						if (newSheet) {
-							settingsColl.findOneAndUpdate({ _id: message.guild.id }, { $set: { lottoSheet: newSheet } });
+							await settingsColl.findOneAndUpdate({ _id: message.guild.id }, { $set: { lottoSheet: newSheet } });
+							await message.react('✅');
 						}
 						else {
 							const newName = await settingsColl.findOne({ _id: message.guild.id });
@@ -286,7 +292,6 @@ module.exports = {
 							}
 							return pageEmbeds;
 						}
-						message.channel.startTyping();
 						message.channel.send(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`))
 							.then(async msg => {
 								await msg.react('◀️');
@@ -314,7 +319,6 @@ module.exports = {
 									}
 								});
 							});
-						message.channel.stopTyping();
 					}
 				}
 			}
