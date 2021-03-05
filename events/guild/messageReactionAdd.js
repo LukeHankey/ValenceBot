@@ -131,33 +131,69 @@ module.exports = async (client, reaction, user) => {
 							console.log(err);
 						}
 					}
-				});
-				embeds = pagination.paginate();
+					// For each message, check if it's older than 1 hour. If so, remove if no members above threshold
+					if (Date.now() - msg.time >= 3600000) {
+						// Go through all messages in DB and get the members who are below the threshold in each message
+						pagination.membersBelowThreshold.map(async mem => {
+							const channelID = database.merchChannel.channelID;
+							const channel = client.channels.cache.get(channelID);
 
-				// Checking every x seconds if there is a messageID stored where the emebds can add to and if someone who has met the threshold
-				const checkMessageinDB = client.setInterval(() => {
-					settingsColl.findOne({ _id: message.guild.id })
-						.then(async db => {
-							if (!db.merchChannel.spamMessagePost.id.length) {
-								if (embeds.length) {
-									const msg = await modChannel.send(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`));
-									await msg.react('◀️');
-									await msg.react('▶️');
-									await settingsColl.findOneAndUpdate({ _id: message.guild.id }, {
-										$set: {
-											'merchChannel.spamMessagePost': { id: msg.id, timestamp: msg.createdTimestamp },
+							const removeUsersAndMessages = async () => {
+								if (mem.member.id !== null) {
+									await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': mem.msg }, {
+										$pull: {
+											'merchChannel.spamProtection.$.users': { id: mem.member.id },
 										},
 									});
 								}
-								else {return client.clearInterval(checkMessageinDB);}
+								const removeMessages = async () => {
+									const db = await settingsColl.findOne({ _id: message.guild.id });
+									db.merchChannel.spamProtection.forEach(obj => {
+										if (obj.messageID !== mem.msg) return;
+										if (!obj.users.length) {
+											settingsColl.updateOne({ _id: message.guild.id }, {
+												$pull: {
+													'merchChannel.spamProtection': { messageID: obj.messageID },
+												},
+											});
+										}
+										else {return;}
+									});
+								};
+								return await removeMessages();
+							};
+
+							try {
+								const m = await channel.messages.fetch(mem.msg);
+								// Remove all reactions if there is > 1. Then add a skull.
+								if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size > 1) {
+									await m.reactions.removeAll();
+									await m.react('☠️');
+								}
+								// If there is only a skull, remove users and message from DB
+								else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
+									removeUsersAndMessages();
+								}
+								else {return;}
 							}
-							else {return client.clearInterval(checkMessageinDB);}
+							catch (e) {
+								if (e.code === 10008) {
+									const messageID = e.path.split('/')[4];
+									await settingsColl.updateOne({ _id: message.guild.id }, {
+										$pull: {
+											'merchChannel.spamProtection': { messageID: messageID },
+										},
+									});
+								}
+								else {console.error(e);}
+							}
 						});
-				}, 20000);
+					}
+				});
+				embeds = pagination.paginate();
 
 				// If the messageID has been added to the DB, clear the interval for every new react to prevent new messages being posted
 				if (database.merchChannel.spamMessagePost.id.length) {
-					client.clearInterval(checkMessageinDB);
 					const spamPost = await database.merchChannel.spamMessagePost;
 					const getMessage = modChannel.messages.cache.get(spamPost.id) ?? await modChannel.messages.fetch(spamPost.id);
 					try {
@@ -168,97 +204,29 @@ module.exports = async (client, reaction, user) => {
 						pagination.edit(editEmbed);
 
 						// Every 2 minutes, check members who are on the embed
-						const reactTimer = cron.schedule('*/2 * * * *', async () => {
-							// Check if they have the grounded role
+						const reactTimer = cron.schedule('*/10 * * * * *', async () => {
+							// Check if they have the grounded role - React has to happen on the same message
 							const result = await pagination.checkGroundedRoles();
 							if (!result) return;
+							// Filter for results where the member has the role added to make the result true
 							const [x] = result.filter(o => o.result);
-							if (!x) return;
 							// If they do have the role
-							if (x.result) {
+							if (x && x.result) {
 								// Remove them from the database for that message
-								const memberID = pagination.thresholdMembers.find(id => id === x.id);
-								await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': x.messageID }, {
-									$pull: {
-										'merchChannel.spamProtection.$.users': { id: memberID },
-									},
-								});
-								const update = await settingsColl.findOne({ _id: message.guild.id });
-								pagination.updatedDB = update;
-								// Check if that post is older than 15 minutes and has no more users reacting to it, if so remove it from DB
-								await pagination.usersCheck().forEach(m => {
-									settingsColl.updateOne({ _id: message.guild.id }, {
-										$pull: {
-											'merchChannel.spamProtection': { messageID: m },
-										},
-									});
+								spamProtection.map(async obj => {
+									if (obj.users.some(u => u.id === x.id)) {
+										if (!obj.users.length) return;
+										await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': obj.messageID }, {
+											$pull: {
+												'merchChannel.spamProtection.$.users': { id: x.id },
+											},
+										});
+									}
 								});
 							}
 							reactTimer.stop();
 						}, { scheduled: false });
 						reactTimer.start();
-
-						if (Date.now() - spamPost.timestamp >= 3600000) {
-							// Go through all messages in DB and get the members who are below the threshold in each message
-							pagination.membersBelowThreshold.map(async mem => {
-								const channelID = database.merchChannel.channelID;
-								const channel = client.channels.cache.get(channelID);
-
-								const removeUsersAndMessages = async () => {
-									if (mem.member.id !== null) {
-										await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': mem.msg }, {
-											$pull: {
-												'merchChannel.spamProtection.$.users': { id: mem.member.id },
-											},
-										});
-									}
-									const removeMessages = async () => {
-										const db = await settingsColl.findOne({ _id: message.guild.id });
-										db.merchChannel.spamProtection.forEach(obj => {
-											if (obj.messageID !== mem.msg) return;
-											if (!obj.users.length) {
-												settingsColl.updateOne({ _id: message.guild.id }, {
-													$pull: {
-														'merchChannel.spamProtection': { messageID: obj.messageID },
-													},
-												});
-											}
-											else {return;}
-										});
-									};
-									return await removeMessages();
-								};
-
-								try {
-									const m = await channel.messages.fetch(mem.msg);
-									// Remove all reactions if there is > 1. Then add a skull.
-									if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size > 1) {
-										await m.reactions.removeAll();
-										await m.react('☠️');
-									}
-									// If there is only a skull, remove users and message from DB
-									else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
-										removeUsersAndMessages();
-									}
-									else {return;}
-									await message.react('✅');
-								}
-								catch (e) {
-									if (e.code === 10008) {
-										const messageID = e.path.split('/')[4];
-										await settingsColl.updateOne({ _id: message.guild.id }, {
-											$pull: {
-												'merchChannel.spamProtection': { messageID: messageID },
-											},
-										});
-									}
-									else {console.error(e);}
-								}
-							});
-							getMessage.delete();
-							settingsColl.findOneAndUpdate({ _id: message.guild.id }, { $set: { 'merchChannel.spamMessagePost': { id: '', timestamp: '' } } });
-							reactTimer.stop();
-						}
 					}
 					catch (err) {
 						if (err) {
@@ -274,16 +242,13 @@ module.exports = async (client, reaction, user) => {
 			case modChannel.id: {
 				// DSF as default
 				let spamPostID;
-				if (database.merchChannel.spamMessagePost) {
-					if (database.merchChannel.spamMessagePost.id) {
-						spamPostID = database.merchChannel.spamMessagePost.id;
-					}
-					else { return; }
+				if (database.merchChannel.spamMessagePost && database.merchChannel.spamMessagePost.id.length) {
+					spamPostID = database.merchChannel.spamMessagePost.id;
 				}
 				else {return;}
-				const spamMessage = await modChannel.messages.fetch(spamPostID);
+				const spamMessage = await modChannel.messages.fetch(spamPostID).catch(e => console.log(e));
 				if (spamMessage.id === message.id) {
-					if(reaction.me) return;
+					if (reaction.me) return;
 					embeds = pagination.paginate();
 					if (reaction.emoji.name === '▶️') {
 						if (page < embeds.length) {

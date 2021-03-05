@@ -298,7 +298,7 @@ class Paginate {
 			const info = current;
 			const embed = new MessageEmbed()
 				.setTitle('Reaction Spammers Incoming!')
-				.setDescription('Threholds are 10 reactions clicked (can be the same one) or 5 different reactions clicked. Clicking any of the reactions will update the post, though it will be updated everytime someone reacts to any of the messages listed below.')
+				.setDescription('Thresholds are 10 reactions clicked (can be the same one) or 5 different reactions clicked. Clicking any of the reactions will update the post, though it will be updated everytime someone reacts to any of the messages listed below.')
 				.setThumbnail(this.message.guild.discoverySplashURL() || this.message.guild.iconURL())
 				.setColor(colors.orange)
 				.setTimestamp()
@@ -321,6 +321,7 @@ class Paginate {
 	}
 
 	spamMessages() {
+		// Gets the message that has been reacted to
 		return this.database.merchChannel.spamProtection.map(obj => {
 			if (obj.messageID === this.message.id) return obj;
 		}).filter(m => m);
@@ -351,10 +352,6 @@ class Paginate {
 			}).filter(o => o);
 		}).filter(o => o).flat();
 	}
-
-	/**
-	 * @returns {Array} Nested array, use .flat()
-	 */
 
 	get users() {
 		return this.spamMessages().map(m => {
@@ -392,18 +389,6 @@ class Paginate {
 		if (!members.size) return;
 		return members.map(mem => {
 			return { result: mem._roles.includes(groundedRole.id), messageID: this.thresholdMessages[0], id: mem.user.id };
-		});
-	}
-
-	set updatedDB(doc) {
-		this._updateDB = doc;
-	}
-
-	usersCheck() {
-		return this._updateDB.merchChannel.spamProtection.map(obj => {
-			if (((Date.now() - obj.time) >= 900000) && !obj.users.length) {
-				return obj.messageID;
-			}
 		});
 	}
 }

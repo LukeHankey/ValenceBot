@@ -91,9 +91,9 @@ module.exports = async (client, message) => {
 					const tracker = await res.merchChannel.scoutTracker;
 
 					const findMessage = tracker.find(x => x.userID === msg[0].author.id);
+					const userN = await message.guild.members.fetch(message.member.id);
 					if (!findMessage) {
-						if (!merchRegex.test(message.content)) return;
-						const userN = await message.guild.members.fetch(message.member.id);
+						if (!merchRegex.test(message.content)) return console.log(`New & Spam: ${userN.user.username} (${message.content})`, message.member.id);
 						console.log(`New: ${userN.user.username} (${message.content})`, message.member.id);
 						await settingsColl.findOneAndUpdate({ _id: message.guild.id },
 							{
@@ -115,8 +115,7 @@ module.exports = async (client, message) => {
 							});
 					}
 					else {
-						if (!merchRegex.test(message.content)) return;
-						const userN = await message.guild.members.fetch(message.member.id);
+						if (!merchRegex.test(message.content)) return console.log(`Old & Spam: ${userN.user.username} (${message.content})`, userN.user.id);
 						console.log(`Old: ${userN.user.username} (${message.content})`, findMessage.userID === userN.id, findMessage.userID);
 						await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
 							$inc: {
