@@ -35,7 +35,9 @@ module.exports = {
 			if (database.lottoSheet === null) {
 				rangeName = `${altMonths[monthIndex]} ${new Date().getUTCFullYear()} Lotto`;
 			}
-			console.log(rangeName);
+			else {
+				rangeName = database.lottoSheet;
+			}
 
 			// eslint-disable-next-line no-inner-declarations
 			async function googleSheets(gClient) {

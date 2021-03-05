@@ -228,7 +228,7 @@ module.exports = async client => {
 				});
 
 				if (embeds.length && !dsf.merchChannel.spamMessagePost.id.length) {
-					const msg = await modChannel.send(`<@!192082256079093761>, <@!310247495005634561>`, embed.setFooter(`Page ${1} of ${embeds.length}`));
+					const msg = await modChannel.send('<@!192082256079093761>, <@!310247495005634561>', embed.setFooter(`Page ${1} of ${embeds.length}`));
 					await settings.findOneAndUpdate({ _id: '420803245758480405' }, {
 						$set: {
 							'merchChannel.spamMessagePost': { id: msg.id, timestamp: msg.createdTimestamp },
