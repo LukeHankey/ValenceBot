@@ -48,7 +48,6 @@ module.exports = async (client, reaction, user) => {
 
 			switch (message.channel.id) {
 			case database.merchChannel.channelID: {
-				const spamProtection = database.merchChannel.spamProtection;
 				if (user.bot) return;
 
 				// Return if a member has the grounded role
@@ -69,7 +68,7 @@ module.exports = async (client, reaction, user) => {
 				};
 
 				// Adding users to the DB + counts
-				spamProtection.map(async msg => {
+				database.merchChannel.spamProtection.map(async msg => {
 					if (msg.userID === '668330399033851924') {
 						settingsColl.findOneAndUpdate({ _id: message.guild.id }, {
 							$pull: {
@@ -79,7 +78,7 @@ module.exports = async (client, reaction, user) => {
 					}
 					if (message.id === msg.messageID) {
 						try {
-							const dbReactions = spamProtection.filter(m => m.messageID === msg.messageID);
+							const dbReactions = database.merchChannel.spamProtection.filter(m => m.messageID === msg.messageID);
 							const spamUsersDB = dbReactions.flatMap(u => u.users);
 
 							// If there are no members added or none that match the member who reacted, add them.
@@ -147,8 +146,7 @@ module.exports = async (client, reaction, user) => {
 									});
 								}
 								const removeMessages = async () => {
-									const db = await settingsColl.findOne({ _id: message.guild.id });
-									db.merchChannel.spamProtection.forEach(obj => {
+									database.merchChannel.spamProtection.forEach(obj => {
 										if (obj.messageID !== mem.msg) return;
 										if (!obj.users.length) {
 											settingsColl.updateOne({ _id: message.guild.id }, {
@@ -212,7 +210,7 @@ module.exports = async (client, reaction, user) => {
 							// If they do have the role
 							if (x && x.result) {
 								// Remove them from the database in all messages
-								spamProtection.map(async obj => {
+								database.merchChannel.spamProtection.map(async obj => {
 									if (obj.users.some(u => u.id === x.id)) {
 										if (!obj.users.length) return;
 										await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': obj.messageID }, {

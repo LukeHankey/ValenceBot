@@ -385,6 +385,9 @@ module.exports = async (client, message) => {
 				}
 				catch (err) {
 					console.log(err);
+					if (err.code === 500035) {
+						message.guild.channels.cache.get(DB.channels.mod).send(`${message.member} reacted with ✅ but the Event Title (1st line) is too long. Max of 100 characters.`);
+					}
 				}
 			}
 		});
