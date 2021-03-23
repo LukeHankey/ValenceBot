@@ -1,1 +1,1 @@
-worker node -inspect index.js
+worker node --inspect index.js
