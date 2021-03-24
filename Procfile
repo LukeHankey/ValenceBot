@@ -1,1 +1,1 @@
-worker node --inspect index.js
+worker node --gc-interval=100 index.js
