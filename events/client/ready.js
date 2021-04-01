@@ -316,7 +316,7 @@ module.exports = async client => {
 			vScout.send();
 		}
 
-		if (new Date().getDay() === 2 && new Date().getHours() === 00 && new Date().getMinutes() === 00) { // Monthly reset + 1 day
+		if (new Date().getDate() === 2 && new Date().getHours() === 00 && new Date().getMinutes() === 00) { // Monthly reset + 1 day
 			await settings.updateMany({ lottoSheet: { $exists: true } }, { $set: { lottoSheet: null } });
 		}
 

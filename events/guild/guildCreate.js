@@ -30,7 +30,7 @@ module.exports = async (client, guild) => {
     \n${code}diff\n
 + Server name: ${guild.name}
 + Server ID: ${guild.id}
-+ Owner: ${guild.owner.nickname}
++ Owner: <@!${guild.ownerID}>
 + Channel count: ${guild.channels.cache.size}
 + Member count: ${guild.memberCount}${code}`);
 };
