@@ -43,7 +43,7 @@ module.exports = async (client, reaction, user) => {
 			const modChannel = message.guild.channels.cache.find(ch => ch.name === 'moderator');
 			const groundedRole = message.guild.roles.cache.find(r => r.name === 'Grounded');
 			const pagination = new Paginate(reaction, database);
-			let embeds = pagination.embeds;
+			const embeds = pagination.paginate();
 			let page = pagination.page;
 
 			switch (message.channel.id) {
@@ -56,7 +56,6 @@ module.exports = async (client, reaction, user) => {
 						return;
 					}
 				});
-
 
 				// Adding users to the DB + counts
 				database.merchChannel.spamProtection.map(async msg => {
@@ -151,7 +150,7 @@ module.exports = async (client, reaction, user) => {
 												},
 											});
 										}
-										else {return;}
+										else { return; }
 									});
 								};
 								return await removeMessages();
@@ -168,7 +167,7 @@ module.exports = async (client, reaction, user) => {
 								else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
 									removeUsersAndMessages();
 								}
-								else {return;}
+								else { return; }
 							}
 							catch (e) {
 								if (e.code === 10008) {
@@ -179,7 +178,7 @@ module.exports = async (client, reaction, user) => {
 										},
 									});
 								}
-								else {console.error(e);}
+								else { console.error(e); }
 							}
 						});
 					}
@@ -188,47 +187,10 @@ module.exports = async (client, reaction, user) => {
 				if (database.merchChannel.spamMessagePost.id.length) {
 					const spamPost = await database.merchChannel.spamMessagePost;
 					const getMessage = modChannel.messages.cache.get(spamPost.id) ?? await modChannel.messages.fetch(spamPost.id);
-					try {
-						// Edit the embed every time there is someone who meets the treshhold
-						embeds = pagination.paginate();
-						pagination.spamPost = getMessage;
-						const editEmbed = new MessageEmbed(embeds[0]);
-						editEmbed.spliceFields(0, 9, embeds[page].fields);
-						pagination.edit(editEmbed);
-
-						// Every 2 minutes, check members who are on the embed
-						const reactTimer = cron.schedule('*/2 * * * *', async () => {
-							// Check if they have the grounded role - React has to happen on the same message
-							const result = await pagination.checkGroundedRoles();
-							if (!result) return;
-							// Filter for results where the member has the role added to make the result true
-							const [x] = result.filter(o => o.result);
-							// If they do have the role
-							if (x && x.result) {
-								// Remove them from the database in all messages
-								database.merchChannel.spamProtection.map(async obj => {
-									if (obj.users.some(u => u.id === x.id)) {
-										if (!obj.users.length) return;
-										await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': obj.messageID }, {
-											$pull: {
-												'merchChannel.spamProtection.$.users': { id: x.id },
-											},
-										});
-									}
-								});
-							}
-							reactTimer.stop();
-						}, { scheduled: false });
-						reactTimer.start();
-					}
-					catch (err) {
-						if (err) {
-							if (!embeds.length) {
-								getMessage.delete();
-								settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.spamProtection': { messageID: getMessage.id } }, $set: { 'merchChannel.spamMessagePost': { id: '', timestamp: '' } } });
-							}
-						}
-					}
+					pagination.spamPost = getMessage;
+					const editEmbed = new MessageEmbed(embeds[0]);
+					editEmbed.spliceFields(0, 9, embeds[page].fields);
+					pagination.edit(editEmbed);
 				}
 			}
 				break;
@@ -238,11 +200,60 @@ module.exports = async (client, reaction, user) => {
 				if (database.merchChannel.spamMessagePost && database.merchChannel.spamMessagePost.id.length) {
 					spamPostID = database.merchChannel.spamMessagePost.id;
 				}
-				else {return;}
-				const spamMessage = await modChannel.messages.fetch(spamPostID).catch(e => console.log(e));
+				else { return; }
+				const spamMessage = modChannel.messages.cache.get(spamPostID) ?? await modChannel.messages.fetch(spamPostID).catch(e => console.log(e));
+
+				const checkGrounded = cron.schedule('* * * * * *', async () => {
+					try {
+						const r = database.merchChannel.spamProtection.map(obj => {
+							if (!obj.users.length) return;
+							return obj.users.map(user => {
+								const fetched = message.guild.members.cache.get(user.id) ?? message.guild.members.fetch({ user: user.id });
+								if (fetched._roles.includes(groundedRole.id)) {
+									return { result: true, messageID: obj.messageID, id: user.id };
+								}
+								else {
+									return { result: false };
+								}
+							});
+						});
+
+						const result = await r.flatMap(o => o).filter(o => o);
+						if (!result || !result.length) return;
+						const [x] = result.filter(o => o.result);
+						if (x && x.result) {
+							// Remove them from the database in all messages
+							database.merchChannel.spamProtection.map(async obj => {
+								if (obj.users.some(u => u.id === x.id)) {
+									if (!obj.users.length) return;
+									return await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': obj.messageID }, {
+										$pull: {
+											'merchChannel.spamProtection.$.users': { id: x.id },
+										},
+									});
+								}
+							});
+						}
+					}
+					catch (err) {
+						if (err) {
+							if (!embeds.length) {
+								spamMessage.delete();
+								settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.spamProtection': { messageID: spamMessage.id } }, $set: { 'merchChannel.spamMessagePost': { id: '', timestamp: '' } } });
+							}
+						}
+					}
+				}, { scheduled: false });
+
+				const manualUpdate = () => {
+					pagination.spamPost = spamMessage;
+					const editEmbed = new MessageEmbed(embeds[0]);
+					editEmbed.spliceFields(0, 9, embeds[page].fields);
+					return pagination.edit(editEmbed);
+				};
+
 				if (spamMessage.id === message.id) {
 					if (reaction.me) return;
-					embeds = pagination.paginate();
 					if (reaction.emoji.name === '▶️') {
 						if (page < embeds.length) {
 							spamMessage.reactions.resolve('▶️').users.remove(user.id);
@@ -260,6 +271,18 @@ module.exports = async (client, reaction, user) => {
 						}
 						else { spamMessage.reactions.resolve('◀️').users.remove(user.id); }
 					}
+					else if (reaction.emoji.name === '📥') {
+						manualUpdate();
+						spamMessage.reactions.resolve('📥').users.remove(user.id);
+					}
+					else if (reaction.emoji.name === '⏰') {
+						checkGrounded.start();
+						spamMessage.reactions.resolve('⏰').users.remove(user.id);
+					}
+					else if (reaction.emoji.name === '⏹️') {
+						checkGrounded.stop();
+						spamMessage.reactions.resolve('⏹️').users.remove(user.id);
+					}
 					else {
 						return;
 					}
@@ -267,7 +290,7 @@ module.exports = async (client, reaction, user) => {
 			}
 			}
 		}
-		else {return;}
+		else { return; }
 		break;
 	}
 };

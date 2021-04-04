@@ -138,7 +138,7 @@ module.exports = async (client, message) => {
 					const log = [...mes.values()];
 					for (const messages in log) {
 						const authorName = log[messages].member?.nickname ?? log[messages].author.username;
-						if (authorName === 'Valence Bot' || authorName === null) return;
+						if (authorName === null) return;
 						await settingsColl.findOneAndUpdate({ _id: message.guild.id },
 							{
 								$addToSet: {

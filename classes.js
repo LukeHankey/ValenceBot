@@ -333,11 +333,12 @@ class Paginate {
 	 */
 
 	get membersAboveThreshold() {
-		return this.users.flat().map(u => {
+		const membersAbove = this.users.flat().map(u => {
 			if (u.totalCount > 9 || u.reactions.length > 4) {
 				return { member: u.user, msg: u.msg };
 			}
 		});
+		return membersAbove;
 	}
 
 	get membersBelowThreshold() {
@@ -362,11 +363,12 @@ class Paginate {
 	}
 
 	get thresholdMembers() {
-		return this.membersAboveThreshold.map(o => {
+		const members = this.membersAboveThreshold.map(o => {
 			if (o === undefined) return;
 			o = o.member.id;
 			return o;
 		}).filter(id => id);
+		return members;
 	}
 
 	get thresholdMessages() {

@@ -192,7 +192,7 @@ module.exports = async client => {
 	// 	})
 	// })
 
-	const dsfSpamMessage = cron.schedule('*/10 * * * *', async () => {
+	const dsfSpamMessage = cron.schedule('* * * * *', async () => {
 		settings.findOne({ _id: '420803245758480405' })
 			.then(async dsf => {
 				const modChannel = client.channels.cache.get('643109949114679317');
@@ -228,7 +228,7 @@ module.exports = async client => {
 				});
 
 				if (embeds.length && !dsf.merchChannel.spamMessagePost.id.length) {
-					const msg = await modChannel.send('<@!310247495005634561>', embed.setFooter(`Page ${1} of ${embeds.length}`));
+					const msg = await modChannel.send(embed.setFooter(`Page ${1} of ${embeds.length}`));
 					await settings.findOneAndUpdate({ _id: '420803245758480405' }, {
 						$set: {
 							'merchChannel.spamMessagePost': { id: msg.id, timestamp: msg.createdTimestamp },
@@ -236,6 +236,61 @@ module.exports = async client => {
 					});
 					await msg.react('◀️');
 					await msg.react('▶️');
+					await msg.react('📥');
+					await msg.react('⏰');
+					dsfSpamMessage.stop();
+				}
+				else if (dsf.merchChannel.spamMessagePost.id.length) {
+					dsfSpamMessage.stop();
+				}
+			});
+
+		// Test
+		settings.findOne({ _id: '733164313744769024' })
+			.then(async dsf => {
+				const modChannel = client.channels.cache.get('734477320672247869');
+				const embed = new Discord.MessageEmbed()
+					.setTitle('Reaction Spammers Incoming!')
+					.setDescription('Threholds are 10 reactions clicked (can be the same one) or 5 different reactions clicked. Clicking any of the reactions will update the post, though it will be updated everytime someone reacts to any of the messages listed below.')
+					.setColor(colors.orange)
+					.setTimestamp();
+
+				// TODO - Check for double messages and remove the second/last one
+
+				const embeds = dsf.merchChannel.spamProtection.flatMap(obj => {
+					const usersList = obj.users.map(userObj => {
+						// userObj = User, total count, skull count, reactions[]
+						let skullsCount = 0;
+						userObj.reactions.filter(r => {
+							if (['☠️', '💀', '<:skull:805917068670402581>'].includes(r.emoji)) {
+								skullsCount = skullsCount + r.count;
+							}
+						});
+						return { totalCount: userObj.count, skullCount: skullsCount, user: { id: userObj.id, username: userObj.username }, reactions: userObj.reactions };
+					});
+					const dataFields = [];
+					usersList.forEach(u => {
+					// Filters added here
+						if (u.totalCount > 9 || u.reactions.length > 4) {
+							const emojis = u.reactions.map(e => { return `${e.emoji} **- ${e.count}**`; });
+							dataFields.push({ name: `${u.user.username} - ${u.user.id}`, value: `Mention: <@!${u.user.id}>\nTotal Reacts (${u.skullCount}/${u.totalCount})\n\n${emojis.join('  |   ')}`, inline: true });
+						}
+						else { return; }
+					});
+					return dataFields;
+				});
+
+				if (embeds.length && !dsf.merchChannel.spamMessagePost.id.length) {
+					const msg = await modChannel.send(embed.setFooter(`Page ${1} of ${embeds.length}`));
+					await settings.findOneAndUpdate({ _id: '733164313744769024' }, {
+						$set: {
+							'merchChannel.spamMessagePost': { id: msg.id, timestamp: msg.createdTimestamp },
+						},
+					});
+					await msg.react('◀️');
+					await msg.react('▶️');
+					await msg.react('📥');
+					await msg.react('⏰');
 					dsfSpamMessage.stop();
 				}
 				else if (dsf.merchChannel.spamMessagePost.id.length) {
