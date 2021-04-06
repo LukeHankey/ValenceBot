@@ -198,7 +198,7 @@ module.exports = async client => {
 				const modChannel = client.channels.cache.get('643109949114679317');
 				const embed = new Discord.MessageEmbed()
 					.setTitle('Reaction Spammers Incoming!')
-					.setDescription('Threholds are 10 reactions clicked (can be the same one) or 5 different reactions clicked. Clicking any of the reactions will update the post, though it will be updated everytime someone reacts to any of the messages listed below.')
+					.setDescription(`Threholds are 10 reactions clicked (can be the same one) or 5 different reactions clicked.\n📥 - Update the post with new information.\n⏰ - Starts a continuous timer that checks members on this post to see if they have the Grounded role. If they do, it will remove them.\n⏹️ - Stops the timer.`)
 					.setColor(colors.orange)
 					.setTimestamp();
 
