@@ -13,6 +13,37 @@ module.exports = async (client, reaction, user) => {
 	if (message.partial) await message.fetch().catch(err => console.log(12, err));
 	const database = await settingsColl.findOne({ _id: message.guild.id });
 
+	function compressArray(original) {
+
+		const compressed = [];
+		// make a copy of the input array
+		const copy = original.slice(0);
+
+		// first loop goes over every element
+		for (let i = 0; i < original.length; i++) {
+
+			let myCount = 0;
+			// loop over every element in the copy and see if it's the same
+			for (let w = 0; w < copy.length; w++) {
+				if (original[i] == copy[w]) {
+					// increase amount of times duplicate is found
+					myCount++;
+					// sets item to undefined
+					delete copy[w].id;
+				}
+			}
+
+			if (myCount > 0) {
+				const a = new Object();
+				a.value = original[i];
+				a.count = myCount;
+				compressed.push(a);
+			}
+		}
+
+		return compressed;
+	}
+
 	switch (message.guild.id) {
 	case database._id:
 		// Valence
@@ -92,6 +123,24 @@ module.exports = async (client, reaction, user) => {
 								},
 							});
 						}
+						const [ moreThanOne ] = compressArray(spamUsersDB.map(obj => obj.id));
+						const individual = spamUsersDB.find(obj => obj.id === moreThanOne.value);
+						await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': message.id },
+							{ $pull: {
+								'merchChannel.spamProtection.$.users': { id: moreThanOne.value },
+							},
+							})
+							.then(async () => {
+								await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': msg.messageID }, {
+									$addToSet: {
+										'merchChannel.spamProtection.$.users': {
+											$each: [
+												individual,
+											],
+										},
+									},
+								});
+							});
 
 						if (!spamUsersDB.length) return;
 						const match = spamUsersDB.filter(obj => obj?.id === user.id);
@@ -202,28 +251,23 @@ module.exports = async (client, reaction, user) => {
 				}
 				else { return; }
 				const spamMessage = modChannel.messages.cache.get(spamPostID) ?? await modChannel.messages.fetch(spamPostID).catch(e => console.log(e));
+				const botServerWebhook = await client.channels.cache.get('784543962174062608').fetchWebhooks();
 
 				const checkGrounded = cron.schedule('* * * * *', async () => {
 					try {
 						const r = database.merchChannel.spamProtection.map(obj => {
 							if (!obj.users.length) return;
 							return obj.users.map(user => {
-								try {
-									const fetched = message.guild.members.cache.get(user.id) ?? message.guild.members.fetch({ user: user.id });
-									if (fetched._roles.includes(groundedRole.id)) {
-										return { result: true, messageID: obj.messageID, id: user.id };
-									}
-									else {
-										return { result: false };
-									}
+								const fetched = message.guild.members.cache.get(user.id) ?? message.guild.members.fetch({ user: user.id }).catch(e => {
+									const hook = botServerWebhook.first();
+									return hook.send(`<@!212668377586597888>, Fix me:\n\`\`\`${e} - ${e.path.split('/')[4]}\`\`\``);
+								});
+								if (!fetched || fetched._roles === undefined) return;
+								if (fetched._roles.includes(groundedRole.id)) {
+									return { result: true, messageID: obj.messageID, id: user.id };
 								}
-								catch (err) {
-									if (err.code === 10007) {
-										console.log(`Unable to fetch member with ID: ${err.path.split('/')[4]}`);
-									}
-									else {
-										console.error(err);
-									}
+								else {
+									return { result: false };
 								}
 
 							});
