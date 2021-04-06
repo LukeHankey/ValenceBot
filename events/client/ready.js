@@ -238,6 +238,7 @@ module.exports = async client => {
 					await msg.react('▶️');
 					await msg.react('📥');
 					await msg.react('⏰');
+					await msg.react('⏹️');
 					dsfSpamMessage.stop();
 				}
 				else if (dsf.merchChannel.spamMessagePost.id.length) {

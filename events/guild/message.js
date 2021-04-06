@@ -91,10 +91,13 @@ module.exports = async (client, message) => {
 					const tracker = await res.merchChannel.scoutTracker;
 
 					const findMessage = tracker.find(x => x.userID === msg[0].author.id);
-					const userN = await message.guild.members.fetch(message.member.id);
+					const userN = message.member;
 					if (!findMessage) {
-						if (!merchRegex.test(message.content)) return console.log(`New & Spam: ${userN.user.username} (${message.content})`, message.member.id);
-						console.log(`New: ${userN.user.username} (${message.content})`, message.member.id);
+						if (!merchRegex.test(message.content)) {
+							console.log(`New & Spam: ${userN.user.username} (${message.content})`, userN.id);
+							return errorLog.forEach(id => id.send(` \`\`\`diff\n+ Spam Message - (User has not posted before)\n- User ID: ${userN.id}\n\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\``));
+						}
+						console.log(`New: ${userN.user.username} (${message.content})`, userN.id);
 						await settingsColl.findOneAndUpdate({ _id: message.guild.id },
 							{
 								$addToSet: {
@@ -115,7 +118,10 @@ module.exports = async (client, message) => {
 							});
 					}
 					else {
-						if (!merchRegex.test(message.content)) return console.log(`Old & Spam: ${userN.user.username} (${message.content})`, userN.user.id);
+						if (!merchRegex.test(message.content)) {
+							console.log(`Old & Spam: ${userN.user.username} (${message.content})`, userN.user.id);
+							return errorLog.forEach(id => id.send(` \`\`\`diff\n+ Spam Message - (User has posted before)\n- User ID: ${userN.user.id}\n\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\``));
+						}
 						console.log(`Old: ${userN.user.username} (${message.content})`, findMessage.userID === userN.id, findMessage.userID);
 						await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
 							$inc: {

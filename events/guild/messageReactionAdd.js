@@ -203,18 +203,29 @@ module.exports = async (client, reaction, user) => {
 				else { return; }
 				const spamMessage = modChannel.messages.cache.get(spamPostID) ?? await modChannel.messages.fetch(spamPostID).catch(e => console.log(e));
 
-				const checkGrounded = cron.schedule('* * * * * *', async () => {
+				const checkGrounded = cron.schedule('* * * * *', async () => {
 					try {
 						const r = database.merchChannel.spamProtection.map(obj => {
 							if (!obj.users.length) return;
 							return obj.users.map(user => {
-								const fetched = message.guild.members.cache.get(user.id) ?? message.guild.members.fetch({ user: user.id });
-								if (fetched._roles.includes(groundedRole.id)) {
-									return { result: true, messageID: obj.messageID, id: user.id };
+								try {
+									const fetched = message.guild.members.cache.get(user.id) ?? message.guild.members.fetch({ user: user.id });
+									if (fetched._roles.includes(groundedRole.id)) {
+										return { result: true, messageID: obj.messageID, id: user.id };
+									}
+									else {
+										return { result: false };
+									}
 								}
-								else {
-									return { result: false };
+								catch (err) {
+									if (err.code === 10007) {
+										console.log(`Unable to fetch member with ID: ${err.path.split('/')[4]}`);
+									}
+									else {
+										console.error(err);
+									}
 								}
+
 							});
 						});
 
@@ -272,16 +283,16 @@ module.exports = async (client, reaction, user) => {
 						else { spamMessage.reactions.resolve('◀️').users.remove(user.id); }
 					}
 					else if (reaction.emoji.name === '📥') {
-						manualUpdate();
 						spamMessage.reactions.resolve('📥').users.remove(user.id);
+						manualUpdate();
 					}
 					else if (reaction.emoji.name === '⏰') {
-						checkGrounded.start();
 						spamMessage.reactions.resolve('⏰').users.remove(user.id);
+						checkGrounded.start();
 					}
 					else if (reaction.emoji.name === '⏹️') {
-						checkGrounded.stop();
 						spamMessage.reactions.resolve('⏹️').users.remove(user.id);
+						checkGrounded.stop();
 					}
 					else {
 						return;
