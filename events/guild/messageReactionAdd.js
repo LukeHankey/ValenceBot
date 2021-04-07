@@ -124,23 +124,25 @@ module.exports = async (client, reaction, user) => {
 							});
 						}
 						const [ moreThanOne ] = compressArray(spamUsersDB.map(obj => obj.id));
-						const individual = spamUsersDB.find(obj => obj.id === moreThanOne.value);
-						await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': message.id },
-							{ $pull: {
-								'merchChannel.spamProtection.$.users': { id: moreThanOne.value },
-							},
-							})
-							.then(async () => {
-								await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': msg.messageID }, {
-									$addToSet: {
-										'merchChannel.spamProtection.$.users': {
-											$each: [
-												individual,
-											],
+						if (moreThanOne && moreThanOne.count > 1) {
+							const individual = spamUsersDB.find(obj => obj.id === moreThanOne.value);
+							await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': message.id },
+								{ $pull: {
+									'merchChannel.spamProtection.$.users': { id: moreThanOne.value },
+								},
+								})
+								.then(async () => {
+									await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': msg.messageID }, {
+										$addToSet: {
+											'merchChannel.spamProtection.$.users': {
+												$each: [
+													individual,
+												],
+											},
 										},
-									},
+									});
 								});
-							});
+						}
 
 						if (!spamUsersDB.length) return;
 						const match = spamUsersDB.filter(obj => obj?.id === user.id);
@@ -237,6 +239,7 @@ module.exports = async (client, reaction, user) => {
 					const spamPost = await database.merchChannel.spamMessagePost;
 					const getMessage = modChannel.messages.cache.get(spamPost.id) ?? await modChannel.messages.fetch(spamPost.id);
 					pagination.spamPost = getMessage;
+					if (embeds[page] === undefined) return console.log('fields of undefined error', embeds[page]);
 					const editEmbed = new MessageEmbed(embeds[0]);
 					editEmbed.spliceFields(0, 9, embeds[page].fields);
 					pagination.edit(editEmbed);
