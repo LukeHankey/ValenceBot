@@ -298,7 +298,7 @@ class Paginate {
 			const info = current;
 			const embed = new MessageEmbed()
 				.setTitle('Reaction Spammers Incoming!')
-				.setDescription('Thresholds are 10 reactions clicked (can be the same one) or 5 different reactions clicked. Clicking any of the reactions will update the post, though it will be updated everytime someone reacts to any of the messages listed below.')
+				.setDescription(`Threholds are 10 reactions clicked (can be the same one) or 5 different reactions clicked.\n📥 - Update the post with new information.\n⏰ - Starts a continuous timer that checks members on this post to see if they have the Grounded role. If they do, it will remove them.\n⏹️ - Stops the timer.`)
 				.setThumbnail(this.message.guild.discoverySplashURL() || this.message.guild.iconURL())
 				.setColor(colors.orange)
 				.setTimestamp()
