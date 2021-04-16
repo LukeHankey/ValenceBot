@@ -239,10 +239,6 @@ module.exports = async (client, reaction, user) => {
 					const spamPost = await database.merchChannel.spamMessagePost;
 					const getMessage = modChannel.messages.cache.get(spamPost.id) ?? await modChannel.messages.fetch(spamPost.id);
 					pagination.spamPost = getMessage;
-					if (!embeds.length) {
-						getMessage.delete();
-						settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.spamProtection': { messageID: getMessage.id } }, $set: { 'merchChannel.spamMessagePost': { id: '', timestamp: '' } } });
-					}
 					const editEmbed = new MessageEmbed(embeds[0]);
 					editEmbed.spliceFields(0, 9, embeds[page].fields);
 					pagination.edit(editEmbed);
@@ -309,10 +305,6 @@ module.exports = async (client, reaction, user) => {
 				const manualUpdate = () => {
 					pagination.spamPost = spamMessage;
 					const editEmbed = new MessageEmbed(embeds[0]);
-					if (!embeds.length) {
-						spamMessage.delete();
-						settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.spamProtection': { messageID: spamMessage.id } }, $set: { 'merchChannel.spamMessagePost': { id: '', timestamp: '' } } });
-					}
 					editEmbed.spliceFields(0, 9, embeds[page].fields);
 					return pagination.edit(editEmbed);
 				};
