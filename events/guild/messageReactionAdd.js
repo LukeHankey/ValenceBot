@@ -240,6 +240,7 @@ module.exports = async (client, reaction, user) => {
 					const getMessage = modChannel.messages.cache.get(spamPost.id) ?? await modChannel.messages.fetch(spamPost.id);
 					pagination.spamPost = getMessage;
 					const editEmbed = new MessageEmbed(embeds[0]);
+					if (!embeds.length || embeds === undefined) return;
 					editEmbed.spliceFields(0, 9, embeds[page].fields);
 					pagination.edit(editEmbed);
 				}
