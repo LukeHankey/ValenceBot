@@ -306,13 +306,11 @@ module.exports = async (client, reaction, user) => {
 				const manualUpdate = () => {
 					pagination.spamPost = spamMessage;
 					const editEmbed = new MessageEmbed(embeds[0]);
-					if (embeds[page].fields) {
-						editEmbed.spliceFields(0, 9, embeds[page].fields);
-					}
-					else {
+					if (!embeds.length) {
 						spamMessage.delete();
 						settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.spamProtection': { messageID: spamMessage.id } }, $set: { 'merchChannel.spamMessagePost': { id: '', timestamp: '' } } });
 					}
+					editEmbed.spliceFields(0, 9, embeds[page].fields);
 					return pagination.edit(editEmbed);
 				};
 
