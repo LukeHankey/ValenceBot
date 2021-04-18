@@ -82,6 +82,17 @@ module.exports = {
 		case 'add':
 			settings.findOne({ _id: message.guild.id }).then(async (r) => {
 				const monthInc = r.calendarID.filter((obj) => obj.month.toLowerCase() === args[1].toLowerCase() || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase());
+				const slicer = (words, textArray) => {
+					const length = words[0].length + 2;
+					const trimString = textArray.join(' ');
+
+					const regMatch = (num) => {
+						const string = `${words[num]}:`;
+						return new RegExp(string, 'i');
+					};
+
+					return trimString.slice(trimString.match(regMatch(0)).index + length, trimString.match(regMatch(1)).index - 1);
+				};
 				if (monthInc && monthInc.length !== 0) {
 					if (args[1].toLowerCase() === monthInc[0].month.toLowerCase() || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
 						// Adding to a specified month \\
@@ -89,15 +100,16 @@ module.exports = {
 							const [...rest] = args.slice(2);
 
 							const m = await message.channel.messages.fetch(monthInc[0].messageID);
-							const date = rest.slice(rest.indexOf('Date:') + 1, rest.indexOf('Event:')).join(' ');
-							const event = rest.slice(rest.indexOf('Event:') + 1, rest.indexOf('Time:')).join(' ');
-							const time = rest.slice(rest.indexOf('Time:') + 1, rest.indexOf('Announcement:')).join(' ');
-							const link = rest.slice(rest.indexOf('Announcement:') + 1, rest.indexOf('Host:')).join(' ') || '';
+							const date = slicer(['date', 'event'], rest);
+							const event = slicer(['event', 'time'], rest);
+							const time = slicer(['time', 'announcement'], rest);
+							const link = slicer(['announcement', 'host'], rest);
 							const hostCollection = message.mentions.members.keyArray().map((id) => `<@${id}>`);
 							const host = hostCollection.join(' ') || message.mentions.roles.first();
 
+
 							if (!date || !event || !time || !link || !host) {
-								message.channel.send(`Please provide the content that you would like to add to the calendar. Acceptable format below:\n${code}\nDate: 21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include Date: / Event: / Time: / Announcement: / Host: \nStarting with capitals and including the colon.${code}`);
+								message.channel.send(`Please provide the content that you would like to add to the calendar. Acceptable format below:\n${code}\nDate: 21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include Date: / Event: / Time: / Announcement: / Host:${code}`);
 							}
 							else {
 								const editEmbed = new Discord.MessageEmbed(m.embeds[0]);
@@ -144,15 +156,15 @@ module.exports = {
 					try {
 						const [...rest] = args.slice(1);
 						const m = await message.channel.messages.fetch(currentMonthMessage[0].messageID);
-						const date = rest.slice(rest.indexOf('Date:') + 1, rest.indexOf('Event:')).join(' ');
-						const event = rest.slice(rest.indexOf('Event:') + 1, rest.indexOf('Time:')).join(' ');
-						const time = rest.slice(rest.indexOf('Time:') + 1, rest.indexOf('Announcement:')).join(' ');
-						const link = rest.slice(rest.indexOf('Announcement:') + 1, rest.indexOf('Host:')).join(' ') || '';
+						const date = slicer(['date', 'event'], rest);
+						const event = slicer(['event', 'time'], rest);
+						const time = slicer(['time', 'announcement'], rest);
+						const link = slicer(['announcement', 'host'], rest);
 						const hostCollection = message.mentions.members.keyArray().map((id) => `<@${id}>`);
 						const host = hostCollection.join(' ') || message.mentions.roles.first();
 
 						if (!date || !event || !time || !link || !host) {
-							message.channel.send(`Please provide the content that you would like to add to the calendar. Acceptable format below:\n${code}\nDate: 21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include Date: / Event: / Time: / Announcement: / Host: \nStarting with capitals and including the colon.${code}`);
+							message.channel.send(`Please provide the content that you would like to add to the calendar. Acceptable format below:\n${code}\nDate: 21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include Date: / Event: / Time: / Announcement: / Host:${code}`);
 						}
 						else {
 							const editEmbed = new Discord.MessageEmbed(m.embeds[0]);
