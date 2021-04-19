@@ -254,7 +254,6 @@ module.exports = async (client, reaction, user) => {
 				}
 				else { return; }
 				const spamMessage = modChannel.messages.cache.get(spamPostID) ?? await modChannel.messages.fetch(spamPostID).catch(e => console.log(e));
-				const botServerWebhook = await client.channels.cache.get('784543962174062608').fetchWebhooks();
 
 				const checkGrounded = cron.schedule('* * * * *', async () => {
 					try {
@@ -262,8 +261,11 @@ module.exports = async (client, reaction, user) => {
 							if (!obj.users.length) return;
 							return obj.users.map(user => {
 								const fetched = message.guild.members.cache.get(user.id) ?? message.guild.members.fetch({ user: user.id }).catch(e => {
-									const hook = botServerWebhook.first();
-									return hook.send(`<@!212668377586597888>, Fix me:\n\`\`\`${e} - ${e.path.split('/')[4]}\`\`\``);
+									settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': obj.messageID },
+										{ $pull: {
+											'merchChannel.spamProtection.$.users': { id: e.path.split('/')[4] },
+										},
+										});
 								});
 								if (!fetched || fetched._roles === undefined) return;
 								if (fetched._roles.includes(groundedRole.id)) {

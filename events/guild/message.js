@@ -95,7 +95,7 @@ module.exports = async (client, message) => {
 					if (!findMessage) {
 						if (!merchRegex.test(message.content)) {
 							console.log(`New & Spam: ${userN.user.username} (${message.content})`, userN.id);
-							return errorLog.forEach(id => id.send(` \`\`\`diff\n+ Spam Message - (User has not posted before)\n- User ID: ${userN.id}\n\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\``));
+							return errorLog.forEach(id => id.send(` \`\`\`diff\n\n+ Spam Message - (User has not posted before)\n- User ID: ${userN.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\``));
 						}
 						console.log(`New: ${userN.user.username} (${message.content})`, userN.id);
 						await settingsColl.findOneAndUpdate({ _id: message.guild.id },
@@ -120,7 +120,7 @@ module.exports = async (client, message) => {
 					else {
 						if (!merchRegex.test(message.content)) {
 							console.log(`Old & Spam: ${userN.user.username} (${message.content})`, userN.user.id);
-							return errorLog.forEach(id => id.send(` \`\`\`diff\n+ Spam Message - (User has posted before)\n- User ID: ${userN.user.id}\n\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\``));
+							return errorLog.forEach(id => id.send(` \`\`\`diff\n+ Spam Message - (User has posted before)\n\n- User ID: ${userN.user.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\``));
 						}
 						console.log(`Old: ${userN.user.username} (${message.content})`, findMessage.userID === userN.id, findMessage.userID);
 						await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
@@ -228,24 +228,40 @@ module.exports = async (client, message) => {
 									if (doc.userID === '668330399033851924') {
 										await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: doc.messageID } } });
 									}
+									else {
+										console.log(doc);
+										const check = Date.now() - lastTime > 600000;
 
-									const fetched = await message.channel.messages.fetch(lastID);
-									const check = Date.now() - lastTime > 600000;
-
-									if (check) {
-										fetched.react('☠️')
-											.then(async () => {
-												await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: lastID } } });
-											})
-											.catch(() => {
-												return timer.stop();
-											});
+										if (check) {
+											const fetched = await message.channel.messages.fetch(lastID);
+											console.log(3, check);
+											fetched.react('☠️')
+												.then(async () => {
+													await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: lastID } } });
+												})
+												.catch(() => {
+													console.log(2);
+													return timer.stop();
+												});
+										}
 									}
 								}
 								catch (e) {
+									console.log(1, e);
 									const messageID = e.path.split('/');
-									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID[4] } } });
-									timer.stop();
+									const x = botServerWebhook.first();
+									await settingsColl.findOne({ _id: message.guild.id })
+										.then((dataError) => {
+											const { merchChannel } = dataError;
+											const messages = merchChannel.messages;
+
+											const found = messages.find(id => id.messageID === messageID[4]);
+											// Check if found is just the messages that have been deleted by original poster
+											console.log(2, found);
+											settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID[4] } } });
+											x.send(`Remove from Database - Unable to fetch ${found.messageID}\n\`\`\`diff\n+ User deleted own message \n\n- User ID: ${found.userID}\n- User: ${found.author}\n- Content: ${found.content}\`\`\``);
+											timer.stop();
+										});
 								}
 							}
 						});
