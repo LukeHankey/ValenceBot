@@ -247,21 +247,25 @@ module.exports = async (client, message) => {
 									}
 								}
 								catch (e) {
-									console.log(1, e);
-									const messageID = e.path.split('/');
-									const x = botServerWebhook.first();
-									await settingsColl.findOne({ _id: message.guild.id })
-										.then((dataError) => {
-											const { merchChannel } = dataError;
-											const messages = merchChannel.messages;
+									if (e.code === 10008) {
+										const messageID = e.path.split('/');
+										const x = botServerWebhook.first();
+										await settingsColl.findOne({ _id: message.guild.id })
+											.then((dataError) => {
+												const { merchChannel } = dataError;
+												const messages = merchChannel.messages;
 
-											const found = messages.find(id => id.messageID === messageID[4]);
-											// Check if found is just the messages that have been deleted by original poster
-											console.log(2, found);
-											settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID[4] } } });
-											x.send(`Remove from Database - Unable to fetch ${found.messageID}\n\`\`\`diff\n+ User deleted own message \n\n- User ID: ${found.userID}\n- User: ${found.author}\n- Content: ${found.content}\`\`\``);
-											timer.stop();
-										});
+												const found = messages.find(id => id.messageID === messageID[4]);
+												// Check if found is just the messages that have been deleted by original poster
+												settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID[4] } } });
+												x.send(`Remove from Database - Unable to fetch ${found.messageID}\n\`\`\`diff\n+ User deleted own message \n\n- User ID: ${found.userID}\n- User: ${found.author}\n- Content: ${found.content}\`\`\``);
+												return timer.stop();
+											});
+									}
+									else {
+										console.error(e);
+									}
+
 								}
 							}
 						});
