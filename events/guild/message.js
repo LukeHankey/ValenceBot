@@ -76,6 +76,7 @@ module.exports = async (client, message) => {
 				const merchRegex = /(^(?:m|merch|merchant|w|world){1}(\s?)(?!3$|7$|8$|11$|13$|17|19|20|29|33|34|38|41|43|47|57|61|75|80|81|90|93|94|101|102|10[7-9]|11[0-3]|12[0-2]|12[5-9]|13[0-3]|135|136)([1-9]\d?|1[0-3]\d|140)([,.\s]?|\s+\w*)*$)/i;
 				merchRegex.test(message.content)
 					? message.channel.send(`<@&670842187461820436> - ${message.content}`).then(m => m.delete()).catch(async err => {
+						console.log(14, err);
 						const messageID = err.path.split('/');
 						return await message.channel.messages.fetch(messageID[4]).then(x => x.delete()).catch(() => console.log('Unable to delete message'));
 					})
@@ -173,50 +174,6 @@ module.exports = async (client, message) => {
 						);
 					}
 
-					// Posts only error to the error channel
-					await settingsColl.findOne({ _id: message.guild.id }).then(async data => {
-						const errorEmbed = (document, error) => {
-							const embed = new MessageEmbed()
-								.setTitle('Error: Unknown Message')
-								.setDescription(`Message has been deleted. Removing from the DataBase. - **${data.serverName}**`)
-								.setColor(colors.red_dark)
-								.addField('Message ID/Content:', `${document.messageID}\n${document.content}`, true)
-								.addField('Author ID/Tag:', `${document.userID}\n<@!${document.userID}>`, true)
-								.addField('Message Timestamp:', `${new Date(document.time).toString().split(' ').slice(0, -4).join(' ')}`, true)
-								.addField('Stack Trace', `\`\`\`js\n${error.stack}\`\`\``);
-							return embed;
-						};
-						const errorSet = new Set();
-
-						for await (const doc of data.merchChannel.messages) {
-							const lastID = doc.messageID;
-
-							try {
-								await message.channel.messages.fetch(lastID);
-							}
-							catch (err) {
-								if (err.code === 10008) {
-									if (doc.userID === '668330399033851924') return;
-									errorSet.add({ document: doc, error: err });
-								}
-							}
-						}
-						const errValues = errorSet.values();
-						const errNext = errValues.next().value;
-
-						if (errorSet.size) {
-							return errorLog.forEach(id => {
-								id.send(errorEmbed(errNext.document, errNext.error).addField('Notes:', '- Mark with ✅ when complete so we know if it has been looked at or not.\n- Mark with ❌ if it doesn\'t need doing.'))
-									.then(async () => {
-										await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { 'messageID': errNext.document.messageID } } });
-										errorSet.delete({ document: errNext.document, error: errNext.error });
-										errorSet.clear();
-									});
-							});
-						}
-						else {return;}
-					});
-
 					// Checking the DB and marking dead calls
 					const timer = cron.schedule('* * * * *', async () => {
 						await settingsColl.findOne({ _id: message.guild.id }).then(async data => {
@@ -229,43 +186,22 @@ module.exports = async (client, message) => {
 										await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: doc.messageID } } });
 									}
 									else {
-										console.log(doc);
 										const check = Date.now() - lastTime > 600000;
 
 										if (check) {
 											const fetched = await message.channel.messages.fetch(lastID);
-											console.log(3, check);
 											fetched.react('☠️')
 												.then(async () => {
 													await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: lastID } } });
 												})
 												.catch(() => {
-													console.log(2);
 													return timer.stop();
 												});
 										}
 									}
 								}
 								catch (e) {
-									if (e.code === 10008) {
-										const messageID = e.path.split('/');
-										const x = botServerWebhook.first();
-										await settingsColl.findOne({ _id: message.guild.id })
-											.then((dataError) => {
-												const { merchChannel } = dataError;
-												const messages = merchChannel.messages;
-
-												const found = messages.find(id => id.messageID === messageID[4]);
-												// Check if found is just the messages that have been deleted by original poster
-												settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID[4] } } });
-												x.send(`Remove from Database - Unable to fetch ${found.messageID}\n\`\`\`diff\n+ User deleted own message \n\n- User ID: ${found.userID}\n- User: ${found.author}\n- Content: ${found.content}\`\`\``);
-												return timer.stop();
-											});
-									}
-									else {
-										console.error(e);
-									}
-
+									if (e) return;
 								}
 							}
 						});
