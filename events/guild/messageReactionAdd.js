@@ -81,6 +81,9 @@ module.exports = async (client, reaction, user) => {
 			case database.merchChannel.channelID: {
 				if (user.bot) return;
 
+				// Logging reaction timestamps
+				console.log('Reaction added:', `MessageID: ${message.id}`, `By: ${user.username} (${user.id})`, `Reaction: ${reaction.emoji.toString() || reaction.reactionEmoji.toString()} | ${reaction.emoji.name || reaction.reactionEmoji.name} `, `${new Date(Date.now()).toString().split(' ').slice(0, -4).join(' ')} ${(new Date(Date.now()).getMilliseconds())}`);
+
 				// Return if a member has the grounded role
 				message.guild.members.fetch(user.id).then(mem => {
 					if (mem.roles.cache.has(groundedRole.id)) {
@@ -103,7 +106,7 @@ module.exports = async (client, reaction, user) => {
 							username: user.username,
 							count: 1,
 							reactions: [{
-								emoji: reaction.emoji.name,
+								emoji: reaction.emoji.name || reaction.reactionEmoji.name,
 								count: 1,
 							}],
 						};
@@ -256,53 +259,41 @@ module.exports = async (client, reaction, user) => {
 				const spamMessage = modChannel.messages.cache.get(spamPostID) ?? await modChannel.messages.fetch(spamPostID).catch(e => console.log(e));
 
 				const checkGrounded = cron.schedule('* * * * *', async () => {
-					try {
-						const r = database.merchChannel.spamProtection.map(obj => {
-							if (!obj.users.length) return;
-							return obj.users.map(user => {
-								const fetched = message.guild.members.cache.get(user.id) ?? message.guild.members.fetch({ user: user.id }).catch(e => {
+					database.merchChannel.spamProtection.map(async obj => {
+						if (!obj.users.length) return;
+						obj.users.map(async user => {
+							const res = await message.guild.members.fetch({ user: user.id })
+								.then(fetched => {
+									if (!fetched._roles.includes(groundedRole.id)) {return;}
+									if (fetched._roles.includes(groundedRole.id)) {
+										return { result: true, messageID: obj.messageID, id: user.id };
+									}
+									else {
+										return { result: false };
+									}
+								})
+								.catch(e => {
 									settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': obj.messageID },
 										{ $pull: {
 											'merchChannel.spamProtection.$.users': { id: e.path.split('/')[4] },
 										},
 										});
 								});
-								if (!fetched || fetched._roles === undefined) return;
-								if (fetched._roles.includes(groundedRole.id)) {
-									return { result: true, messageID: obj.messageID, id: user.id };
-								}
-								else {
-									return { result: false };
-								}
 
-							});
-						});
-
-						const result = await r.flatMap(o => o).filter(o => o);
-						if (!result || !result.length) return;
-						const [x] = result.filter(o => o.result);
-						if (x && x.result) {
-							// Remove them from the database in all messages
-							database.merchChannel.spamProtection.map(async obj => {
-								if (obj.users.some(u => u.id === x.id)) {
+							if (res === undefined) return;
+							if (res && res.result) {
+								if (obj.users.some(u => u.id === res.id)) {
 									if (!obj.users.length) return;
 									return await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': obj.messageID }, {
 										$pull: {
-											'merchChannel.spamProtection.$.users': { id: x.id },
+											'merchChannel.spamProtection.$.users': { id: res.id },
 										},
 									});
 								}
-							});
-						}
-					}
-					catch (err) {
-						if (err) {
-							if (!embeds.length) {
-								spamMessage.delete();
-								settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.spamProtection': { messageID: spamMessage.id } }, $set: { 'merchChannel.spamMessagePost': { id: '', timestamp: '' } } });
+								checkGrounded.stop();
 							}
-						}
-					}
+						});
+					});
 				}, { scheduled: false });
 
 				const manualUpdate = () => {
