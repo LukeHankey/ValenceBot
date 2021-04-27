@@ -192,7 +192,7 @@ module.exports = async client => {
 	// 	})
 	// })
 
-	const dsfSpamMessage = cron.schedule('* * * * *', async () => {
+	const dsfSpamMessage = cron.schedule('*/15 * * * *', async () => {
 		settings.findOne({ _id: '420803245758480405' })
 			.then(async dsf => {
 				const modChannel = client.channels.cache.get('643109949114679317');
