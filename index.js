@@ -1,6 +1,7 @@
 const { Client, Collection, Intents } = require('discord.js');
 const connection = require('./mongodb').initDb;
 require('dotenv').config();
+require('newrelic');
 
 const client = new Client({ ws: { intents: [ Intents.NON_PRIVILEGED, 'GUILD_MEMBERS'] }, partials: ['MESSAGE', 'REACTION'] });
 client.commands = new Collection();
@@ -10,6 +11,7 @@ client.commands = new Collection();
 process.on('unhandledRejection', (reason, p) => {
 	console.log('Unhandled Rejection at:', p, 'reason:', reason);
 });
+
 
 connection(err => { if (err) console.log(err);});
 
