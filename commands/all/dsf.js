@@ -15,7 +15,7 @@ module.exports = {
 	name: 'dsf',
 	description: ['Displays all of the current stored messages.', 'Clears all of the current stored messages.', 'Shows the list of potential scouters/verified scouters with the set scout count, or count adjusted.', 'Add 1 or <num> merch count to the member provided.', 'Remove 1 or <num> merch count to the member provided.'],
 	aliases: [],
-	usage: ['messages view', 'messages clear', 'view scouter/verified <num (optional)>', 'user memberID/@member add <num (optional)> <other>', 'user memberID/@member remove <num (optional)> <other>'],
+	usage: ['messages', 'messages clear', 'view scouter/verified <num (optional)>', 'user memberID/@member add <num (optional)> <other>', 'user memberID/@member remove <num (optional)> <other>'],
 	guildSpecific: ['733164313744769024', '420803245758480405'],
 	run: async (client, message, args, perms) => {
 		if (!perms.admin) return message.channel.send(perms.errorA);
@@ -352,7 +352,7 @@ module.exports = {
 		default:
 			return message.channel.send(func.nEmbed(
 				'**DSF Admin Commands List**',
-				'Here\'s a list of all the DSF commands you can use. Any parameter(s) in \`<>\` are optional:\n\n\`messages|m view\`\n\`messages|m clear\`\n\`view scouter <num>\`\n\`view verified <num>\`\n\`user memberID/@member add <other> <num>\`\n\`user memberID/@member remove <other> <num>\`',
+				'Here\'s a list of all the DSF commands you can use. Any parameter(s) in \`<>\` are optional:\n\n\`messages|m\`\n\`messages|m clear\`\n\`view scouter <num>\`\n\`view verified <num>\`\n\`user memberID/@member add <other> <num>\`\n\`user memberID/@member remove <other> <num>\`',
 				colors.cyan,
 				client.user.displayAvatarURL(),
 			));
