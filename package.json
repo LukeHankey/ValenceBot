@@ -17,7 +17,7 @@
     "assert": "^2.0.0",
     "convert-csv-to-json": "0.0.15",
     "csvtojson": "^2.0.10",
-    "discord.js": "^12.5.1",
+    "discord.js": "^12.5.3",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "googleapis": "^64.0.0",
