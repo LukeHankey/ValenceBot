@@ -15,6 +15,7 @@ module.exports = async (client, message) => {
 		errors: globalDB.channels.errors,
 		logs: globalDB.channels.logs,
 	};
+	console.log(1, message.guild.name || message.channel.recipient, message.channel.name, message.author.username, message.content);
 
 	// Handling DMs
 
@@ -49,17 +50,6 @@ module.exports = async (client, message) => {
 	// 	}
 	// }
 
-	if (message.author.bot) return;
-
-	// Valence - Filter
-
-	const filterWords = ['retard', 'nigger'];
-	const blocked = filterWords.filter(word => {
-		return message.content.toLowerCase().includes(word);
-	});
-
-	if (message.guild.id === '472448603642920973' && blocked.length > 0) message.delete();
-
 	// DSF - Merch Calls
 
 	await settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } })
@@ -74,24 +64,27 @@ module.exports = async (client, message) => {
 
 			if (message.channel.id === merchID) {
 				const merchRegex = /(^(?:m|merch|merchant|w|world){1}(\s?)(?!3$|7$|8$|11$|13$|17|19|20|29|33|34|38|41|43|47|57|61|75|80|81|90|93|94|101|102|10[7-9]|11[0-3]|12[0-2]|12[5-9]|13[0-3]|135|136)([1-9]\d?|1[0-3]\d|140)([,.\s]?|\s+\w*)*$)/i;
-				if (merchRegex.test(message.content)) {
-					try {
-						const m = await message.channel.send(`<@&670842187461820436> - ${message.content}`)
-							.then(mes => mes.delete());
-						return await m.delete({ timeout: 100 });
-					}
-					catch (err) {
-						console.log(14, err);
-						const messageID = err.path.split('/');
-						return await message.channel.messages.fetch(messageID[4]).then(x => x.delete()).catch(() => console.log('Unable to delete message'));
-					}
-				}
-				else {
-					message.delete();
-				}
-
 				if (message.author.bot) return;
+				merchRegex.test(message.content)
+					?
+					// console.log(4, message.guild.name, message.author.username, message.content);
+					message.channel.send(`<@&670842187461820436> - ${message.content}`)
+						.then(async mes => {
+							console.log(5, mes.author.username, mes.content);
+							return await mes.delete();
+						})
+						.catch(async err => {
+							console.log(14, err);
+							const messageID = err.path.split('/');
+							return await message.channel.messages.fetch(messageID[4]).then(x => x.delete()).catch(() => console.log('Unable to delete message'));
+						})
+				// }
+				// else {
+					// console.log(7, message.content, message.author.bot);
+					:	await message.delete();
+				// }
 
+				console.log(8);
 				try {
 					// Adding count to members
 					const mesOne = await message.channel.messages.fetch({ limit: 1 });
@@ -267,6 +260,17 @@ module.exports = async (client, message) => {
 			}
 			else {return;}
 		});
+
+	if (message.author.bot) return;
+
+	// Valence - Filter
+
+	const filterWords = ['retard', 'nigger'];
+	const blocked = filterWords.filter(word => {
+		return message.content.toLowerCase().includes(word);
+	});
+
+	if (message.guild.id === '472448603642920973' && blocked.length > 0) message.delete();
 
 	// Valence Events Channel
 	await settingsColl.findOne({ _id: message.guild.id, 'channels.events': { $exists: true } })

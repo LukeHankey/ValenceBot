@@ -3,7 +3,7 @@
 /* eslint-disable no-inline-comments */
 const Discord = require('discord.js');
 const getDb = require('../../mongodb').getDb;
-const fetch = require('node-fetch');
+// const fetch = require('node-fetch');
 const cron = require('node-cron');
 const randomColor = Math.floor(Math.random() * 16777215).toString(16);
 const func = require('../../functions');
@@ -28,55 +28,55 @@ module.exports = async client => {
 		return embed;
 	};
 
-	function csvJSON(csv) {
+	// function csvJSON(csv) {
 
-		const lines = csv.split('\n');
-		const result = [];
-		const headers = lines[0].split(',');
+	// 	const lines = csv.split('\n');
+	// 	const result = [];
+	// 	const headers = lines[0].split(',');
 
-		for (let i = 1; i < lines.length; i++) {
-			const obj = {};
-			const currentline = lines[i].split(',');
+	// 	for (let i = 1; i < lines.length; i++) {
+	// 		const obj = {};
+	// 		const currentline = lines[i].split(',');
 
-			for (let j = 0; j < headers.length; j++) {
-				obj[headers[j]] = currentline[j];
-			}
+	// 		for (let j = 0; j < headers.length; j++) {
+	// 			obj[headers[j]] = currentline[j];
+	// 		}
 
-			result.push(obj);
-		}
+	// 		result.push(obj);
+	// 	}
 
-		// return result; //JavaScript object
-		return JSON.parse(JSON.stringify(result)); // JSON
-	}
+	// 	// return result; //JavaScript object
+	// 	return JSON.parse(JSON.stringify(result)); // JSON
+	// }
 
 	const db = getDb();
 	const usersColl = db.collection('Users');
 
 
 	// eslint-disable-next-line no-unused-vars
-	const getData = async () => {
-		const clanData = await fetch('http://services.runescape.com/m=clan-hiscores/members_lite.ws?clanName=Valence');
-		const text = clanData.text();
-		const json = text.then(body => csvJSON(body));
+	// const getData = async () => {
+	// 	const clanData = await fetch('http://services.runescape.com/m=clan-hiscores/members_lite.ws?clanName=Valence');
+	// 	const text = clanData.text();
+	// 	const json = text.then(body => csvJSON(body));
 
-		json.then(res => {
-			const newData = [];
+	// 	json.then(res => {
+	// 		const newData = [];
 
-			for (const data of res) {
-				const regex = /�/g;
-				if ((data.Clanmate).includes('�')) {
-					data.Clanmate = data.Clanmate.replace(regex, ' ') || data.Clanmate;
-				}
-				newData.push(data);
-			}
+	// 		for (const data of res) {
+	// 			const regex = /�/g;
+	// 			if ((data.Clanmate).includes('�')) {
+	// 				data.Clanmate = data.Clanmate.replace(regex, ' ') || data.Clanmate;
+	// 			}
+	// 			newData.push(data);
+	// 		}
 
-			newData.forEach(e => {
-				e._id = e.Clanmate.toUpperCase();
-			});
-			usersColl.insertMany(newData, { ordered: false });
-		})
-			.catch(error => console.error(error));
-	};
+	// 		newData.forEach(e => {
+	// 			e._id = e.Clanmate.toUpperCase();
+	// 		});
+	// 		usersColl.insertMany(newData, { ordered: false });
+	// 	})
+	// 		.catch(error => console.error(error));
+	// };
 	// getData()
 
 	usersColl.updateMany(
@@ -126,6 +126,7 @@ module.exports = async client => {
 		for (const document in r) {
 			if (!r[document].citadel_reset_time) return;
 			cron.schedule('*/5 * * * *', async () => {
+				console.log(2, 'Citadel reminder');
 				const today = new Date();
 				const today_num = today.getUTCDay();
 				const today_str = days[today_num];
@@ -193,11 +194,13 @@ module.exports = async client => {
 	// })
 
 	const dsfSpamMessage = cron.schedule('*/15 * * * *', async () => {
+		console.log(3, 'spam message timer');
 		settings.findOne({ _id: '420803245758480405' })
 			.then(async dsf => {
 				const modChannel = client.channels.cache.get('643109949114679317');
 				const embed = new Discord.MessageEmbed()
 					.setTitle('Reaction Spammers Incoming!')
+					// eslint-disable-next-line quotes
 					.setDescription(`Threholds are 10 reactions clicked (can be the same one) or 5 different reactions clicked.\n📥 - Update the post with new information.\n⏰ - Starts a continuous timer that checks members on this post to see if they have the Grounded role. If they do, it will remove them.\n⏹️ - Stops the timer.`)
 					.setColor(colors.orange)
 					.setTimestamp();

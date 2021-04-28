@@ -10,6 +10,7 @@ module.exports = {
 	usage: ['', '<image URL or discord message link>', 'new'],
 	guildSpecific: 'all',
 	run: async (client, message, args, perms, channels) => {
+		console.time();
 		const db = getDb();
 		const settings = db.collection('Settings');
 		const [...attachment] = args;
@@ -133,5 +134,6 @@ module.exports = {
 				return message.channel.send('Couldn\'t find attachment/image.');
 			}
 		}
+		console.timeEnd();
 	},
 };
