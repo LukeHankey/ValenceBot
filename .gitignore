@@ -1,9 +1,9 @@
 node_modules
+newrelic_agent.log
 .env
 start.bat
 Webhook
 .eslintrc.json
 client_secret.json
-test*
 reminders*
 *.log
