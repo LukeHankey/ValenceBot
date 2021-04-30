@@ -2,7 +2,6 @@ const getDb = require('../../mongodb').getDb;
 
 module.exports = async (client, guild) => {
 	const db = getDb();
-	db.createCollection('Settings');
 	const collection = db.collection('Settings');
 	const code = '```';
 

@@ -13,7 +13,7 @@ module.exports = {
 		client.users.fetch(userID)
 			.then(user => {
 				user.send(content.join(' '));
-				message.react('✅');
+				return message.react('✅');
 			})
 			.catch(e => {
 				if (e.code === 10013) {

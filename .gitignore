@@ -6,3 +6,4 @@ Webhook
 client_secret.json
 test*
 reminders*
+*.log
