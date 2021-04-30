@@ -85,11 +85,17 @@ module.exports = async (client, reaction, user) => {
 				console.log('Reaction added:', `MessageID: ${message.id}`, `By: ${user.username} (${user.id})`, `Reaction: ${reaction.emoji.toString() || reaction.reactionEmoji.toString()} | ${reaction.emoji.name || reaction.reactionEmoji.name} `, `${new Date(Date.now()).toString().split(' ').slice(0, -4).join(' ')} ${(new Date(Date.now()).getMilliseconds())}`);
 
 				// Return if a member has the grounded role
-				message.guild.members.fetch(user.id).then(mem => {
+				message.guild.members.cache.get(user.id) || message.guild.members.fetch(user.id).then(mem => {
 					if (mem.roles.cache.has(groundedRole.id)) {
 						return;
 					}
-				});
+				})
+					.catch(err => {
+						if (err.code === 10007) {
+							console.log(`Unable to fetch member (${err.path.split(' ')[4]}). They have been kicked or left the server.`);
+						}
+						console.error(52, err);
+					});
 
 				// Adding users to the DB + counts
 				database.merchChannel.spamProtection.map(async msg => {

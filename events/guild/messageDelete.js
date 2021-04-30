@@ -55,7 +55,7 @@ module.exports = async (client, message) => {
 		else {
 			const user = await message.guild.members
 				.fetch(checkDB.userID)
-				.catch(err => console.error(err));
+				.catch(err => console.error('message delete', err));
 
 			// Remove count by posting or bot to remove
 			errorLog.forEach(id => {
@@ -79,7 +79,7 @@ module.exports = async (client, message) => {
 		else {
 			const user = await message.guild.members
 				.fetch(checkDB.userID)
-				.catch(err => console.error(err));
+				.catch(err => console.error('message delete own', err));
 
 			// Remove count by posting or bot to remove
 			errorLog.forEach(id => {
