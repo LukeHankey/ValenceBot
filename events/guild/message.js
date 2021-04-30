@@ -15,7 +15,6 @@ module.exports = async (client, message) => {
 		errors: globalDB.channels.errors,
 		logs: globalDB.channels.logs,
 	};
-	console.log(1, message.guild.name || message.channel.recipient, message.channel.name, message.author.username, message.content);
 
 	// Handling DMs
 
@@ -67,24 +66,17 @@ module.exports = async (client, message) => {
 				if (message.author.bot) return;
 				merchRegex.test(message.content)
 					?
-					// console.log(4, message.guild.name, message.author.username, message.content);
 					message.channel.send(`<@&670842187461820436> - ${message.content}`)
 						.then(async mes => {
-							console.log(5, mes.author.username, mes.content);
-							return await mes.delete();
+							return await mes.delete({ timeout: 1000 });
 						})
 						.catch(async err => {
 							console.log(14, err);
 							const messageID = err.path.split('/');
 							return await message.channel.messages.fetch(messageID[4]).then(x => x.delete()).catch(() => console.log('Unable to delete message'));
 						})
-				// }
-				// else {
-					// console.log(7, message.content, message.author.bot);
-					:	await message.delete();
-				// }
+					:	await message.delete({ timeout: 500 });
 
-				console.log(8);
 				try {
 					// Adding count to members
 					const mesOne = await message.channel.messages.fetch({ limit: 1 });
