@@ -56,6 +56,7 @@ module.exports = {
 			allAvailableRoles = allAvailableRoles
 				.filter(name => name !== '@everyone')
 				.map(name => `\`${name}\``)
+				.sort()
 				.join(' | ');
 
 			return message.channel.send(embed.setColor(colors.cyan).addField('Available roles to add:', allAvailableRoles));
