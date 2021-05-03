@@ -126,7 +126,6 @@ module.exports = async client => {
 		for (const document in r) {
 			if (!r[document].citadel_reset_time) return;
 			cron.schedule('*/5 * * * *', async () => {
-				console.log(2, 'Citadel reminder');
 				const today = new Date();
 				const today_num = today.getUTCDay();
 				const today_str = days[today_num];
@@ -194,7 +193,6 @@ module.exports = async client => {
 	// })
 
 	const dsfSpamMessage = cron.schedule('*/15 * * * *', async () => {
-		console.log(3, 'spam message timer');
 		settings.findOne({ _id: '420803245758480405' })
 			.then(async dsf => {
 				const modChannel = client.channels.cache.get('643109949114679317');
