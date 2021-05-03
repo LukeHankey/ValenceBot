@@ -3,9 +3,9 @@ const { MessageEmbed } = require('discord.js');
 
 module.exports = {
 	name: 'self-assign',
-	description: ['Assigns or removes a role.'],
+	description: ['Assigns or removes a role.', 'Shows a full list of self-assignable roles.'],
 	aliases: ['sa'],
-	usage: ['<role name>'],
+	usage: ['<role name>', 'roles'],
 	guildSpecific: 'all',
 	run: async (client, message, args) => {
 
@@ -39,6 +39,29 @@ module.exports = {
 			return botRoleHighest.position > x.position;
 		});
 
+		const embed = new MessageEmbed()
+			.setTitle('Self-Assigned Information')
+			.setTimestamp()
+			.setColor(colors.green_light)
+			.setFooter(`${client.user.username} created by Luke_#8346`, message.guild.iconURL());
+
+		if (args[0] === 'roles') {
+			let allAvailableRoles = [];
+			message.guild.roles.cache.filter(allRoles => {
+				if (allRoles.position < botRoleHighest.position) {
+					allAvailableRoles.push(allRoles.name);
+				}
+			});
+
+			allAvailableRoles = allAvailableRoles
+				.filter(name => name !== '@everyone')
+				.map(name => `\`${name}\``)
+				.join(' | ');
+
+			return message.channel.send(embed.setColor(colors.cyan).addField('Available roles to add:', allAvailableRoles));
+
+		}
+
 		const rID = botHighest.map(x => x.id);
 		const rNames = botHighest.map(x => x.name);
 
@@ -52,11 +75,6 @@ module.exports = {
 				: memberRole.add(rID) && added.push(rNames);
 		});
 
-		const embed = new MessageEmbed()
-			.setTitle('Self-Assigned')
-			.setTimestamp()
-			.setColor(colors.green_light)
-			.setFooter(`${client.user.username} created by Luke_#8346`, message.guild.iconURL());
 
 		const fieldAdd = { name: 'Roles Added:', value: `\`\`\`css\n${!added.length ? 'None' : added[0].join(', ')}\`\`\``, inline: true };
 		const fieldRemove = { name: 'Roles Removed:', value: `\`\`\`fix\n${!removed.length ? 'None' : removed[0].join(', ')}\`\`\``, inline: true };
@@ -66,8 +84,8 @@ module.exports = {
 
 		console.log(added, removed, wrong);
 
-		wrong.length && (!added.length && !removed.length) ? message.channel.send(embed.setColor(colors.red_light).addFields(wrongAdd))
-			: wrong.length ? message.channel.send(embed.addFields(fieldsPlus))
+		wrong.length && (!added.length && !removed.length) ? message.channel.send(embed.setColor(colors.red_light).addFields(wrongAdd).setDescription('Can\'t find the role name? Use `;sa roles` for a full list of self-assignable role names.'))
+			: wrong.length ? message.channel.send(embed.addFields(fieldsPlus).setDescription('Can\'t find the role name? Use `;sa roles` for a full list of self-assignable role names.'))
 				: message.channel.send(embed.addFields(fields));
 	},
 };
