@@ -18,7 +18,7 @@ module.exports = {
 	aliases: ['p'],
 	usage: ['', '<member ID>', '<@member/@role>', 'all'],
 	guildSpecific: ['420803245758480405', '733164313744769024', '668330890790699079'],
-	run: async (client, message, args, perms) => {
+	run: async (client, message, args) => {
 
 		const db = getDb();
 		const settings = db.collection('Settings');
@@ -164,69 +164,66 @@ module.exports = {
 					: message.channel.send('You don\'t have permission to use this command.');
 			}
 			else if (args[0] === 'all') {
-				if (perms.mod) {
-					message.channel.startTyping();
-					const data = await settings.findOne({ _id: message.guild.id });
-					const items = data.merchChannel.scoutTracker.sort((a, b) => b.count - a.count);
-					let fields = [];
+				message.channel.startTyping();
+				const data = await settings.findOne({ _id: message.guild.id });
+				const items = data.merchChannel.scoutTracker.sort((a, b) => b.count - a.count);
+				let fields = [];
 
-					for (const values of items) {
-						fields.push({ name: `${values.author}`, value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true });
-					}
-					fields = fields.slice(0, 100);
-					let page = 0;
-					const embeds = paginate(fields);
-
-					// eslint-disable-next-line no-inner-declarations
-					function paginate(data) {
-						const embeds = [];
-						let k = 24;
-						for (let i = 0; i < data.length; i += 24) {
-							const current = data.slice(i, k);
-							k += 24;
-							const info = current;
-							const embed = new MessageEmbed()
-								.setTitle('Member Profiles - Top Scouters')
-								.setDescription('Current tracked stats in this server for the top 24 scouters per page.')
-								.setColor(colors.aqua)
-								.setThumbnail(message.author.displayAvatarURL())
-								.setTimestamp()
-								.addFields(info);
-							embeds.push(embed);
-						}
-						return embeds;
-					}
-					message.channel.send(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, client.user.displayAvatarURL()))
-						.then(async msg => {
-							await msg.react('◀️');
-							await msg.react('▶️');
-
-							const react = (reaction, user) => ['◀️', '▶️'].includes(reaction.emoji.name) && user.id === message.author.id;
-							const collect = msg.createReactionCollector(react);
-
-							collect.on('collect', (r, u) => {
-								if (r.emoji.name === '▶️') {
-									if (page < embeds.length) {
-										msg.reactions.resolve('▶️').users.remove(u.id);
-										page++;
-										if (page === embeds.length) --page;
-										msg.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, client.user.displayAvatarURL()));
-									}
-									else {return;}
-								}
-								else if (r.emoji.name === '◀️') {
-									if (page !== 0) {
-										msg.reactions.resolve('◀️').users.remove(u.id);
-										--page;
-										msg.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, client.user.displayAvatarURL()));
-									}
-									else {msg.reactions.resolve('◀️').users.remove(u.id);}
-								}
-							});
-						});
-					message.channel.stopTyping();
+				for (const values of items) {
+					fields.push({ name: `${values.author}`, value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true });
 				}
-				else {return message.channel.send(perms.errorM);}
+				fields = fields.slice(0, 100);
+				let page = 0;
+				const embeds = paginate(fields);
+
+				// eslint-disable-next-line no-inner-declarations
+				function paginate(data) {
+					const embeds = [];
+					let k = 24;
+					for (let i = 0; i < data.length; i += 24) {
+						const current = data.slice(i, k);
+						k += 24;
+						const info = current;
+						const embed = new MessageEmbed()
+							.setTitle('Member Profiles - Top Scouters')
+							.setDescription('Current tracked stats in this server for the top 24 scouters per page.')
+							.setColor(colors.aqua)
+							.setThumbnail(message.author.displayAvatarURL())
+							.setTimestamp()
+							.addFields(info);
+						embeds.push(embed);
+					}
+					return embeds;
+				}
+				message.channel.send(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, client.user.displayAvatarURL()))
+					.then(async msg => {
+						await msg.react('◀️');
+						await msg.react('▶️');
+
+						const react = (reaction, user) => ['◀️', '▶️'].includes(reaction.emoji.name) && user.id === message.author.id;
+						const collect = msg.createReactionCollector(react);
+
+						collect.on('collect', (r, u) => {
+							if (r.emoji.name === '▶️') {
+								if (page < embeds.length) {
+									msg.reactions.resolve('▶️').users.remove(u.id);
+									page++;
+									if (page === embeds.length) --page;
+									msg.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, client.user.displayAvatarURL()));
+								}
+								else {return;}
+							}
+							else if (r.emoji.name === '◀️') {
+								if (page !== 0) {
+									msg.reactions.resolve('◀️').users.remove(u.id);
+									--page;
+									msg.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, client.user.displayAvatarURL()));
+								}
+								else {msg.reactions.resolve('◀️').users.remove(u.id);}
+							}
+						});
+					});
+				message.channel.stopTyping();
 			}
 		}
 	},
