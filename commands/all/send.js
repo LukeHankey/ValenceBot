@@ -199,6 +199,11 @@ module.exports = {
 
 						const embedPost = await message.channel.messages.fetch(find.messageID);
 						const editPost = new MessageEmbed(embedPost.embeds[0]);
+						if (rsn === 'clear') {
+							editPost.spliceFields(0, 25);
+							embedPost.edit(editPost);
+							return message.react('✅');
+						}
 						const fields = embedPost.embeds[0].fields;
 						const field = [];
 
@@ -208,10 +213,9 @@ module.exports = {
 							}
 						}
 						field[1] === undefined
-							? message.channel.send('Make sure you type the RSN correctly, including any capitals.')
-							: editPost.spliceFields(field[0], 1);
+							? message.channel.send('Make sure you type the RSN correctly, including any capitals.') && message.react('❌')
+							: editPost.spliceFields(field[0], 1) && message.react('✅');
 						embedPost.edit(editPost);
-						return message.react('✅');
 					});
 			}
 		}
