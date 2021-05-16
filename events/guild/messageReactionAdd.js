@@ -210,8 +210,7 @@ module.exports = async (client, reaction, user) => {
 									await m.reactions.removeAll();
 									await m.react('☠️');
 								}
-								else {return message.react('❌');}
-								await message.react('✅');
+								else {return;}
 							}
 							catch (e) {
 								if (e.code === 10008) {
