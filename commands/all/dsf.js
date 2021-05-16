@@ -4,6 +4,7 @@ const func = require('../../functions');
 const colors = require('../../colors.json');
 const getDb = require('../../mongodb').getDb;
 const { ScouterCheck, Paginate } = require('../../classes.js');
+const { removeUsersAndMessages } = require('../../functions');
 
 /**
  * 733164313744769024 - Test Server
@@ -67,35 +68,9 @@ module.exports = {
 					const channelID = database.merchChannel.channelID;
 					const channel = client.channels.cache.get(channelID);
 
-					const removeUsersAndMessages = async () => {
-						if (mem.member.id !== null) {
-							await settings.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': mem.msg }, {
-								$pull: {
-									'merchChannel.spamProtection.$.users': { id: mem.member.id },
-								},
-							});
-						}
-						const removeMessages = async () => {
-							const db = await settings.findOne({ _id: message.guild.id });
-							db.merchChannel.spamProtection.forEach(obj => {
-								if (obj.messageID !== mem.msg) return;
-								if (!obj.users.length) {
-									settings.updateOne({ _id: message.guild.id }, {
-										$pull: {
-											'merchChannel.spamProtection': { messageID: obj.messageID },
-										},
-									});
-								}
-								else {return;}
-							});
-						};
-						return await removeMessages();
-					};
-
 					try {
 						const m = await channel.messages.fetch(mem.msg);
 
-						console.log(m.content, m.id, Date.now() - m.createdTimestamp >= 3600000, m.reactions.cache.size === 1, m.reactions.cache.has('☠️'));
 						// Remove all reactions if there is > 1 or 0. Then add a skull.
 						if (Date.now() - m.createdTimestamp >= 3600000 && (m.reactions.cache.size > 1 || m.reactions.cache.size === 0)) {
 							await m.reactions.removeAll();
@@ -103,14 +78,14 @@ module.exports = {
 						}
 						// If there is only a skull, remove users and message from DB
 						else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
-							removeUsersAndMessages();
+							removeUsersAndMessages(message, mem, settings);
 						}
 						// If there is a single reaction which is not the Skull, then remove that and react with skull. Repeat process over.
 						else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && !m.reactions.cache.has('☠️')) {
 							await m.reactions.removeAll();
 							await m.react('☠️');
 						}
-						else {return;}
+						else {return message.react('❌');}
 						await message.react('✅');
 					}
 					catch (e) {

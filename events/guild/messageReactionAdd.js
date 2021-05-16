@@ -4,6 +4,7 @@ const getDb = require('../../mongodb').getDb;
 const { MessageEmbed } = require('discord.js');
 const cron = require('node-cron');
 const { Paginate } = require('../../classes');
+const { removeUsersAndMessages } = require('../../functions');
 
 module.exports = async (client, reaction, user) => {
 	const db = getDb();
@@ -192,42 +193,25 @@ module.exports = async (client, reaction, user) => {
 							const channelID = database.merchChannel.channelID;
 							const channel = client.channels.cache.get(channelID);
 
-							const removeUsersAndMessages = async () => {
-								if (mem.member.id !== null) {
-									await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': mem.msg }, {
-										$pull: {
-											'merchChannel.spamProtection.$.users': { id: mem.member.id },
-										},
-									});
-								}
-								const removeMessages = async () => {
-									database.merchChannel.spamProtection.forEach(obj => {
-										if (obj.messageID !== mem.msg) return;
-										if (!obj.users.length) {
-											settingsColl.updateOne({ _id: message.guild.id }, {
-												$pull: {
-													'merchChannel.spamProtection': { messageID: obj.messageID },
-												},
-											});
-										}
-										else { return; }
-									});
-								};
-								return await removeMessages();
-							};
-
 							try {
 								const m = await channel.messages.fetch(mem.msg);
-								// Remove all reactions if there is > 1. Then add a skull.
-								if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size > 1) {
+
+								// Remove all reactions if there is > 1 or 0. Then add a skull.
+								if (Date.now() - m.createdTimestamp >= 3600000 && (m.reactions.cache.size > 1 || m.reactions.cache.size === 0)) {
 									await m.reactions.removeAll();
 									await m.react('☠️');
 								}
 								// If there is only a skull, remove users and message from DB
 								else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
-									removeUsersAndMessages();
+									removeUsersAndMessages(message, mem, settingsColl);
 								}
-								else { return; }
+								// If there is a single reaction which is not the Skull, then remove that and react with skull. Repeat process over.
+								else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && !m.reactions.cache.has('☠️')) {
+									await m.reactions.removeAll();
+									await m.react('☠️');
+								}
+								else {return message.react('❌');}
+								await message.react('✅');
 							}
 							catch (e) {
 								if (e.code === 10008) {
@@ -238,7 +222,7 @@ module.exports = async (client, reaction, user) => {
 										},
 									});
 								}
-								else { console.error(e); }
+								else {console.error(e);}
 							}
 						});
 					}
