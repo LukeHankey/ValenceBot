@@ -7,7 +7,7 @@ const getDb = require('../../mongodb').getDb;
 const cron = require('node-cron');
 const randomColor = Math.floor(Math.random() * 16777215).toString(16);
 const func = require('../../functions');
-const colors = require('../../colors.json');
+// const colors = require('../../colors.json');
 const { ScouterCheck } = require('../../classes.js');
 
 module.exports = async client => {
@@ -50,7 +50,7 @@ module.exports = async client => {
 	// }
 
 	const db = getDb();
-	const usersColl = db.collection('Users');
+	// const usersColl = db.collection('Users');
 
 
 	// eslint-disable-next-line no-unused-vars
@@ -79,25 +79,25 @@ module.exports = async client => {
 	// };
 	// getData()
 
-	usersColl.updateMany(
-		{},
-		{
-			$set:
-			{
-				'Caps': 0,
-				'Total Points': 0,
-				'Events': 0,
-				'Recruits': 0,
-				'Additional Points': 0,
-				'Donations': 0,
-				'Hosts': 0,
-				'Events & Recruits': 0,
-				'Rank Earned': '',
-				'Donation Points': 0,
-			},
-		},
-		{ upsert: true },
-	);
+	// usersColl.updateMany(
+	// 	{},
+	// 	{
+	// 		$set:
+	// 		{
+	// 			'Caps': 0,
+	// 			'Total Points': 0,
+	// 			'Events': 0,
+	// 			'Recruits': 0,
+	// 			'Additional Points': 0,
+	// 			'Donations': 0,
+	// 			'Hosts': 0,
+	// 			'Events & Recruits': 0,
+	// 			'Rank Earned': '',
+	// 			'Donation Points': 0,
+	// 		},
+	// 	},
+	// 	{ upsert: true },
+	// );
 
 	const vFactsColl = await db.collection('Facts');
 	const settings = await db.collection('Settings');
@@ -192,114 +192,114 @@ module.exports = async client => {
 	// 	})
 	// })
 
-	const dsfSpamMessage = cron.schedule('*/15 * * * *', async () => {
-		settings.findOne({ _id: '420803245758480405' })
-			.then(async dsf => {
-				const modChannel = client.channels.cache.get('643109949114679317');
-				const embed = new Discord.MessageEmbed()
-					.setTitle('Reaction Spammers Incoming!')
-					// eslint-disable-next-line quotes
-					.setDescription(`Threholds are 10 reactions clicked (can be the same one) or 5 different reactions clicked.\n📥 - Update the post with new information.\n⏰ - Starts a continuous timer that checks members on this post to see if they have the Grounded role. If they do, it will remove them.\n⏹️ - Stops the timer.`)
-					.setColor(colors.orange)
-					.setTimestamp();
+	// const dsfSpamMessage = cron.schedule('*/15 * * * *', async () => {
+	// 	settings.findOne({ _id: '420803245758480405' })
+	// 		.then(async dsf => {
+	// 			const modChannel = client.channels.cache.get('643109949114679317');
+	// 			const embed = new Discord.MessageEmbed()
+	// 				.setTitle('Reaction Spammers Incoming!')
+	// 				// eslint-disable-next-line quotes
+	// 				.setDescription(`Threholds are 10 reactions clicked (can be the same one) or 5 different reactions clicked.\n📥 - Update the post with new information.\n⏰ - Starts a continuous timer that checks members on this post to see if they have the Grounded role. If they do, it will remove them.\n⏹️ - Stops the timer.`)
+	// 				.setColor(colors.orange)
+	// 				.setTimestamp();
 
-				// TODO - Check for double messages and remove the second/last one
+	// 			// TODO - Check for double messages and remove the second/last one
 
-				const embeds = dsf.merchChannel.spamProtection.flatMap(obj => {
-					const usersList = obj.users.map(userObj => {
-						// userObj = User, total count, skull count, reactions[]
-						let skullsCount = 0;
-						userObj.reactions.filter(r => {
-							if (['☠️', '💀', '<:skull:805917068670402581>'].includes(r.emoji)) {
-								skullsCount = skullsCount + r.count;
-							}
-						});
-						return { totalCount: userObj.count, skullCount: skullsCount, user: { id: userObj.id, username: userObj.username }, reactions: userObj.reactions };
-					});
-					const dataFields = [];
-					usersList.forEach(u => {
-					// Filters added here
-						if (u.totalCount > 9 || u.reactions.length > 4) {
-							const emojis = u.reactions.map(e => { return `${e.emoji} **- ${e.count}**`; });
-							dataFields.push({ name: `${u.user.username} - ${u.user.id}`, value: `Mention: <@!${u.user.id}>\nTotal Reacts (${u.skullCount}/${u.totalCount})\n\n${emojis.join('  |   ')}`, inline: true });
-						}
-						else { return; }
-					});
-					return dataFields;
-				});
+	// 			const embeds = dsf.merchChannel.spamProtection.flatMap(obj => {
+	// 				const usersList = obj.users.map(userObj => {
+	// 					// userObj = User, total count, skull count, reactions[]
+	// 					let skullsCount = 0;
+	// 					userObj.reactions.filter(r => {
+	// 						if (['☠️', '💀', '<:skull:805917068670402581>'].includes(r.emoji)) {
+	// 							skullsCount = skullsCount + r.count;
+	// 						}
+	// 					});
+	// 					return { totalCount: userObj.count, skullCount: skullsCount, user: { id: userObj.id, username: userObj.username }, reactions: userObj.reactions };
+	// 				});
+	// 				const dataFields = [];
+	// 				usersList.forEach(u => {
+	// 				// Filters added here
+	// 					if (u.totalCount > 9 || u.reactions.length > 4) {
+	// 						const emojis = u.reactions.map(e => { return `${e.emoji} **- ${e.count}**`; });
+	// 						dataFields.push({ name: `${u.user.username} - ${u.user.id}`, value: `Mention: <@!${u.user.id}>\nTotal Reacts (${u.skullCount}/${u.totalCount})\n\n${emojis.join('  |   ')}`, inline: true });
+	// 					}
+	// 					else { return; }
+	// 				});
+	// 				return dataFields;
+	// 			});
 
-				if (embeds.length && !dsf.merchChannel.spamMessagePost.id.length) {
-					const msg = await modChannel.send(embed.setFooter(`Page ${1} of ${embeds.length}`));
-					await settings.findOneAndUpdate({ _id: '420803245758480405' }, {
-						$set: {
-							'merchChannel.spamMessagePost': { id: msg.id, timestamp: msg.createdTimestamp },
-						},
-					});
-					await msg.react('◀️');
-					await msg.react('▶️');
-					await msg.react('📥');
-					await msg.react('⏰');
-					await msg.react('⏹️');
-					dsfSpamMessage.stop();
-				}
-				else if (dsf.merchChannel.spamMessagePost.id.length) {
-					dsfSpamMessage.stop();
-				}
-			});
+	// 			if (embeds.length && !dsf.merchChannel.spamMessagePost.id.length) {
+	// 				const msg = await modChannel.send(embed.setFooter(`Page ${1} of ${embeds.length}`));
+	// 				await settings.findOneAndUpdate({ _id: '420803245758480405' }, {
+	// 					$set: {
+	// 						'merchChannel.spamMessagePost': { id: msg.id, timestamp: msg.createdTimestamp },
+	// 					},
+	// 				});
+	// 				await msg.react('◀️');
+	// 				await msg.react('▶️');
+	// 				await msg.react('📥');
+	// 				await msg.react('⏰');
+	// 				await msg.react('⏹️');
+	// 				dsfSpamMessage.stop();
+	// 			}
+	// 			else if (dsf.merchChannel.spamMessagePost.id.length) {
+	// 				dsfSpamMessage.stop();
+	// 			}
+	// 		});
 
-		// Test
-		settings.findOne({ _id: '733164313744769024' })
-			.then(async dsf => {
-				const modChannel = client.channels.cache.get('734477320672247869');
-				const embed = new Discord.MessageEmbed()
-					.setTitle('Reaction Spammers Incoming!')
-					.setDescription('Threholds are 10 reactions clicked (can be the same one) or 5 different reactions clicked. Clicking any of the reactions will update the post, though it will be updated everytime someone reacts to any of the messages listed below.')
-					.setColor(colors.orange)
-					.setTimestamp();
+	// 	// Test
+	// 	settings.findOne({ _id: '733164313744769024' })
+	// 		.then(async dsf => {
+	// 			const modChannel = client.channels.cache.get('734477320672247869');
+	// 			const embed = new Discord.MessageEmbed()
+	// 				.setTitle('Reaction Spammers Incoming!')
+	// 				.setDescription('Threholds are 10 reactions clicked (can be the same one) or 5 different reactions clicked. Clicking any of the reactions will update the post, though it will be updated everytime someone reacts to any of the messages listed below.')
+	// 				.setColor(colors.orange)
+	// 				.setTimestamp();
 
-				// TODO - Check for double messages and remove the second/last one
+	// 			// TODO - Check for double messages and remove the second/last one
 
-				const embeds = dsf.merchChannel.spamProtection.flatMap(obj => {
-					const usersList = obj.users.map(userObj => {
-						// userObj = User, total count, skull count, reactions[]
-						let skullsCount = 0;
-						userObj.reactions.filter(r => {
-							if (['☠️', '💀', '<:skull:805917068670402581>'].includes(r.emoji)) {
-								skullsCount = skullsCount + r.count;
-							}
-						});
-						return { totalCount: userObj.count, skullCount: skullsCount, user: { id: userObj.id, username: userObj.username }, reactions: userObj.reactions };
-					});
-					const dataFields = [];
-					usersList.forEach(u => {
-					// Filters added here
-						if (u.totalCount > 9 || u.reactions.length > 4) {
-							const emojis = u.reactions.map(e => { return `${e.emoji} **- ${e.count}**`; });
-							dataFields.push({ name: `${u.user.username} - ${u.user.id}`, value: `Mention: <@!${u.user.id}>\nTotal Reacts (${u.skullCount}/${u.totalCount})\n\n${emojis.join('  |   ')}`, inline: true });
-						}
-						else { return; }
-					});
-					return dataFields;
-				});
+	// 			const embeds = dsf.merchChannel.spamProtection.flatMap(obj => {
+	// 				const usersList = obj.users.map(userObj => {
+	// 					// userObj = User, total count, skull count, reactions[]
+	// 					let skullsCount = 0;
+	// 					userObj.reactions.filter(r => {
+	// 						if (['☠️', '💀', '<:skull:805917068670402581>'].includes(r.emoji)) {
+	// 							skullsCount = skullsCount + r.count;
+	// 						}
+	// 					});
+	// 					return { totalCount: userObj.count, skullCount: skullsCount, user: { id: userObj.id, username: userObj.username }, reactions: userObj.reactions };
+	// 				});
+	// 				const dataFields = [];
+	// 				usersList.forEach(u => {
+	// 				// Filters added here
+	// 					if (u.totalCount > 9 || u.reactions.length > 4) {
+	// 						const emojis = u.reactions.map(e => { return `${e.emoji} **- ${e.count}**`; });
+	// 						dataFields.push({ name: `${u.user.username} - ${u.user.id}`, value: `Mention: <@!${u.user.id}>\nTotal Reacts (${u.skullCount}/${u.totalCount})\n\n${emojis.join('  |   ')}`, inline: true });
+	// 					}
+	// 					else { return; }
+	// 				});
+	// 				return dataFields;
+	// 			});
 
-				if (embeds.length && !dsf.merchChannel.spamMessagePost.id.length) {
-					const msg = await modChannel.send(embed.setFooter(`Page ${1} of ${embeds.length}`));
-					await settings.findOneAndUpdate({ _id: '733164313744769024' }, {
-						$set: {
-							'merchChannel.spamMessagePost': { id: msg.id, timestamp: msg.createdTimestamp },
-						},
-					});
-					await msg.react('◀️');
-					await msg.react('▶️');
-					await msg.react('📥');
-					await msg.react('⏰');
-					dsfSpamMessage.stop();
-				}
-				else if (dsf.merchChannel.spamMessagePost.id.length) {
-					dsfSpamMessage.stop();
-				}
-			});
-	});
+	// 			if (embeds.length && !dsf.merchChannel.spamMessagePost.id.length) {
+	// 				const msg = await modChannel.send(embed.setFooter(`Page ${1} of ${embeds.length}`));
+	// 				await settings.findOneAndUpdate({ _id: '733164313744769024' }, {
+	// 					$set: {
+	// 						'merchChannel.spamMessagePost': { id: msg.id, timestamp: msg.createdTimestamp },
+	// 					},
+	// 				});
+	// 				await msg.react('◀️');
+	// 				await msg.react('▶️');
+	// 				await msg.react('📥');
+	// 				await msg.react('⏰');
+	// 				dsfSpamMessage.stop();
+	// 			}
+	// 			else if (dsf.merchChannel.spamMessagePost.id.length) {
+	// 				dsfSpamMessage.stop();
+	// 			}
+	// 		});
+	// });
 
 	// DSF Activity Posts //
 	cron.schedule('0 */6 * * *', async () => {
