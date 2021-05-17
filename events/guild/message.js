@@ -75,7 +75,7 @@ module.exports = async (client, message) => {
 							const messageID = err.path.split('/');
 							return await message.channel.messages.fetch(messageID[4]).then(x => x.delete()).catch(() => console.log('Unable to delete message'));
 						})
-					:	await message.delete({ timeout: 500 });
+					:	await message.delete({ timeout: 200 });
 
 				try {
 					// Adding count to members
@@ -138,6 +138,7 @@ module.exports = async (client, message) => {
 					const log = [...mes.values()];
 					for (const messages in log) {
 						const authorName = log[messages].member?.nickname ?? log[messages].author.username;
+						const userId = log[messages].member?.id ?? log[messages].author.id;
 						if (authorName === null) return;
 						await settingsColl.findOneAndUpdate({ _id: message.guild.id },
 							{
@@ -148,7 +149,7 @@ module.exports = async (client, message) => {
 											content: log[messages].content,
 											time: log[messages].createdTimestamp,
 											author: authorName,
-											userID: log[messages].member?.id ?? log[messages].author.id,
+											userID: userId,
 										}],
 									},
 									'merchChannel.spamProtection': {
@@ -157,7 +158,7 @@ module.exports = async (client, message) => {
 											content: log[messages].content,
 											time: log[messages].createdTimestamp,
 											author: authorName,
-											userID: log[messages].member?.id ?? log[messages].author.id,
+											userID: userId,
 											users: [],
 										}],
 									},
@@ -169,34 +170,49 @@ module.exports = async (client, message) => {
 
 					// Checking the DB and marking dead calls
 					const timer = cron.schedule('* * * * *', async () => {
-						await settingsColl.findOne({ _id: message.guild.id }).then(async data => {
-							for await (const doc of data.merchChannel.messages) {
-								const lastID = doc.messageID;
-								const lastTime = doc.time;
+						const data = await settingsColl.findOne({ _id: message.guild.id });
+						const messagesDB = data.merchChannel.messages;
+						for await (const doc of messagesDB) {
+							const lastID = doc.messageID;
+							const lastTime = doc.time;
 
-								try {
-									if (doc.userID === '668330399033851924') {
-										await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: doc.messageID } } });
-									}
-									else {
-										const check = Date.now() - lastTime > 600000;
-
-										if (check) {
-											const fetched = await message.channel.messages.fetch(lastID);
-											fetched.react('☠️')
-												.then(async () => {
-													await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: lastID } } });
-												})
-												.catch(() => {
-													return timer.stop();
-												});
-										}
-									}
+							try {
+								// Removes bot messages
+								if (doc.userID === '668330399033851924') {
+									await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: doc.messageID } } });
 								}
-								catch (e) {
-									if (e) return;
+								const check = Date.now() - lastTime > 600000;
+
+								if (check) {
+									const fetched = await message.channel.messages.fetch(lastID);
+									fetched.react('☠️')
+										.then(async () => {
+											await settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: lastID } } });
+										})
+										.catch(() => {
+											return timer.stop();
+										});
 								}
 							}
+							catch (e) {
+								if (e) return;
+							}
+						}
+
+						// Removing duplicates
+						const counts = {};
+						messagesDB.forEach(function(x) { counts[x.messageID] = (counts[x.messageID] || 0) + 1; });
+						function getKeyByValue(object, value) {
+							return Object.keys(object).find(key => object[key] === value);
+						}
+						Object.values(counts).forEach(dupe => {
+							if (dupe > 1) {
+								const message_id = getKeyByValue(counts, dupe);
+								const entry = messagesDB.find(id => id.messageID === message_id);
+								settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: message_id } } });
+								return settingsColl.updateOne({ _id: message.guild.id }, { $addToSet: { 'merchChannel.messages': entry } });
+							}
+							else {return;}
 						});
 					});
 				}
