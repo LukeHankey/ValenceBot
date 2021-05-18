@@ -12,6 +12,7 @@ process.on('unhandledRejection', (reason, p) => {
 	console.log('Unhandled Rejection at:', p, 'reason:', reason);
 });
 
+console.log(process.env.NODE_ENV);
 
 connection(err => { if (err) console.log(err);});
 

@@ -16,6 +16,10 @@ module.exports = async (client, message) => {
 		logs: globalDB.channels.logs,
 	};
 
+	if (process.env.NODE_ENV === 'DEV') {
+		if (message.guild.id !== '733164313744769024') return;
+	}
+
 	// Handling DMs
 
 	if (message.guild === null) {
