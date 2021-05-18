@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "gsheets": "node gsheets.js",
-    "dev": "set NODE_ENV=DEV && node index.js"
+    "dev": "set NODE_ENV=DEV&&node index.js"
   },
   "author": "Guys",
   "license": "ISC",
