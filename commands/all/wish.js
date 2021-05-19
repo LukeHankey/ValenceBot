@@ -11,11 +11,10 @@ module.exports = {
 	name: 'wish',
 	description: ['Posts the embed and populates with wish data.'],
 	aliases: [],
-	usage: ['<question>'],
-	guildSpecific: '733164313744769024',
+	usage: [''],
+	guildSpecific: ['733164313744769024', '420803245758480405'],
 	run: async (client, message, args, perms) => {
 		if (!perms.owner) return message.channel.send(perms.errorO);
-
 		const splitIntoX = (arr, x) => {
 			arr = arr.flat();
 			return new Array(Math.ceil(arr.length / x))
@@ -56,9 +55,11 @@ module.exports = {
 				const second = embedData.slice(24, 48);
 				const third = embedData.slice(48, 72);
 				const fourth = embedData.slice(72, 96);
+				const botUser = await message.guild.members.fetch(client.user.id);
 
 				const embedMaker = (num, dates) => {
 					return nEmbed(dates, 'The last 30 days of stock for the Entrepreneurial wish: Travelling Merchant coupon.', colors.cream, '', client.user.displayAvatarURL())
+						.setFooter(`${botUser.nickname || client.user.username} created by Luke_#8346`, client.user.displayAvatarURL())
 						.addFields(num);
 				};
 
@@ -78,7 +79,6 @@ module.exports = {
 						const title = item.embeds[0].title.slice(7);
 						return `- [${title}](${baseURL}/${item.id})`;
 					});
-					console.log(editFormat);
 					const embed = new MessageEmbed()
 						.setColor(colors.aqua)
 						.setDescription(editFormat.reverse().join('\n'));
@@ -86,8 +86,6 @@ module.exports = {
 					await channelToPush.send('**Links**', embed);
 				};
 				grabIdAndEdit();
-
-
 			}
 		}
 		catch (e) {
