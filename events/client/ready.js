@@ -368,7 +368,7 @@ module.exports = async client => {
 		});
 		removeInactives(scout);
 
-		if (new Date().getDay() === 3 && new Date().getHours() === 00 && new Date().getMinutes() === 00) { // Weekly reset
+		if (new Date().getDay() === 3 && new Date().getHours() === 01 && new Date().getMinutes() === 00) { // Weekly reset
 			scout.send();
 			vScout.send();
 		}
