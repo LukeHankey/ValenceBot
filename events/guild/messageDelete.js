@@ -9,6 +9,11 @@ module.exports = async (client, message) => {
 	if (!fullDB) return;
 	const { messages, channelID } = fullDB.merchChannel;
 
+	if (process.env.NODE_ENV === 'DEV') {
+		if (message.guild.id !== '733164313744769024') return;
+	}
+	else if (message.guild.id === '733164313744769024') {return;}
+
 	const botServerWebhook = await client.channels.cache.get('784543962174062608').fetchWebhooks();
 	const dsfServerWebhook = await client.channels.cache.get('794608385106509824').fetchWebhooks();
 	const errorLog = [];
