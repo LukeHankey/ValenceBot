@@ -11,6 +11,11 @@ module.exports = async (client, reaction, user) => {
 	const settingsColl = db.collection('Settings');
 	const message = reaction.message;
 
+	if (process.env.NODE_ENV === 'DEV') {
+		if (message.guild.id !== '733164313744769024') return;
+	}
+	else if (message.guild.id === '733164313744769024') {return;}
+
 	if (message.partial) await message.fetch().catch(err => console.log(12, err));
 	const database = await settingsColl.findOne({ _id: message.guild.id });
 
@@ -53,6 +58,8 @@ module.exports = async (client, reaction, user) => {
 
 				// Logging reaction timestamps
 				console.log('Reaction added:', `MessageID: ${message.id}`, `By: ${user.username} (${user.id})`, `Reaction: ${reaction.emoji.toString() || reaction.reactionEmoji.toString()} | ${reaction.emoji.name || reaction.reactionEmoji.name} `, `${new Date(Date.now()).toString().split(' ').slice(0, -4).join(' ')} ${(new Date(Date.now()).getMilliseconds())}`);
+
+				if (database.merchChannel.blocked) return;
 
 				// Go through all messages in DB and get the members who are below the threshold in each message
 				pagination.membersBelowThreshold.map(async mem => {

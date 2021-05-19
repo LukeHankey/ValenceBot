@@ -104,6 +104,27 @@ module.exports = {
 				});
 			}
 				break;
+			case 'block': {
+				const database = await settings.findOne({ _id: message.guild.id });
+				if (database.merchChannel.blocked) {
+					await settings.updateOne({ _id: message.guild.id }, {
+						$set: {
+							'merchChannel.blocked': false,
+						},
+					});
+					message.channel.send('Database logging has been unblocked.');
+				}
+				else {
+					await settings.updateOne({ _id: message.guild.id }, {
+						$set: {
+							'merchChannel.blocked': true,
+						},
+					});
+					message.channel.send('Database logging has been blocked. Logs will still come through though.');
+				}
+				message.react('✅');
+			}
+				break;
 			default: {
 				await settings.findOne({ _id: message.guild.id }).then(async res => {
 					let page = 0;
