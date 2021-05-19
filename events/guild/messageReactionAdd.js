@@ -17,12 +17,13 @@ module.exports = async (client, reaction, user) => {
 	else if (message.guild.id === '733164313744769024') {return;}
 
 	if (message.partial) await message.fetch().catch(err => console.log(12, err));
-	const database = await settingsColl.findOne({ _id: message.guild.id });
+	const { _id, merchChannel: { channelID, spamProtection, blocked, spamMessagePost } } = await settingsColl.findOne({ _id: message.guild.id });
 
 	switch (message.guild.id) {
-	case database._id:
+	case _id:
 		// Valence
-		if (database._id === '472448603642920973') {
+		if (_id === '472448603642920973') {
+			const database = await settingsColl.findOne({ _id: message.guild.id });
 			const data = database.events.filter(m => m.messageID === message.id);
 
 			// Will only work for reactions where the message ID is inside the DB
@@ -45,25 +46,24 @@ module.exports = async (client, reaction, user) => {
 			}
 		}
 		// DSF & Test servers
-		else if (database._id === '420803245758480405' || database._id === '733164313744769024') {
+		else if (_id === '420803245758480405' || _id === '733164313744769024') {
 			const modChannel = message.guild.channels.cache.find(ch => ch.name === 'moderator');
 			const groundedRole = message.guild.roles.cache.find(r => r.name === 'Grounded');
-			const pagination = new Paginate(reaction, database);
+			const pagination = new Paginate(reaction, { merchChannel: { channelID, spamProtection } });
 			const embeds = pagination.paginate();
 			let page = pagination.page;
 
 			switch (message.channel.id) {
-			case database.merchChannel.channelID: {
+			case channelID: {
 				if (user.bot) return;
 
 				// Logging reaction timestamps
 				console.log('Reaction added:', `MessageID: ${message.id}`, `By: ${user.username} (${user.id})`, `Reaction: ${reaction.emoji.toString() || reaction.reactionEmoji.toString()} | ${reaction.emoji.name || reaction.reactionEmoji.name} `, `${new Date(Date.now()).toString().split(' ').slice(0, -4).join(' ')} ${(new Date(Date.now()).getMilliseconds())}`);
 
-				if (database.merchChannel.blocked) return;
+				if (blocked) return;
 
 				// Go through all messages in DB and get the members who are below the threshold in each message
 				pagination.membersBelowThreshold.map(async mem => {
-					const channelID = database.merchChannel.channelID;
 					const channel = client.channels.cache.get(channelID);
 
 					try {
@@ -99,7 +99,7 @@ module.exports = async (client, reaction, user) => {
 				});
 
 				// Adding users to the DB + counts
-				database.merchChannel.spamProtection.map(async msg => {
+				spamProtection.map(async msg => {
 					if (msg.userID === '668330399033851924') {
 						settingsColl.findOneAndUpdate({ _id: message.guild.id }, {
 							$pull: {
@@ -118,7 +118,7 @@ module.exports = async (client, reaction, user) => {
 							}],
 						};
 
-						const dbReactions = await database.merchChannel.spamProtection.filter(m => m.messageID === msg.messageID);
+						const dbReactions = await spamProtection.filter(m => m.messageID === msg.messageID);
 						const spamUsersDB = dbReactions.flatMap(u => u.users);
 
 						// If there are no members added or none that match the member who reacted, add them.
@@ -202,14 +202,14 @@ module.exports = async (client, reaction, user) => {
 			case modChannel.id: {
 				// DSF as default
 				let spamPostID;
-				if (database.merchChannel.spamMessagePost && database.merchChannel.spamMessagePost.id.length) {
-					spamPostID = database.merchChannel.spamMessagePost.id;
+				if (spamMessagePost && spamMessagePost.id.length) {
+					spamPostID = spamMessagePost.id;
 				}
 				else { return; }
 				const spamMessage = modChannel.messages.cache.get(spamPostID) ?? await modChannel.messages.fetch(spamPostID).catch(e => console.log(e));
 
 				const checkGrounded = cron.schedule('* * * * *', async () => {
-					database.merchChannel.spamProtection.map(async obj => {
+					spamProtection.map(async obj => {
 						if (!obj.users.length) return;
 						obj.users.map(async user => {
 							const res = await message.guild.members.fetch({ user: user.id })
