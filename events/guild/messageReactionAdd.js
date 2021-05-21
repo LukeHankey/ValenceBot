@@ -5,16 +5,17 @@ const { MessageEmbed } = require('discord.js');
 const cron = require('node-cron');
 const { Paginate } = require('../../classes');
 const { removeUsersAndMessages, compressArray } = require('../../functions');
+const colors = require('../../colors.json');
 
 module.exports = async (client, reaction, user) => {
 	const db = getDb();
 	const settingsColl = db.collection('Settings');
 	const message = reaction.message;
 
-	// if (process.env.NODE_ENV === 'DEV') {
-	// 	if (message.guild.id !== '733164313744769024') return;
-	// }
-	// else if (message.guild.id === '733164313744769024') {return;}
+	if (process.env.NODE_ENV === 'DEV') {
+		if (message.guild.id !== '733164313744769024') return;
+	}
+	else if (message.guild.id === '733164313744769024') {return;}
 
 	if (message.partial) await message.fetch().catch(err => console.log(12, err));
 	const { _id } = await settingsColl.findOne({ _id: message.guild.id });
@@ -307,7 +308,12 @@ module.exports = async (client, reaction, user) => {
 								'merchChannel.deletions.$.messageID': item.messageID,
 							},
 						});
-						return message.reactions.removeAll();
+						console.log(message);
+						const editEmbed = new MessageEmbed(message.embeds[0]);
+						editEmbed.setColor(colors.green_light);
+						message.edit(editEmbed);
+						console.log(message.reactions.resolve('✅').users);
+						return message.reactions.resolve('✅').users.remove(user.id);
 					}
 				});
 			}
