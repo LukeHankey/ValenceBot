@@ -303,6 +303,9 @@ module.exports = async (client, reaction, user) => {
 							$inc: {
 								'merchChannel.scoutTracker.$.count': -1,
 							},
+							$pull: {
+								'merchChannel.deletions.$.messageID': item.messageID,
+							},
 						});
 						return message.reactions.removeAll();
 					}
