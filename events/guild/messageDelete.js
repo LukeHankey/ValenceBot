@@ -69,7 +69,9 @@ module.exports = async (client, message) => {
 					.setThumbnail(user.user.displayAvatarURL()),
 				)
 					.then(() => {
-						settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: checkDB.messageID } } });
+						settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: checkDB.messageID } }, $set: { 'merchChannel.deletions': [{ messageID: id.id }] } });
+						// id.react('✅');
+						console.log(id);
 					});
 			});
 		}
