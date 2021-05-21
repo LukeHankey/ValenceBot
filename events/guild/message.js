@@ -219,6 +219,8 @@ module.exports = async (client, message) => {
 							}
 							else {return;}
 						});
+
+						if (!messagesDB.length) return timer.stop();
 					});
 				}
 				catch (err) {
