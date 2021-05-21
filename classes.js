@@ -298,6 +298,7 @@ class Paginate {
 			const info = current;
 			const embed = new MessageEmbed()
 				.setTitle('Reaction Spammers Incoming!')
+				// eslint-disable-next-line quotes
 				.setDescription(`Threholds are 10 reactions clicked (can be the same one) or 5 different reactions clicked.\n📥 - Update the post with new information.\n⏰ - Starts a continuous timer that checks members on this post to see if they have the Grounded role. If they do, it will remove them.\n⏹️ - Stops the timer.`)
 				.setThumbnail(this.message.guild.discoverySplashURL() || this.message.guild.iconURL())
 				.setColor(colors.orange)
@@ -347,9 +348,10 @@ class Paginate {
 				return { member: { id: null, usernmae: null }, msg: obj.messageID };
 			}
 			return obj.users.map(u => {
-				if (u.count <= 9 && u.reactions.length <= 4) {
-					return { member: { id: u.id, usernmae: u.username }, msg: obj.messageID };
-				}
+				// Commented out as reworking reactions
+				// if (u.count <= 9 && u.reactions.length <= 4) {
+				return { member: { id: u.id, usernmae: u.username }, msg: obj.messageID };
+				// }
 			}).filter(o => o);
 		}).filter(o => o).flat();
 	}
