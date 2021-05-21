@@ -41,10 +41,10 @@ module.exports = async (client, message) => {
 		return client.channels.cache.get('788525524782940187').send(embed);
 	}
 
-	if (process.env.NODE_ENV === 'DEV') {
-		if (message.guild.id !== '733164313744769024') return;
-	}
-	else if (message.guild.id === '733164313744769024') {return;}
+	// if (process.env.NODE_ENV === 'DEV') {
+	// 	if (message.guild.id !== '733164313744769024') return;
+	// }
+	// else if (message.guild.id === '733164313744769024') {return;}
 
 	// Merch Posts Publish
 

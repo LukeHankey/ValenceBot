@@ -9,15 +9,29 @@ module.exports = async (client, message) => {
 	if (!fullDB) return;
 	const { messages, channelID } = fullDB.merchChannel;
 
-	if (process.env.NODE_ENV === 'DEV') {
-		if (message.guild.id !== '733164313744769024') return;
-	}
-	else if (message.guild.id === '733164313744769024') {return;}
+	// if (process.env.NODE_ENV === 'DEV') {
+	// 	if (message.guild.id !== '733164313744769024') return;
+	// }
+	// else if (message.guild.id === '733164313744769024') {return;}
 
 	const botServerWebhook = await client.channels.cache.get('784543962174062608').fetchWebhooks();
 	const dsfServerWebhook = await client.channels.cache.get('794608385106509824').fetchWebhooks();
-	const errorLog = [];
-	errorLog.push(dsfServerWebhook.first(), botServerWebhook.first());
+
+	const sendAndUpdate = async (webhook, embed, data) => {
+		const webhookDetails = webhook.first();
+		const sentWebhook = await webhookDetails.send(embed);
+		const { userID } = data;
+		if (sentWebhook.guild.id === message.guild.id) {
+			await settingsColl.updateOne({ _id: message.guild.id }, {
+				$pull: { 'merchChannel.messages': { messageID: data.messageID } },
+				$addToSet: { 'merchChannel.deletions.messages': { messageID: sentWebhook.id, authorID: userID } },
+			})
+				.then(() => {
+					sentWebhook.react('✅');
+				});
+		}
+		else {return;}
+	};
 
 	// Cached messages only show the message object without null //
 
@@ -62,18 +76,14 @@ module.exports = async (client, message) => {
 				.fetch(checkDB.userID)
 				.catch(err => console.error('message delete', err));
 
+			const embed = messageDeletion(checkDB)
+				.setDescription('This message was deleted by the message author - remove merch count.')
+				.setThumbnail(user.user.displayAvatarURL())
+				.setFooter('Click the ✅ or use the command to remove merch count.');
+
 			// Remove count by posting or bot to remove
-			errorLog.forEach(id => {
-				id.send(messageDeletion(checkDB)
-					.setDescription('This message was deleted by the message author - remove merch count.')
-					.setThumbnail(user.user.displayAvatarURL()),
-				)
-					.then(() => {
-						settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: checkDB.messageID } }, $set: { 'merchChannel.deletions': [{ messageID: id.id }] } });
-						// id.react('✅');
-						console.log(id);
-					});
-			});
+			await sendAndUpdate(botServerWebhook, embed, checkDB);
+			await sendAndUpdate(dsfServerWebhook, embed, checkDB);
 		}
 	}
 	// Someone else deleted message
@@ -88,16 +98,13 @@ module.exports = async (client, message) => {
 				.fetch(checkDB.userID)
 				.catch(err => console.error('message delete own', err));
 
+			const embed = messageDeletion(checkDB)
+				.setDescription(`This message was deleted by ${executor.username} - remove merch count.`)
+				.setThumbnail(user.user.displayAvatarURL());
+
 			// Remove count by posting or bot to remove
-			errorLog.forEach(id => {
-				id.send(messageDeletion(checkDB)
-					.setDescription(`This message was deleted by ${executor.username} - remove merch count.`)
-					.setThumbnail(user.user.displayAvatarURL()),
-				)
-					.then(() => {
-						settingsColl.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: checkDB.messageID } } });
-					});
-			});
+			await sendAndUpdate(botServerWebhook, embed, checkDB);
+			await sendAndUpdate(dsfServerWebhook, embed, checkDB);
 		}
 	}
 };
