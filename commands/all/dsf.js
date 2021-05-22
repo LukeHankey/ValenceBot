@@ -239,8 +239,8 @@ module.exports = {
 					else {return vScout.send(message.channel.id);}
 				}
 			}
-			break;
 		}
+			break;
 		case 'user': {
 			// eslint-disable-next-line prefer-const
 			let [userID, param, num] = args.slice(1);
@@ -357,7 +357,7 @@ module.exports = {
 		default:
 			return message.channel.send(func.nEmbed(
 				'**DSF Admin Commands List**',
-				'Here\'s a list of all the DSF commands you can use. Any parameter(s) in \`<>\` are optional:\n\n\`messages|m\`\n\`messages|m clear\`\n\`view scouter <num>\`\n\`view verified <num>\`\n\`user memberID/@member add <other> <num>\`\n\`user memberID/@member remove <other> <num>\`',
+				'Here\'s a list of all the DSF commands you can use. Any parameter(s) in \`<>\` are optional:\n\n\`messages|m\`\n\`messages|m clear\`\n\`view scouter <num>\`\n\`view verified <num>\`\n\`user memberID/@member add <other> <num>\`\n\`user memberID/@member remove <other> <num>\`\n\`reacts\`\n\`reacts view\`\n\`reacts block\`',
 				colors.cyan,
 				client.user.displayAvatarURL(),
 			));
