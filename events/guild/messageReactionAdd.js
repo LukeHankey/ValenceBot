@@ -307,8 +307,10 @@ module.exports = async (client, reaction, user) => {
 						$inc: {
 							'merchChannel.scoutTracker.$.count': -1,
 						},
+					});
+					await settingsColl.updateOne({ _id: message.guild.id }, {
 						$pull: {
-							'merchChannel.deletions.$.messageID': item.messageID,
+							'merchChannel.deletions.messages': { messageID: item.messageID },
 						},
 					});
 					const newEmbed = new MessageEmbed(message.embeds[0]);
