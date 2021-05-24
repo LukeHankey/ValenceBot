@@ -301,6 +301,9 @@ module.exports = async client => {
 	// 		});
 	// });
 
+	const commandCollection = client.commands.filter(cmd => cmd.name === 'wish');
+	const commands = commandCollection.first();
+
 	// DSF Activity Posts //
 	cron.schedule('0 */6 * * *', async () => {
 		// cron.schedule('*/15 * * * * *', async () => { // Test
@@ -367,6 +370,23 @@ module.exports = async client => {
 			removedRoles(x);
 		});
 		removeInactives(scout);
+
+		if (new Date().getHours() === 01 && new Date().getMinutes() === 00) { // Daily reset
+			const { merchantWishes: { range } } = await settings.findOne({ _id: '733164313744769024' });
+			const split = range.split(':');
+			const newNum = split.map(val => {
+				const valueStr = val.slice(1);
+				return Number(valueStr) + 1;
+			});
+
+			const newRange = `A${newNum[0]}:E${newNum[1]}`;
+			await settings.updateOne({ _id: '733164313744769024' }, {
+				$set: {
+					'merchantWishes.range': newRange,
+				},
+			});
+			await commands.run(client, 'readyEvent');
+		}
 
 		if (new Date().getDay() === 3 && new Date().getHours() === 01 && new Date().getMinutes() === 00) { // Weekly reset
 			scout.send();
