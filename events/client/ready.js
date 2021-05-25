@@ -372,7 +372,7 @@ module.exports = async client => {
 		removeInactives(scout);
 
 		if (new Date().getHours() === 01 && new Date().getMinutes() === 00) { // Daily reset
-			const { merchantWishes: { range } } = await settings.findOne({ _id: '733164313744769024' });
+			const { merchantWishes: { range } } = await settings.findOne({ _id: '420803245758480405' });
 			const split = range.split(':');
 			const newNum = split.map(val => {
 				const valueStr = val.slice(1);
@@ -380,7 +380,7 @@ module.exports = async client => {
 			});
 
 			const newRange = `A${newNum[0]}:E${newNum[1]}`;
-			await settings.updateOne({ _id: '733164313744769024' }, {
+			await settings.updateOne({ _id: '420803245758480405' }, {
 				$set: {
 					'merchantWishes.range': newRange,
 				},
