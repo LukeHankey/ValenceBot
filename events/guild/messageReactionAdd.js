@@ -10,6 +10,7 @@ const colors = require('../../colors.json');
 module.exports = async (client, reaction, user) => {
 	const db = getDb();
 	const settingsColl = db.collection('Settings');
+
 	const message = reaction.message;
 
 	if (process.env.NODE_ENV === 'DEV') {
@@ -18,14 +19,30 @@ module.exports = async (client, reaction, user) => {
 	else if (message.guild.id === '733164313744769024') {return;}
 
 	if (message.partial) await message.fetch().catch(err => console.log(12, err));
-	const { _id } = await settingsColl.findOne({ _id: message.guild.id });
+
+	const { _id,
+		merchChannel: {
+			channelID,
+			spamProtection,
+			blocked,
+			spamMessagePost,
+			deletions,
+		} } = await settingsColl.findOne({ _id: message.guild.id },
+		{ projection: {
+			'merchChannel.channelID': 1,
+			'merchChannel.spamProtection': 1,
+			'merchChannel.blocked': 1,
+			'merchChannel.spamMessagePost': 1,
+			'merchChannel.deletions': 1,
+		},
+		});
 
 	switch (message.guild.id) {
 	case _id:
 		// Valence
 		if (_id === '472448603642920973') {
-			const database = await settingsColl.findOne({ _id: message.guild.id });
-			const data = database.events.filter(m => m.messageID === message.id);
+			const { events } = await settingsColl.findOne({ _id: message.guild.id }, { projection: { events: 1 } });
+			const data = events.filter(m => m.messageID === message.id);
 
 			// Will only work for reactions where the message ID is inside the DB
 			// Valence Events
@@ -48,7 +65,7 @@ module.exports = async (client, reaction, user) => {
 		}
 		// DSF & Test servers
 		else if (_id === '420803245758480405' || _id === '733164313744769024') {
-			const { merchChannel: { channelID, spamProtection, blocked, spamMessagePost, deletions } } = await settingsColl.findOne({ _id: message.guild.id });
+
 			const modChannel = message.guild.channels.cache.find(ch => ch.name === 'moderator');
 			const groundedRole = message.guild.roles.cache.find(r => r.name === 'Grounded');
 			const pagination = new Paginate(reaction, { merchChannel: { channelID, spamProtection } });
@@ -61,13 +78,11 @@ module.exports = async (client, reaction, user) => {
 
 				// Logging reaction timestamps
 				console.log('Reaction added:', `MessageID: ${message.id}`, `By: ${user.username} (${user.id})`, `Reaction: ${reaction.emoji.toString() || reaction.reactionEmoji.toString()} | ${reaction.emoji.name || reaction.reactionEmoji.name} `, `${new Date(Date.now()).toString().split(' ').slice(0, -4).join(' ')} ${(new Date(Date.now()).getMilliseconds())}`);
-
 				if (blocked) return;
 
 				// Go through all messages in DB and get the members who are below the threshold in each message
 				pagination.membersBelowThreshold.map(async mem => {
 					const channel = client.channels.cache.get(channelID);
-
 					try {
 						const m = await channel.messages.fetch(mem.msg);
 
@@ -322,6 +337,5 @@ module.exports = async (client, reaction, user) => {
 			}
 		}
 		else { return; }
-		break;
 	}
 };
