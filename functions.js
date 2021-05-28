@@ -67,8 +67,8 @@ module.exports = {
 			});
 		}
 		const removeMessages = async () => {
-			const db = await database.findOne({ _id: message.guild.id });
-			db.merchChannel.spamProtection.forEach(obj => {
+			const { merchChannel: { spamProtection } } = await database.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.spamProtection': 1 } });
+			spamProtection.forEach(obj => {
 				if (obj.messageID !== member.msg) return;
 				if (!obj.users.length) {
 					database.updateOne({ _id: message.guild.id }, {
