@@ -1,0 +1,55 @@
+const getDb = require('../../mongodb').getDb;
+
+const otherCount = async (message, updateDB) => {
+	// Adds count for other events channel
+	try {
+		const db = getDb();
+		const settingsColl = db.collection('Settings');
+		const { merchChannel: { scoutTracker } } = await settingsColl.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.scoutTracker': 1 } });
+		const mesOne = await message.channel.messages.fetch({ limit: 1 });
+		const logOne = [...mesOne.values()];
+		const msg = logOne.map(val => val);
+
+		const findMessage = await scoutTracker.find(x => x.userID === msg[0].author.id);
+		if (!findMessage) {
+			await updateDB.findOneAndUpdate({ _id: message.guild.id },
+				{
+					$addToSet: {
+						'merchChannel.scoutTracker': {
+							$each: [{
+								userID: msg[0].author.id,
+								author: msg[0].member.nickname ?? msg[0].author.username,
+								firstTimestamp: msg[0].createdTimestamp,
+								firstTimestampReadable: new Date(msg[0].createdTimestamp),
+								lastTimestamp: msg[0].createdTimestamp,
+								lastTimestampReadable: new Date(msg[0].createdTimestamp),
+								count: 0,
+								otherCount: 1,
+								assigned: [],
+							}],
+						},
+					},
+				});
+		}
+		else {
+			await updateDB.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
+				$inc: {
+					'merchChannel.scoutTracker.$.otherCount': 1,
+				},
+				$set: {
+					'merchChannel.scoutTracker.$.author': msg[0].member?.nickname ?? msg[0].author.username,
+					'merchChannel.scoutTracker.$.lastTimestamp': msg[0].createdTimestamp,
+					'merchChannel.scoutTracker.$.lastTimestampReadable': new Date(msg[0].createdTimestamp),
+				},
+			});
+		}
+	}
+	catch (e) {
+		console.log(e);
+	}
+
+};
+
+module.exports = {
+	otherCount,
+};
