@@ -28,22 +28,28 @@ module.exports = {
 		case 'messages':
 			switch (args[1]) {
 			default: {
-				await settings.findOne({ _id: message.guild.id }).then(async res => {
+				try {
+					const { merchChannel: { messages, channelID } } = await settings.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.messages': 1, 'merchChannel.channelID': 1 } });
 					const fields = [];
-					const data = await res.merchChannel.messages;
 					const embed = func.nEmbed('List of messages currently stored in the DB',
 						'There shouldn\'t be too many as they get automatically deleted after 10 minutes. If the bot errors out, please clear all of them using \`;dsf messages clear\`.',
 						colors.cream,
 						message.member.user.displayAvatarURL(),
 						client.user.displayAvatarURL());
 
-					for (const values of data) {
+					for (const values of messages) {
 						let date = new Date(values.time);
 						date = date.toString().split(' ');
-						fields.push({ name: `${values.author}`, value: `**Time:** ${date.slice(0, 5).join(' ')}\n**Content:** [${values.content}](https://discordapp.com/channels/${message.guild.id}/${res.merchChannel.channelID}/${values.messageID} 'Click me to go to the message.')`, inline: false });
+						fields.push({ name: `${values.author}`, value: `**Time:** ${date.slice(0, 5).join(' ')}\n**Content:** [${values.content}](https://discordapp.com/channels/${message.guild.id}/${channelID}/${values.messageID} 'Click me to go to the message.')`, inline: false });
 					}
 					return message.channel.send(embed.addFields(fields));
-				});
+				}
+				catch (e) {
+					if (e.code === 50035) {
+						return message.channel.send('Too many messages stored. Use the clear command.');
+					}
+					else {console.error(1, e);}
+				}
 			}
 				break;
 			case 'clear':
@@ -56,12 +62,11 @@ module.exports = {
 				);
 				message.react('✅');
 			}
-
 			break;
 		case 'reacts': {
 			switch (args[1]) {
 			case 'clear': {
-				const database = await settings.findOne({ _id: message.guild.id });
+				const database = await settings.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.spamProtection': 1, 'merchChannel.channelID': 1 } });
 				const pagination = new Paginate(message, database);
 
 				pagination.membersBelowThreshold.map(async mem => {
@@ -105,8 +110,8 @@ module.exports = {
 			}
 				break;
 			case 'block': {
-				const database = await settings.findOne({ _id: message.guild.id });
-				if (database.merchChannel.blocked) {
+				const { merchChannel: { blocked } } = await settings.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.blocked': 1 } });
+				if (blocked) {
 					await settings.updateOne({ _id: message.guild.id }, {
 						$set: {
 							'merchChannel.blocked': false,
@@ -126,69 +131,66 @@ module.exports = {
 			}
 				break;
 			default: {
-				await settings.findOne({ _id: message.guild.id }).then(async res => {
-					let page = 0;
-					const fields = [];
-					const spamData = await res.merchChannel.spamProtection;
+				const { merchChannel: { spamProtection, channelID } } = await settings.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.spamProtection': 1, 'merchChannel.channelID': 1 } });
+				let page = 0;
+				const fields = [];
 
-					for (const values of spamData) {
-						let date = new Date(values.time);
-						date = date.toString().split(' ');
-						fields.push({ name: `${values.author}`, value: `**Time:** ${date.slice(0, 5).join(' ')}\n**Content:** [${values.content}](https://discordapp.com/channels/${message.guild.id}/${res.merchChannel.channelID}/${values.messageID} 'Click me to go to the message.')`, inline: false });
+				for (const values of spamProtection) {
+					let date = new Date(values.time);
+					date = date.toString().split(' ');
+					fields.push({ name: `${values.author}`, value: `**Time:** ${date.slice(0, 5).join(' ')}\n**Content:** [${values.content}](https://discordapp.com/channels/${message.guild.id}/${channelID}/${values.messageID} 'Click me to go to the message.')`, inline: false });
+				}
+				const paginate = (dataFields) => {
+					const pageEmbeds = [];
+					const data = dataFields;
+					let k = 12;
+					for (let i = 0; i < data.length; i += 12) {
+						const current = data.slice(i, k);
+						k += 12;
+						const info = current;
+						const embed = func.nEmbed('List of reaction messages currently stored in the DB that have had reactions added too',
+							'There may be quite a few and if there are, clear them out using \`;dsf reacts clear\`.',
+							colors.cream,
+							message.member.user.displayAvatarURL(),
+							client.user.displayAvatarURL());
+						embed.setTimestamp().addFields(info);
+						pageEmbeds.push(embed);
 					}
-					const paginate = (dataFields) => {
-						const pageEmbeds = [];
-						const data = dataFields;
-						let k = 12;
-						for (let i = 0; i < data.length; i += 12) {
-							const current = data.slice(i, k);
-							k += 12;
-							const info = current;
-							const embed = func.nEmbed('List of reaction messages currently stored in the DB that have had reactions added too',
-								'There may be quite a few and if there are, clear them out using \`;dsf reacts clear\`.',
-								colors.cream,
-								message.member.user.displayAvatarURL(),
-								client.user.displayAvatarURL());
-							embed.setTimestamp().addFields(info);
-							pageEmbeds.push(embed);
-						}
-						return pageEmbeds;
-					};
-					const embeds = paginate(fields);
-					if (!embeds.length) {
-						return message.channel.send('There are no messages stored that have reactions added.');
-					}
+					return pageEmbeds;
+				};
+				const embeds = paginate(fields);
+				if (!embeds.length) {
+					return message.channel.send('There are no messages stored that have reactions added.');
+				}
 
-					return message.channel.send(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`))
-						.then(async msg => {
-							await msg.react('◀️');
-							await msg.react('▶️');
+				return message.channel.send(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`))
+					.then(async msg => {
+						await msg.react('◀️');
+						await msg.react('▶️');
 
-							const react = (reaction, user) => ['◀️', '▶️'].includes(reaction.emoji.name) && user.id === message.author.id;
-							const collect = msg.createReactionCollector(react);
+						const react = (reaction, user) => ['◀️', '▶️'].includes(reaction.emoji.name) && user.id === message.author.id;
+						const collect = msg.createReactionCollector(react);
 
-							collect.on('collect', (r, u) => {
-								if (r.emoji.name === '▶️') {
-									if (page < embeds.length) {
-										msg.reactions.resolve('▶️').users.remove(u.id);
-										page++;
-										if (page === embeds.length) --page;
-										msg.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`));
-									}
+						collect.on('collect', (r, u) => {
+							if (r.emoji.name === '▶️') {
+								if (page < embeds.length) {
+									msg.reactions.resolve('▶️').users.remove(u.id);
+									page++;
+									if (page === embeds.length) --page;
+									msg.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`));
 								}
-								else if (r.emoji.name === '◀️') {
-									if (page !== 0) {
-										msg.reactions.resolve('◀️').users.remove(u.id);
-										--page;
-										msg.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`));
-									}
-									else {msg.reactions.resolve('◀️').users.remove(u.id);}
+							}
+							else if (r.emoji.name === '◀️') {
+								if (page !== 0) {
+									msg.reactions.resolve('◀️').users.remove(u.id);
+									--page;
+									msg.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`));
 								}
-							});
+								else {msg.reactions.resolve('◀️').users.remove(u.id);}
+							}
 						});
-				});
+					});
 			}
-				break;
 			}
 		}
 			break;
