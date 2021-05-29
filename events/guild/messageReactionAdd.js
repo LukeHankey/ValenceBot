@@ -19,23 +19,7 @@ module.exports = async (client, reaction, user) => {
 	else if (message.guild.id === '733164313744769024') {return;}
 
 	if (message.partial) await message.fetch().catch(err => console.log(12, err));
-
-	const { _id,
-		merchChannel: {
-			channelID,
-			spamProtection,
-			blocked,
-			spamMessagePost,
-			deletions,
-		} } = await settingsColl.findOne({ _id: message.guild.id },
-		{ projection: {
-			'merchChannel.channelID': 1,
-			'merchChannel.spamProtection': 1,
-			'merchChannel.blocked': 1,
-			'merchChannel.spamMessagePost': 1,
-			'merchChannel.deletions': 1,
-		},
-		});
+	const { _id } = await settingsColl.findOne({ _id: message.guild.id });
 
 	switch (message.guild.id) {
 	case _id:
@@ -65,7 +49,21 @@ module.exports = async (client, reaction, user) => {
 		}
 		// DSF & Test servers
 		else if (_id === '420803245758480405' || _id === '733164313744769024') {
-
+			const { merchChannel: {
+				channelID,
+				spamProtection,
+				blocked,
+				spamMessagePost,
+				deletions,
+			} } = await settingsColl.findOne({ _id: message.guild.id },
+				{ projection: {
+					'merchChannel.channelID': 1,
+					'merchChannel.spamProtection': 1,
+					'merchChannel.blocked': 1,
+					'merchChannel.spamMessagePost': 1,
+					'merchChannel.deletions': 1,
+				},
+				});
 			const modChannel = message.guild.channels.cache.find(ch => ch.name === 'moderator');
 			const groundedRole = message.guild.roles.cache.find(r => r.name === 'Grounded');
 			const pagination = new Paginate(reaction, { merchChannel: { channelID, spamProtection } });
