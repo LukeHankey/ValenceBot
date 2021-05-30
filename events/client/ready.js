@@ -304,7 +304,7 @@ module.exports = async client => {
 	const commandCollection = client.commands.filter(cmd => cmd.name === 'wish');
 	const commands = commandCollection.first();
 
-	cron.schedule('0 1 * * *', async () => { // Daily reset
+	cron.schedule('58 0 * * *', async () => { // Daily reset
 		console.log('Running reset tasks.');
 		const { merchantWishes: { range } } = await settings.findOne({ _id: '420803245758480405' });
 		const split = range.split(':');
