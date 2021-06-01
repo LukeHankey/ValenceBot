@@ -1,4 +1,4 @@
-const Discord = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 const colors = require('./colors.json');
 const day = 24 * 60 * 60 * 1000;
 const hour = 60 * 60 * 1000;
@@ -6,7 +6,7 @@ const minute = 60 * 1000;
 
 module.exports = {
 	nEmbed: function(title, description, color = colors.cyan, thumbnail = '', guildIcon) {
-		const embed = new Discord.MessageEmbed()
+		const embed = new MessageEmbed()
 			.setTitle(title)
 			.setDescription(description)
 			.setColor(color)
