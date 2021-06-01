@@ -398,11 +398,11 @@ module.exports = async client => {
 		}
 
 		if (new Date().getDate() === 2 && new Date().getHours() === 00 && new Date().getMinutes() === 00) { // Monthly reset + 1 day
-			await settings.updateMany({ lottoSheet: { $exists: true } }, { $set: { lottoSheet: null } });
+			console.log(new Date().getDate(), 'Setting lottoSheet to Null');
+			await settings.updateMany({ gSheet: { $exists: true } }, { $set: { lottoSheet: null } });
 		}
 
 		// Reset Info Count back to 0 to allow use of command
-
 		await settings.find({}).toArray().then(r => {
 			r = r.filter(doc => doc.resetInfoCount >= 0);
 			for (const doc in r) {
