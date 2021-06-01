@@ -322,7 +322,7 @@ module.exports = async client => {
 		await commands.run(client, 'readyEvent');
 	});
 
-	console.log(new Date.getDate(), new Date().getUTCDate());
+	console.log(new Date().getDate(), new Date().getUTCDate());
 
 
 	// DSF Activity Posts //
