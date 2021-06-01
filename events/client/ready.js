@@ -322,6 +322,8 @@ module.exports = async client => {
 		await commands.run(client, 'readyEvent');
 	});
 
+	console.log(new Date.getDate(), new Date().getUTCDate());
+
 
 	// DSF Activity Posts //
 	cron.schedule('0 */6 * * *', async () => {
