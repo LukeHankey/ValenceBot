@@ -1,6 +1,6 @@
 const Discord = require('discord.js');
 const colors = require('../../colors.json');
-const func = require('../../functions.js');
+const { capitalise, checkNum, randomNum } = require('../../functions.js');
 const { getDb } = require('../../mongodb');
 
 /**
@@ -49,7 +49,7 @@ module.exports = {
 									$push: {
 										calendarID: {
 											$each: [
-												{ messageID: msg.id, month: `${currentMonth}`, year: new Date().getUTCFullYear() },
+												{ messageID: msg.id, month: `${currentMonth}`, year: new Date().getUTCFullYear(), events: [] },
 											],
 										},
 									},
@@ -59,14 +59,14 @@ module.exports = {
 				}
 				else {
 					client.channels.cache.get(channels.logs).send(`<@${message.author.id}> created a new Calendar embed.`);
-					message.channel.send(embed(`Calendar for ${func.capitalise(args[1])}`))
+					message.channel.send(embed(`Calendar for ${capitalise(args[1])}`))
 						.then((msg) => {
 							settings.findOneAndUpdate({ _id: message.guild.id },
 								{
 									$push: {
 										calendarID: {
 											$each: [
-												{ messageID: msg.id, month: `${func.capitalise(args[1])}`, year: new Date().getUTCFullYear() },
+												{ messageID: msg.id, month: `${capitalise(args[1])}`, year: new Date().getUTCFullYear(), events: [] },
 											],
 										},
 									},
@@ -81,7 +81,7 @@ module.exports = {
 			break;
 		case 'add':
 			settings.findOne({ _id: message.guild.id }).then(async (r) => {
-				const monthInc = r.calendarID.filter((obj) => obj.month.toLowerCase() === args[1].toLowerCase() || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase());
+				const monthInc = r.calendarID.filter((obj) => (obj.month.toLowerCase() === args[1].toLowerCase() || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase()) && obj.year === new Date().getUTCFullYear());
 				const slicer = (words, textArray) => {
 					const length = words[0].length + 2;
 					const trimString = textArray.join(' ');
@@ -108,12 +108,12 @@ module.exports = {
 							const host = hostCollection.join(' ') || message.mentions.roles.first();
 
 
-							if (!date || !event || !time || !link || !host) {
+							if (!date || !event || !time || !link || !host || !link.includes('discord')) {
 								message.channel.send(`Please provide the content that you would like to add to the calendar. Acceptable format below:\n${code}\nDate: 21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include Date: / Event: / Time: / Announcement: / Host:${code}`);
 							}
 							else {
 								const editEmbed = new Discord.MessageEmbed(m.embeds[0]);
-								if (args[2] !== 'Date:' && func.checkNum(args[2], 1)) {
+								if (args[2] !== 'Date:' && checkNum(args[2], 1)) {
 									editEmbed.spliceFields(args[2] - 1, 0, { name: date, value: `Event: ${event}\nTime: ${time}\n[Announcement](${link})\nHost: ${host}` });
 									m.edit(editEmbed);
 								}
@@ -124,6 +124,11 @@ module.exports = {
 									m.edit(editEmbed);
 								}
 								message.delete();
+								const newRole = await message.guild.roles.create({ data: {
+									name: event.concat(` #${randomNum()}`),
+								} });
+								await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': monthInc[0].month }, { $push: { 'calendarID.$.events': { messageID: link.split('/')[6], title: event, eventTag: newRole.name.slice(event.length + 2) } } });
+								await settings.updateOne({ _id: message.guild.id }, { $push: { events: { title: event, messageID: link.split('/')[6], roleID: newRole.id, eventTag: newRole.name.slice(event.length + 2), date: new Date(), members: [] } } });
 								client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
 							}
 						}
@@ -168,7 +173,7 @@ module.exports = {
 						}
 						else {
 							const editEmbed = new Discord.MessageEmbed(m.embeds[0]);
-							if (args[1] !== 'Date:' && func.checkNum(args[1], 1)) {
+							if (args[1] !== 'Date:' && checkNum(args[1], 1)) {
 								editEmbed.spliceFields(args[1] - 1, 0, { name: date, value: `Event: ${event}\nTime: ${time}\n[Announcement](${link})\nHost: ${host}` });
 								m.edit(editEmbed);
 							}
@@ -179,6 +184,11 @@ module.exports = {
 								m.edit(editEmbed);
 							}
 							message.delete();
+							const newRole = await message.guild.roles.create({ data: {
+								name: event.concat(` #${randomNum()}`),
+							} });
+							await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': currentMonthMessage[0].month }, { $push: { 'calendarID.$.events': { messageID: link.split('/')[6], title: event, eventTag: newRole.name.slice(event.length + 2) } } });
+							await settings.updateOne({ _id: message.guild.id }, { $push: { events: { title: event, messageID: link.split('/')[6], roleID: newRole.id, eventTag: newRole.name.slice(event.length + 2), date: new Date(), members: [] } } });
 							client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
 						}
 					}
@@ -233,7 +243,7 @@ module.exports = {
 									if (fieldParams[parameter] !== fieldParams[3]) {
 										const value = values.filter((val) => val.toLowerCase().includes(fieldParams[parameter]));
 										// eslint-disable-next-line no-inline-comments
-										const fieldValue = value.join(' ').split(`${func.capitalise(fieldParams[parameter])}`); // Doesn't work for announcement
+										const fieldValue = value.join(' ').split(`${capitalise(fieldParams[parameter])}`); // Doesn't work for announcement
 										n.spliceFields(args[2] - 1, 1, { name: fields.name, value: fields.value.replace(fieldValue[1], newValue) });
 										editE.edit(n);
 									}
@@ -278,7 +288,7 @@ module.exports = {
 							if (fieldParams[parameter] !== fieldParams[3]) {
 								const value = values.filter((val) => val.toLowerCase().includes(fieldParams[parameter]));
 								// eslint-disable-next-line no-inline-comments
-								const fieldValue = value.join(' ').split(`${func.capitalise(fieldParams[parameter])}`); // Doesn't work for announcement
+								const fieldValue = value.join(' ').split(`${capitalise(fieldParams[parameter])}`); // Doesn't work for announcement
 								n.spliceFields(args[1] - 1, 1, { name: fields.name, value: fields.value.replace(fieldValue[1], newValue) });
 								editE.edit(n);
 							}
