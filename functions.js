@@ -112,4 +112,7 @@ module.exports = {
 
 		return compressed;
 	},
+	randomNum: function() {
+		return (Math.round(Math.random() * 10000) + 1);
+	},
 };
