@@ -1,5 +1,6 @@
 const getDb = require('./mongodb').getDb;
 const { MessageEmbed } = require('discord.js');
+const { randomNum } = require('./functions');
 
 const vEvents = async (client, message, channels) => {
 	const db = getDb();
@@ -21,7 +22,6 @@ const vEvents = async (client, message, channels) => {
 			}
 			return e;
 		});
-		const randomNum = () => (Math.round(Math.random() * 10000) + 1);
 		await last.react('❌');
 		await last.react('✅');
 
@@ -71,7 +71,7 @@ const vEvents = async (client, message, channels) => {
 						{ name: date, value: `Event: ${eventTitle[0]}\nTime: ${time}\n[Announcement](${link})\nHost: ${last.author}` },
 					);
 					m.edit(editEmbed);
-					client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} added an event automatically: \`\`\`Date: ${date}, Event: ${eventTitle[0]}, Time: ${time}, Link: ${link}, Host: ${last.author}\`\`\``);
+					channels.logs.send(`Calendar updated - ${message.author} added an event automatically: \`\`\`Date: ${date}, Event: ${eventTitle[0]}, Time: ${time}, Link: ${link}, Host: ${last.author}\`\`\``);
 				};
 
 				if (!dateRegex.test(last.content) || !timeRegex.test(last.content)) {
@@ -81,7 +81,8 @@ const vEvents = async (client, message, channels) => {
 					addToCal(dateR, timeR);
 				}
 
-				await settingsColl.updateOne({ _id: message.guild.id }, { $push: { events: { $each: [ { messageID: last.id, roleID: newRole.id, eventTag: newRole.name.slice(eventTitle[0].length + 2), members: [] } ] } } });
+				await settingsColl.updateOne({ _id: message.guild.id }, { $push: { events: { $each: [ { title: eventTitle[0], messageID: last.id, roleID: newRole.id, eventTag: newRole.name.slice(eventTitle[0].length + 2), date: new Date(), members: [] } ] } } });
+				await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': new Date().toLocaleString('default', { month: 'long' }) }, { $push: { 'calendarID.$.events': { messageID: last.id, title: eventTitle[0], eventTag: newRole.name.slice(eventTitle[0].length + 2) } } });
 				await collectOneReaction.message.reactions.removeAll();
 				await last.react('📌');
 				await last.react('✅');
