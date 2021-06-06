@@ -13,7 +13,7 @@ module.exports = {
 	usage:  ['', 'end [ID]'],
 	guildSpecific: 'all',
 	run: async (client, message, args, perms, channels) => {
-		if (!perms.modRole) return message.channel.send(perms.errorM);
+		if (!perms.mod) return message.channel.send(perms.errorM);
 		const db = getDb();
 		const settings = db.collection('Settings');
 
