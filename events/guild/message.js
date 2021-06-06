@@ -12,9 +12,27 @@ module.exports = async (client, message) => {
 	const globalDB = await settingsColl.findOne({ _id: 'Globals' });
 
 	const channels = {
-		vis: globalDB.channels.vis,
-		errors: globalDB.channels.errors,
-		logs: globalDB.channels.logs,
+		vis: {
+			id: globalDB.channels.vis,
+			send: function(content) {
+				const channel = client.channels.cache.get(this.id);
+				return channel.send(content);
+			},
+		},
+		errors: {
+			id: globalDB.channels.errors,
+			send: function(content) {
+				const channel = client.channels.cache.get(this.id);
+				return channel.send(content);
+			},
+		},
+		logs: {
+			id: globalDB.channels.logs,
+			send: function(content) {
+				const channel = client.channels.cache.get(this.id);
+				return channel.send(content);
+			},
+		},
 	};
 
 	// Handling DMs
@@ -64,7 +82,7 @@ module.exports = async (client, message) => {
 	if (message.author.bot) return;
 
 	// Valence Events Channel
-	if (message.guild.id === '472448603642920973') {
+	if (message.guild.id === '472448603642920973' || message.guild.id === '733164313744769024') {
 		// Valence - Filter
 		const filterWords = ['retard', 'nigger'];
 		const blocked = filterWords.filter(word => {

@@ -24,12 +24,9 @@ module.exports = async (client, reaction, user) => {
 	switch (message.guild.id) {
 	case _id:
 		// Valence
-		if (_id === '472448603642920973') {
+		if (_id === '472448603642920973' || _id === '733164313744769024') {
 			const { events } = await settingsColl.findOne({ _id: message.guild.id }, { projection: { events: 1 } });
 			const data = events.filter(m => m.messageID === message.id);
-
-			// Will only work for reactions where the message ID is inside the DB
-			// Valence Events
 
 			if (!data.length || user.bot) return;
 			if (reaction.emoji.name === '✅') {
@@ -40,6 +37,7 @@ module.exports = async (client, reaction, user) => {
 				reaction.message.reactions.removeAll();
 				message.guild.roles.fetch(data[0].roleID).then(r => r.delete());
 				settingsColl.findOneAndUpdate({ _id: message.guild.id }, { $pull: { events: { messageID: message.id } } });
+				settingsColl.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': new Date(message.createdTimestamp).toLocaleString('default', { month: 'long' }) }, { $pull: { 'calendarID.$.events': { messageID: message.id } } });
 			}
 			else if (reaction.emoji.name === '📌') {
 				const userFetch = await message.guild.members.fetch(user.id);
