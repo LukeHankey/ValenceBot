@@ -22,7 +22,7 @@ module.exports = {
 			.setColor(colors.cream);
 
 		const res = await settings.findOne({ _id: 'Globals' });
-		const visChannel = channels.vis;
+		const visChannel = channels.vis.id;
 		if (!args.length && !message.attachments.size) {
 			try {
 				let currentDate = new Date().toUTCString();
@@ -55,7 +55,7 @@ module.exports = {
 			const array = ['gif', 'jpeg', 'tiff', 'png', 'webp', 'bmp', 'prnt.sc', 'gyazo.com'];
 			if (message.attachments.size) {
 				message.react('✅');
-				return client.channels.cache.get(visChannel).send(embed.setImage(message.attachments.first().url))
+				return channels.vis.send(embed.setImage(message.attachments.first().url))
 					.then(async () => {
 						return await settings.updateOne({ _id: 'Globals' }, {
 							$set: {
@@ -67,7 +67,7 @@ module.exports = {
 			}
 			else if (array.some(x => attachment[0].includes(x))) {
 				message.react('✅');
-				return client.channels.cache.get(visChannel).send(embed.setImage(attachment[0]))
+				return channels.vis.send(embed.setImage(attachment[0]))
 					.then(async () => {
 						return await settings.updateOne({ _id: 'Globals' }, {
 							$set: {
@@ -86,7 +86,7 @@ module.exports = {
 					const channelFetch = await guildFetch.channels.cache.get(c);
 					const messageFetch = await channelFetch.messages.fetch(m);
 					const newEmbed = embed.setImage(`${messageFetch.attachments.first().attachment}`);
-					client.channels.cache.get(visChannel).send(newEmbed);
+					channels.vis.send(newEmbed);
 					message.react('✅');
 					return await settings.updateOne({ _id: 'Globals' }, {
 						$set: {
@@ -125,7 +125,7 @@ module.exports = {
 							vis: null,
 						},
 					});
-					client.channels.cache.get(visChannel).send(`${message.author.tag} reset the Vis command in **${message.guild.name}.**`);
+					channels.vis.send(`${message.author.tag} reset the Vis command in **${message.guild.name}.**`);
 					return message.react('✅');
 				}
 			}

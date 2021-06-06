@@ -48,7 +48,7 @@ module.exports = {
 						else {
 							await vFactsColl.insertOne({ Message: fact,	number: count + 1 });
 							message.channel.send(`Fact #${count + 1} has been added to the list!\n${code}${count + 1}. ${fact}${code}`);
-							client.channels.cache.get(channels.logs).send(`<@${message.author.id}> added a Fact: ${code}#${count + 1}. ${fact}${code}`);
+							channels.logs.send(`<@${message.author.id}> added a Fact: ${code}#${count + 1}. ${fact}${code}`);
 						}
 					}
 					else {
@@ -64,7 +64,7 @@ module.exports = {
 										vFactsColl.updateMany({ number: { $gt: r.number } }, { $inc: { number: -1 } });
 										console.log(`Total facts decreased to: ${count - 1}`);
 										message.channel.send(`Fact #${r.number} has been deleted from the list!\n${code}${r.number}. ${r.Message}${code}`);
-										client.channels.cache.get(channels.logs).send(`<@${message.author.id}> removed a Fact: ${code}#${r.number}. ${r.Message}${code}`);
+										channels.logs.send(`<@${message.author.id}> removed a Fact: ${code}#${r.number}. ${r.Message}${code}`);
 									});
 								vFactsColl.deleteOne({ number: Number(args[1]) });
 							}
@@ -90,8 +90,7 @@ module.exports = {
 									vFactsColl.findOne({ number: r.value.number })
 										.then(rs => {
 											message.channel.send(`Fact #${rs.number} has been edited successfully!\n${code}${r.value.number}. ${r.value.Message} >>> ${rs.Message}${code}`);
-											client.channels.cache.get(channels.logs)
-												.send(`<@${message.author.id}> edited Fact #${rs.number}: ${code}diff\n- ${r.value.Message}\n+ ${rs.Message}${code}`);
+											channels.logs.send(`<@${message.author.id}> edited Fact #${rs.number}: ${code}diff\n- ${r.value.Message}\n+ ${rs.Message}${code}`);
 										});
 								});
 						}
@@ -123,7 +122,7 @@ module.exports = {
 							.then(r => {
 								message.delete();
 								message.channel.send(factEmbed(r.Message));
-								client.channels.cache.get(channels.logs).send(`<@${message.author.id}> used the Fact command in <#${message.channel.id}>. https://discordapp.com/channels/${message.guild.id}/${message.channel.id}/${message.channel.lastMessageID} ${code}#${r.number}. ${r.Message}${code}`);
+								channels.logs.send(`<@${message.author.id}> used the Fact command in <#${message.channel.id}>. https://discordapp.com/channels/${message.guild.id}/${message.channel.id}/${message.channel.lastMessageID} ${code}#${r.number}. ${r.Message}${code}`);
 								console.log(`Fact command used by ${message.author.username} : ${r.Message}`);
 							});
 					}

@@ -41,7 +41,7 @@ module.exports = {
 		case 'create':
 			if (perms.admin) {
 				if (!args[1]) {
-					client.channels.cache.get(channels.logs).send(`<@${message.author.id}> created a new Calendar embed.`);
+					channels.logs.send(`<@${message.author.id}> created a new Calendar embed.`);
 					message.channel.send(embed(`Calendar for ${currentMonth}`))
 						.then((msg) => {
 							settings.findOneAndUpdate({ _id: message.guild.id },
@@ -58,7 +58,7 @@ module.exports = {
 					message.delete();
 				}
 				else {
-					client.channels.cache.get(channels.logs).send(`<@${message.author.id}> created a new Calendar embed.`);
+					channels.logs.send(`<@${message.author.id}> created a new Calendar embed.`);
 					message.channel.send(embed(`Calendar for ${capitalise(args[1])}`))
 						.then((msg) => {
 							settings.findOneAndUpdate({ _id: message.guild.id },
@@ -129,7 +129,7 @@ module.exports = {
 								} });
 								await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': monthInc[0].month }, { $push: { 'calendarID.$.events': { messageID: link.split('/')[6], title: event, eventTag: newRole.name.slice(event.length + 2) } } });
 								await settings.updateOne({ _id: message.guild.id }, { $push: { events: { title: event, messageID: link.split('/')[6], roleID: newRole.id, eventTag: newRole.name.slice(event.length + 2), date: new Date(), members: [] } } });
-								client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
+								channels.logs.send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
 							}
 						}
 						catch (err) {
@@ -189,7 +189,7 @@ module.exports = {
 							} });
 							await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': currentMonthMessage[0].month }, { $push: { 'calendarID.$.events': { messageID: link.split('/')[6], title: event, eventTag: newRole.name.slice(event.length + 2) } } });
 							await settings.updateOne({ _id: message.guild.id }, { $push: { events: { title: event, messageID: link.split('/')[6], roleID: newRole.id, eventTag: newRole.name.slice(event.length + 2), date: new Date(), members: [] } } });
-							client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
+							channels.logs.send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
 						}
 					}
 					catch (err) {
@@ -255,7 +255,7 @@ module.exports = {
 									}
 								}
 								message.delete();
-								client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
+								channels.logs.send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
 							}
 							else {
 								message.channel.send(`You must provide the event number you want to edit as well as the field. Examples: ${code}1 Time: 14:00 - 15:00. - Gets the 1st event and edits the Time field to the new value.\n3 Date: 5th. - Gets the 3rd event and edits the Date field to the new value.${code}`);
@@ -300,7 +300,7 @@ module.exports = {
 							}
 						}
 						message.delete();
-						client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
+						channels.logs.send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
 					}
 					else {
 						message.channel.send(`You must provide the event number you want to edit as well as the field. Examples: ${code}1 Time: 14:00 - 15:00. - Gets the 1st event and edits the Time field to the new value.\n3 Date: 5th. - Gets the 3rd event and edits the Date field to the new value.${code}`);
@@ -323,7 +323,7 @@ module.exports = {
 						const logValues = log.map((values) => `${values.name}\n${values.value}\n`);
 						const remaining = n.fields.map((values) => `${values.name}\n${values.value}\n`);
 						message.delete();
-						client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} removed event: ${code}diff\n- Removed\n${logValues.join('\n')}\n+ Remaining\n ${remaining.join('\n')}${code}`);
+						channels.logs.send(`Calendar updated - ${message.author} removed event: ${code}diff\n- Removed\n${logValues.join('\n')}\n+ Remaining\n ${remaining.join('\n')}${code}`);
 					}
 				}
 				else {
@@ -338,7 +338,7 @@ module.exports = {
 					const logValues = log.map((values) => `${values.name}\n${values.value}\n`);
 					const remaining = n.fields.map((values) => `${values.name}\n${values.value}\n`);
 					message.delete();
-					client.channels.cache.get(channels.logs).send(`Calendar updated - ${message.author} removed event: ${code}diff\n- Removed\n${logValues.join('\n')}\n+ Remaining\n ${remaining.join('\n')}${code}`);
+					channels.logs.send(`Calendar updated - ${message.author} removed event: ${code}diff\n- Removed\n${logValues.join('\n')}\n+ Remaining\n ${remaining.join('\n')}${code}`);
 				}
 			});
 			break;

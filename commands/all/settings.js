@@ -35,7 +35,7 @@ module.exports = {
 								? settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { prefix: args[2] } }, { returnOriginal: true })
 									.then(r => {
 										message.channel.send(`Prefix has been changed from \`${r.value.prefix}\` to \`${args[2]}\``);
-										client.channels.cache.get(channels.logs).send(`<@${message.author.id}> changed the bot Prefix in server: **${message.guild.name}**\n${code}diff\n- ${r.value.prefix}\n+ ${args[2]}${code}`);
+										channels.logs.send(`<@${message.author.id}> changed the bot Prefix in server: **${message.guild.name}**\n${code}diff\n- ${r.value.prefix}\n+ ${args[2]}${code}`);
 									})
 								: message.channel.send('What do you want to set the prefix to?');
 						}
@@ -57,24 +57,21 @@ module.exports = {
 								settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { 'roles.adminRole': `<@&${args[2]}>` } }, { returnOriginal: true })
 									.then(r => {
 										message.channel.send(`The Admin Role has been changed to: <@&${args[2]}>`, { 'allowedMentions': { 'parse': [] } });
-										client.channels.cache.get(channels.logs)
-											.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.roles.adminRole}\n+ <@&${args[2]}>${code}`);
+										channels.logs.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.roles.adminRole}\n+ <@&${args[2]}>${code}`);
 									});
 							}
 							else if (roleName && message.guild.roles.cache.get(roleName.id).permissions.has('ADMINISTRATOR')) { // Setting role by name
 								settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { 'roles.adminRole': `<@&${roleName.id}>` } }, { returnOriginal: true })
 									.then(r => {
 										message.channel.send(`The Admin Role has been changed to: <@&${roleName.id}>`, { 'allowedMentions': { 'parse': [] } });
-										client.channels.cache.get(channels.logs)
-											.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.roles.adminRole}\n+ ${roleName.id}${code}`);
+										channels.logs.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.roles.adminRole}\n+ ${roleName.id}${code}`);
 									});
 							}
 							else if (message.mentions.roles.first() && message.guild.roles.cache.get(message.mentions.roles.first().id).permissions.has('ADMINISTRATOR')) { // Setting role by mention
 								settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { 'roles.adminRole': args[2] } }, { returnOriginal: true })
 									.then(r => {
 										message.channel.send(`The Admin Role has been changed to: ${args[2]}`, { 'allowedMentions': { 'parse': [] } });
-										client.channels.cache.get(channels.logs)
-											.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.roles.adminRole}\n+ ${args[2]}${code}`);
+										channels.logs.send(`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.roles.adminRole}\n+ ${args[2]}${code}`);
 									});
 							}
 							else {
@@ -100,24 +97,21 @@ module.exports = {
 								settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { 'roles.modRole': `<@&${args[2]}>` } }, { returnOriginal: true })
 									.then(r => {
 										message.channel.send(`The Mod Role has been changed to: <@&${args[2]}>`, { 'allowedMentions': { 'parse': [] } });
-										client.channels.cache.get(channels.logs)
-											.send(`<@${message.author.id}> changed the modRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.roles.modRole}\n+ <@&${args[2]}>${code}`);
+										channels.logs.send(`<@${message.author.id}> changed the modRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.roles.modRole}\n+ <@&${args[2]}>${code}`);
 									});
 							}
 							else if (roleName && message.guild.roles.cache.get(roleName.id).permissions.has(['KICK_MEMBERS', 'BAN_MEMBERS'])) { // Setting role by name
 								settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { 'roles.modRole': `<@&${roleName.id}>` } }, { returnOriginal: true })
 									.then(r => {
 										message.channel.send(`The Mod Role has been changed to: <@&${roleName.id}>`, { 'allowedMentions': { 'parse': [] } });
-										client.channels.cache.get(channels.logs)
-											.send(`<@${message.author.id}> changed the modRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.roles.modRole}\n+ ${roleName}${code}`);
+										channels.logs.send(`<@${message.author.id}> changed the modRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.roles.modRole}\n+ ${roleName}${code}`);
 									});
 							}
 							else if (message.mentions.roles.first() && message.guild.roles.cache.get(message.mentions.roles.first().id).permissions.has(['KICK_MEMBERS', 'BAN_MEMBERS'])) { // Setting role by mention
 								settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { 'roles.modRole': args[2] } }, { returnOriginal: true })
 									.then(r => {
 										message.channel.send(`The Mod Role has been changed to: ${args[2]}`, { 'allowedMentions': { 'parse': [] } });
-										client.channels.cache.get(channels.logs)
-											.send(`<@${message.author.id}> changed the modRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.roles.modRole}\n+ ${args[2]}${code}`);
+										channels.logs.send(`<@${message.author.id}> changed the modRole in server: **${message.guild.name}**\n${code}diff\n- ${r.value.roles.modRole}\n+ ${args[2]}${code}`);
 									});
 							}
 							else {
@@ -150,16 +144,14 @@ module.exports = {
 								settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { 'channels.adminChannel': args[2] } }, { returnOriginal: true })
 									.then(r => {
 										message.channel.send(`The Admin Channel has been set to: <#${args[2]}>`);
-										client.channels.cache.get(channels.logs)
-											.send(`<@${message.author.id}> set the Admin Channel in server: **${message.guild.name}** from <#${r.value.channels.adminChannel}> to <#${args[2]}>`);
+										channels.logs.send(`<@${message.author.id}> set the Admin Channel in server: **${message.guild.name}** from <#${r.value.channels.adminChannel}> to <#${args[2]}>`);
 									});
 							}
 							else if (func.checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) { // Check by #Channel
 								settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { 'channels.adminChannel': channelTag[0] } }, { returnOriginal: true })
 									.then(r => {
 										message.channel.send(`The Admin Channel has been set to: <#${channelTag[0]}>`);
-										client.channels.cache.get(channels.logs)
-											.send(`<@${message.author.id}> set the Admin Channel in server: **${message.guild.name}** from <#${r.value.channels.adminChannel}> to <#${channelTag[0]}>`);
+										channels.logs.send(`<@${message.author.id}> set the Admin Channel in server: **${message.guild.name}** from <#${r.value.channels.adminChannel}> to <#${channelTag[0]}>`);
 									});
 							}
 							else {
@@ -197,16 +189,14 @@ module.exports = {
 								settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { 'channels.events': args[2] } }, { returnOriginal: true })
 									.then(r => {
 										message.channel.send(`The Events Channel has been set to: <#${args[2]}>`);
-										client.channels.cache.get(channels.logs)
-											.send(`<@${message.author.id}> set the Events Channel in server: **${message.guild.name}** from <#${r.value.channels.events}> to <#${args[2]}>`);
+										channels.logs.send(`<@${message.author.id}> set the Events Channel in server: **${message.guild.name}** from <#${r.value.channels.events}> to <#${args[2]}>`);
 									});
 							}
 							else if (func.checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) { // Check by #Channel
 								settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { 'channels.events': channelTag[0] } }, { returnOriginal: true })
 									.then(r => {
 										message.channel.send(`The Events Channel has been set to: <#${channelTag[0]}>`);
-										client.channels.cache.get(channels.logs)
-											.send(`<@${message.author.id}> set the Events Channel in server: **${message.guild.name}** from <#${r.value.channels.events}> to <#${channelTag[0]}>`);
+										channels.logs.send(`<@${message.author.id}> set the Events Channel in server: **${message.guild.name}** from <#${r.value.channels.events}> to <#${channelTag[0]}>`);
 									});
 							}
 							else {
@@ -244,16 +234,14 @@ module.exports = {
 								settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { 'channels.mod': args[2] } }, { returnOriginal: true })
 									.then(r => {
 										message.channel.send(`The Mod Channel has been set to: <#${args[2]}>`);
-										client.channels.cache.get(channels.logs)
-											.send(`<@${message.author.id}> set the Mod Channel in server: **${message.guild.name}** from <#${r.value.channels.mod}> to <#${args[2]}>`);
+										channels.logs.send(`<@${message.author.id}> set the Mod Channel in server: **${message.guild.name}** from <#${r.value.channels.mod}> to <#${args[2]}>`);
 									});
 							}
 							else if (func.checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) { // Check by #Channel
 								settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { 'channels.mod': channelTag[0] } }, { returnOriginal: true })
 									.then(r => {
 										message.channel.send(`The Mod Channel has been set to: <#${channelTag[0]}>`);
-										client.channels.cache.get(channels.logs)
-											.send(`<@${message.author.id}> set the Mod Channel in server: **${message.guild.name}** from <#${r.value.channels.mod}> to <#${channelTag[0]}>`);
+										channels.logs.send(`<@${message.author.id}> set the Mod Channel in server: **${message.guild.name}** from <#${r.value.channels.mod}> to <#${channelTag[0]}>`);
 									});
 							}
 							else {
