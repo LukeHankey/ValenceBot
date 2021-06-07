@@ -23,12 +23,13 @@ module.exports = {
 		switch(args[0]) {
 		case 'end': {
 			const tag = args[1];
-			const checkEventExists = data.events.map(event => { if (event.eventTag === tag) return { value: true, message: event.messageID };}).filter(valid => valid);
+			const checkEventExists = data.events.map(event => { if (event.eventTag === tag) return { value: true, message: event.messageID, role: event.roleID };}).filter(valid => valid);
 			if (checkEventExists[0].value) {
 				const fetchedMessage = await fetchedChannel.messages.fetch(checkEventExists[0].message).catch((e) => { return channels.errors.send('Unable to fetch message from the event channel when ending an event.', e);});
 				fetchedMessage.reactions.removeAll();
 				await settings.updateOne({ _id: message.guild.id }, { $pull: { events: { eventTag: tag } } });
 				await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': new Date(fetchedMessage.createdTimestamp).toLocaleString('default', { month: 'long' }) }, { $pull: { 'calendarID.$.events': { messageID: message.id } } });
+				await message.guild.roles.fetch(checkEventExists[0].role).then(r => r.delete());
 				return message.react('✅');
 			}
 			else {
