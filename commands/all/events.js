@@ -18,16 +18,17 @@ module.exports = {
 		const settings = db.collection('Settings');
 
 		const data = await settings.findOne({ _id: message.guild.id }, { projection: { events: 1, 'channels.events': 1, calendarID: 1 } });
+		const fetchedChannel = client.channels.cache.get(data.channels.events);
 
 		switch(args[0]) {
 		case 'end': {
 			const tag = args[1];
 			const checkEventExists = data.events.map(event => { if (event.eventTag === tag) return { value: true, message: event.messageID };}).filter(valid => valid);
 			if (checkEventExists[0].value) {
-				const fetchedChannel = client.channels.cache.get(data.channels.events);
 				const fetchedMessage = await fetchedChannel.messages.fetch(checkEventExists[0].message).catch((e) => { return channels.errors.send('Unable to fetch message from the event channel when ending an event.', e);});
+				fetchedMessage.reactions.removeAll();
 				await settings.updateOne({ _id: message.guild.id }, { $pull: { events: { eventTag: tag } } });
-				settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': new Date(fetchedMessage.createdTimestamp).toLocaleString('default', { month: 'long' }) }, { $pull: { 'calendarID.$.events': { messageID: message.id } } });
+				await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': new Date(fetchedMessage.createdTimestamp).toLocaleString('default', { month: 'long' }) }, { $pull: { 'calendarID.$.events': { messageID: message.id } } });
 				return message.react('✅');
 			}
 			else {
@@ -42,8 +43,9 @@ module.exports = {
 			const link = `https://discord.com/channels/${data._id}/${data.channels.events}/`;
 			const fieldHolder = data.events.map(obj => {
 				const members = obj.members.map(mem => { return `<@!${mem}>`;});
-				return { name: obj.title, value: `ID: ${obj.eventTag}\nRole: <@&${obj.roleID}>\n[Event post](${link}${obj.messageID})\nInterested 📌: ${members.join(', ')}` };
+				return { name: obj.title, value: `ID: ${obj.eventTag}\nRole: <@&${obj.roleID}>\n[Event posted ${obj.date ? 'on ' + obj.date.toString().split(' ').slice(0, 4).join(' ') : ''}](${link}${obj.messageID})\nInterested 📌: ${members.join(', ')}` };
 			});
+
 			const embed = new MessageEmbed()
 				.setTitle('Event Listing')
 				.setColor(cyan)
