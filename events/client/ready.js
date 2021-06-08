@@ -305,8 +305,7 @@ module.exports = async client => {
 	const commands = commandCollection.first();
 
 	cron.schedule('58 23 * * *', async () => { // Daily reset
-		console.log('Running reset tasks.');
-		const { merchantWishes: { range } } = await settings.findOne({ _id: '420803245758480405' });
+		const { merchantWishes: { range } } = await settings.findOne({ _id: '420803245758480405' }, { projection: { 'merchantWishes.range': 1 } });
 		const split = range.split(':');
 		const newNum = split.map(val => {
 			const valueStr = val.slice(1);
@@ -314,6 +313,7 @@ module.exports = async client => {
 		});
 
 		const newRange = `A${newNum[0]}:E${newNum[1]}`;
+		console.log('Running reset tasks.', `old range: ${range}`, `new range: ${newRange}`);
 		await settings.updateOne({ _id: '420803245758480405' }, {
 			$set: {
 				'merchantWishes.range': newRange,
