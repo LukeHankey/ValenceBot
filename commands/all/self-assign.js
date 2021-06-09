@@ -7,6 +7,7 @@ module.exports = {
 	aliases: ['sa'],
 	usage: ['<role name>', 'roles'],
 	guildSpecific: 'all',
+	permissionLevel: 'Everyone',
 	run: async (client, message, args) => {
 
 		const [...roleName] = args;

@@ -7,6 +7,7 @@ module.exports = {
 	aliases: [],
 	usage: ['<question>'],
 	guildSpecific: 'all',
+	permissionLevel: 'Mod',
 	run: async (client, message, args, perms) => {
 		if (!perms.mod) return message.channel.send(perms.errorM);
 		const content = args.join(' ');

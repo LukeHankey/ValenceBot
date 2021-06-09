@@ -5,10 +5,10 @@ module.exports = {
 	aliases: [],
 	usage: ['<number>'],
 	guildSpecific: 'all',
-	run: async (client, message, args) => {
+	permissionLevel: 'Mod',
+	run: async (client, message, args, perms) => {
+		if (!perms.mod) return message.channel.send(perms.errorM);
 		const amount = parseInt(args[0]) + 1;
-
-		if (!message.guild.me.hasPermission('MANAGE_MESSAGES')) return message.channel.send('Missing some permissions: \`MANAGE_MESSAGES\`.');
 
 		if (isNaN(amount)) {
 			return message.reply('Please enter a valid number.');

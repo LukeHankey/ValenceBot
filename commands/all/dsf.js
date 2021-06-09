@@ -18,6 +18,7 @@ module.exports = {
 	aliases: [],
 	usage: ['messages', 'messages clear', 'view scouter/verified <num (optional)>', 'user memberID/@member add <num (optional)> <other>', 'user memberID/@member remove <num (optional)> <other>'],
 	guildSpecific: ['733164313744769024', '420803245758480405'],
+	permissionLevel: 'Admin',
 	run: async (client, message, args, perms) => {
 		if (!perms.admin) return message.channel.send(perms.errorA);
 		const db = getDb();

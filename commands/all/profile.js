@@ -18,16 +18,17 @@ module.exports = {
 	aliases: ['p'],
 	usage: ['', '<member ID>', '<@member/@role>', 'all'],
 	guildSpecific: ['420803245758480405', '733164313744769024', '668330890790699079'],
+	permissionLevel: 'Everyone',
 	run: async (client, message, args) => {
 
 		const db = getDb();
 		const settings = db.collection('Settings');
 		const memberID = message.member.id;
-		const data = await settings.findOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': memberID });
+		const data = await settings.findOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': memberID }, { projection: { 'merchChannel.scoutTracker': 1 } });
 		const botRole = message.guild.me.roles.cache.find(r => r.managed);
 		const memberRoles = message.member.roles.highest.position;
 
-		const sendUserInfo = async (id = memberID, uData = data) => {
+		const sendUserInfo = async (id = memberID, uData = { scoutTracker: data.merchChannel.scoutTracker }) => {
 			const fetchedMember = await message.guild.members.fetch(id);
 			const embed = new MessageEmbed()
 				.setTitle(`Member Profile - ${id}`)
@@ -36,7 +37,7 @@ module.exports = {
 				.setThumbnail(message.author.displayAvatarURL())
 				.setFooter('Something wrong or missing? Let a Moderator+ know!', client.user.displayAvatarURL())
 				.setTimestamp();
-			const userData = uData.merchChannel.scoutTracker.filter(mem => mem.userID === id);
+			const userData = uData.scoutTracker.filter(mem => mem.userID === id);
 			const memberAssignedRoles = fetchedMember.roles.cache.filter(r => r.id !== message.guild.id && r.position > botRole.position).sort((a, b) => b.position - a.position).map(role => `<@&${role.id}>`);
 			const memberSelfRoles = fetchedMember.roles.cache.filter(r => r.id !== message.guild.id && r.position < botRole.position).map(role => `<@&${role.id}>`);
 			const fields = [];
@@ -61,7 +62,7 @@ module.exports = {
 			return message.channel.send(embed.addFields(fields)) && message.channel.stopTyping();
 		};
 
-		const sendRoleInfo = async (id, rData = data) => {
+		const sendRoleInfo = async (id, rData = { scoutTracker: data.merchChannel.scoutTracker }) => {
 			const roleObj = message.guild.roles.cache.get(id);
 			const embed = new MessageEmbed()
 				.setTitle(`Member Profiles - ${roleObj.name}`)
@@ -72,7 +73,6 @@ module.exports = {
 				.setTimestamp();
 
 			const fetchRole = message.guild.roles.cache.get(id) ?? await message.guild.roles.fetch(id);
-			const dbData = await rData.merchChannel.scoutTracker;
 			const allMem = await message.guild.members.fetch();
 			const fetchAllMem = allMem.filter(mem => mem.roles.cache.find(r => r.id === roleObj.id));
 			const memCollection = fetchAllMem.map(mem => mem.id) || fetchRole.members.map(mem => mem.id);
@@ -83,7 +83,7 @@ module.exports = {
 			let newArr = [];
 			const fields = [];
 			memCollection.forEach(id => {
-				const x = dbData.filter(mem => {
+				const x = rData.scoutTracker.filter(mem => {
 					if (mem.userID === id) return mem.userID === id;
 				});
 				newArr.push(x);
@@ -98,6 +98,7 @@ module.exports = {
 		};
 
 		if (!args.length) {
+			console.log(data);
 			if (data) {
 				sendUserInfo();
 			}
@@ -165,8 +166,8 @@ module.exports = {
 			}
 			else if (args[0] === 'all') {
 				message.channel.startTyping();
-				const data = await settings.findOne({ _id: message.guild.id });
-				const items = data.merchChannel.scoutTracker.sort((a, b) => b.count - a.count);
+				const { merchChannel: { scoutTracker } } = await settings.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.scoutTracker': 1 } });
+				const items = scoutTracker.sort((a, b) => b.count - a.count);
 				let fields = [];
 
 				for (const values of items) {

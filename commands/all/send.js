@@ -11,14 +11,13 @@ module.exports = {
 	aliases: [''],
 	usage: ['<channel ID> <message content>', 'embed <ban/friend/affiliate> <number>', 'info <ban/friend/affiliate> <num> RSN: <rsn> Reason: <reason>', 'edit <ban/friend/affiliate> <num> <rsn> <RSN:/Reason:> <value>', 'remove <ban/friend/affiliate> <num> <rsn/clear>'],
 	guildSpecific: 'all',
+	permissionLevel: 'Admin',
 	run: async (client, message, args, perms, channels) => {
 
 		const myID = '212668377586597888';
 		const content = args.slice(1).join(' ');
 		const code = '```';
-		if (!perms.admin) {
-			return message.channel.send(perms.errorA);
-		}
+		if (!perms.admin) return message.channel.send(perms.errorA);
 
 		const db = getDb();
 		const settings = db.collection('Settings');

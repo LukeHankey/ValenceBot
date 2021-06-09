@@ -13,6 +13,7 @@ module.exports = {
 	aliases: [],
 	usage: [''],
 	guildSpecific: ['733164313744769024', '420803245758480405'],
+	permissionLevel: 'Owner',
 	run: async (client, message, args, perms) => {
 		if (message !== 'readyEvent') {
 			if (!perms.owner) return message.channel.send(perms.errorO);

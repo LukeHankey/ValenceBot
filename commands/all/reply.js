@@ -4,6 +4,7 @@ module.exports = {
 	aliases: [],
 	usage: ['<user ID> <message>'],
 	guildSpecific: '668330890790699079',
+	permissionLevel: 'Owner',
 	run: async (client, message, args, perms) => {
 		if (!perms.owner) return message.channel.send(perms.errorO);
 		const [userID, ...content] = args;

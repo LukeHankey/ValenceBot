@@ -14,8 +14,9 @@ module.exports = {
 	aliases: ['lu'],
 	usage: [''],
 	guildSpecific: ['420803245758480405', '733164313744769024', '668330890790699079'],
+	permissionLevel: 'Admin',
 	run: async (client, message, args, perms) => {
-		if (!perms.owner) return message.channel.send(perms.errorO);
+		if (!perms.admin) return message.channel.send(perms.errorA);
 		if (!args[0]) return message.channel.send('Please provide a User ID');
 		const db = getDb();
 		const settingsColl = db.collection('Settings');

@@ -9,6 +9,7 @@ module.exports = {
 	aliases: [''],
 	usage:  ['<code>'],
 	guildSpecific: ['668330890790699079', '733164313744769024' ],
+	permissionLevel: 'Owner',
 	run: async (client, message, args, perms, channels) => {
 		if (!perms.owner) {
 			return message.channel.send(perms.errorO).then(() => {

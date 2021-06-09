@@ -15,6 +15,7 @@ module.exports = {
 	aliases: ['cal'],
 	usage: ['create <month (optional)>', 'add <month (optional)> <position (optional)> Date: <Date> Event: <event text> Time: <time> Announcement: <link> Host: <@member(s)/role>', 'edit <month (optional)> <starting field> <event field> <new value>', 'remove <month (optional)> <starting field> <delete count>', 'move <month (optional)> <from position> <to position>'],
 	guildSpecific: ['472448603642920973', '733164313744769024', '668330890790699079'],
+	permissionLevel: 'Mod',
 	run: async (client, message, args, perms, channels) => {
 		if (!perms.mod) {
 			return message.channel.send(perms.errorM);

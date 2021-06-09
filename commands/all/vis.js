@@ -9,6 +9,7 @@ module.exports = {
 	aliases: [],
 	usage: ['', '<image URL or discord message link>', 'new'],
 	guildSpecific: 'all',
+	permissionLevel: 'Everyone',
 	run: async (client, message, args, perms, channels) => {
 		const db = getDb();
 		const settings = db.collection('Settings');
@@ -21,15 +22,14 @@ module.exports = {
 			.setThumbnail(message.author.displayAvatarURL())
 			.setColor(colors.cream);
 
-		const res = await settings.findOne({ _id: 'Globals' });
-		const visChannel = channels.vis.id;
+		const { visTime, vis } = await settings.findOne({ _id: 'Globals' }, { projection: { visTime: 1, vis: 1 } });
 		if (!args.length && !message.attachments.size) {
 			try {
 				let currentDate = new Date().toUTCString();
 				currentDate = currentDate.split(' ');
 				// eslint-disable-next-line no-unused-vars
 				const [day, month, year, ...rest] = currentDate.slice(1);
-				const savedDate = res.visTime.toString().split(' ');
+				const savedDate = visTime.toString().split(' ');
 
 				if (year !== savedDate[3] || month !== savedDate[1] || day !== savedDate[2]) {
 					message.channel.send('No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.');
@@ -39,12 +39,11 @@ module.exports = {
 						},
 					});
 				}
-				const isNull = await settings.findOne({ _id: 'Globals' });
-				if (isNull.vis === null) {
+				if (vis === null) {
 					return message.channel.send('No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.');
 				}
-				return message.channel.send(`**Image uploaded at:** ${res.visTime}`, {
-					files: [`${res.vis}`],
+				return message.channel.send(`**Image uploaded at:** ${visTime}`, {
+					files: [`${vis}`],
 				});
 			}
 			catch (err) {
@@ -115,7 +114,7 @@ module.exports = {
 			else if (args[0] === 'new') {
 				if (!perms.admin) return message.channel.send(perms.errorA);
 
-				if (res.vis === null) {
+				if (vis === null) {
 					message.channel.send('There currently isn\'t any Vis Wax image uploaded.');
 					return message.react('❌');
 				}

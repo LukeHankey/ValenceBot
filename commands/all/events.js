@@ -12,6 +12,7 @@ module.exports = {
 	aliases: ['e'],
 	usage:  ['', 'end [ID]'],
 	guildSpecific: 'all',
+	permissionLevel: 'Mod',
 	run: async (client, message, args, perms, channels) => {
 		if (!perms.mod) return message.channel.send(perms.errorM);
 		const db = getDb();

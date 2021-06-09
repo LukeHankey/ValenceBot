@@ -18,6 +18,7 @@ module.exports = {
 	aliases: ['lottery'],
 	usage: ['', 'total', 'sheet <Google Sheet Name>', '<user>', 'add <amount> <collector> / <clanmate> / double (optional)'],
 	guildSpecific: ['472448603642920973', '733164313744769024', '668330890790699079'],
+	permissionLevel: 'Everyone',
 	run: async (client, message, args, perms) => {
 		const db = getDb();
 		const settingsColl = db.collection('Settings');

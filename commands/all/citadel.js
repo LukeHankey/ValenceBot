@@ -16,6 +16,7 @@ module.exports = {
 	aliases: ['c', 'cit'],
 	usage:  ['', 'on/off', 'reset', 'reset info', 'reset set', 'reminders', 'reminders add <channel> <message>', 'reminders add <channel> reset +<days/time> <message>', 'reminders remove <id>', 'reminders edit <id> <parameter> <new value>'],
 	guildSpecific: ['733164313744769024', '668330890790699079', '472448603642920973'],
+	permissionLevel: 'Everyone',
 	run: async (client, message, args, perms, channels) => {
 
 		const code = '```';
