@@ -24,7 +24,7 @@ module.exports = async (client, reaction, user) => {
 	switch (message.guild.id) {
 	case _id:
 		// Valence
-		if (_id === '472448603642920973' || _id === '733164313744769024') {
+		if (_id === '472448603642920973') {
 			const { events } = await settingsColl.findOne({ _id: message.guild.id }, { projection: { events: 1 } });
 			const data = events.filter(m => m.messageID === message.id);
 
@@ -71,45 +71,18 @@ module.exports = async (client, reaction, user) => {
 			switch (message.channel.id) {
 			case channelID: {
 				if (user.bot) return;
-
+				const newUser = {
+					id: user.id,
+					username: user.username,
+					count: 1,
+					reactions: [{
+						emoji: reaction.emoji.name || reaction.reactionEmoji.name,
+						count: 1,
+					}],
+				};
 				// Logging reaction timestamps
 				console.log('Reaction added:', `MessageID: ${message.id}`, `By: ${user.username} (${user.id})`, `Reaction: ${reaction.emoji.toString() || reaction.reactionEmoji.toString()} | ${reaction.emoji.name || reaction.reactionEmoji.name} `, `${new Date(Date.now()).toString().split(' ').slice(0, -4).join(' ')} ${(new Date(Date.now()).getMilliseconds())}`);
 				if (blocked) return;
-
-				// Go through all messages in DB and get the members who are below the threshold in each message
-				pagination.membersBelowThreshold.map(async mem => {
-					const channel = client.channels.cache.get(channelID);
-					try {
-						const m = await channel.messages.fetch(mem.msg);
-
-						// Remove all reactions if there is > 1 or 0. Then add a skull.
-						if (Date.now() - m.createdTimestamp >= 3600000 && (m.reactions.cache.size > 1 || m.reactions.cache.size === 0)) {
-							await m.reactions.removeAll();
-							return await m.react('☠️');
-						}
-						// If there is only a skull, remove users and message from DB
-						else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
-							return removeUsersAndMessages(message, mem, settingsColl);
-						}
-						// If there is a single reaction which is not the Skull, then remove that and react with skull. Repeat process over.
-						else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && !m.reactions.cache.has('☠️')) {
-							await m.reactions.removeAll();
-							return await m.react('☠️');
-						}
-						else {return;}
-					}
-					catch (e) {
-						if (e.code === 10008) {
-							const messageID = e.path.split('/')[4];
-							return await settingsColl.updateOne({ _id: message.guild.id }, {
-								$pull: {
-									'merchChannel.spamProtection': { messageID: messageID },
-								},
-							});
-						}
-						else {return console.error(e);}
-					}
-				});
 
 				// Adding users to the DB + counts
 				spamProtection.map(async msg => {
@@ -121,16 +94,6 @@ module.exports = async (client, reaction, user) => {
 						});
 					}
 					if (message.id === msg.messageID) {
-						const newUser = {
-							id: user.id,
-							username: user.username,
-							count: 1,
-							reactions: [{
-								emoji: reaction.emoji.name || reaction.reactionEmoji.name,
-								count: 1,
-							}],
-						};
-
 						const dbReactions = await spamProtection.filter(m => m.messageID === msg.messageID);
 						const spamUsersDB = dbReactions.flatMap(u => u.users);
 
@@ -146,6 +109,7 @@ module.exports = async (client, reaction, user) => {
 								},
 							});
 						}
+						// Remove duplicates
 						const [ moreThanOne ] = compressArray(spamUsersDB.map(obj => obj.id));
 						if (moreThanOne && moreThanOne.count > 1) {
 							const individual = spamUsersDB.find(obj => obj.id === moreThanOne.value);
@@ -198,6 +162,55 @@ module.exports = async (client, reaction, user) => {
 								arrayFilters: [{ 'userObj.count': { $gte: 0 }, 'userObj.id': user.id }],
 							});
 						}
+						/**
+					 * Check each object for it's users. If any user.count > 10, kick + send message
+					 */
+						spamUsersDB.forEach(log => {
+							if (log.count >= 10) {
+								console.log(log);
+								const grabMember = message.guild.members.cache.get(log.id);
+								settingsColl.findOneAndUpdate({ _id: message.guild.id }, { $pull: { 'merchChannel.spamProtection': { users: { $elemMatch: { id: log.id } } } } });
+								const bansChannel = message.guild.channels.cache.get('624655664920395786');
+								bansChannel.send(`${grabMember.nickname ?? grabMember.user.username} kicked for spam reacting at least ${log.count} times.`)
+								grabMember.kick(`Spamming reactions (${log.count})`);
+							}
+						});
+
+					}
+				});
+
+				// Go through all messages in DB and get the members who are below the threshold in each message
+				pagination.membersBelowThreshold.map(async mem => {
+					const channel = client.channels.cache.get(channelID);
+					try {
+						const m = await channel.messages.fetch(mem.msg);
+
+						// Remove all reactions if there is > 1 or 0. Then add a skull.
+						if (Date.now() - m.createdTimestamp >= 3600000 && (m.reactions.cache.size > 1 || m.reactions.cache.size === 0)) {
+							await m.reactions.removeAll();
+							return await m.react('☠️');
+						}
+						// If there is only a skull, remove users and message from DB
+						else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
+							return removeUsersAndMessages(message, mem, settingsColl);
+						}
+						// If there is a single reaction which is not the Skull, then remove that and react with skull. Repeat process over.
+						else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && !m.reactions.cache.has('☠️')) {
+							await m.reactions.removeAll();
+							return await m.react('☠️');
+						}
+						else {return;}
+					}
+					catch (e) {
+						if (e.code === 10008) {
+							const messageID = e.path.split('/')[4];
+							return await settingsColl.updateOne({ _id: message.guild.id }, {
+								$pull: {
+									'merchChannel.spamProtection': { messageID: messageID },
+								},
+							});
+						}
+						else {return console.error(e);}
 					}
 				});
 
