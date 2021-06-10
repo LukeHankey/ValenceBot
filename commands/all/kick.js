@@ -25,9 +25,9 @@ module.exports = {
 			// Kicking self by ID
 			if (message.author.id === memberToKick) return true;
 			// Kicking owner by Tag
-			if (message.guild.ownerID === mentionedMember.id) return true;
+			if (mentionedMember && message.guild.ownerID === mentionedMember.id) return true;
 			// Kicking self by Tag
-			if (message.author.id === mentionedMember.id) return true;
+			if (mentionedMember && message.author.id === mentionedMember.id) return true;
 		};
 
 		if (!message.guild.me.hasPermission('KICK_MEMBERS')) return message.channel.send('I do not have permission to kick members from this server. I require \`KICK_MEMBERS\` permission.');
