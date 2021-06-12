@@ -21,7 +21,7 @@ module.exports = {
 	run: async (client, message, args, perms, channels) => {
 		const db = getDb();
 		const settings = db.collection('Settings');
-		const { prefix, channels: { adminChannel }, citadel_reset_time: { day, hour, minute, reminders } } = await settings.findOne({ _id: message.guild.id }, { projection: { citadel_reset_time: { day: 1, hour: 1, minute: 1, reminders: 1, scheduled: 1 } } });
+		const { prefix, channels: { adminChannel }, citadel_reset_time: { day, hour, minute, reminders } } = await settings.findOne({ _id: message.guild.id }, { projection: { citadel_reset_time: { day: 1, hour: 1, minute: 1, reminders: 1, scheduled: 1 }, prefix: 1, channels: 1 } });
 		const channelTagCit = [];
 
 		if (args[2] === undefined) {
