@@ -4,6 +4,9 @@ const Discord = require('discord.js');
 const { red_dark, gold, cyan } = require('../../colors.json');
 const getDb = require('../../mongodb').getDb;
 const { checkNum, nextDay, nEmbed, newDates, doubleDigits, checkDate } = require('../../functions.js');
+const functions = require('../../functions.js');
+const boundDD = functions.newDates.bind(functions);
+
 
 /**
  * 733164313744769024 - Test Server
@@ -295,7 +298,7 @@ module.exports = {
 						if (checkDate(args[3], 0, 23)) {
 							if (checkDate(args[4], 0, 59)) {
 								const now = Date.now();
-								const newDate = newDates(args[2], args[3], args[4], now);
+								const newDate = boundDD(args[2], args[3], args[4], now);
 								const dateDay = newDate.split(' ')[0].slice(0, 3);
 								const dateHour = newDate.split(' ')[4].slice(0, 2);
 								const dateMin = newDate.split(' ')[4].slice(3, 5);
@@ -353,32 +356,34 @@ module.exports = {
 									}
 								}
 								else {
-									const updated = await settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { resetInfoCount: 0 } });
-									if (updated.resetInfoCount == 0) {
-										const msg = await client.channels.cache.get(channels.adminChannel).send(infoEmbedOne);
-										await msg.react('✅');
-										await msg.react('❌');
+									const { value } = await settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { resetInfoCount: 0 } });
+									if (value.resetInfoCount == 0) {
+										client.channels.cache.get(value.channels.adminChannel).send(infoEmbedOne)
+											.then(async m => {
+												await m.react('✅');
+												await m.react('❌');
 
-										const tick = (reaction) => reaction.emoji.name === '✅';
-										const cross = (reaction, user) => reaction.emoji.name === '❌' && user.id === message.author.id;
+												const tick = (reaction) => reaction.emoji.name === '✅';
+												const cross = (reaction, user) => reaction.emoji.name === '❌' && user.id === message.author.id;
 
-										const collectorT = msg.createReactionCollector(tick, { time: day });
-										const collectorC = msg.createReactionCollector(cross, { time: day });
+												const collectorT = m.createReactionCollector(tick, { time: day });
+												const collectorC = m.createReactionCollector(cross, { time: day });
 
-										collectorT.on('collect', () => {
-											const userRoles = message.member.roles;
-											if (userRoles.cache.has(updated.roles.modRole.slice(3, 21)) || userRoles.cache.has(updated.roles.adminRole.slice(3, 21))) {return;}
-											else {
-												settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { resetInfoCount: 1, resetInfoTime: message.createdTimestamp } }, { returnOriginal: false });
-											}
-										});
-										collectorC.on('collect', () => {
-											settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { resetInfoCount: 0 } });
-										});
+												collectorT.on('collect', () => {
+													const userRoles = message.member.roles;
+													if (userRoles.cache.has(value.roles.modRole.slice(3, 21)) || userRoles.cache.has(value.roles.adminRole.slice(3, 21))) {return;}
+													else {
+														settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { resetInfoCount: 1, resetInfoTime: message.createdTimestamp } }, { returnOriginal: false });
+													}
+												});
+												collectorC.on('collect', () => {
+													settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { resetInfoCount: 0 } });
+												});
+											});
 										message.delete();
 										message.reply('Thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!');
 									}
-									else if (updated.resetInfoCount === 1) {
+									else if (value.resetInfoCount === 1) {
 										message.channel.send('You can\'t use that command again. Please wait until the next reset!');
 									}
 								}
