@@ -225,35 +225,34 @@ module.exports = {
 				}
 				break;
 			default: {
-				const citRem = [];
 				if (reminders.length === 0) {
 					message.channel.send('You have no citadel reminders set.');
 				}
 				else {
-					message.channel.send(`Current Reminders:\n${citRem.join('')}`);
-				}
-				reminders.forEach(x => {
-					if (x.dayReset === 'reset') {
-						const newDate = boundDD(`${dayCheck.indexOf(x.dayResetPlus) || +x.dayResetPlus}`, +x.hourResetPlus, +x.minResetPlus, resetms);
-						const dateDays = newDate.split(' ')[0].slice(0, 3);
-						const dateHours = newDate.split(' ')[4].slice(0, 2);
-						const dateMins = newDate.split(' ')[4].slice(3, 5);
-						if (reminders.length > 0) {
-							if (x.channel.length > 18) {
-								citRem.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel.slice(2, 20)}>, Date: \`${dateDays} ${dateHours}:${dateMins}\`, Message: ${x.message}\n`);
-							}
-							else {
-								citRem.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel}>, Date: \`${dateDays} ${dateHours}:${dateMins}\`, Message: ${x.message}\n`);
+					const citadelReminders = reminders.map(x => {
+						if (x.dayReset === 'reset') {
+							const newDate = boundDD(`${dayCheck.indexOf(x.dayResetPlus) || +x.dayResetPlus}`, +x.hourResetPlus, +x.minResetPlus, resetms);
+							const dateDays = newDate.split(' ')[0].slice(0, 3);
+							const dateHours = newDate.split(' ')[4].slice(0, 2);
+							const dateMins = newDate.split(' ')[4].slice(3, 5);
+							if (reminders.length > 0) {
+								if (x.channel.length > 18) {
+									return `**ID:** \`${x.id}\`, Channel: <#${x.channel.slice(2, 20)}>, Date: \`${dateDays} ${dateHours}:${dateMins}\`, Message: ${x.message}\n`;
+								}
+								else {
+									return `**ID:** \`${x.id}\`, Channel: <#${x.channel}>, Date: \`${dateDays} ${dateHours}:${dateMins}\`, Message: ${x.message}\n`;
+								}
 							}
 						}
-					}
-					else if (x.channel.length > 18) {
-						citRem.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel.slice(2, 20)}>, Date: \`${dayCheck[day] || day} ${doubleDigits(hour)}:${doubleDigits(minute)}\`, Message: ${x.message}\n`);
-					}
-					else {
-						citRem.push(`**ID:** \`${x.id}\`, Channel: <#${x.channel}>, Date: \`${dayCheck[day] || day} ${doubleDigits(hour)}:${doubleDigits(minute)}\`, Message: ${x.message}\n`);
-					}
-				});
+						else if (x.channel.length > 18) {
+							return `**ID:** \`${x.id}\`, Channel: <#${x.channel.slice(2, 20)}>, Date: \`${dayCheck[day] || day} ${doubleDigits(hour)}:${doubleDigits(minute)}\`, Message: ${x.message}\n`;
+						}
+						else {
+							return `**ID:** \`${x.id}\`, Channel: <#${x.channel}>, Date: \`${dayCheck[day] || day} ${doubleDigits(hour)}:${doubleDigits(minute)}\`, Message: ${x.message}\n`;
+						}
+					});
+					message.channel.send(`Current Reminders:\n${citadelReminders.join('')}`);
+				}
 			}
 				break;
 			}
@@ -264,20 +263,17 @@ module.exports = {
 				if (perms.mod) {
 					if ((checkDate(args[2], 0, 6) || dayCheck.includes(args[2]) || dayCheck[new Date().getUTCDay()].substr(0, 3)) && checkDate(args[3], 0, 23) && checkDate(args[4], 0, 59) && args[2] && args[3] && args[4]) { // Setting reset by Day / Hour / Minute
 						const { value } = await settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { 'citadel_reset_time.day': dayCheck[args[2]] || args[2], 'citadel_reset_time.hour': doubleDigits(args[3]), 'citadel_reset_time.minute': doubleDigits(args[4]) } }, { returnOriginal: true });
-						console.log(`Reset set: ${dayCheck[args[2]] || args[2]} ${doubleDigits(args[3])}:${doubleDigits(args[4])}`);
 						message.channel.send(`The Citadel Reset Time has been changed to: ${dayCheck[args[2]] || args[2]} ${doubleDigits(args[3])}:${doubleDigits(args[4])}`);
 						channels.logs.send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.guild.name}**\n\`\`\`diff\n- ${value.citadel_reset_time.day} ${value.citadel_reset_time.hour}:${value.citadel_reset_time.minute}\n+ ${dayCheck[args[2]] || args[2]} ${doubleDigits(args[3])}:${doubleDigits(args[4])} \`\`\``);
 					}
 					else if (checkDate(args[2], 0, 23) && checkDate(args[3], 0, 59) && args[2] && args[3]) { // Setting by Hour / Minute
 						const { value } = await settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { 'citadel_reset_time.hour': doubleDigits(args[2]), 'citadel_reset_time.minute': doubleDigits(args[3]) } }, { returnOriginal: true });
-						console.log(`Reset set: ${dayCheck[value.citadel_reset_time.day] || value.citadel_reset_time.day} ${doubleDigits(args[2])}:${doubleDigits(args[3])}`);
 						message.channel.send(`The Citadel Reset Time has been changed to: ${dayCheck[value.citadel_reset_time.day] || value.citadel_reset_time.day} ${doubleDigits(args[2])}:${doubleDigits(args[3])}`);
 						channels.logs.send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.guild.name}**\n\`\`\`diff\n- ${value.citadel_reset_time.day} ${value.citadel_reset_time.hour}:${value.citadel_reset_time.minute}\n+ ${dayCheck[value.citadel_reset_time.day] || value.citadel_reset_time.day} ${doubleDigits(args[2])}:${doubleDigits(args[3])}\`\`\``);
 					}
 					// eslint-disable-next-line no-octal
 					else if (checkDate(args[2], 00, 59) && args[2]) { // Setting by Minute
 						const { value } = await settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { 'citadel_reset_time.minute': doubleDigits(args[2]) } }, { returnOriginal: true });
-						console.log(`Reset set: ${dayCheck[value.citadel_reset_time.day] || value.citadel_reset_time.day} ${doubleDigits(value.citadel_reset_time.hour)}:${doubleDigits(args[2])}`);
 						message.channel.send(`The Citadel Reset Time has been changed to: ${dayCheck[value.citadel_reset_time.day] || value.citadel_reset_time.day} ${doubleDigits(value.citadel_reset_time.hour)}:${doubleDigits(args[2])}`);
 						channels.logs.send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.guild.name}**\n\`\`\`diff\n- ${value.citadel_reset_time.day} ${value.citadel_reset_time.hour}:${value.citadel_reset_time.minute}\n+ ${dayCheck[value.citadel_reset_time.day] || value.citadel_reset_time.day} ${doubleDigits(value.citadel_reset_time.hour)}:${doubleDigits(args[2])}\`\`\``);
 					}
