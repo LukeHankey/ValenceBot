@@ -3,7 +3,7 @@
 const Discord = require('discord.js');
 const { red_dark, gold, cyan } = require('../../colors.json');
 const getDb = require('../../mongodb').getDb;
-const { checkNum, nextDay, nEmbed, newDates, doubleDigits, checkDate } = require('../../functions.js');
+const { checkNum, nextDay, nEmbed, doubleDigits, checkDate } = require('../../functions.js');
 const functions = require('../../functions.js');
 const boundDD = functions.newDates.bind(functions);
 
@@ -67,7 +67,7 @@ module.exports = {
 								const totalCheck = (dateDay.slice(0, dateDay.indexOf('d')) * oneDay) + (dateHour.slice(0, dateHour.indexOf('h')) * oneHour) + (dateMin.slice(1, dateMin.length - 1) * oneMinute);
 								const totalms = 604800000;
 
-								const newDate = newDates(dateDay.slice(0, dateDay.indexOf('d')), dateHour.slice(0, dateHour.indexOf('h')), dateMin.slice(1, dateMin.length - 1), resetms);
+								const newDate = boundDD(dateDay.slice(0, dateDay.indexOf('d')), dateHour.slice(0, dateHour.indexOf('h')), dateMin.slice(1, dateMin.length - 1), resetms);
 
 								if (dayChecks && hourCheck && minCheck && +totalCheck < totalms && newDate.split(' ')[4] !== undefined) {
 									const dateDays = newDate.split(' ')[0].slice(0, 3);
@@ -112,7 +112,7 @@ module.exports = {
 								const totalCheck = (dateDay.slice(0, dateDay.indexOf('d')) * oneDay) + (dateHour.slice(0, dateHour.indexOf('h')) * oneHour) + (dateMin.slice(1, dateMin.length - 1) * oneMinute);
 								const totalms = 604800000;
 
-								const newDate = newDates(dateDay.slice(0, dateDay.indexOf('d')), dateHour.slice(0, dateHour.indexOf('h')), dateMin.slice(1, dateMin.length - 1), resetms);
+								const newDate = boundDD(dateDay.slice(0, dateDay.indexOf('d')), dateHour.slice(0, dateHour.indexOf('h')), dateMin.slice(1, dateMin.length - 1), resetms);
 
 								if (dayChecks && hourCheck && minCheck && +totalCheck < totalms && newDate.split(' ')[4] !== undefined) {
 									const dateDays = newDate.split(' ')[0].slice(0, 3);
@@ -234,7 +234,7 @@ module.exports = {
 				}
 				reminders.forEach(x => {
 					if (x.dayReset === 'reset') {
-						const newDate = newDates(`${dayCheck.indexOf(x.dayResetPlus) || +x.dayResetPlus}`, +x.hourResetPlus, +x.minResetPlus, resetms);
+						const newDate = boundDD(`${dayCheck.indexOf(x.dayResetPlus) || +x.dayResetPlus}`, +x.hourResetPlus, +x.minResetPlus, resetms);
 						const dateDays = newDate.split(' ')[0].slice(0, 3);
 						const dateHours = newDate.split(' ')[4].slice(0, 2);
 						const dateMins = newDate.split(' ')[4].slice(3, 5);
