@@ -171,7 +171,7 @@ module.exports = async (client, reaction, user) => {
 								const grabMember = message.guild.members.cache.get(log.id);
 								settingsColl.findOneAndUpdate({ _id: message.guild.id }, { $pull: { 'merchChannel.spamProtection': { users: { $elemMatch: { id: log.id } } } } });
 								const bansChannel = message.guild.channels.cache.get('624655664920395786');
-								bansChannel.send(`${grabMember.nickname ?? grabMember.user.username} kicked for spam reacting at least ${log.count} times.`)
+								bansChannel.send(`${grabMember?.nickname ?? grabMember.user.username} kicked for spam reacting at least ${log.count} times.`)
 								grabMember.kick(`Spamming reactions (${log.count})`);
 							}
 						});
