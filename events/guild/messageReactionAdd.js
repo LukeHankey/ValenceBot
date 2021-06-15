@@ -1,5 +1,4 @@
 /* eslint-disable no-shadow */
-/* eslint-disable max-nested-callbacks */
 const getDb = require('../../mongodb').getDb;
 const { MessageEmbed } = require('discord.js');
 const cron = require('node-cron');
@@ -76,114 +75,110 @@ module.exports = async (client, reaction, user) => {
 					username: user.username,
 					count: 1,
 					reactions: [{
-						emoji: reaction.emoji.name || reaction.reactionEmoji.name,
+						emoji: reaction.emoji.name,
 						count: 1,
 					}],
+					messageID: message.id,
 				};
 				// Logging reaction timestamps
 				console.log('Reaction added:', `MessageID: ${message.id}`, `By: ${user.username} (${user.id})`, `Reaction: ${reaction.emoji.toString() || reaction.reactionEmoji.toString()} | ${reaction.emoji.name || reaction.reactionEmoji.name} `, `${new Date(Date.now()).toString().split(' ').slice(0, -4).join(' ')} ${(new Date(Date.now()).getMilliseconds())}`);
 				if (blocked) return;
 
-				// Adding users to the DB + counts
-				spamProtection.map(async msg => {
-					if (msg.userID === '668330399033851924') {
-						settingsColl.findOneAndUpdate({ _id: message.guild.id }, {
-							$pull: {
-								'merchChannel.spamProtection': { userID: '668330399033851924' },
+				// Getting an array of users that reacted to the same message
+				const spamUsersDB = spamProtection.flatMap(msg => {
+					if (message.id === msg.messageID) {
+						return msg.users;
+					}
+				}).filter(valid => valid);
+
+				// If there are some members AND no members that match the member who reacted, add them, OR if there are no members at all, add the first one.
+				if ((spamUsersDB.length && !spamUsersDB.some(obj => obj.id === user.id)) || !spamUsersDB.length) {
+					await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': message.id }, {
+						$addToSet: {
+							'merchChannel.spamProtection.$.users': {
+								$each: [
+									newUser,
+								],
 							},
+						},
+					});
+				}
+				else {
+					const match = spamUsersDB.filter(obj => obj.id === user.id);
+
+					// True if reaction has been added in DB before
+					const existingReactions = match[0].reactions.some(reactValue => {
+						if (reactValue.emoji == reaction.emoji.name) {return true;}
+						else { return false; }
+					});
+
+					if (existingReactions) {
+						await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.users.id': match[0].id }, {
+							$inc: {
+								'merchChannel.spamProtection.$.users.$[userObj].reactions.$[reaction].count': 1,
+								'merchChannel.spamProtection.$.users.$[userObj].count': 1,
+							},
+						}, {
+							arrayFilters: [
+								{ $and: [{ 'reaction.count': { $gte: 0 } }, { 'reaction.emoji': reaction.emoji.name }] },
+								{ $and: [{ 'userObj.count': { $gte: 0 } }, { 'userObj.id': match[0].id }] },
+							],
 						});
 					}
-					if (message.id === msg.messageID) {
-						const dbReactions = await spamProtection.filter(m => m.messageID === msg.messageID);
-						const spamUsersDB = dbReactions.flatMap(u => u.users);
-
-						// If there are no members added or none that match the member who reacted, add them.
-						if (!spamUsersDB.length || !spamUsersDB.some(obj => obj.id === user.id)) {
-							await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': msg.messageID }, {
+					else {
+						// If reaction not added to DB, add it.
+						await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.users.id': match[0].id }, {
+							$inc: {
+								'merchChannel.spamProtection.$.users.$[userObj].count': 1,
+							},
+							$addToSet: {
+								'merchChannel.spamProtection.$.users.$[userObj].reactions': {
+									$each: [{ emoji: reaction.emoji.name, count: 1 }],
+								},
+							},
+						}, {
+							arrayFilters: [
+								{ $and: [{ 'userObj.count': { $gte: 0 }, 'userObj.id': match[0].id }] },
+							],
+						});
+					}
+				}
+				// Remove duplicates
+				const [ moreThanOne ] = compressArray(spamUsersDB.map(obj => obj.id));
+				if (moreThanOne && moreThanOne.count > 1) {
+					const individual = spamUsersDB.find(obj => obj.id === moreThanOne.value);
+					await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': message.id },
+						{ $pull: {
+							'merchChannel.spamProtection.$.users': { id: moreThanOne.value },
+						},
+						})
+						.then(async () => {
+							await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': message.id }, {
 								$addToSet: {
 									'merchChannel.spamProtection.$.users': {
 										$each: [
-											newUser,
+											individual,
 										],
 									},
 								},
 							});
-						}
-						// Remove duplicates
-						const [ moreThanOne ] = compressArray(spamUsersDB.map(obj => obj.id));
-						if (moreThanOne && moreThanOne.count > 1) {
-							const individual = spamUsersDB.find(obj => obj.id === moreThanOne.value);
-							await settingsColl.updateOne({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': message.id },
-								{ $pull: {
-									'merchChannel.spamProtection.$.users': { id: moreThanOne.value },
-								},
-								})
-								.then(async () => {
-									await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': msg.messageID }, {
-										$addToSet: {
-											'merchChannel.spamProtection.$.users': {
-												$each: [
-													individual,
-												],
-											},
-										},
-									});
-								});
-						}
-
-						if (!spamUsersDB.length) return;
-						const match = spamUsersDB.filter(obj => obj?.id === user.id);
-
-						// False if reaction has not been added in DB before
-						const [existingReactions] = spamUsersDB.map(obj => obj?.reactions.some(e => [e.emoji].includes(reaction.emoji.name)));
-
-						if (existingReactions) {
-							await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.users': match[0] }, {
-								$inc: {
-									'merchChannel.spamProtection.$.users.$[userObj].reactions.$[reaction].count': 1,
-									'merchChannel.spamProtection.$.users.$[userObj].count': 1,
-								},
-							}, {
-								arrayFilters: [{ 'reaction.count': { $gte: 0 }, 'reaction.emoji': reaction.emoji.name }, { 'userObj.count': { $gte: 0 }, 'userObj.id': user.id }],
-							});
-						}
-						else {
-							// More than 1 reaction, add to the DB
-							await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.users': match[0] }, {
-								$inc: {
-									'merchChannel.spamProtection.$.users.$[userObj].count': 1,
-								},
-								$addToSet: {
-									'merchChannel.spamProtection.$.users.$[userObj].reactions': {
-										$each: [{ emoji: reaction.emoji.name, count: 1 }],
-									},
-								},
-							}, {
-								arrayFilters: [{ 'userObj.count': { $gte: 0 }, 'userObj.id': user.id }],
-							});
-						}
-						/**
-					 * Check each object for it's users. If any user.count > 10, kick + send message
-					 */
-						spamUsersDB.forEach(log => {
-							if (log.count >= 10) {
-								console.log(log);
-								const grabMember = message.guild.members.cache.get(log.id);
-								settingsColl.findOneAndUpdate({ _id: message.guild.id }, { $pull: { 'merchChannel.spamProtection': { users: { $elemMatch: { id: log.id } } } } });
-								const bansChannel = message.guild.channels.cache.get('624655664920395786');
-								bansChannel.send(`${grabMember?.nickname ?? grabMember.user.username} kicked for spam reacting at least ${log.count} times.`)
-								grabMember.kick(`Spamming reactions (${log.count})`);
-							}
 						});
+				}
 
+				const bansChannel = message.guild.channels.cache.get('624655664920395786');
+				spamUsersDB.forEach(log => {
+					if (log.count >= 10) {
+						const grabMember = message.guild.members.cache.get(log.id);
+						settingsColl.findOneAndUpdate({ _id: message.guild.id }, { $pull: { 'merchChannel.spamProtection': { users: { $elemMatch: { id: log.id } } } } });
+						bansChannel.send(`${grabMember?.nickname ?? grabMember?.user.username} kicked for spam reacting at least ${log.count} times.`);
+						grabMember.kick(`Spamming reactions (${log.count})`);
 					}
 				});
 
-				// Go through all messages in DB and get the members who are below the threshold in each message
-				pagination.membersBelowThreshold.map(async mem => {
-					const channel = client.channels.cache.get(channelID);
+				const merchChannelID = client.channels.cache.get(channelID);
+				spamUsersDB.forEach(async ({ id, messageID }) => {
 					try {
-						const m = await channel.messages.fetch(mem.msg);
+						const m = await merchChannelID.messages.fetch(messageID);
 
 						// Remove all reactions if there is > 1 or 0. Then add a skull.
 						if (Date.now() - m.createdTimestamp >= 3600000 && (m.reactions.cache.size > 1 || m.reactions.cache.size === 0)) {
@@ -192,7 +187,9 @@ module.exports = async (client, reaction, user) => {
 						}
 						// If there is only a skull, remove users and message from DB
 						else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
-							return removeUsersAndMessages(message, mem, settingsColl);
+							removeUsersAndMessages(message, { member: { id }, msg: messageID }, settingsColl);
+							await m.reactions.removeAll();
+							return await m.react('☠️');
 						}
 						// If there is a single reaction which is not the Skull, then remove that and react with skull. Repeat process over.
 						else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && !m.reactions.cache.has('☠️')) {

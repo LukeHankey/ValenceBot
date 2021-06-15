@@ -343,7 +343,7 @@ class Paginate {
 	}
 
 	get membersBelowThreshold() {
-		return this.database.merchChannel.spamProtection.map(obj => {
+		return this.database.merchChannel.spamProtection.flatMap(obj => {
 			if (!obj.users.length) {
 				return { member: { id: null, usernmae: null }, msg: obj.messageID };
 			}
@@ -353,7 +353,7 @@ class Paginate {
 				return { member: { id: u.id, usernmae: u.username }, msg: obj.messageID };
 				// }
 			}).filter(o => o);
-		}).filter(o => o).flat();
+		}).filter(o => o);
 	}
 
 	get users() {
