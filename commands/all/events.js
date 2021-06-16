@@ -41,7 +41,7 @@ module.exports = {
 				}).filter(x => x);
 				console.log(info, checkEventExists[0]);
 
-				const calChannel = message.guild.channels.cache.get(data.channels.calendar);
+				const calChannel = message.guild.channels.cache.find((ch) => ch.name === 'calendar');
 				calChannel.messages.fetch(info[0].msg)
 					.then(fetched => {
 						const fields = fetched.embeds[0].fields;
@@ -66,7 +66,7 @@ module.exports = {
 
 				const fetchedMessage = await fetchedChannel.messages.fetch(checkEventExists[0].message).catch((e) => { return channels.errors.send('Unable to fetch message from the event channel when ending an event.', e);});
 				await settings.updateOne({ _id: message.guild.id }, { $pull: { events: { eventTag: tag } } });
-				await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': new Date(fetchedMessage.createdTimestamp).toLocaleString('default', { month: 'long' }) }, { $pull: { 'calendarID.$.events': { messageID: message.id } } });
+				await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': new Date(fetchedMessage.createdTimestamp).toLocaleString('default', { month: 'long' }) }, { $pull: { 'calendarID.$.events': { messageID: checkEventExists[0].message } } });
 				await message.guild.roles.fetch(checkEventExists[0].role).then(r => r.delete());
 				fetchedMessage.reactions.removeAll();
 				return message.react('✅');
