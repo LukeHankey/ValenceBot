@@ -1,6 +1,6 @@
 const Discord = require('discord.js');
 const colors = require('../../colors.json');
-const { capitalise, checkNum, randomNum } = require('../../functions.js');
+const { capitalise, checkNum, randomNum, removeEvents } = require('../../functions.js');
 const { getDb } = require('../../mongodb');
 
 /**
@@ -22,6 +22,8 @@ module.exports = {
 		}
 		const db = getDb();
 		const settings = db.collection('Settings');
+		const data = await settings.findOne({ _id: message.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } });
+
 
 		const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 		const monthIndex = (new Date()).getUTCMonth();
@@ -80,88 +82,26 @@ module.exports = {
 				return message.channel.send(perms.errorA);
 			}
 			break;
-		case 'add':
-			settings.findOne({ _id: message.guild.id }).then(async (r) => {
-				const monthInc = r.calendarID.filter((obj) => (obj.month.toLowerCase() === args[1].toLowerCase() || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase()) && obj.year === new Date().getUTCFullYear());
-				const slicer = (words, textArray) => {
-					const length = words[0].length + 2;
-					const trimString = textArray.join(' ');
+		case 'add': {
+			const monthInc = data.calendarID.filter((obj) => (obj.month.toLowerCase() === args[1].toLowerCase() || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase()) && obj.year === new Date().getUTCFullYear());
+			const slicer = (words, textArray) => {
+				const length = words[0].length + 2;
+				const trimString = textArray.join(' ');
 
-					const regMatch = (num) => {
-						const string = `${words[num]}:`;
-						return new RegExp(string, 'i');
-					};
-
-					return trimString.slice(trimString.match(regMatch(0)).index + length, trimString.match(regMatch(1)).index - 1);
+				const regMatch = (num) => {
+					const string = `${words[num]}:`;
+					return new RegExp(string, 'i');
 				};
-				if (monthInc && monthInc.length !== 0) {
-					if (args[1].toLowerCase() === monthInc[0].month.toLowerCase() || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
-						// Adding to a specified month \\
-						try {
-							const [...rest] = args.slice(2);
 
-							const m = await message.channel.messages.fetch(monthInc[0].messageID);
-							const date = slicer(['date', 'event'], rest);
-							const event = slicer(['event', 'time'], rest);
-							const time = slicer(['time', 'announcement'], rest);
-							const link = slicer(['announcement', 'host'], rest);
-							const hostCollection = message.mentions.members.keyArray().map((id) => `<@${id}>`);
-							const host = hostCollection.join(' ') || message.mentions.roles.first();
-
-
-							if (!date || !event || !time || !link || !host || !link.includes('discord')) {
-								message.channel.send(`Please provide the content that you would like to add to the calendar. Acceptable format below:\n${code}\nDate: 21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include Date: / Event: / Time: / Announcement: / Host:${code}`);
-							}
-							else {
-								const editEmbed = new Discord.MessageEmbed(m.embeds[0]);
-								if (args[2] !== 'Date:' && checkNum(args[2], 1)) {
-									editEmbed.spliceFields(args[2] - 1, 0, { name: date, value: `Event: ${event}\nTime: ${time}\n[Announcement](${link})\nHost: ${host}` });
-									m.edit(editEmbed);
-								}
-								else {
-									editEmbed.addFields(
-										{ name: date, value: `Event: ${event}\nTime: ${time}\n[Announcement](${link})\nHost: ${host}` },
-									);
-									m.edit(editEmbed);
-								}
-								message.delete();
-								const newRole = await message.guild.roles.create({ data: {
-									name: event.concat(` #${randomNum()}`),
-								} });
-								await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': monthInc[0].month }, { $push: { 'calendarID.$.events': { messageID: link.split('/')[6], title: event, eventTag: newRole.name.slice(event.length + 2) } } });
-								await settings.updateOne({ _id: message.guild.id }, { $push: { events: { title: event, messageID: link.split('/')[6], roleID: newRole.id, eventTag: newRole.name.slice(event.length + 2), date: new Date(), members: [] } } });
-								channels.logs.send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
-							}
-						}
-						catch (err) {
-							if (calChannel.id !== message.channel.id) {
-								message.channel.send('Try again in the <#626172209051860992> channel.');
-							}
-							else if (err.message === 'Unknown Message') {
-								return message.channel.send(`Calendar not found. - It may have been deleted. Attempting to remove all calendars for the month of ${args[1]}...`)
-									.then((mes) => {
-										settings.findOne({ _id: message.guild.id })
-											.then(async (re) => {
-												const mObj = await re.calendarID.filter((x) => x.month === args[1]);
-												const mID = mObj[mObj.length - 1].messageID;
-
-												settings.findOneAndUpdate({ _id: message.guild.id }, { $pull: { calendarID: { month: args[1] } } });
-												message.channel.messages.fetch(mID)
-													.then((m) => m.delete());
-											});
-										setTimeout(() => {
-											mes.edit(`Calendars for ${args[1]} have been removed. Recreate a new calendar.`);
-										}, 5000);
-									});
-							}
-						}
-					}
-				}
-				else {
-					const currentMonthMessage = r.calendarID.filter((obj) => obj.year === new Date().getUTCFullYear() && obj.month === currentMonth);
+				return trimString.slice(trimString.match(regMatch(0)).index + length, trimString.match(regMatch(1)).index - 1);
+			};
+			if (monthInc && monthInc.length !== 0) {
+				if (args[1].toLowerCase() === monthInc[0].month.toLowerCase() || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
+					// Adding to a specified month \\
 					try {
-						const [...rest] = args.slice(1);
-						const m = await message.channel.messages.fetch(currentMonthMessage[0].messageID);
+						const [...rest] = args.slice(2);
+
+						const m = await message.channel.messages.fetch(monthInc[0].messageID);
 						const date = slicer(['date', 'event'], rest);
 						const event = slicer(['event', 'time'], rest);
 						const time = slicer(['time', 'announcement'], rest);
@@ -169,13 +109,14 @@ module.exports = {
 						const hostCollection = message.mentions.members.keyArray().map((id) => `<@${id}>`);
 						const host = hostCollection.join(' ') || message.mentions.roles.first();
 
-						if (!date || !event || !time || !link || !host) {
+
+						if (!date || !event || !time || !link || !host || !link.includes('discord')) {
 							message.channel.send(`Please provide the content that you would like to add to the calendar. Acceptable format below:\n${code}\nDate: 21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include Date: / Event: / Time: / Announcement: / Host:${code}`);
 						}
 						else {
 							const editEmbed = new Discord.MessageEmbed(m.embeds[0]);
-							if (args[1] !== 'Date:' && checkNum(args[1], 1)) {
-								editEmbed.spliceFields(args[1] - 1, 0, { name: date, value: `Event: ${event}\nTime: ${time}\n[Announcement](${link})\nHost: ${host}` });
+							if (args[2] !== 'Date:' && checkNum(args[2], 1)) {
+								editEmbed.spliceFields(args[2] - 1, 0, { name: date, value: `Event: ${event}\nTime: ${time}\n[Announcement](${link})\nHost: ${host}` });
 								m.edit(editEmbed);
 							}
 							else {
@@ -188,7 +129,7 @@ module.exports = {
 							const newRole = await message.guild.roles.create({ data: {
 								name: event.concat(` #${randomNum()}`),
 							} });
-							await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': currentMonthMessage[0].month }, { $push: { 'calendarID.$.events': { messageID: link.split('/')[6], title: event, eventTag: newRole.name.slice(event.length + 2) } } });
+							await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': monthInc[0].month }, { $push: { 'calendarID.$.events': { messageID: link.split('/')[6], title: event, eventTag: newRole.name.slice(event.length + 2) } } });
 							await settings.updateOne({ _id: message.guild.id }, { $push: { events: { title: event, messageID: link.split('/')[6], roleID: newRole.id, eventTag: newRole.name.slice(event.length + 2), date: new Date(), members: [] } } });
 							channels.logs.send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
 						}
@@ -198,178 +139,240 @@ module.exports = {
 							message.channel.send('Try again in the <#626172209051860992> channel.');
 						}
 						else if (err.message === 'Unknown Message') {
-							return message.channel.send(`Calendar not found. - It may have been deleted. Attempting to remove all calendars for the month of ${currentMonth}...`)
+							return message.channel.send(`Calendar not found. - It may have been deleted. Attempting to remove all calendars for the month of ${args[1]}...`)
 								.then((mes) => {
-									settings.findOne({ _id: message.guild.id })
-										.then(async (re) => {
-											const mObj = await re.calendarID.filter((x) => x.month === currentMonth);
-											const mID = mObj[mObj.length - 1].messageID;
+									const mObj = data.calendarID.filter((x) => x.month === args[1]);
+									const mID = mObj[mObj.length - 1].messageID;
 
-											settings.findOneAndUpdate({ _id: message.guild.id }, { $pull: { calendarID: { month: currentMonth } } });
-											message.channel.messages.fetch(mID)
-												.then((m) => m.delete());
-										});
+									settings.findOneAndUpdate({ _id: message.guild.id }, { $pull: { calendarID: { month: args[1] } } });
+									message.channel.messages.fetch(mID)
+										.then((m) => m.delete());
 									setTimeout(() => {
-										mes.edit(`Calendars for ${currentMonth} have been removed. Recreate a new calendar.`);
+										mes.edit(`Calendars for ${args[1]} have been removed. Recreate a new calendar.`);
 									}, 5000);
 								});
 						}
 					}
 				}
-			});
-			break;
-		case 'edit':
-			settings.findOne({ _id: message.guild.id }).then(async (r) => {
-				const monthInc = r.calendarID.filter((obj) => obj.month === args[1] || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase());
-				// Editing a specific month \\
-				if (monthInc && monthInc.length !== 0) {
-					if (args[1].toLowerCase() === monthInc[0].month.toLowerCase() || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
-						const [...rest] = args.slice(3);
-						const fieldParams = ['date:', 'event:', 'time:', 'announcement:', 'host:'];
-						const parameter = fieldParams.indexOf(args[3].toLowerCase());
+			}
+			else {
+				const currentMonthMessage = data.calendarID.filter((obj) => obj.year === new Date().getUTCFullYear() && obj.month === currentMonth);
+				try {
+					const [...rest] = args.slice(1);
+					const m = await message.channel.messages.fetch(currentMonthMessage[0].messageID);
+					const date = slicer(['date', 'event'], rest);
+					const event = slicer(['event', 'time'], rest);
+					const time = slicer(['time', 'announcement'], rest);
+					const link = slicer(['announcement', 'host'], rest);
+					const hostCollection = message.mentions.members.keyArray().map((id) => `<@${id}>`);
+					const host = hostCollection.join(' ') || message.mentions.roles.first();
 
-						try {
-							const editE = await message.channel.messages.fetch(monthInc[0].messageID);
-							const n = new Discord.MessageEmbed(editE.embeds[0]);
-
-							const fields = n.fields[args[2] - 1];
-							if (fieldParams.includes(args[3].toLowerCase())) {
-								if (fieldParams[0] === rest[0].toLowerCase()) {
-									n.spliceFields(args[2] - 1, 1, { name: rest.slice(1).join(' '), value: fields.value });
-									editE.edit(n);
-								}
-								else if (fieldParams[parameter] === rest[0].toLowerCase() && rest[0].toLowerCase() !== fieldParams[0]) {
-									const values = fields.value.split('\n');
-									let newValue = ` ${rest.slice(1).join(' ')}`;
-									if (fieldParams[parameter] !== fieldParams[3]) {
-										const value = values.filter((val) => val.toLowerCase().includes(fieldParams[parameter]));
-										// eslint-disable-next-line no-inline-comments
-										const fieldValue = value.join(' ').split(`${capitalise(fieldParams[parameter])}`); // Doesn't work for announcement
-										n.spliceFields(args[2] - 1, 1, { name: fields.name, value: fields.value.replace(fieldValue[1], newValue) });
-										editE.edit(n);
-									}
-									else {
-										const annVal = values[2].split('](');
-										newValue = ` ${rest.slice(1).join(' ')})`;
-										n.spliceFields(args[2] - 1, 1, { name: fields.name, value: fields.value.replace(annVal[1], newValue) });
-										editE.edit(n);
-									}
-								}
-								message.delete();
-								channels.logs.send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
-							}
-							else {
-								message.channel.send(`You must provide the event number you want to edit as well as the field. Examples: ${code}1 Time: 14:00 - 15:00. - Gets the 1st event and edits the Time field to the new value.\n3 Date: 5th. - Gets the 3rd event and edits the Date field to the new value.${code}`);
-							}
-						}
-						catch (err) {
-							if (err.code === 10008) message.channel.send('Try again in the <#626172209051860992> channel.');
-						}
-					}
-				}
-				else {
-					const currentMonthMessage = r.calendarID.filter((obj) => obj.month === currentMonth);
-					const [...rest] = args.slice(2);
-					const fieldParams = ['date:', 'event:', 'time:', 'announcement:', 'host:'];
-					const parameter = fieldParams.indexOf(args[2].toLowerCase());
-
-					const editE = await message.channel.messages.fetch(currentMonthMessage[0].messageID)
-						.catch(() => message.channel.send('Try again in the <#626172209051860992> channel.'));
-					const n = new Discord.MessageEmbed(editE.embeds[0]);
-
-					const fields = n.fields[args[1] - 1];
-					if (fieldParams.includes(args[2].toLowerCase())) {
-						if (fieldParams[0] === rest[0].toLowerCase()) {
-							n.spliceFields(args[1] - 1, 1, { name: rest.slice(1).join(' '), value: fields.value });
-							editE.edit(n);
-						}
-						else if (fieldParams[parameter] === rest[0].toLowerCase() && rest[0].toLowerCase() !== fieldParams[0]) {
-							const values = fields.value.split('\n');
-							let newValue = ` ${rest.slice(1).join(' ')}`;
-							if (fieldParams[parameter] !== fieldParams[3]) {
-								const value = values.filter((val) => val.toLowerCase().includes(fieldParams[parameter]));
-								// eslint-disable-next-line no-inline-comments
-								const fieldValue = value.join(' ').split(`${capitalise(fieldParams[parameter])}`); // Doesn't work for announcement
-								n.spliceFields(args[1] - 1, 1, { name: fields.name, value: fields.value.replace(fieldValue[1], newValue) });
-								editE.edit(n);
-							}
-							else {
-								const annVal = values[2].split('](');
-								newValue = ` ${rest.slice(1).join(' ')})`;
-								n.spliceFields(args[1] - 1, 1, { name: fields.name, value: fields.value.replace(annVal[1], newValue) });
-								editE.edit(n);
-							}
-						}
-						message.delete();
-						channels.logs.send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
+					if (!date || !event || !time || !link || !host) {
+						message.channel.send(`Please provide the content that you would like to add to the calendar. Acceptable format below:\n${code}\nDate: 21st - 24th Event: New Event! Time: 22:00 - 23:00 Announcement: <link> Host: @<member or role>\n\nNOTE: You must include Date: / Event: / Time: / Announcement: / Host:${code}`);
 					}
 					else {
-						message.channel.send(`You must provide the event number you want to edit as well as the field. Examples: ${code}1 Time: 14:00 - 15:00. - Gets the 1st event and edits the Time field to the new value.\n3 Date: 5th. - Gets the 3rd event and edits the Date field to the new value.${code}`);
+						const editEmbed = new Discord.MessageEmbed(m.embeds[0]);
+						if (args[1] !== 'Date:' && checkNum(args[1], 1)) {
+							editEmbed.spliceFields(args[1] - 1, 0, { name: date, value: `Event: ${event}\nTime: ${time}\n[Announcement](${link})\nHost: ${host}` });
+							m.edit(editEmbed);
+						}
+						else {
+							editEmbed.addFields(
+								{ name: date, value: `Event: ${event}\nTime: ${time}\n[Announcement](${link})\nHost: ${host}` },
+							);
+							m.edit(editEmbed);
+						}
+						message.delete();
+						const newRole = await message.guild.roles.create({ data: {
+							name: event.concat(` #${randomNum()}`),
+						} });
+						await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': currentMonthMessage[0].month }, { $push: { 'calendarID.$.events': { messageID: link.split('/')[6], title: event, eventTag: newRole.name.slice(event.length + 2) } } });
+						await settings.updateOne({ _id: message.guild.id }, { $push: { events: { title: event, messageID: link.split('/')[6], roleID: newRole.id, eventTag: newRole.name.slice(event.length + 2), date: new Date(), members: [] } } });
+						channels.logs.send(`Calendar updated - ${message.author} added an event: ${code}${message.content}${code}`);
 					}
 				}
-			});
+				catch (err) {
+					if (calChannel.id !== message.channel.id) {
+						message.channel.send('Try again in the <#626172209051860992> channel.');
+					}
+					else if (err.message === 'Unknown Message') {
+						return message.channel.send(`Calendar not found. - It may have been deleted. Attempting to remove all calendars for the month of ${currentMonth}...`)
+							.then((mes) => {
+								const mObj = data.calendarID.filter((x) => x.month === currentMonth);
+								const mID = mObj[mObj.length - 1].messageID;
+
+								settings.findOneAndUpdate({ _id: message.guild.id }, { $pull: { calendarID: { month: currentMonth } } });
+								message.channel.messages.fetch(mID)
+									.then((m) => m.delete());
+								setTimeout(() => {
+									mes.edit(`Calendars for ${currentMonth} have been removed. Recreate a new calendar.`);
+								}, 5000);
+							});
+					}
+				}
+			}
+		}
 			break;
-		case 'remove':
-			settings.findOne({ _id: message.guild.id }).then(async (r) => {
-				const monthInc = r.calendarID.filter((obj) => obj.month === args[1] || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase());
-				if (monthInc && monthInc.length !== 0) {
-					if (args[1] === monthInc[0].month || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
-						const removeE = await message.channel.messages.fetch(monthInc[0].messageID)
-							.catch(() => message.channel.send('Try again in the <#626172209051860992> channel.'));
-						const n = new Discord.MessageEmbed(removeE.embeds[0]);
+		case 'edit': {
+			const monthInc = data.calendarID.filter((obj) => obj.month === args[1] || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase());
+			// Editing a specific month \\
+			if (monthInc && monthInc.length !== 0) {
+				if (args[1].toLowerCase() === monthInc[0].month.toLowerCase() || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
+					const [...rest] = args.slice(3);
+					const fieldParams = ['date:', 'event:', 'time:', 'announcement:', 'host:'];
+					const parameter = fieldParams.indexOf(args[3].toLowerCase());
+
+					try {
+						const editE = await message.channel.messages.fetch(monthInc[0].messageID);
+						const n = new Discord.MessageEmbed(editE.embeds[0]);
+
+						const fields = n.fields[args[2] - 1];
+						if (fieldParams.includes(args[3].toLowerCase())) {
+							if (fieldParams[0] === rest[0].toLowerCase()) {
+								n.spliceFields(args[2] - 1, 1, { name: rest.slice(1).join(' '), value: fields.value });
+								editE.edit(n);
+							}
+							else if (fieldParams[parameter] === rest[0].toLowerCase() && rest[0].toLowerCase() !== fieldParams[0]) {
+								const values = fields.value.split('\n');
+								let newValue = ` ${rest.slice(1).join(' ')}`;
+								if (fieldParams[parameter] !== fieldParams[3]) {
+									const value = values.filter((val) => val.toLowerCase().includes(fieldParams[parameter]));
+									// eslint-disable-next-line no-inline-comments
+									const fieldValue = value.join(' ').split(`${capitalise(fieldParams[parameter])}`); // Doesn't work for announcement
+									n.spliceFields(args[2] - 1, 1, { name: fields.name, value: fields.value.replace(fieldValue[1], newValue) });
+									editE.edit(n);
+								}
+								else {
+									const annVal = values[2].split('](');
+									newValue = ` ${rest.slice(1).join(' ')})`;
+									n.spliceFields(args[2] - 1, 1, { name: fields.name, value: fields.value.replace(annVal[1], newValue) });
+									editE.edit(n);
+								}
+							}
+							message.delete();
+							channels.logs.send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
+						}
+						else {
+							message.channel.send(`You must provide the event number you want to edit as well as the field. Examples: ${code}1 Time: 14:00 - 15:00. - Gets the 1st event and edits the Time field to the new value.\n3 Date: 5th. - Gets the 3rd event and edits the Date field to the new value.${code}`);
+						}
+					}
+					catch (err) {
+						if (err.code === 10008) message.channel.send('Try again in the <#626172209051860992> channel.');
+					}
+				}
+			}
+			else {
+				const currentMonthMessage = data.calendarID.filter((obj) => obj.month === currentMonth);
+				const [...rest] = args.slice(2);
+				const fieldParams = ['date:', 'event:', 'time:', 'announcement:', 'host:'];
+				const parameter = fieldParams.indexOf(args[2].toLowerCase());
+
+				const editE = await message.channel.messages.fetch(currentMonthMessage[0].messageID)
+					.catch(() => message.channel.send('Try again in the <#626172209051860992> channel.'));
+				const n = new Discord.MessageEmbed(editE.embeds[0]);
+
+				const fields = n.fields[args[1] - 1];
+				if (fieldParams.includes(args[2].toLowerCase())) {
+					if (fieldParams[0] === rest[0].toLowerCase()) {
+						n.spliceFields(args[1] - 1, 1, { name: rest.slice(1).join(' '), value: fields.value });
+						editE.edit(n);
+					}
+					else if (fieldParams[parameter] === rest[0].toLowerCase() && rest[0].toLowerCase() !== fieldParams[0]) {
+						const values = fields.value.split('\n');
+						let newValue = ` ${rest.slice(1).join(' ')}`;
+						if (fieldParams[parameter] !== fieldParams[3]) {
+							const value = values.filter((val) => val.toLowerCase().includes(fieldParams[parameter]));
+							// eslint-disable-next-line no-inline-comments
+							const fieldValue = value.join(' ').split(`${capitalise(fieldParams[parameter])}`); // Doesn't work for announcement
+							n.spliceFields(args[1] - 1, 1, { name: fields.name, value: fields.value.replace(fieldValue[1], newValue) });
+							editE.edit(n);
+						}
+						else {
+							const annVal = values[2].split('](');
+							newValue = ` ${rest.slice(1).join(' ')})`;
+							n.spliceFields(args[1] - 1, 1, { name: fields.name, value: fields.value.replace(annVal[1], newValue) });
+							editE.edit(n);
+						}
+					}
+					message.delete();
+					channels.logs.send(`Calendar updated - ${message.author} edited an event: ${code}${message.content}${code}`);
+				}
+				else {
+					message.channel.send(`You must provide the event number you want to edit as well as the field. Examples: ${code}1 Time: 14:00 - 15:00. - Gets the 1st event and edits the Time field to the new value.\n3 Date: 5th. - Gets the 3rd event and edits the Date field to the new value.${code}`);
+				}
+			}
+		}
+			break;
+		case 'remove': {
+			const monthInc = data.calendarID.filter((obj) => obj.month.toLowerCase() === args[1].toLowerCase() || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase());
+			if (monthInc && monthInc.length !== 0) {
+				if (args[1].toLowerCase() === monthInc[0].month.toLowerCase() || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
+					const removeE = await message.channel.messages.fetch(monthInc[0].messageID)
+						.catch(() => message.channel.send('Try again in the <#626172209051860992> channel.'));
+					const n = new Discord.MessageEmbed(removeE.embeds[0]);
+					const fieldsValue = n.fields[args[2] - 1].value;
+					if (Number(args[3]) !== 1) {
 						n.spliceFields(args[2] - 1, args[3]);
 						removeE.edit(n);
-
 						const log = removeE.embeds[0].fields.splice(args[2] - 1, args[3]);
 						const logValues = log.map((values) => `${values.name}\n${values.value}\n`);
 						const remaining = n.fields.map((values) => `${values.name}\n${values.value}\n`);
-						message.delete();
 						channels.logs.send(`Calendar updated - ${message.author} removed event: ${code}diff\n- Removed\n${logValues.join('\n')}\n+ Remaining\n ${remaining.join('\n')}${code}`);
+						return message.delete();
 					}
+					const messageCheck = fieldsValue.split('\n')[2].split('/')[6].slice(0, -1);
+					await removeEvents(client, message, settings, channels, data, 'messageID', messageCheck);
+					return message.delete();
 				}
-				else {
-					const currentMonthMessage = r.calendarID.filter((obj) => obj.month === currentMonth);
-					const removeE = await message.channel.messages.fetch(currentMonthMessage[0].messageID)
-						.catch(() => message.channel.send('Try again in the <#626172209051860992> channel.'));
-					const n = new Discord.MessageEmbed(removeE.embeds[0]);
+			}
+			else {
+				const currentMonthMessage = data.calendarID.filter((obj) => obj.month === currentMonth);
+				const removeE = await message.channel.messages.fetch(currentMonthMessage[0].messageID)
+					.catch(() => message.channel.send('Try again in the <#626172209051860992> channel.'));
+				const n = new Discord.MessageEmbed(removeE.embeds[0]);
+				const fieldsValue = n.fields[args[1] - 1].value;
+				if (Number(args[2]) !== 1) {
 					n.spliceFields(args[1] - 1, args[2]);
 					removeE.edit(n);
-
 					const log = removeE.embeds[0].fields.splice(args[1] - 1, args[2]);
 					const logValues = log.map((values) => `${values.name}\n${values.value}\n`);
 					const remaining = n.fields.map((values) => `${values.name}\n${values.value}\n`);
-					message.delete();
 					channels.logs.send(`Calendar updated - ${message.author} removed event: ${code}diff\n- Removed\n${logValues.join('\n')}\n+ Remaining\n ${remaining.join('\n')}${code}`);
+					return message.delete();
 				}
-			});
+
+				const messageCheck = fieldsValue.split('\n')[2].split('/')[6].slice(0, -1);
+				await removeEvents(client, message, settings, channels, data, 'messageID', messageCheck);
+				return message.delete();
+			}
+		}
 			break;
-		case 'move':
-			settings.findOne({ _id: message.guild.id }).then(async (r) => {
-				const monthInc = r.calendarID.filter((obj) => obj.month === args[1] || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase());
-				if (monthInc && monthInc.length !== 0) {
-					if (args[1].toLowerCase() === monthInc[0].month.toLowerCase() || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
-						const moveE = await message.channel.messages.fetch(monthInc[0].messageID)
-							.catch(() => message.channel.send('Try again in the <#626172209051860992> channel.'));
-						const n = new Discord.MessageEmbed(moveE.embeds[0]);
-						const fields = n.fields[args[2] - 1];
-						n.spliceFields(args[2] - 1, 1)
-							.spliceFields(args[3] - 1, 0, { name: fields.name, value: fields.value });
-						moveE.edit(n);
-					}
-					message.delete();
-				}
-				else {
-					const currentMonthMessage = r.calendarID.filter((obj) => obj.month === currentMonth);
-					const moveE = await message.channel.messages.fetch(currentMonthMessage[0].messageID)
+		case 'move': {
+			const monthInc = data.calendarID.filter((obj) => obj.month === args[1] || obj.month.substring(0, 3).toLowerCase() === args[1].substring(0, 3).toLowerCase());
+			if (monthInc && monthInc.length !== 0) {
+				if (args[1].toLowerCase() === monthInc[0].month.toLowerCase() || args[1].toLowerCase() === monthInc[0].month.substring(0, 3).toLowerCase()) {
+					const moveE = await message.channel.messages.fetch(monthInc[0].messageID)
 						.catch(() => message.channel.send('Try again in the <#626172209051860992> channel.'));
 					const n = new Discord.MessageEmbed(moveE.embeds[0]);
-					const fields = n.fields[args[1] - 1];
-					n.spliceFields(args[1] - 1, 1)
-						.spliceFields(args[2] - 1, 0, { name: fields.name, value: fields.value });
+					const fields = n.fields[args[2] - 1];
+					n.spliceFields(args[2] - 1, 1)
+						.spliceFields(args[3] - 1, 0, { name: fields.name, value: fields.value });
 					moveE.edit(n);
-					message.delete();
 				}
-			});
+				message.delete();
+			}
+			else {
+				const currentMonthMessage = data.calendarID.filter((obj) => obj.month === currentMonth);
+				const moveE = await message.channel.messages.fetch(currentMonthMessage[0].messageID)
+					.catch(() => message.channel.send('Try again in the <#626172209051860992> channel.'));
+				const n = new Discord.MessageEmbed(moveE.embeds[0]);
+				const fields = n.fields[args[1] - 1];
+				n.spliceFields(args[1] - 1, 1)
+					.spliceFields(args[2] - 1, 0, { name: fields.name, value: fields.value });
+				moveE.edit(n);
+				message.delete();
+			}
+		}
 		}
 	},
 };

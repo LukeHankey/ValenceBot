@@ -3,7 +3,7 @@ const getDb = require('../../mongodb').getDb;
 const { MessageEmbed } = require('discord.js');
 const cron = require('node-cron');
 const { Paginate } = require('../../classes');
-const { removeUsersAndMessages, compressArray } = require('../../functions');
+const { removeUsersAndMessages, compressArray, removeEvents } = require('../../functions');
 const colors = require('../../colors.json');
 
 module.exports = async (client, reaction, user) => {
@@ -23,20 +23,37 @@ module.exports = async (client, reaction, user) => {
 	switch (message.guild.id) {
 	case _id:
 		// Valence
-		if (_id === '472448603642920973') {
-			const { events } = await settingsColl.findOne({ _id: message.guild.id }, { projection: { events: 1 } });
-			const data = events.filter(m => m.messageID === message.id);
+		if (_id === '472448603642920973' || _id === '733164313744769024') {
+			const data = await settingsColl.findOne({ _id: message.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } });
+			const { channels: { errors, logs } } = await settingsColl.findOne({ _id: 'Globals' }, { projection: { channels: { errors: 1, logs: 1 } } });
 
-			if (!data.length || user.bot) return;
+			const channels = {
+				errors: {
+					id: errors,
+					send: function(content) {
+						const channel = client.channels.cache.get(this.id);
+						return channel.send(content);
+					},
+				},
+				logs: {
+					id: logs,
+					send: function(content) {
+						const channel = client.channels.cache.get(this.id);
+						return channel.send(content);
+					},
+				},
+			};
+
+			const messageMatch = data.events.filter(m => m.messageID === message.id);
+
+			if (!messageMatch.length || user.bot) return;
 			if (reaction.emoji.name === '✅') {
 				if (user.id !== message.author.id) {
 					message.reactions.resolve('✅').users.remove(user.id);
 					return;
 				}
-				reaction.message.reactions.removeAll();
-				message.guild.roles.fetch(data[0].roleID).then(r => r.delete());
-				settingsColl.findOneAndUpdate({ _id: message.guild.id }, { $pull: { events: { messageID: message.id } } });
-				settingsColl.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': new Date(message.createdTimestamp).toLocaleString('default', { month: 'long' }) }, { $pull: { 'calendarID.$.events': { messageID: message.id } } });
+
+				await removeEvents(client, message, settingsColl, channels, data, 'messageID', message.id);
 			}
 			else if (reaction.emoji.name === '📌') {
 				const userFetch = await message.guild.members.fetch(user.id);
