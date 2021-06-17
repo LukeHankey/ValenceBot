@@ -9,25 +9,25 @@ const { dsf } = require('../../dsf/main');
 module.exports = async (client, message) => {
 	const db = getDb();
 	const settingsColl = await db.collection('Settings');
-	const globalDB = await settingsColl.findOne({ _id: 'Globals' });
+	const { channels: { vis, errors, logs } } = await settingsColl.findOne({ _id: 'Globals' }, { projection: { channels: { vis: 1, errors: 1, logs: 1 } } });
 
 	const channels = {
 		vis: {
-			id: globalDB.channels.vis,
+			id: vis,
 			send: function(content) {
 				const channel = client.channels.cache.get(this.id);
 				return channel.send(content);
 			},
 		},
 		errors: {
-			id: globalDB.channels.errors,
+			id: errors,
 			send: function(content) {
 				const channel = client.channels.cache.get(this.id);
 				return channel.send(content);
 			},
 		},
 		logs: {
-			id: globalDB.channels.logs,
+			id: logs,
 			send: function(content) {
 				const channel = client.channels.cache.get(this.id);
 				return channel.send(content);
