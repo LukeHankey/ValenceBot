@@ -200,21 +200,18 @@ module.exports = async (client, reaction, user) => {
 
 						// Remove all reactions if there is > 1 or 0. Then add a skull.
 						if (Date.now() - m.createdTimestamp >= 3600000 && (m.reactions.cache.size > 1 || m.reactions.cache.size === 0)) {
-							console.log(2);
 							await m.reactions.removeAll();
 							await removeUsersAndMessages(message, mem, settingsColl);
 							return await m.react('☠️');
 						}
 						// If there is only a skull, remove users and message from DB
 						else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
-							console.log(1);
 							await removeUsersAndMessages(message, mem, settingsColl);
 							await m.reactions.removeAll();
 							return await m.react('☠️');
 						}
 						// If there is a single reaction which is not the Skull, then remove that and react with skull. Repeat process over.
 						else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && !m.reactions.cache.has('☠️')) {
-							console.log(3);
 							await m.reactions.removeAll();
 							await removeUsersAndMessages(message, mem, settingsColl);
 							return await m.react('☠️');
