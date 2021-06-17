@@ -18,14 +18,6 @@ module.exports = {
 		if (!perms.mod) return message.channel.send(perms.errorM);
 		const db = getDb();
 		const settings = db.collection('Settings');
-
-		/**
-		 * When ending an event, remove from calendar as well.
-		 * Going forward, all events will be added to the events and calendar DB. eventTag & messageID shared between them.
-		 * Get the entire calendar embed and loop through to find the position of the event with matching messageID
-		 * Splice that out and remove from both DBs
-		 */
-
 		const data = await settings.findOne({ _id: message.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } });
 
 		switch(args[0]) {
