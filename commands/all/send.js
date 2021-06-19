@@ -1,6 +1,6 @@
 /* eslint-disable no-inline-comments */
 /* eslint-disable no-useless-escape */
-const func = require('../../functions.js');
+const { checkNum } = require('../../functions.js');
 const colors = require('../../colors.json');
 const { MessageEmbed } = require('discord.js');
 const getDb = require('../../mongodb').getDb;
@@ -16,18 +16,28 @@ module.exports = {
 
 		const myID = '212668377586597888';
 		const content = args.slice(1).join(' ');
-		const code = '```';
 		if (!perms.admin) return message.channel.send(perms.errorA);
 
 		const db = getDb();
 		const settings = db.collection('Settings');
+		const { logs } = settings.findOne({ '_id': message.guild.id }, { porjection: { logs: 1 } });
+
+		const checkAndGetID = (id) => {
+			if (checkNum(id, 0, Infinity) && id.length === 18) {
+				return { value: true, id };
+			}
+			else if (message.mentions.has(id.slice(2, -1))) {
+				return { value: true, id: id.slice(2, -1) };
+			}
+			else { return { value: false, id: null }; }
+		};
 
 		const [param, num, ...rest] = args.slice(1);
 		const reasonRegex = /(:^|reason)+/gi;
 		const rsnRegex = /(:^|rsn)+/gi;
 		const paramRegex = /(:^|rsn|reason)+/gi;
 		const reasonSlice = rest.join(' ').search(reasonRegex);
-		const rsn = rest.join(' ').slice(4, reasonSlice).trim();
+		let rsn = rest.join(' ').slice(4, reasonSlice).trim();
 		const reason = rest.join(' ').slice(reasonSlice + 7).trim();
 
 		switch (args[0]) {
@@ -93,93 +103,124 @@ module.exports = {
 			}
 		}
 			break;
-		case 'info': {
+		case 'info':
 			if (message.guild.id !== '420803245758480405' && message.channel.id !== '773285098069426227') {
 				return;
 			}
 			else {
-				settings.findOne({ '_id': message.guild.id })
-					.then(async res => {
-						const find = await res.logs.find(log => log.id === num && log.type === param);
+				try {
+					const find = await logs.find(log => log.id === num && log.type === param);
 
-						if (!param) return message.channel.send('Please specify the type (\`ban\`, \`friend\` or \`affiliate\`).');
-						if (!num || isNaN(num)) return message.channel.send('Please provide a number to specify which embed you want to send information to.');
-						if (!rsn || message.content.match(rsnRegex) === null) return message.channel.send('Please enter the RSN as \`RSN: <rsn>\`.');
-						if (!reason || message.content.match(reasonRegex) === null) return message.channel.send('Please enter the reason. If there is no reason, use "Unknown".');
-						const embedPost = await message.channel.messages.fetch(find.messageID);
+					if (!param) return message.channel.send('Please specify the type (\`ban\`, \`friend\` or \`affiliate\`).');
+					if (!num || isNaN(num)) return message.channel.send('Please provide a number to specify which embed you want to send information to.');
+					if (!rsn || message.content.match(rsnRegex) === null) return message.channel.send('Please enter the RSN as \`RSN: <rsn>\`.');
+					if (!reason || message.content.match(reasonRegex) === null) return message.channel.send('Please enter the reason. If there is no reason, use "Unknown".');
+					const embedPost = await message.channel.messages.fetch(find.messageID);
 
-						const infoEditPost = new MessageEmbed(embedPost.embeds[0])
-							.addField(`${rsn}`, `${reason}`, true);
+					const infoEditPost = new MessageEmbed(embedPost.embeds[0])
+						.addField(`${rsn}`, `${reason}`, true);
 
-						embedPost.edit(infoEditPost);
-						return message.react('✅');
-					})
-					.catch(async err => {
-						if (err.code === 10008) {
-							const identifiers = err.path.split('/');
-							const found = await settings.findOne({ '_id': message.guild.id });
-							const findID = await found.logs.find(log => log.messageID === identifiers[4]);
+					embedPost.edit(infoEditPost);
+					return message.react('✅');
+				}
+				catch (err) {
+					if (err.code === 10008) {
+						const identifiers = err.path.split('/');
+						const findID = await logs.find(log => log.messageID === identifiers[4]);
 
-							message.channel.send('Unable to find the embed to add to. - It must have been deleted! Removing it from the DataBase...')
-								.then(async m => await m.delete({ timeout: 10000 }));
+						message.channel.send('Unable to find the embed to add to. - It must have been deleted! Removing it from the DataBase...')
+							.then(async m => await m.delete({ timeout: 10000 }));
 
-							await settings.updateOne({ '_id': message.guild.id }, {
-								$pull: {
-									logs: { messageID: findID.messageID },
-								},
-							});
-						}
-						else {console.log(err);}
-					});
+						await settings.updateOne({ '_id': message.guild.id }, {
+							$pull: {
+								logs: { messageID: findID.messageID },
+							},
+						});
+					}
+					else {console.log(err);}
+				}
 			}
-		}
+
 			break;
 		case 'edit': {
-			if (message.guild.id !== '420803245758480405' && message.channel.id !== '773285098069426227') {
-				return;
+			if (message.guild.id === '420803245758480405' && message.channel.id === '773285098069426227') {
+				const find = await logs.find(log => log.id === num && log.type === param);
+				const embedPost = await message.channel.messages.fetch(find.messageID);
+				const paramSlice = rest.join(' ').search(paramRegex);
+				const editRsn = rest.join(' ').slice(0, paramSlice).trim();
+				const matched = message.content.match(paramRegex);
+				const fieldsParams = ['rsn', 'reason'];
+				const parameter = fieldsParams.indexOf(matched[0].toLowerCase());
+				const changeRsn = rest.join(' ').slice(paramSlice + 4).trim();
+				const changeReason = rest.join(' ').slice(paramSlice + 7).trim();
+				const editPost = new MessageEmbed(embedPost.embeds[0]);
+				const fields = embedPost.embeds[0].fields;
+				const field = [];
+
+				if (!param || !num) return message.channel.send('Please specify the type (`ban`, `friend` or `affiliate`) and the number of the embed.');
+				if (!editRsn) return message.channel.send('Please enter the RSN to find.');
+				if (matched === null) return message.channel.send('Please enter a valid parameter to change. Either `RSN:` or `Reason:`.');
+				if (!changeReason || !changeRsn) return message.channel.send(`Please provide the value to change ${editRsn}'s ${parameter} to.`);
+
+				for (let i = 0; i < fields.length; i++) {
+					if (fields[i].name === editRsn) {
+						field.push(i, fields[i]);
+					}
+				}
+				if (fieldsParams[0] === fieldsParams[parameter]) { // RSN
+					if (field[1] === undefined) return message.channel.send('Make sure you type the RSN correctly, including any capitals.');
+					field[1].name = changeRsn;
+					editPost.spliceFields(field[0], 1, field[1]);
+					embedPost.edit(editPost);
+					return message.react('✅');
+				}
+				if (fieldsParams[1] === fieldsParams[parameter]) { // Reason
+					if (field[1] === undefined) return message.channel.send('Make sure you type the RSN correctly, including any capitals.');
+					field[1].value = changeReason;
+					editPost.spliceFields(field[0], 1, field[1]);
+					embedPost.edit(editPost);
+					return message.react('✅');
+				}
 			}
 			else {
-				settings.findOne({ '_id': message.guild.id })
-					.then(async res => {
-						const find = await res.logs.find(log => log.id === num && log.type === param);
-
-						const embedPost = await message.channel.messages.fetch(find.messageID);
-						const paramSlice = rest.join(' ').search(paramRegex);
-						const editRsn = rest.join(' ').slice(0, paramSlice).trim();
-						const matched = message.content.match(paramRegex);
-						const fieldsParams = ['rsn', 'reason'];
-						const parameter = fieldsParams.indexOf(matched[0].toLowerCase());
-						const changeRsn = rest.join(' ').slice(paramSlice + 4).trim();
-						const changeReason = rest.join(' ').slice(paramSlice + 7).trim();
-						const editPost = new MessageEmbed(embedPost.embeds[0]);
-						const fields = embedPost.embeds[0].fields;
-						const field = [];
-
-						if (!param || !num) return message.channel.send('Please specify the type (`ban`, `friend` or `affiliate`) and the number of the embed.');
-						if (!editRsn) return message.channel.send('Please enter the RSN to find.');
-						if (matched === null) return message.channel.send('Please enter a valid parameter to change. Either `RSN:` or `Reason:`.');
-						if (!changeReason || !changeRsn) return message.channel.send(`Please provide the value to change ${editRsn}'s ${parameter} to.`);
-
-						for (let i = 0; i < fields.length; i++) {
-							if (fields[i].name === editRsn) {
-								field.push(i, fields[i]);
+				const [channelID, messageID, ...messageContent] = args.slice(1);
+				const { value, id } = checkAndGetID(channelID);
+				const messageCheck = checkAndGetID(messageID);
+				console.log(channelID, messageID, ...messageContent);
+				if (value) {
+					if (messageCheck.value && message.author.id !== myID && messageContent.length) {
+						if (message.guild.channels.cache.has(id)) {
+							const getChannel = message.guild.channels.get(id);
+							try {
+								const msg = await getChannel.messages.fetch(messageCheck.id);
+								return await msg.edit(messageContent.join(' '));
+							}
+							catch (err) {
+								if (err) console.error(err);
 							}
 						}
-						if (fieldsParams[0] === fieldsParams[parameter]) { // RSN
-							if (field[1] === undefined) return message.channel.send('Make sure you type the RSN correctly, including any capitals.');
-							field[1].name = changeRsn;
-							editPost.spliceFields(field[0], 1, field[1]);
-							embedPost.edit(editPost);
-							return message.react('✅');
+						else {
+							return message.channel.send('You are not able to edit a message in another server.');
 						}
-						if (fieldsParams[1] === fieldsParams[parameter]) { // Reason
-							if (field[1] === undefined) return message.channel.send('Make sure you type the RSN correctly, including any capitals.');
-							field[1].value = changeReason;
-							editPost.spliceFields(field[0], 1, field[1]);
-							embedPost.edit(editPost);
-							return message.react('✅');
+					}
+					else {
+						if (!messageContent.length) return message.channel.send('You must provide a message to send and a channel to send it to.');
+						if (!messageCheck.value) return message.channel.send(`Make sure the messageID is valid and in <#${id}>`);
+						if (message.author.id === myID && messageCheck.value && messageContent.length) {
+							const getChannel = client.channels.cache.get(id);
+							try {
+								const msg = await getChannel.messages.fetch(messageCheck.id);
+								return await msg.edit(messageContent.join(' '));
+							}
+							catch (err) {
+								if (err) console.error(err);
+							}
 						}
-					});
+					}
+				}
+				else {
+					return message.channel.send('You must have a valid channel ID.');
+				}
 			}
 		}
 			break;
@@ -188,56 +229,52 @@ module.exports = {
 				return;
 			}
 			else {
-				settings.findOne({ '_id': message.guild.id })
-					.then(async res => {
-						const find = await res.logs.find(log => log.id === num && log.type === param);
-						// eslint-disable-next-line no-shadow
-						const rsn = rest.join(' ');
+				const find = await logs.find(log => log.id === num && log.type === param);
+				rsn = rest.join(' ');
 
-						if (!param || !num || !find) return message.channel.send('Please specify the type (`ban`, `friend` or `affiliate`) and the number of the embed.');
+				if (!param || !num || !find) return message.channel.send('Please specify the type (`ban`, `friend` or `affiliate`) and the number of the embed.');
 
-						const embedPost = await message.channel.messages.fetch(find.messageID);
-						const editPost = new MessageEmbed(embedPost.embeds[0]);
-						if (rsn === 'clear') {
-							editPost.spliceFields(0, 25);
-							embedPost.edit(editPost);
-							return message.react('✅');
-						}
-						const fields = embedPost.embeds[0].fields;
-						const field = [];
+				const embedPost = await message.channel.messages.fetch(find.messageID);
+				const editPost = new MessageEmbed(embedPost.embeds[0]);
+				if (rsn === 'clear') {
+					editPost.spliceFields(0, 25);
+					embedPost.edit(editPost);
+					return message.react('✅');
+				}
+				const fields = embedPost.embeds[0].fields;
+				const field = [];
 
-						for (let i = 0; i < fields.length; i++) {
-							if (fields[i].name === rsn) {
-								field.push(i, fields[i]);
-							}
-						}
-						field[1] === undefined
-							? message.channel.send('Make sure you type the RSN correctly, including any capitals.') && message.react('❌')
-							: editPost.spliceFields(field[0], 1) && message.react('✅');
-						embedPost.edit(editPost);
-					});
+				for (let i = 0; i < fields.length; i++) {
+					if (fields[i].name === rsn) {
+						field.push(i, fields[i]);
+					}
+				}
+				field[1] === undefined
+					? message.channel.send('Make sure you type the RSN correctly, including any capitals.') && message.react('❌')
+					: editPost.spliceFields(field[0], 1) && message.react('✅');
+				embedPost.edit(editPost);
 			}
 		}
 			break;
 		default: {
-			if (func.checkNum(args[0], 1, Infinity)) { // Has valid ID
-				if (message.guild.channels.cache.has(args[0]) && content && message.author.id !== myID) { // Has content and channel is in same server
-					message.guild.channels.cache.get(args[0]).send(content);
+			if (checkAndGetID(args[0]).value) { // Has valid channel ID
+				if (message.guild.channels.cache.has(checkAndGetID(args[0]).id) && content && message.author.id !== myID) { // Has content and channel is in same server
+					message.guild.channels.cache.get(checkAndGetID(args[0]).id).send(content);
 				}
 				if (message.author.id === myID && content) {
-					client.channels.cache.get(args[0]).send(content);
+					client.channels.cache.get(checkAndGetID(args[0]).id).send(content);
 				}
-				else if (message.author.id !== myID && content && !message.guild.channels.cache.has(args[0])) { // Checks for non-owner, message content and if ID is not in same server
+				else if (message.author.id !== myID && content && !message.guild.channels.cache.has(checkAndGetID(args[0]).id)) { // Checks for non-owner, message content and if ID is not in same server
 					message.channel.send('You are not able to send a message to a channel in another server.');
-					channels.logs.send(`<@${message.author.id}> tried to send a message to another Server, from Channel: <#${message.channel.id}> to <#${args[0]}>: ${code}Server Name: ${message.guild.name}\nServer ID:${message.guild.id}\nMessage content: ${content}${code}`);
+					channels.logs.send(`<@${message.author.id}> tried to send a message to another Server, from Channel: <#${message.channel.id}> to <#${args[0]}>: \`\`\`Server Name: ${message.guild.name}\nServer ID:${message.guild.id}\nMessage content: ${content}\`\`\``);
 				}
 			}
 			else { // No valid ID
-				return message.channel.send('You must provide a channel ID.');
+				return message.channel.send('You must provide a valid channel ID.');
 			}
 
 			if (args[0] && !content) {
-				return message.channel.send('You must provide a message to send.');
+				return message.channel.send('You must provide a message to send and a channel to send it to.');
 			}
 		}
 		}
