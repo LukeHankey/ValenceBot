@@ -1,4 +1,4 @@
-const { merchRegex } = require('../constants');
+const { merchRegex, lobbyWorldsSpace, lobbyWorldsNoSpace } = require('../constants');
 const getDb = require('../../mongodb').getDb;
 
 const addMerchCount = async (client, message, updateDB) => {
@@ -42,6 +42,14 @@ const addMerchCount = async (client, message, updateDB) => {
 						},
 					},
 				});
+			if (lobbyWorldsSpace.test(message.content)) {
+				await message.delete();
+				message.channel.send(`${message.content.slice(0, 5)} - You must go to the __lobby__ to see this in the worlds list.`);
+			}
+			else if (lobbyWorldsNoSpace.test(message.content)) {
+				await message.delete();
+				message.channel.send(`${message.content.slice(0, 4)} - You must go to the __lobby__ to see this in the worlds list.`);
+			}
 		}
 		else {
 			if (!merchRegex.test(message.content)) {
@@ -59,6 +67,14 @@ const addMerchCount = async (client, message, updateDB) => {
 					'merchChannel.scoutTracker.$.lastTimestampReadable': new Date(msg[0].createdTimestamp),
 				},
 			});
+			if (lobbyWorldsSpace.test(message.content)) {
+				await message.delete();
+				message.channel.send(`${message.content.slice(0, 5)} - You must go to the __lobby__ to see this in the worlds list.`);
+			}
+			else if (lobbyWorldsNoSpace.test(message.content)) {
+				await message.delete();
+				message.channel.send(`${message.content.slice(0, 4)} - You must go to the __lobby__ to see this in the worlds list.`);
+			}
 		}
 
 		// Database logging for merch worlds
