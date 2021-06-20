@@ -98,7 +98,6 @@ module.exports = {
 		};
 
 		if (!args.length) {
-			console.log(data);
 			if (data) {
 				sendUserInfo();
 			}
