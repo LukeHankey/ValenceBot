@@ -15,7 +15,7 @@ const dsf = async (client, message) => {
 			?
 			message.channel.send(`<@&670842187461820436> - ${message.content}`)
 				.then(async mes => {
-					return await mes.delete({ timeout: 1000 });
+					return await mes.delete({ timeout: 200 });
 				})
 				.catch(async err => {
 					console.log(14, err);
