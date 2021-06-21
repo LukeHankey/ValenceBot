@@ -1,6 +1,6 @@
-const merchRegex = /(^(?:m|merch|merchant|w|world){1}(\s?)(?!3$|7$|8$|11$|13$|17|19|20|29|33|34|38|41|43|47|57|61|75|80|81|90|93|94|101|102|10[7-9]|11[0-3]|12[0-2]|12[5-9]|13[0-3]|135|136)([1-9]\d?|1[0-3]\d|140|25[2, 7-9])(([,.\s]|f|ua)?|\s+\w*)*$)/i;
-const lobbyWorldsSpace = /(^(?:m|merch|merchant|w|world){1}\s+(25[2, 7-9])(([,.\s]|f|ua)?|\s+\w*)*$)/i;
-const lobbyWorldsNoSpace = /(^(?:m|merch|merchant|w|world){1}(25[2, 7-9])(([,.\s]|f|ua)?|\s+\w*)*$)/i;
+const merchRegex = /(^(?:m|merch|merchant|w|world){1}\s?(([124569]|1[024568]|2[1-8]|3[0125-79]|4[024-689]|5[0-689]|6[02-9]|7[0-46-9]|8[2-9]|9[12689]|10[03-6]|11[4-9]|12[34]|13[47-9]|140|25[27-9])(([,.\sf]|ua)?|\s\w*)*)$)/i;
+const lobbyWorldsSpace = /(^(?:m|merch|merchant|w|world){1}\s+(25[27-9])(([,.\s]|f|ua)?|\s+\w*)*$)/i;
+const lobbyWorldsNoSpace = /(^(?:m|merch|merchant|w|world){1}(25[27-9])(([,.\s]|f|ua)?|\s+\w*)*$)/i;
 
 module.exports = {
 	merchRegex,
