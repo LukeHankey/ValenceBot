@@ -20,7 +20,7 @@ module.exports = {
 
 		const db = getDb();
 		const settings = db.collection('Settings');
-		const { logs } = settings.findOne({ '_id': message.guild.id }, { porjection: { logs: 1 } });
+		const { logs } = await settings.findOne({ _id: message.guild.id }, { projection: { logs: 1 } });
 
 		const checkAndGetID = (id) => {
 			if (checkNum(id, 0, Infinity) && id.length === 18) {
@@ -109,7 +109,7 @@ module.exports = {
 			}
 			else {
 				try {
-					const find = await logs.find(log => log.id === num && log.type === param);
+					const find = logs.find(log => log.id === num && log.type === param);
 
 					if (!param) return message.channel.send('Please specify the type (\`ban\`, \`friend\` or \`affiliate\`).');
 					if (!num || isNaN(num)) return message.channel.send('Please provide a number to specify which embed you want to send information to.');
