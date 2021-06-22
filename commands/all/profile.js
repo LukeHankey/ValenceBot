@@ -4,13 +4,7 @@ const getDb = require('../../mongodb').getDb;
 const { MessageEmbed } = require('discord.js');
 const colors = require('../../colors.json');
 const ms = require('pretty-ms');
-const f = require('../../functions.js');
-
-/**
- * 668330890790699079 - Valence Bot Server
- * 733164313744769024 - Test Server
- * 420803245758480405 - DSF
- */
+const { checkNum } = require('../../functions.js');
 
 module.exports = {
 	name: 'profile',
@@ -58,8 +52,7 @@ module.exports = {
 					// Think about if there is anything else to view in the user profile stats
 				);
 			}
-			message.channel.startTyping();
-			return message.channel.send(embed.addFields(fields)) && message.channel.stopTyping();
+			return message.channel.send(embed.addFields(fields));
 		};
 
 		const sendRoleInfo = async (id, rData = { scoutTracker: data.merchChannel.scoutTracker }) => {
@@ -93,8 +86,7 @@ module.exports = {
 			for (const values of newArr) {
 				fields.push({ name: `${values.author}`, value: `Scout count: ${values.count}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true });
 			}
-			message.channel.startTyping();
-			return message.channel.send(embed.addFields(fields)) && message.channel.stopTyping();
+			return message.channel.send(embed.addFields(fields));
 		};
 
 		if (!args.length) {
@@ -139,7 +131,7 @@ module.exports = {
 			let roleMention;
 			let userMention;
 
-			if (f.checkNum(args[0])) {
+			if (checkNum(args[0])) {
 				userID = message.guild.member(args[0]) ?? await message.guild.members.fetch(args[0]);
 			}
 			else {
@@ -224,6 +216,9 @@ module.exports = {
 						});
 					});
 				message.channel.stopTyping();
+			}
+			else {
+				message.channel.send(`Unable to find \`${args[0]}\` as a member ID/mention or role mention.`);
 			}
 		}
 	},
