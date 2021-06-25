@@ -184,14 +184,19 @@ module.exports = async (client, reaction, user) => {
 				}
 
 				const bansChannel = message.guild.channels.cache.get('624655664920395786');
-				spamUsersDB.forEach(log => {
+				const getSpamUsers = spamUsersDB.map(log => {
 					if (log.count >= 10) {
-						const grabMember = message.guild.members.cache.get(log.id);
-						settingsColl.findOneAndUpdate({ _id: message.guild.id }, { $pull: { 'merchChannel.spamProtection': { users: { $elemMatch: { id: log.id } } } } });
-						bansChannel.send(`${grabMember?.nickname ?? grabMember?.user.username} kicked for spam reacting at least ${log.count} times.`);
-						grabMember.kick(`Spamming reactions (${log.count})`);
+						return { member: message.guild.members.cache.get(log.id), count: log.count };
 					}
+					else { return; }
 				});
+
+				if (getSpamUsers.length) {
+					if (!getSpamUsers[0]) return;
+					settingsColl.findOneAndUpdate({ _id: message.guild.id }, { $pull: { 'merchChannel.spamProtection': { users: { $elemMatch: { id: getSpamUsers[0].member.id } } } } });
+					bansChannel.send(`${getSpamUsers[0].member?.nickname ?? getSpamUsers[0].member?.user.username} kicked for spam reacting at least ${getSpamUsers[0].count} times.`);
+					getSpamUsers[0].member.kick(`Spamming reactions (${getSpamUsers[0].count})`);
+				}
 
 				const merchChannelID = client.channels.cache.get(channelID);
 				pagination.membersBelowThreshold.forEach(async (mem) => {
