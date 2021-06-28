@@ -7,9 +7,9 @@ const getDb = require('../../mongodb').getDb;
 
 module.exports = {
 	name: 'send',
-	description: ['Sends a message to a channel.', 'Creates a new embed for the Ban/Friends List.', 'Adds an RSN to the ban list with a reason.', 'Edits an rsn or reason by finding the given rsn. Example:\n```css\n;send edit ban 1 Guys Reason: Is a noob.```', 'Removes a member from the ban or friends list by specifying their rsn and which embed they are in. Alternatively removes all info from the embed if the rsn is replaced with \'clear\'.'],
+	description: ['Sends a message to a channel.', 'Edits a message by providing the channel and message ID and overwrite the previous post with new content.', 'Creates a new embed for the Ban/Friends List.', 'Adds an RSN to the ban list with a reason.', 'Edits an rsn or reason by finding the given rsn. Example:\n```css\n;send edit ban 1 Guys Reason: Is a noob.```', 'Removes a member from the ban or friends list by specifying their rsn and which embed they are in. Alternatively removes all info from the embed if the rsn is replaced with \'clear\'.'],
 	aliases: [''],
-	usage: ['<channel ID> <message content>', 'embed <ban/friend/affiliate> <number>', 'info <ban/friend/affiliate> <num> RSN: <rsn> Reason: <reason>', 'edit <ban/friend/affiliate> <num> <rsn> <RSN:/Reason:> <value>', 'remove <ban/friend/affiliate> <num> <rsn/clear>'],
+	usage: ['<channel Tag/ID> <message content>', 'edit <channel Tag/ID> <message ID> <new message content>', 'embed <ban/friend/affiliate> <number>', 'info <ban/friend/affiliate> <num> RSN: <rsn> Reason: <reason>', 'edit <ban/friend/affiliate> <num> <rsn> <RSN:/Reason:> <value>', 'remove <ban/friend/affiliate> <num> <rsn/clear>'],
 	guildSpecific: 'all',
 	permissionLevel: 'Admin',
 	run: async (client, message, args, perms, channels) => {
