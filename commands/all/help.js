@@ -58,7 +58,7 @@ module.exports = {
 		else {
 			const name = args[0];
 			const command = commands.get(name) || commands.find(c => c.aliases && c.aliases.includes(name));
-			const otherView = ['Lotto', 'Calendar', 'Profile', 'Dsf'];
+			const otherView = ['Lotto', 'Calendar', 'Profile', 'Dsf', 'Send'];
 
 			const cName = func.capitalise(command.name);
 			const fields = [];
