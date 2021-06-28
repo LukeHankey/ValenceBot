@@ -259,10 +259,10 @@ module.exports = {
 		default: {
 			if (checkAndGetID(args[0]).value) { // Has valid channel ID
 				if (message.guild.channels.cache.has(checkAndGetID(args[0]).id) && content && message.author.id !== myID) { // Has content and channel is in same server
-					message.guild.channels.cache.get(checkAndGetID(args[0]).id).send(content);
+					message.guild.channels.cache.get(checkAndGetID(args[0]).id).send(content, { split: true });
 				}
 				if (message.author.id === myID && content) {
-					client.channels.cache.get(checkAndGetID(args[0]).id).send(content);
+					client.channels.cache.get(checkAndGetID(args[0]).id).send(content, { split: true });
 				}
 				else if (message.author.id !== myID && content && !message.guild.channels.cache.has(checkAndGetID(args[0]).id)) { // Checks for non-owner, message content and if ID is not in same server
 					message.channel.send('You are not able to send a message to a channel in another server.');
