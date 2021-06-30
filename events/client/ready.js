@@ -398,12 +398,12 @@ module.exports = async client => {
 		});
 		removeInactives(scout);
 
-		if (new Date().getDay() === 3 && new Date().getHours() === 01 && new Date().getMinutes() === 00) { // Weekly reset
+		if (new Date().getDay() === 3 && (new Date().getHours() === 01 || new Date().getHours() === 00) && new Date().getMinutes() === 00) { // Weekly reset
 			scout.send();
 			vScout.send();
 		}
 
-		if (new Date().getDate() === 2 && new Date().getHours() === 00 && new Date().getMinutes() === 00) { // Monthly reset + 1 day
+		if (new Date().getDate() === 2 && (new Date().getHours() === 01 || new Date().getHours() === 00) && new Date().getMinutes() === 00) { // Monthly reset + 1 day
 			console.log(new Date().getDate(), 'Setting lottoSheet to Null');
 			await settings.updateMany({ gSheet: { $exists: true } }, { $set: { lottoSheet: null } });
 		}
