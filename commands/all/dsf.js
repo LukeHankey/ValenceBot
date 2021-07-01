@@ -3,8 +3,8 @@
 const func = require('../../functions');
 const colors = require('../../colors.json');
 const getDb = require('../../mongodb').getDb;
-const { ScouterCheck, Paginate } = require('../../classes.js');
-const { removeUsersAndMessages } = require('../../functions');
+const { ScouterCheck } = require('../../classes.js');
+const { removeMessage } = require('../../functions');
 
 /**
  * 733164313744769024 - Test Server
@@ -67,34 +67,35 @@ module.exports = {
 		case 'reacts': {
 			switch (args[1]) {
 			case 'clear': {
-				const database = await settings.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.spamProtection': 1, 'merchChannel.channelID': 1 } });
-				const pagination = new Paginate(message, database);
+				const { merchChannel: { channelID, spamProtection } } = await settings.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.spamProtection': 1, 'merchChannel.channelID': 1 } });
+				const channel = client.channels.cache.get(channelID);
 
-				pagination.membersBelowThreshold.map(async mem => {
-					const channelID = database.merchChannel.channelID;
-					const channel = client.channels.cache.get(channelID);
-
+				spamProtection.forEach(async (msgObj) => {
 					try {
-						const m = await channel.messages.fetch(mem.msg);
+						const m = await channel.messages.fetch(msgObj.messageID);
 
 						// Remove all reactions if there is > 1 or 0. Then add a skull.
 						if (Date.now() - m.createdTimestamp >= 3600000 && (m.reactions.cache.size > 1 || m.reactions.cache.size === 0)) {
 							await m.reactions.removeAll();
-							await m.react('☠️');
-							return await message.react('✅');
+							await removeMessage(message, m, settings);
+							await message.react('✅');
+							return await m.react('☠️');
 						}
 						// If there is only a skull, remove users and message from DB
 						else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
-							removeUsersAndMessages(message, mem, settings);
-							return await message.react('✅');
+							await removeMessage(message, m, settings);
+							await m.reactions.removeAll();
+							await message.react('✅');
+							return await m.react('☠️');
 						}
 						// If there is a single reaction which is not the Skull, then remove that and react with skull. Repeat process over.
 						else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && !m.reactions.cache.has('☠️')) {
 							await m.reactions.removeAll();
-							await m.react('☠️');
-							return await message.react('✅');
+							await removeMessage(message, m, settings);
+							await message.react('✅');
+							return await m.react('☠️');
 						}
-						else {return message.react('❌');}
+						else {return;}
 					}
 					catch (e) {
 						if (e.code === 10008) {
@@ -108,27 +109,6 @@ module.exports = {
 						else {console.error(e);}
 					}
 				});
-			}
-				break;
-			case 'block': {
-				const { merchChannel: { blocked } } = await settings.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.blocked': 1 } });
-				if (blocked) {
-					await settings.updateOne({ _id: message.guild.id }, {
-						$set: {
-							'merchChannel.blocked': false,
-						},
-					});
-					message.channel.send('Database logging has been unblocked.');
-				}
-				else {
-					await settings.updateOne({ _id: message.guild.id }, {
-						$set: {
-							'merchChannel.blocked': true,
-						},
-					});
-					message.channel.send('Database logging has been blocked. Logs will still come through though.');
-				}
-				message.react('✅');
 			}
 				break;
 			default: {
