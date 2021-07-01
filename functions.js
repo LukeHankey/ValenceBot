@@ -58,29 +58,12 @@ module.exports = {
 	capitalise: function(str) {
 		return str.charAt(0).toUpperCase() + str.slice(1);
 	},
-	removeUsersAndMessages: async function(message, member, database) {
-		if (member.member.id !== null) {
-			await database.findOneAndUpdate({ _id: message.guild.id, 'merchChannel.spamProtection.messageID': member.msg }, {
-				$pull: {
-					'merchChannel.spamProtection.$.users': { id: member.member.id },
-				},
-			});
-		}
-		const removeMessages = async () => {
-			const { merchChannel: { spamProtection } } = await database.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.spamProtection': 1 } });
-			spamProtection.forEach(obj => {
-				if (obj.messageID !== member.msg) return;
-				if (!obj.users.length) {
-					database.updateOne({ _id: message.guild.id }, {
-						$pull: {
-							'merchChannel.spamProtection': { messageID: obj.messageID },
-						},
-					});
-				}
-				else {return;}
-			});
-		};
-		return await removeMessages();
+	removeMessage: async function(message, reactMessage, database) {
+		database.updateOne({ _id: message.guild.id }, {
+			$pull: {
+				'merchChannel.spamProtection': { messageID: reactMessage.id },
+			},
+		});
 	},
 	compressArray: function(original) {
 

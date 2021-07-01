@@ -5,7 +5,8 @@ const addMerchCount = async (client, message, updateDB) => {
 	try {
 		const db = getDb();
 		const settingsColl = db.collection('Settings');
-		const { merchChannel: { scoutTracker } } = await settingsColl.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.scoutTracker': 1 } });
+		const { merchChannel: { scoutTracker, channelID } } = await settingsColl.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.scoutTracker': 1, 'merchChannel.channelID': 1 } });
+		const merchChannelID = client.channels.cache.get(channelID);
 		const errorLog = [];
 		const botServerWebhook = await client.channels.cache.get('784543962174062608').fetchWebhooks();
 		const dsfServerWebhook = await client.channels.cache.get('794608385106509824').fetchWebhooks();
@@ -42,6 +43,7 @@ const addMerchCount = async (client, message, updateDB) => {
 						},
 					},
 				});
+			merchChannelID.updateOverwrite(msg[0].author.id, { ADD_REACTIONS: true });
 		}
 		else {
 			if (!merchRegex.test(message.content)) {
@@ -59,6 +61,7 @@ const addMerchCount = async (client, message, updateDB) => {
 					'merchChannel.scoutTracker.$.lastTimestampReadable': new Date(msg[0].createdTimestamp),
 				},
 			});
+			merchChannelID.updateOverwrite(msg[0].author.id, { ADD_REACTIONS: true });
 		}
 
 		// Database logging for merch worlds
@@ -91,7 +94,6 @@ const addMerchCount = async (client, message, updateDB) => {
 								time: log[messages].createdTimestamp,
 								author: authorName,
 								userID: userId,
-								users: [],
 							}],
 						},
 					},
