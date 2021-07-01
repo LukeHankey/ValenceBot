@@ -91,7 +91,6 @@ const addMerchCount = async (client, message, updateDB) => {
 								time: log[messages].createdTimestamp,
 								author: authorName,
 								userID: userId,
-								users: [],
 							}],
 						},
 					},
