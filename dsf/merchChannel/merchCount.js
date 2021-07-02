@@ -17,6 +17,15 @@ const addMerchCount = async (client, message, updateDB) => {
 		const logOne = [...mesOne.values()];
 		const msg = logOne.map(val => val);
 
+		const checkMemberRole = async (user) => {
+			const mem = message.guild.members.cache.get(user) ?? await message.guild.members.fetch(user);
+			const allowedRoles = ['Scouter', 'Verified Scouter', 'Staff', 'Moderator (Bronze Star)', 'Administrator (Silver Star)'];
+			const collectionTotal = mem.roles.cache.filter(r => allowedRoles.includes(r.name));
+			if (collectionTotal.size) { return true; }
+			else { return false; }
+		};
+
+
 		const findMessage = scoutTracker.find(x => x.userID === msg[0].author.id);
 		const userN = message.member;
 		if (!findMessage) {
@@ -43,7 +52,10 @@ const addMerchCount = async (client, message, updateDB) => {
 						},
 					},
 				});
-			merchChannelID.updateOverwrite(msg[0].author.id, { ADD_REACTIONS: true });
+			if (!(await checkMemberRole(msg[0].author.id))) {
+				console.log(`Adding ${msg[0].member?.nickname ?? msg[0].author.username} (${msg[0].author.id}) to channel overrides.`);
+				await merchChannelID.updateOverwrite(msg[0].author.id, { ADD_REACTIONS: true });
+			}
 		}
 		else {
 			if (!merchRegex.test(message.content)) {
@@ -61,7 +73,10 @@ const addMerchCount = async (client, message, updateDB) => {
 					'merchChannel.scoutTracker.$.lastTimestampReadable': new Date(msg[0].createdTimestamp),
 				},
 			});
-			merchChannelID.updateOverwrite(msg[0].author.id, { ADD_REACTIONS: true });
+			if (!(await checkMemberRole(msg[0].author.id))) {
+				console.log(`Adding ${msg[0].author.username} (${msg[0].author.id}) to channel overrides.`);
+				await merchChannelID.updateOverwrite(msg[0].member?.nickname ?? msg[0].author.id, { ADD_REACTIONS: true });
+			}
 		}
 
 		// Database logging for merch worlds

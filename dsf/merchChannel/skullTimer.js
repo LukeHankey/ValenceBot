@@ -5,7 +5,7 @@ const skullTimer = (message, updateDB) => {
 	const timer = cron.schedule('* * * * *', async () => {
 		const { merchChannel: { messages, channelID } } = await updateDB.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.messages': 1, 'merchChannel.channelID': 1 } });
 		const merchChannelID = message.guild.channels.cache.get(channelID);
-		for await (const { messageID, content, time, userID } of messages) {
+		for await (const { messageID, content, time, userID, author } of messages) {
 
 			try {
 				// Removes bot messages
@@ -15,12 +15,20 @@ const skullTimer = (message, updateDB) => {
 
 				if (Date.now() - time > 600000) {
 					const fetched = await message.channel.messages.fetch(messageID);
+					console.log(fetched.content);
 					fetched.react('☠️')
 						.then(async () => {
-							await merchChannelID.permissionOverwrites.get(userID).delete();
-							return await updateDB.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID } } });
+							await updateDB.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID } } });
+							console.log(messageID, content, userID);
+							const getPerms = await merchChannelID.permissionOverwrites.get(userID);
+							if (getPerms) {
+								console.log(`Removing ${author} (${userID}) from channel overrides.`);
+								return getPerms.delete();
+							}
+							else { return; }
 						})
-						.catch(() => {
+						.catch((e) => {
+							console.log(e);
 							return timer.stop();
 						});
 				}
