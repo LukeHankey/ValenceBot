@@ -54,8 +54,9 @@ module.exports = async (client, reaction, user) => {
 			}
 			else if (reaction.emoji.name === '📌') {
 				const userFetch = await message.guild.members.fetch(user.id);
-				userFetch.roles.add(data[0].roleID);
-				await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'events.messageID': data[0].messageID }, { $addToSet: { 'events.$.members': user.id } });
+				const eventFound = data.events.find(e => e.messageID === message.id);
+				userFetch.roles.add(eventFound.roleID);
+				await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'events.messageID': eventFound.messageID }, { $addToSet: { 'events.$.members': user.id } });
 			}
 		}
 		// DSF & Test servers
