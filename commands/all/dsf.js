@@ -340,7 +340,7 @@ module.exports = {
 		default:
 			return message.channel.send(func.nEmbed(
 				'**DSF Admin Commands List**',
-				'Here\'s a list of all the DSF commands you can use. Any parameter(s) in \`<>\` are optional:\n\n\`messages|m\`\n\`messages|m clear\`\n\`view scouter <num>\`\n\`view verified <num>\`\n\`user memberID/@member add <other> <num>\`\n\`user memberID/@member remove <other> <num>\`\n\`reacts\`\n\`reacts view\`\n\`reacts block\`',
+				'Here\'s a list of all the DSF commands you can use. Any parameter(s) in \`<>\` are optional:\n\n\`messages|m\`\n\`messages|m clear\`\n\`view scouter <num>\`\n\`view verified <num>\`\n\`user memberID/@member add <other> <num>\`\n\`user memberID/@member remove <other> <num>\`\n\`reacts\`\n\`reacts view\`',
 				colors.cyan,
 				client.user.displayAvatarURL(),
 			));
