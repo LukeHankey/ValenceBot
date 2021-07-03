@@ -83,6 +83,9 @@ module.exports = {
 							},
 						});
 					})
+						.catch(err => {
+							channels.errors.send('Unknown error in send.js', err);
+						})
 					: param === 'friend'
 						? message.channel.send(friendEmbed).then(async m => {
 							await settings.findOneAndUpdate({ '_id': message.guild.id }, {
@@ -91,6 +94,9 @@ module.exports = {
 								},
 							});
 						})
+							.catch(err => {
+								channels.errors.send('Unknown error in send.js', err);
+							})
 						: param === 'affiliate'
 							? message.channel.send(affiliateEmbed).then(async m => {
 								await settings.findOneAndUpdate({ '_id': message.guild.id }, {
@@ -99,6 +105,9 @@ module.exports = {
 									},
 								});
 							})
+								.catch(err => {
+									channels.errors.send('Unknown error in send.js', err);
+								})
 							: message.channel.send('Parameter must be either: \`ban\`, \`friend\` or \`affiliate\`.');
 			}
 		}
@@ -129,7 +138,10 @@ module.exports = {
 						const findID = await logs.find(log => log.messageID === identifiers[4]);
 
 						message.channel.send('Unable to find the embed to add to. - It must have been deleted! Removing it from the DataBase...')
-							.then(async m => await m.delete({ timeout: 10000 }));
+							.then(async m => await m.delete({ timeout: 10000 }))
+							.catch(err => {
+								channels.errors.send('Unknown error in send.js', err);
+							});
 
 						await settings.updateOne({ '_id': message.guild.id }, {
 							$pull: {
@@ -137,7 +149,7 @@ module.exports = {
 							},
 						});
 					}
-					else {console.log(err);}
+					else { channels.errors.send('Unknown error in send.js', err); }
 				}
 			}
 
@@ -196,7 +208,7 @@ module.exports = {
 								return await msg.edit(messageContent.join(' '));
 							}
 							catch (err) {
-								if (err) console.error(err);
+								channels.errors.send('Unknown error in send.js', err);
 							}
 						}
 						else {
@@ -213,7 +225,7 @@ module.exports = {
 								return await msg.edit(messageContent.join(' '));
 							}
 							catch (err) {
-								if (err) console.error(err);
+								channels.errors.send('Unknown error in send.js', err);
 							}
 						}
 					}

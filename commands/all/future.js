@@ -14,7 +14,7 @@ module.exports = {
 	usage: [''],
 	guildSpecific: ['733164313744769024', '420803245758480405'],
 	permissionLevel: 'Owner',
-	run: async (client, message, args, perms) => {
+	run: async (client, message, args, perms, channels) => {
 		if (message !== 'readyEvent') {
 			if (!perms.owner) return message.channel.send(perms.errorO);
 		}
@@ -168,7 +168,7 @@ module.exports = {
 			}
 		}
 		catch (e) {
-			console.error(e);
+			channels.errors.send('Unknown error in future.js', e);
 		}
 
 	},

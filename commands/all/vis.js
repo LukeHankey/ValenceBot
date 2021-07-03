@@ -62,6 +62,9 @@ module.exports = {
 								visTime: message.createdAt,
 							},
 						});
+					})
+					.catch(err => {
+						channels.errors.send('Unknown error in vis.js', err);
 					});
 			}
 			else if (array.some(x => attachment[0].includes(x))) {
@@ -74,6 +77,9 @@ module.exports = {
 								visTime: message.createdAt,
 							},
 						});
+					})
+					.catch(err => {
+						channels.errors.send('Unknown error in vis.js', err);
 					});
 			}
 			else if (attachment[0].includes('discord.com')) { // Discord message link
@@ -97,7 +103,7 @@ module.exports = {
 				catch (e) {
 					// Catch errors for a guild where the bot isn't in. Same for channel or message
 					if (e.code === 50001) {
-						if (e.code === 50001 && e.path.includes('guilds')) {
+						if (e.path.includes('guilds')) {
 							return message.channel.send('I am not in that server so I cannot access that message link.');
 						}
 						else {
@@ -108,6 +114,9 @@ module.exports = {
 						if (e.message === 'Unknown Message') {
 							return message.channel.send('I am unable to find that message. Maybe it has been deleted?');
 						}
+					}
+					else {
+						channels.errors.send('Unknown error in vis.js', e);
 					}
 				}
 			}

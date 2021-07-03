@@ -22,7 +22,7 @@ module.exports = {
 		const settings = db.collection('Settings');
 		const { prefix } = await settings.findOne({ _id: message.guild.id }, { projection: { prefix: 1 } });
 
-		const count = await vFactsColl.stats().then(r => r.count);
+		const count = await vFactsColl.stats().then(r => r.count).catch(err => channels.errors.send('Unknown error in fact.js', err));
 		const random = Math.floor((Math.random() * count) + 1);
 		const fact = args.slice(1).join(' ');
 		const code = '```';
@@ -64,7 +64,8 @@ module.exports = {
 								console.log(`Total facts decreased to: ${count - 1}`);
 								message.channel.send(`Fact #${r.number} has been deleted from the list!\n${code}${r.number}. ${r.Message}${code}`);
 								channels.logs.send(`<@${message.author.id}> removed a Fact: ${code}#${r.number}. ${r.Message}${code}`);
-							});
+							})
+							.catch(err => channels.errors.send('Unknown error in fact.js', err));
 						vFactsColl.deleteOne({ number: Number(args[1]) });
 					}
 					else {
@@ -91,7 +92,8 @@ module.exports = {
 									message.channel.send(`Fact #${rs.number} has been edited successfully!\n${code}${r.value.number}. ${r.value.Message} >>> ${rs.Message}${code}`);
 									channels.logs.send(`<@${message.author.id}> edited Fact #${rs.number}: ${code}diff\n- ${r.value.Message}\n+ ${rs.Message}${code}`);
 								});
-						});
+						})
+						.catch(err => channels.errors.send('Unknown error in fact.js', err));
 				}
 				else if (args[1] === isNaN) {
 					console.log(typeof +args[1]);
@@ -123,7 +125,8 @@ module.exports = {
 						message.channel.send(factEmbed(r.Message));
 						channels.logs.send(`<@${message.author.id}> used the Fact command in <#${message.channel.id}>. https://discordapp.com/channels/${message.guild.id}/${message.channel.id}/${message.channel.lastMessageID} ${code}#${r.number}. ${r.Message}${code}`);
 						console.log(`Fact command used by ${message.author.username} : ${r.Message}`);
-					});
+					})
+					.catch(err => channels.errors.send('Unknown error in fact.js', err));
 			}
 			else {
 				message.channel.send(perms.errorA);

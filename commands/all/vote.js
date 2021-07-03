@@ -8,7 +8,7 @@ module.exports = {
 	usage: ['<question>'],
 	guildSpecific: 'all',
 	permissionLevel: 'Mod',
-	run: async (client, message, args, perms) => {
+	run: async (client, message, args, perms, channels) => {
 		if (!perms.mod) return message.channel.send(perms.errorM);
 		const content = args.join(' ');
 
@@ -23,6 +23,9 @@ module.exports = {
 			await m.react('✅');
 			await m.react('❌');
 			await m.react('❓');
-		});
+		})
+			.catch(err => {
+				channels.errors.send('Unknown error in send.js', err);
+			});
 	},
 };

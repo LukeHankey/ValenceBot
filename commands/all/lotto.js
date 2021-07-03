@@ -19,7 +19,7 @@ module.exports = {
 	usage: ['', 'total', 'sheet <Google Sheet Name>', '<user>', 'add <amount> <collector> / <clanmate> / double (optional)'],
 	guildSpecific: ['472448603642920973', '733164313744769024', '668330890790699079'],
 	permissionLevel: 'Everyone',
-	run: async (client, message, args, perms) => {
+	run: async (client, message, args, perms, channels) => {
 		const db = getDb();
 		const settingsColl = db.collection('Settings');
 		const database = await settingsColl.findOne({ _id: message.guild.id });
@@ -321,13 +321,14 @@ module.exports = {
 										else {msg.reactions.resolve('◀️').users.remove(u.id);}
 									}
 								});
-							});
+							})
+							.catch(err => channels.errors.send('Unknown error in lotto.js', err));
 					}
 				}
 			}
 		}
 		catch(err) {
-			console.log(err);
+			channels.errors.send('Unknown error in lotto.js', err);
 		}
 	},
 };

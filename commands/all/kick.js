@@ -8,7 +8,7 @@ module.exports = {
 	usage:  ['ID/@mention'],
 	guildSpecific: 'all',
 	permissionLevel: 'Mod',
-	run: async (client, message, args, perms) => {
+	run: async (client, message, args, perms, channels) => {
 		if (!perms.mod) return message.channel.send(perms.errorM);
 
 		const memberToKick = args[0];
@@ -52,6 +52,9 @@ module.exports = {
 				catch (e) {
 					if (e.code === 10013) {
 						return message.channel.send(`There is no member in this server with ID: ${memberToKick}.`);
+					}
+					else {
+						channels.errors.send('Unknown error in kick.js', e);
 					}
 				}
 			}

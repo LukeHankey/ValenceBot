@@ -6,7 +6,7 @@ module.exports = {
 	usage: ['<number>'],
 	guildSpecific: 'all',
 	permissionLevel: 'Mod',
-	run: async (client, message, args, perms) => {
+	run: async (client, message, args, perms, channels) => {
 		if (!perms.mod) return message.channel.send(perms.errorM);
 		const amount = parseInt(args[0]) + 1;
 
@@ -21,8 +21,8 @@ module.exports = {
 			message.channel.bulkDelete(amount, true);
 		}
 		catch (err) {
-			console.error(err);
 			message.channel.Xsend('There was an error trying to delete messages in this channel since they are older than 2 weeks!');
+			channels.errors.send('Unknown error in delete.js', err);
 		}
 	},
 };

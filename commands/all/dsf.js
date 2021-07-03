@@ -19,7 +19,7 @@ module.exports = {
 	usage: ['messages', 'messages clear', 'view scouter/verified <num (optional)>', 'user memberID/@member add <num (optional)> <other>', 'user memberID/@member remove <num (optional)> <other>'],
 	guildSpecific: ['733164313744769024', '420803245758480405'],
 	permissionLevel: 'Admin',
-	run: async (client, message, args, perms) => {
+	run: async (client, message, args, perms, channels) => {
 		if (!perms.admin) return message.channel.send(perms.errorA);
 		const db = getDb();
 		const settings = db.collection('Settings');
@@ -49,7 +49,7 @@ module.exports = {
 					if (e.code === 50035) {
 						return message.channel.send('Too many messages stored. Use the clear command.');
 					}
-					else {console.error(1, e);}
+					else { channels.errors.send('Unknown error in dsf.js', e); }
 				}
 			}
 				break;
@@ -106,7 +106,7 @@ module.exports = {
 								},
 							});
 						}
-						else {console.error(e);}
+						else { channels.errors.send('Unknown error in dsf.js', e); }
 					}
 				});
 			}
@@ -170,6 +170,9 @@ module.exports = {
 								else {msg.reactions.resolve('◀️').users.remove(u.id);}
 							}
 						});
+					})
+					.catch(err => {
+						channels.errors.send('Unknown error in dsf.js', err);
 					});
 			}
 			}

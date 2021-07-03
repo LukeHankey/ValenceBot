@@ -13,7 +13,7 @@ module.exports = {
 	usage: ['', '<member ID>', '<@member/@role>', 'all'],
 	guildSpecific: ['420803245758480405', '733164313744769024', '668330890790699079'],
 	permissionLevel: 'Everyone',
-	run: async (client, message, args) => {
+	run: async (client, message, args, perms, channels) => {
 
 		const db = getDb();
 		const settings = db.collection('Settings');
@@ -214,6 +214,9 @@ module.exports = {
 								else {msg.reactions.resolve('◀️').users.remove(u.id);}
 							}
 						});
+					})
+					.catch(err => {
+						channels.errors.send('Unknown error in profile.js', err);
 					});
 				message.channel.stopTyping();
 			}

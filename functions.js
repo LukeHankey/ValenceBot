@@ -118,7 +118,7 @@ module.exports = {
 		}
 		else { return;}
 
-		await message.guild.roles.fetch(eventMessageCheck[0].role).then(r => r.delete());
+		await message.guild.roles.fetch(eventMessageCheck[0].role).then(r => r.delete()).catch(err => channels.errors.send('Unknown error in removeEvents function.', err));
 
 		const messageID = eventMessageCheck[0].message;
 		const info = database.calendarID.map(months => {

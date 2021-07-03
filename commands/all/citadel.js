@@ -375,6 +375,9 @@ module.exports = {
 												collectorC.on('collect', () => {
 													settings.findOneAndUpdate({ _id: message.guild.id }, { $set: { resetInfoCount: 0 } });
 												});
+											})
+											.catch((err) => {
+												channels.errors.send('Unknown error in citadel.js', err);
 											});
 										message.delete();
 										message.reply('Thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!');

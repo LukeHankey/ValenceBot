@@ -23,6 +23,7 @@ module.exports = async (client, message) => {
 			id: errors,
 			send: function(content) {
 				const channel = client.channels.cache.get(this.id);
+				content = `<@!212668377586597888>\n\n${content}`;
 				return channel.send(content);
 			},
 		},

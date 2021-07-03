@@ -14,33 +14,32 @@ module.exports = async (client, reaction, user) => {
 	}
 	else if (message.guild.id === '733164313744769024') {return;}
 
-	if (message.partial) await message.fetch().catch(err => console.log(12, err));
 	const { _id } = await settingsColl.findOne({ _id: message.guild.id });
+	const { channels: { errors, logs } } = await settingsColl.findOne({ _id: 'Globals' }, { projection: { channels: { errors: 1, logs: 1 } } });
+	const channels = {
+		errors: {
+			id: errors,
+			send: function(content) {
+				const channel = client.channels.cache.get(this.id);
+				content = `<@!212668377586597888>\n\n${content}`;
+				return channel.send(content);
+			},
+		},
+		logs: {
+			id: logs,
+			send: function(content) {
+				const channel = client.channels.cache.get(this.id);
+				return channel.send(content);
+			},
+		},
+	};
+	if (message.partial) await message.fetch().catch(err => channels.errors.send('Unknwon error in messageReactionAdd.js', err));
 
 	switch (message.guild.id) {
 	case _id:
 		// Valence
 		if (_id === '472448603642920973' || _id === '733164313744769024') {
 			const data = await settingsColl.findOne({ _id: message.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } });
-			const { channels: { errors, logs } } = await settingsColl.findOne({ _id: 'Globals' }, { projection: { channels: { errors: 1, logs: 1 } } });
-
-			const channels = {
-				errors: {
-					id: errors,
-					send: function(content) {
-						const channel = client.channels.cache.get(this.id);
-						return channel.send(content);
-					},
-				},
-				logs: {
-					id: logs,
-					send: function(content) {
-						const channel = client.channels.cache.get(this.id);
-						return channel.send(content);
-					},
-				},
-			};
-
 			const messageMatch = data.events.filter(m => m.messageID === message.id);
 
 			if (!messageMatch.length || user.bot) return;
@@ -114,7 +113,7 @@ module.exports = async (client, reaction, user) => {
 								},
 							});
 						}
-						else {return console.error(e);}
+						else { return channels.errors.send('Unknown error in messageReactionAdd.js', e); }
 					}
 				});
 			}

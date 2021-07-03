@@ -5,7 +5,7 @@ module.exports = {
 	usage: ['<user ID> <message>'],
 	guildSpecific: '668330890790699079',
 	permissionLevel: 'Owner',
-	run: async (client, message, args, perms) => {
+	run: async (client, message, args, perms, channels) => {
 		if (!perms.owner) return message.channel.send(perms.errorO);
 		const [userID, ...content] = args;
 
@@ -20,7 +20,7 @@ module.exports = {
 				if (e.code === 10013) {
 					return message.channel.send(`Error: ${e.message}`);
 				}
-				else {console.log(e);}
+				else { channels.errors.send('Unknown error in lotto.js', e); }
 			});
 
 
