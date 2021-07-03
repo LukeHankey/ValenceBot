@@ -15,11 +15,9 @@ const skullTimer = (message, updateDB) => {
 
 				if (Date.now() - time > 600000) {
 					const fetched = await message.channel.messages.fetch(messageID);
-					console.log(fetched.content);
 					fetched.react('☠️')
 						.then(async () => {
 							await updateDB.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID } } });
-							console.log(messageID, content, userID);
 							const getPerms = await merchChannelID.permissionOverwrites.get(userID);
 							if (getPerms) {
 								console.log(`Removing ${author} (${userID}) from channel overrides.`);
@@ -28,7 +26,7 @@ const skullTimer = (message, updateDB) => {
 							else { return; }
 						})
 						.catch((e) => {
-							console.log(e);
+							console.log(1, e);
 							return timer.stop();
 						});
 				}
