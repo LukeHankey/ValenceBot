@@ -4,7 +4,7 @@ const { addMerchCount } = require('./merchChannel/merchCount');
 const { skullTimer } = require('./merchChannel/skullTimer');
 const { otherCalls } = require('./otherCalls/otherCount');
 
-const dsf = async (client, message) => {
+const dsf = async (client, message, channels) => {
 	const db = getDb();
 	const settingsColl = db.collection('Settings');
 	const { merchChannel: { channelID, otherChannelID } } = await settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } }, { projection: { 'merchChannel.channelID': 1, 'merchChannel.otherChannelID': 1 } });
@@ -24,7 +24,7 @@ const dsf = async (client, message) => {
 				})
 			:	await message.delete({ timeout: 200 });
 
-		await addMerchCount(client, message, settingsColl);
+		await addMerchCount(client, message, settingsColl, channels);
 		skullTimer(message, settingsColl);
 	}
 	else if (message.channel.id === otherChannelID) {

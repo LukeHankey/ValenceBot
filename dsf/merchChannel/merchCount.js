@@ -1,7 +1,7 @@
 const { merchRegex } = require('../constants');
 const getDb = require('../../mongodb').getDb;
 
-const addMerchCount = async (client, message, updateDB) => {
+const addMerchCount = async (client, message, updateDB, { errors }) => {
 	try {
 		const db = getDb();
 		const settingsColl = db.collection('Settings');
@@ -118,7 +118,7 @@ const addMerchCount = async (client, message, updateDB) => {
 		}
 	}
 	catch (err) {
-		console.log(err);
+		errors.send('Unknown error in merchCount.js', err);
 	}
 };
 
