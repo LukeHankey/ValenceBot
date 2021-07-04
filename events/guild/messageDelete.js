@@ -8,6 +8,7 @@ module.exports = async (client, message) => {
 	const fullDB = await settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } });
 	if (!fullDB) return;
 	const { messages, channelID } = fullDB.merchChannel;
+	const merchChannelID = message.guild.channels.cache.get(channelID);
 
 	if (process.env.NODE_ENV === 'DEV') {
 		if (message.guild.id !== '733164313744769024') return;
@@ -84,6 +85,13 @@ module.exports = async (client, message) => {
 			// Remove count by posting or bot to remove
 			await sendAndUpdate(botServerWebhook, embed, checkDB);
 			await sendAndUpdate(dsfServerWebhook, embed, checkDB);
+
+			const getPerms = await merchChannelID.permissionOverwrites.get(checkDB.userID);
+			if (getPerms) {
+				console.log(`Removing ${user.user.username} (${checkDB.userID}) from channel overrides.`);
+				return getPerms.delete();
+			}
+			else { return; }
 		}
 	}
 	// Someone else deleted message
@@ -105,6 +113,13 @@ module.exports = async (client, message) => {
 			// Remove count by posting or bot to remove
 			await sendAndUpdate(botServerWebhook, embed, checkDB);
 			await sendAndUpdate(dsfServerWebhook, embed, checkDB);
+
+			const getPerms = await merchChannelID.permissionOverwrites.get(checkDB.userID);
+			if (getPerms) {
+				console.log(`Removing ${user.user.username} (${checkDB.userID}) from channel overrides.`);
+				return getPerms.delete();
+			}
+			else { return; }
 		}
 	}
 };
