@@ -11,7 +11,7 @@ const dsf = async (client, message) => {
 
 	if (message.channel.id === channelID) {
 		if (message.author.bot) return;
-		merchRegex.test(message.content)
+		merchRegex.test(message.content) && !message.content.includes('dead')
 			?
 			message.channel.send(`<@&670842187461820436> - ${message.content}`)
 				.then(async mes => {
