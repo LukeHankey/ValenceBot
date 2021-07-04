@@ -75,7 +75,7 @@ const addMerchCount = async (client, message, updateDB) => {
 			});
 			if (!(await checkMemberRole(msg[0].author.id))) {
 				console.log(`Adding ${msg[0].author.username} (${msg[0].author.id}) to channel overrides.`);
-				await merchChannelID.updateOverwrite(msg[0].member?.nickname ?? msg[0].author.id, { ADD_REACTIONS: true });
+				await merchChannelID.updateOverwrite(msg[0].author.id, { ADD_REACTIONS: true });
 			}
 		}
 
