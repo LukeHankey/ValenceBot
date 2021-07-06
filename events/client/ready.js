@@ -1,13 +1,11 @@
-/* eslint-disable max-nested-callbacks */
 /* eslint-disable no-octal */
 /* eslint-disable no-inline-comments */
 const Discord = require('discord.js');
 const getDb = require('../../mongodb').getDb;
-// const fetch = require('node-fetch');
+const fetch = require('node-fetch');
 const cron = require('node-cron');
 const randomColor = Math.floor(Math.random() * 16777215).toString(16);
-const func = require('../../functions');
-// const colors = require('../../colors.json');
+const { msCalc, doubleDigits, nextDay, csvJSON } = require('../../functions');
 const { ScouterCheck } = require('../../classes.js');
 
 module.exports = async client => {
@@ -18,7 +16,7 @@ module.exports = async client => {
 		activity: { type: 'LISTENING', name: 'DMs for Bot Help!' },
 	});
 
-	const factEmbed = function(factMessage) {
+	const factEmbed = (factMessage) => {
 		const embed = new Discord.MessageEmbed()
 			.setTitle('**Daily Valence Fact**')
 			.setDescription(factMessage)
@@ -28,80 +26,122 @@ module.exports = async client => {
 		return embed;
 	};
 
-	// function csvJSON(csv) {
-
-	// 	const lines = csv.split('\n');
-	// 	const result = [];
-	// 	const headers = lines[0].split(',');
-
-	// 	for (let i = 1; i < lines.length; i++) {
-	// 		const obj = {};
-	// 		const currentline = lines[i].split(',');
-
-	// 		for (let j = 0; j < headers.length; j++) {
-	// 			obj[headers[j]] = currentline[j];
-	// 		}
-
-	// 		result.push(obj);
-	// 	}
-
-	// 	// return result; //JavaScript object
-	// 	return JSON.parse(JSON.stringify(result)); // JSON
-	// }
-
 	const db = getDb();
-	// const usersColl = db.collection('Users');
+	const usersColl = db.collection('Users');
 
+	const getData = async () => {
+		const clanData = await fetch('http://services.runescape.com/m=clan-hiscores/members_lite.ws?clanName=Valence');
+		const text = clanData.text();
+		const json = text.then(body => csvJSON(body));
 
-	// eslint-disable-next-line no-unused-vars
-	// const getData = async () => {
-	// 	const clanData = await fetch('http://services.runescape.com/m=clan-hiscores/members_lite.ws?clanName=Valence');
-	// 	const text = clanData.text();
-	// 	const json = text.then(body => csvJSON(body));
+		const channel = client.channels.cache.get('860930368994803732');
+		const clanRoles = {
+			recruit: '473234580904607745',
+			corporal: '473234334342578198',
+			sergeant: '473233680161046528',
+			lieutenant: '473233520773300257',
+			captain: '473233412925292560',
+			general: '473232083628720139',
+		};
 
-	// 	json.then(res => {
-	// 		const newData = [];
+		json.then(async res => {
+			const newData = [];
 
-	// 		for (const data of res) {
-	// 			const regex = /�/g;
-	// 			if ((data.Clanmate).includes('�')) {
-	// 				data.Clanmate = data.Clanmate.replace(regex, ' ') || data.Clanmate;
-	// 			}
-	// 			newData.push(data);
-	// 		}
+			for (const data of res) {
+				const regex = /�/g;
+				if ((data.Clanmate).includes('�')) {
+					data.Clanmate = data.Clanmate.replace(regex, ' ') || data.Clanmate;
+				}
+				newData.push(data);
+			}
 
-	// 		newData.forEach(e => {
-	// 			e._id = e.Clanmate.toUpperCase();
-	// 		});
-	// 		usersColl.insertMany(newData, { ordered: false });
-	// 	})
-	// 		.catch(error => console.error(error));
-	// };
-	// getData()
+			const renameKeys = (keysMap, object) =>
+				Object.keys(object).reduce((acc, key) => ({
+					...acc,
+					...{ [keysMap[key] || key]: object[key] },
+				}),
+				{},
+				);
 
-	// usersColl.updateMany(
-	// 	{},
-	// 	{
-	// 		$set:
-	// 		{
-	// 			'Caps': 0,
-	// 			'Total Points': 0,
-	// 			'Events': 0,
-	// 			'Recruits': 0,
-	// 			'Additional Points': 0,
-	// 			'Donations': 0,
-	// 			'Hosts': 0,
-	// 			'Events & Recruits': 0,
-	// 			'Rank Earned': '',
-	// 			'Donation Points': 0,
-	// 		},
-	// 	},
-	// 	{ upsert: true },
-	// );
+			newData.forEach(async clanUser => {
+				clanUser = renameKeys({ 'Clanmate': 'clanMate', ' Clan Rank': 'clanRank', ' Total XP': 'totalXP', ' Kills': 'kills' }, clanUser);
+				clanUser.discord = '';
+				clanUser.discActive = false;
+				clanUser.alt = false;
+				const dbCheck = await usersColl.findOne({ 'clanMate': clanUser.clanMate });
+				if (!dbCheck) {
+					await usersColl.insertOne(clanUser);
+				}
+				else {
+					// Updates total XP but doesn't deal with name changes, yet.
+					await usersColl.updateOne({ clanMate: clanUser.clanMate }, { $set: { totalXP: clanUser.totalXP } });
+				}
+				const adminRoles = ['Admin', 'Organiser', 'Coordinator', 'Overseer', 'Deputy Owner', 'Owner'];
+
+				if (adminRoles.includes(dbCheck.clanRank) || !dbCheck.discActive || dbCheck.alt) {return;}
+				else {
+					const setRoles = async (newRole, oldRole) => {
+						await getMember.roles.add(newRole);
+						await getMember.roles.remove(oldRole.id);
+					};
+					const server = client.guilds.cache.get('472448603642920973');
+					const getMember = server.members.cache.get(dbCheck.discord) ?? await server.members.fetch(dbCheck.discord).catch(async err => {
+						channel.send(`Unable to fetch user (${dbCheck.clanMate} - ${dbCheck.discord}) - Left the discord and marking as inactive.\`\`\`${err}\`\`\``);
+						return await usersColl.updateOne({ clanMate: dbCheck.clanMate }, { $set: { discActive: false } });
+					});
+					let role = getMember.roles.cache.filter(r => {
+						const keys = Object.keys(clanRoles);
+						return keys.find(val => r.name.toLowerCase() == val);
+					});
+					if (!role.size) return channel.send(`Unable to find role name as ${getMember.user.username} (${getMember.id}) has no rank roles.`);
+					if (role.size > 1) return channel.send(`${getMember} (${getMember.id}) has more than 1 rank role.`);
+					role = role.first();
+					if (role.name !== dbCheck.clanRank) {
+						switch(dbCheck.clanRank) {
+						case 'General':
+							await setRoles(clanRoles.general, role);
+							console.log('General:', dbCheck.clanMate, role.name, dbCheck.clanRank);
+							break;
+						case 'Captain':
+							await setRoles(clanRoles.captain, role);
+							console.log('Captain:', dbCheck.clanMate, role.name, dbCheck.clanRank);
+							break;
+						case 'Lieutenant':
+							await setRoles(clanRoles.lieutenant, role);
+							console.log('Lieutenant:', dbCheck.clanMate, role.name, dbCheck.clanRank);
+							break;
+						case 'Sergeant':
+							await setRoles(clanRoles.sergeant, role);
+							console.log('Sergeant:', dbCheck.clanMate, role.name, dbCheck.clanRank);
+							break;
+						case 'Corporal':
+							await setRoles(clanRoles.corporal, role);
+							console.log('Corporal:', dbCheck.clanMate, role.name, dbCheck.clanRank);
+							break;
+						case 'Recruit':
+							await setRoles(clanRoles.recruit, role);
+							console.log('Recruit:', dbCheck.clanMate, role.name, dbCheck.clanRank);
+							break;
+						}
+					}
+					else { return; }
+				}
+			});
+		})
+			.catch(error => console.error(error));
+	};
+
+	/**
+	 * Pulling user info
+	 *
+	 * Get data from Jagex clans
+	 * Store { _id: username, rank: current_rank, total_xp: total_clan_xp, discord_id: id }
+	 * Apply roles, update rank (if changed) + total_xp
+	 *
+	 */
 
 	const vFactsColl = await db.collection('Facts');
 	const settings = await db.collection('Settings');
-	const code = '```';
 	cron.schedule('0 10 * * *', async () => {
 		const count = await vFactsColl.stats()
 			.then(res => {
@@ -131,12 +171,12 @@ module.exports = async client => {
 				const today_str = days[today_num];
 				// eslint-disable-next-line no-shadow
 				const newDates = function(days, hours, minutes, timer) {
-					const time = func.msCalc(days, func.doubleDigits(hours), func.doubleDigits(minutes)) + timer;
+					const time = msCalc(days, doubleDigits(hours), doubleDigits(minutes)) + timer;
 					return new Date(time).toUTCString();
 				};
 				await settings.find({}).toArray().then(res => {
 					const dayNum = days.indexOf(res[document].citadel_reset_time.day);
-					const resetString = func.nextDay(dayNum).toUTCString().split(' ');
+					const resetString = nextDay(dayNum).toUTCString().split(' ');
 					resetString.splice(4, 1, `${res[document].citadel_reset_time.hour}:${res[document].citadel_reset_time.minute}:00`);
 					const resetms = Date.parse(resetString.join(' '));
 
@@ -160,7 +200,7 @@ module.exports = async client => {
 							if (today.getUTCHours() == res[document].citadel_reset_time.hour) {
 								if (res[document].citadel_reset_time.minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].citadel_reset_time.minute + 5)) {
 									client.channels.cache.get(res[document].channels.adminChannel).send('@here - Set the Citadel Reset Time!');
-									client.channels.cache.get(res[document].citadel_reset_time.reminders[remDoc].channel).send(`${res[document].citadel_reset_time.reminders[remDoc].message}${code}You can also help out with setting the Citadel Reset Time since it changes almost every single week! Use the following command to let your Clan Admins know the next Citadel Reset:\n\n${res[document].prefix}citadel reset info <days> <hours> <minutes> <image (optional)>\n\nExample:\n${res[document].prefix}citadel reset info 6 22 42${code}`);
+									client.channels.cache.get(res[document].citadel_reset_time.reminders[remDoc].channel).send(`${res[document].citadel_reset_time.reminders[remDoc].message}\`\`\`You can also help out with setting the Citadel Reset Time since it changes almost every single week! Use the following command to let your Clan Admins know the next Citadel Reset:\n\n${res[document].prefix}citadel reset info <days> <hours> <minutes> <image (optional)>\n\nExample:\n${res[document].prefix}citadel reset info 6 22 42\`\`\``);
 								}
 							}
 						}
@@ -191,115 +231,6 @@ module.exports = async client => {
 	// 		}
 	// 	})
 	// })
-
-	// const dsfSpamMessage = cron.schedule('*/15 * * * *', async () => {
-	// 	settings.findOne({ _id: '420803245758480405' })
-	// 		.then(async dsf => {
-	// 			const modChannel = client.channels.cache.get('643109949114679317');
-	// 			const embed = new Discord.MessageEmbed()
-	// 				.setTitle('Reaction Spammers Incoming!')
-	// 				// eslint-disable-next-line quotes
-	// 				.setDescription(`Threholds are 10 reactions clicked (can be the same one) or 5 different reactions clicked.\n📥 - Update the post with new information.\n⏰ - Starts a continuous timer that checks members on this post to see if they have the Grounded role. If they do, it will remove them.\n⏹️ - Stops the timer.`)
-	// 				.setColor(colors.orange)
-	// 				.setTimestamp();
-
-	// 			// TODO - Check for double messages and remove the second/last one
-
-	// 			const embeds = dsf.merchChannel.spamProtection.flatMap(obj => {
-	// 				const usersList = obj.users.map(userObj => {
-	// 					// userObj = User, total count, skull count, reactions[]
-	// 					let skullsCount = 0;
-	// 					userObj.reactions.filter(r => {
-	// 						if (['☠️', '💀', '<:skull:805917068670402581>'].includes(r.emoji)) {
-	// 							skullsCount = skullsCount + r.count;
-	// 						}
-	// 					});
-	// 					return { totalCount: userObj.count, skullCount: skullsCount, user: { id: userObj.id, username: userObj.username }, reactions: userObj.reactions };
-	// 				});
-	// 				const dataFields = [];
-	// 				usersList.forEach(u => {
-	// 				// Filters added here
-	// 					if (u.totalCount > 9 || u.reactions.length > 4) {
-	// 						const emojis = u.reactions.map(e => { return `${e.emoji} **- ${e.count}**`; });
-	// 						dataFields.push({ name: `${u.user.username} - ${u.user.id}`, value: `Mention: <@!${u.user.id}>\nTotal Reacts (${u.skullCount}/${u.totalCount})\n\n${emojis.join('  |   ')}`, inline: true });
-	// 					}
-	// 					else { return; }
-	// 				});
-	// 				return dataFields;
-	// 			});
-
-	// 			if (embeds.length && !dsf.merchChannel.spamMessagePost.id.length) {
-	// 				const msg = await modChannel.send(embed.setFooter(`Page ${1} of ${embeds.length}`));
-	// 				await settings.findOneAndUpdate({ _id: '420803245758480405' }, {
-	// 					$set: {
-	// 						'merchChannel.spamMessagePost': { id: msg.id, timestamp: msg.createdTimestamp },
-	// 					},
-	// 				});
-	// 				await msg.react('◀️');
-	// 				await msg.react('▶️');
-	// 				await msg.react('📥');
-	// 				await msg.react('⏰');
-	// 				await msg.react('⏹️');
-	// 				dsfSpamMessage.stop();
-	// 			}
-	// 			else if (dsf.merchChannel.spamMessagePost.id.length) {
-	// 				dsfSpamMessage.stop();
-	// 			}
-	// 		});
-
-	// 	// Test
-	// 	settings.findOne({ _id: '733164313744769024' })
-	// 		.then(async dsf => {
-	// 			const modChannel = client.channels.cache.get('734477320672247869');
-	// 			const embed = new Discord.MessageEmbed()
-	// 				.setTitle('Reaction Spammers Incoming!')
-	// 				.setDescription('Threholds are 10 reactions clicked (can be the same one) or 5 different reactions clicked. Clicking any of the reactions will update the post, though it will be updated everytime someone reacts to any of the messages listed below.')
-	// 				.setColor(colors.orange)
-	// 				.setTimestamp();
-
-	// 			// TODO - Check for double messages and remove the second/last one
-
-	// 			const embeds = dsf.merchChannel.spamProtection.flatMap(obj => {
-	// 				const usersList = obj.users.map(userObj => {
-	// 					// userObj = User, total count, skull count, reactions[]
-	// 					let skullsCount = 0;
-	// 					userObj.reactions.filter(r => {
-	// 						if (['☠️', '💀', '<:skull:805917068670402581>'].includes(r.emoji)) {
-	// 							skullsCount = skullsCount + r.count;
-	// 						}
-	// 					});
-	// 					return { totalCount: userObj.count, skullCount: skullsCount, user: { id: userObj.id, username: userObj.username }, reactions: userObj.reactions };
-	// 				});
-	// 				const dataFields = [];
-	// 				usersList.forEach(u => {
-	// 				// Filters added here
-	// 					if (u.totalCount > 9 || u.reactions.length > 4) {
-	// 						const emojis = u.reactions.map(e => { return `${e.emoji} **- ${e.count}**`; });
-	// 						dataFields.push({ name: `${u.user.username} - ${u.user.id}`, value: `Mention: <@!${u.user.id}>\nTotal Reacts (${u.skullCount}/${u.totalCount})\n\n${emojis.join('  |   ')}`, inline: true });
-	// 					}
-	// 					else { return; }
-	// 				});
-	// 				return dataFields;
-	// 			});
-
-	// 			if (embeds.length && !dsf.merchChannel.spamMessagePost.id.length) {
-	// 				const msg = await modChannel.send(embed.setFooter(`Page ${1} of ${embeds.length}`));
-	// 				await settings.findOneAndUpdate({ _id: '733164313744769024' }, {
-	// 					$set: {
-	// 						'merchChannel.spamMessagePost': { id: msg.id, timestamp: msg.createdTimestamp },
-	// 					},
-	// 				});
-	// 				await msg.react('◀️');
-	// 				await msg.react('▶️');
-	// 				await msg.react('📥');
-	// 				await msg.react('⏰');
-	// 				dsfSpamMessage.stop();
-	// 			}
-	// 			else if (dsf.merchChannel.spamMessagePost.id.length) {
-	// 				dsfSpamMessage.stop();
-	// 			}
-	// 		});
-	// });
 
 	const commandCollection = client.commands.filter(cmd => cmd.name === 'wish' || cmd.name === 'future');
 	const commands = commandCollection.first(2);
@@ -401,6 +332,7 @@ module.exports = async client => {
 		if (new Date().getDay() === 3 && (new Date().getHours() === 01 || new Date().getHours() === 00) && new Date().getMinutes() === 00) { // Weekly reset
 			scout.send();
 			vScout.send();
+			await getData();
 		}
 
 		if (new Date().getDate() === 2 && (new Date().getHours() === 01 || new Date().getHours() === 00) && new Date().getMinutes() === 00) { // Monthly reset + 1 day
