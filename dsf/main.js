@@ -28,7 +28,7 @@ const dsf = async (client, message, channels) => {
 		skullTimer(message, settingsColl);
 	}
 	else if (message.channel.id === otherChannelID) {
-		await otherCalls(message, settingsColl);
+		await otherCalls(message, settingsColl, channels);
 	}
 	else {return;}
 };

@@ -1,6 +1,6 @@
 const getDb = require('../../mongodb').getDb;
 
-const otherCount = async (message, updateDB) => {
+const otherCalls = async (message, updateDB, { errors }) => {
 	// Adds count for other events channel
 	try {
 		const db = getDb();
@@ -12,6 +12,7 @@ const otherCount = async (message, updateDB) => {
 
 		const findMessage = await scoutTracker.find(x => x.userID === msg[0].author.id);
 		if (!findMessage) {
+			console.log(`New other: ${msg[0].author.username} (${message.content})`, msg[0].author.id);
 			await updateDB.findOneAndUpdate({ _id: message.guild.id },
 				{
 					$addToSet: {
@@ -32,6 +33,7 @@ const otherCount = async (message, updateDB) => {
 				});
 		}
 		else {
+			console.log(`Old other: ${msg[0].author.username} (${message.content})`, msg[0].author.id);
 			await updateDB.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
 				$inc: {
 					'merchChannel.scoutTracker.$.otherCount': 1,
@@ -45,11 +47,11 @@ const otherCount = async (message, updateDB) => {
 		}
 	}
 	catch (e) {
-		console.log(e);
+		errors.send('Unknown error in otherCount.js', e);
 	}
 
 };
 
 module.exports = {
-	otherCount,
+	otherCalls,
 };

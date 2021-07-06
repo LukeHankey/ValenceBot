@@ -33,7 +33,8 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 				console.log(`New & Spam: ${userN.user.username} (${message.content})`, userN.id);
 				return errorLog.forEach(id => id.send(` \`\`\`diff\n\n+ Spam Message - (User has not posted before)\n- User ID: ${userN.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\``));
 			}
-			console.log(`New: ${userN.user.username} (${message.content})`, userN.id);
+			console.log(`New (userN): ${userN.user.username} (${message.content})`, userN.id);
+			console.log(`New (msg[0]): ${msg[0].author.username} (${message.content})`, msg[0].author.id);
 			await updateDB.findOneAndUpdate({ _id: message.guild.id },
 				{
 					$addToSet: {
@@ -62,7 +63,8 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 				console.log(`Old & Spam: ${userN.user.username} (${message.content})`, userN.user.id);
 				return errorLog.forEach(id => id.send(` \`\`\`diff\n+ Spam Message - (User has posted before)\n\n- User ID: ${userN.user.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\``));
 			}
-			console.log(`Old: ${userN.user.username} (${message.content})`, findMessage.userID === userN.id, findMessage.userID);
+			console.log(`Old (userN): ${userN.user.username} (${message.content})`, findMessage.userID === userN.id, findMessage.userID);
+			console.log(`Old (msg[0]): ${msg[0].author.username} (${message.content})`, msg[0].author.id);
 			await updateDB.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
 				$inc: {
 					'merchChannel.scoutTracker.$.count': 1,
