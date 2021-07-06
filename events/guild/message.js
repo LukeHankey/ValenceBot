@@ -67,14 +67,14 @@ module.exports = async (client, message) => {
 
 	// Deep Sea Fishing
 	if (message.guild.id === '420803245758480405' || message.guild.id === '733164313744769024') {
-		const { merchChannel: { channelID } } = await settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } }, { projection: { 'merchChannel.channelID': 1 } });
+		const { merchChannel: { channelID, otherChannelID } } = await settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } }, { projection: { 'merchChannel.channelID': 1, 'merchChannel.otherChannelID': 1 } });
 		// Merch Posts Publish
 		if (message.channel.id === '770307127557357648') {
 			if (message.author.bot) {
 				message.crosspost();
 			}
 		}
-		if (message.channel.id === channelID) {
+		if (message.channel.id === channelID || message.channel.id === otherChannelID) {
 			// DSF - Merch Calls
 			await dsf(client, message, channels);
 		}
