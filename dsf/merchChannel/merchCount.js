@@ -63,7 +63,7 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 				console.log(`Old & Spam: ${userN.user.username} (${message.content})`, userN.user.id);
 				return errorLog.forEach(id => id.send(` \`\`\`diff\n+ Spam Message - (User has posted before)\n\n- User ID: ${userN.user.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\``));
 			}
-			console.log(`Old (userN): ${userN.user.username} (${message.content})`, findMessage.userID === userN.id, findMessage.userID);
+			console.log(`Old (userN): ${userN.user.username} (${message.content})`, findMessage.userID === userN.id, findMessage.userID, userN.id);
 			console.log(`Old (msg[0]): ${msg[0].author.username} (${message.content})`, msg[0].author.id);
 			await updateDB.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
 				$inc: {
