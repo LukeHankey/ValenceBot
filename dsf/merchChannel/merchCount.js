@@ -26,22 +26,21 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 		};
 
 
-		const findMessage = scoutTracker.find(x => x.userID === msg[0].author.id);
 		const userN = message.member;
+		const findMessage = scoutTracker.find(x => x.userID === userN.id);
 		if (!findMessage) {
 			if (!merchRegex.test(message.content)) {
 				console.log(`New & Spam: ${userN.user.username} (${message.content})`, userN.id);
 				return errorLog.forEach(id => id.send(` \`\`\`diff\n\n+ Spam Message - (User has not posted before)\n- User ID: ${userN.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\``));
 			}
-			console.log(`New (userN): ${userN.user.username} (${message.content})`, userN.id);
-			console.log(`New (msg[0]): ${msg[0].author.username} (${message.content})`, msg[0].author.id);
+			console.log(`New: ${userN.user.username} (${message.content})`, userN.id);
 			await updateDB.findOneAndUpdate({ _id: message.guild.id },
 				{
 					$addToSet: {
 						'merchChannel.scoutTracker': {
 							$each: [{
-								userID: msg[0].author.id,
-								author: msg[0].member?.nickname ?? msg[0].author.username,
+								userID: userN.id,
+								author: userN.nickname ?? userN.user.username,
 								firstTimestamp: msg[0].createdTimestamp,
 								firstTimestampReadable: new Date(msg[0].createdTimestamp),
 								lastTimestamp: msg[0].createdTimestamp,
@@ -53,9 +52,9 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 						},
 					},
 				});
-			if (!(await checkMemberRole(msg[0].author.id))) {
-				console.log(`Adding ${msg[0].member?.nickname ?? msg[0].author.username} (${msg[0].author.id}) to channel overrides.`);
-				await merchChannelID.updateOverwrite(msg[0].author.id, { ADD_REACTIONS: true });
+			if (!(await checkMemberRole(userN.id))) {
+				console.log(`Adding ${userN.nickname ?? userN.user.username} (${userN.id}) to channel overrides.`);
+				await merchChannelID.updateOverwrite(userN.id, { ADD_REACTIONS: true });
 			}
 		}
 		else {
@@ -63,21 +62,20 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 				console.log(`Old & Spam: ${userN.user.username} (${message.content})`, userN.user.id);
 				return errorLog.forEach(id => id.send(` \`\`\`diff\n+ Spam Message - (User has posted before)\n\n- User ID: ${userN.user.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\``));
 			}
-			console.log(`Old (userN): ${userN.user.username} (${message.content})`, findMessage.userID === userN.id, findMessage.userID, userN.id);
-			console.log(`Old (msg[0]): ${msg[0].author.username} (${message.content})`, msg[0].author.id);
+			console.log(`Old: ${userN.user.username} (${message.content})`, findMessage.userID === userN.id, findMessage.userID, userN.id);
 			await updateDB.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
 				$inc: {
 					'merchChannel.scoutTracker.$.count': 1,
 				},
 				$set: {
-					'merchChannel.scoutTracker.$.author': msg[0].member?.nickname ?? msg[0].author.username,
+					'merchChannel.scoutTracker.$.author': userN.nickname ?? userN.user.username,
 					'merchChannel.scoutTracker.$.lastTimestamp': msg[0].createdTimestamp,
 					'merchChannel.scoutTracker.$.lastTimestampReadable': new Date(msg[0].createdTimestamp),
 				},
 			});
-			if (!(await checkMemberRole(msg[0].author.id))) {
-				console.log(`Adding ${msg[0].author.username} (${msg[0].author.id}) to channel overrides.`);
-				await merchChannelID.updateOverwrite(msg[0].author.id, { ADD_REACTIONS: true });
+			if (!(await checkMemberRole(userN.id))) {
+				console.log(`Adding ${userN.user.username} (${userN.id}) to channel overrides.`);
+				await merchChannelID.updateOverwrite(userN.id, { ADD_REACTIONS: true });
 			}
 		}
 
