@@ -95,7 +95,7 @@ module.exports = {
 							await message.react('✅');
 							return await m.react('☠️');
 						}
-						else {return;}
+						else {return await message.react('❌');}
 					}
 					catch (e) {
 						if (e.code === 10008) {
