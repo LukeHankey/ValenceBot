@@ -1,13 +1,9 @@
-/* eslint-disable max-nested-callbacks */
 /* eslint-disable no-octal */
-/* eslint-disable no-inline-comments */
 const Discord = require('discord.js');
 const getDb = require('../../mongodb').getDb;
-// const fetch = require('node-fetch');
 const cron = require('node-cron');
 const randomColor = Math.floor(Math.random() * 16777215).toString(16);
 const func = require('../../functions');
-// const colors = require('../../colors.json');
 const { ScouterCheck } = require('../../classes.js');
 
 module.exports = async client => {
@@ -27,77 +23,7 @@ module.exports = async client => {
 			.setTimestamp();
 		return embed;
 	};
-
-	// function csvJSON(csv) {
-
-	// 	const lines = csv.split('\n');
-	// 	const result = [];
-	// 	const headers = lines[0].split(',');
-
-	// 	for (let i = 1; i < lines.length; i++) {
-	// 		const obj = {};
-	// 		const currentline = lines[i].split(',');
-
-	// 		for (let j = 0; j < headers.length; j++) {
-	// 			obj[headers[j]] = currentline[j];
-	// 		}
-
-	// 		result.push(obj);
-	// 	}
-
-	// 	// return result; //JavaScript object
-	// 	return JSON.parse(JSON.stringify(result)); // JSON
-	// }
-
 	const db = getDb();
-	// const usersColl = db.collection('Users');
-
-
-	// eslint-disable-next-line no-unused-vars
-	// const getData = async () => {
-	// 	const clanData = await fetch('http://services.runescape.com/m=clan-hiscores/members_lite.ws?clanName=Valence');
-	// 	const text = clanData.text();
-	// 	const json = text.then(body => csvJSON(body));
-
-	// 	json.then(res => {
-	// 		const newData = [];
-
-	// 		for (const data of res) {
-	// 			const regex = /�/g;
-	// 			if ((data.Clanmate).includes('�')) {
-	// 				data.Clanmate = data.Clanmate.replace(regex, ' ') || data.Clanmate;
-	// 			}
-	// 			newData.push(data);
-	// 		}
-
-	// 		newData.forEach(e => {
-	// 			e._id = e.Clanmate.toUpperCase();
-	// 		});
-	// 		usersColl.insertMany(newData, { ordered: false });
-	// 	})
-	// 		.catch(error => console.error(error));
-	// };
-	// getData()
-
-	// usersColl.updateMany(
-	// 	{},
-	// 	{
-	// 		$set:
-	// 		{
-	// 			'Caps': 0,
-	// 			'Total Points': 0,
-	// 			'Events': 0,
-	// 			'Recruits': 0,
-	// 			'Additional Points': 0,
-	// 			'Donations': 0,
-	// 			'Hosts': 0,
-	// 			'Events & Recruits': 0,
-	// 			'Rank Earned': '',
-	// 			'Donation Points': 0,
-	// 		},
-	// 	},
-	// 	{ upsert: true },
-	// );
 
 	const vFactsColl = await db.collection('Facts');
 	const settings = await db.collection('Settings');
@@ -111,7 +37,8 @@ module.exports = async client => {
 
 		await vFactsColl.findOne({ number: random })
 			.then(res => {
-				const ID = ['732014449182900247', '473235620991336468']; // #test-channel & #good-chats
+				// #test-channel & #good-chats
+				const ID = ['732014449182900247', '473235620991336468'];
 
 				ID.forEach(channel => {
 					client.channels.cache.get(channel).send(factEmbed(res.Message));
@@ -166,7 +93,8 @@ module.exports = async client => {
 						}
 					}
 				});
-			}, { scheduled: r[document].citadel_reset_time.scheduled }); // Will continue to be on/off and won't switch until the bot resets
+				// Will continue to be on/off and won't switch until the bot resets
+			}, { scheduled: r[document].citadel_reset_time.scheduled });
 		}
 	});
 
@@ -304,7 +232,8 @@ module.exports = async client => {
 	const commandCollection = client.commands.filter(cmd => cmd.name === 'wish' || cmd.name === 'future');
 	const commands = commandCollection.first(2);
 
-	cron.schedule('58 23 * * *', async () => { // Daily reset
+	// Daily reset
+	cron.schedule('58 23 * * *', async () => {
 		const { merchantWishes: { range }, futureStock } = await settings.findOne({ _id: '420803245758480405' }, { projection: { 'merchantWishes.range': 1, futureStock: 1 } });
 
 		const increaseRange = (oldRange) => {
@@ -327,8 +256,10 @@ module.exports = async client => {
 				'futureStock.range': increaseRange(futureStock.range),
 			},
 		});
-		await commands[0].run(client, 'readyEvent'); // Future
-		await commands[1].run(client, 'readyEvent'); // Wish
+		// Future
+		await commands[0].run(client, 'readyEvent');
+		// Wish
+		await commands[1].run(client, 'readyEvent');
 	});
 
 	// DSF Activity Posts //
@@ -354,7 +285,7 @@ module.exports = async client => {
 		// await classVars(vScout, `Luke's Server`, res) // Test
 
 		const addedRoles = async (name) => {
-			const members = await name.checkRolesAdded(); // Role has been added
+			const members = await name.checkRolesAdded();
 			members.map(async x => {
 				const role = await name.role;
 				await settings.updateOne({ serverName: name._guild_name, 'merchChannel.scoutTracker.userID': x.id }, {
@@ -398,12 +329,16 @@ module.exports = async client => {
 		});
 		removeInactives(scout);
 
-		if (new Date().getDay() === 3 && (new Date().getHours() === 01 || new Date().getHours() === 00) && new Date().getMinutes() === 00) { // Weekly reset
+		console.log(new Date().getHours());
+
+		// Weekly reset
+		if (new Date().getDay() === 3 && (new Date().getHours() === 01 || new Date().getHours() === 00) && new Date().getMinutes() === 00) {
 			scout.send();
 			vScout.send();
 		}
 
-		if (new Date().getDate() === 2 && (new Date().getHours() === 01 || new Date().getHours() === 00) && new Date().getMinutes() === 00) { // Monthly reset + 1 day
+		// Monthly reset + 1 day
+		if (new Date().getDate() === 2 && (new Date().getHours() === 01 || new Date().getHours() === 00) && new Date().getMinutes() === 00) {
 			console.log(new Date().getDate(), 'Setting lottoSheet to Null');
 			await settings.updateMany({ gSheet: { $exists: true } }, { $set: { lottoSheet: null } });
 		}
