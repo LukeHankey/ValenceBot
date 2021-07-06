@@ -148,4 +148,24 @@ module.exports = {
 		const remaining = updateEmbed.fields.map((values) => `${values.name}\n${values.value}\n`);
 		channels.logs.send(`Calendar updated - ${message.author} removed event: \`\`\`diff\n- Removed\n${items.join('\n')}\n+ Remaining\n ${remaining.join('\n')}\`\`\``);
 	},
+	csvJSON: (csv) => {
+
+		const lines = csv.split('\n');
+		const result = [];
+		const headers = lines[0].split(',');
+
+		for (let i = 1; i < lines.length; i++) {
+			const obj = {};
+			const currentline = lines[i].split(',');
+
+			for (let j = 0; j < headers.length; j++) {
+				obj[headers[j]] = currentline[j];
+			}
+
+			result.push(obj);
+		}
+
+		// return result; // JavaScript object
+		return JSON.parse(JSON.stringify(result));
+	},
 };

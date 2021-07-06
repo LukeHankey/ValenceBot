@@ -1,9 +1,10 @@
 /* eslint-disable no-octal */
 const Discord = require('discord.js');
 const getDb = require('../../mongodb').getDb;
+const fetch = require('node-fetch');
 const cron = require('node-cron');
 const randomColor = Math.floor(Math.random() * 16777215).toString(16);
-const func = require('../../functions');
+const { msCalc, doubleDigits, nextDay, csvJSON } = require('../../functions');
 const { ScouterCheck } = require('../../classes.js');
 
 module.exports = async client => {
@@ -14,7 +15,7 @@ module.exports = async client => {
 		activity: { type: 'LISTENING', name: 'DMs for Bot Help!' },
 	});
 
-	const factEmbed = function(factMessage) {
+	const factEmbed = (factMessage) => {
 		const embed = new Discord.MessageEmbed()
 			.setTitle('**Daily Valence Fact**')
 			.setDescription(factMessage)
@@ -24,6 +25,119 @@ module.exports = async client => {
 		return embed;
 	};
 	const db = getDb();
+	const usersColl = db.collection('Users');
+
+	const getData = async () => {
+		const clanData = await fetch('http://services.runescape.com/m=clan-hiscores/members_lite.ws?clanName=Valence');
+		const text = clanData.text();
+		const json = text.then(body => csvJSON(body));
+
+		const channel = client.channels.cache.get('860930368994803732');
+		const clanRoles = {
+			recruit: '473234580904607745',
+			corporal: '473234334342578198',
+			sergeant: '473233680161046528',
+			lieutenant: '473233520773300257',
+			captain: '473233412925292560',
+			general: '473232083628720139',
+		};
+
+		json.then(async res => {
+			const newData = [];
+
+			for (const data of res) {
+				const regex = /�/g;
+				if ((data.Clanmate).includes('�')) {
+					data.Clanmate = data.Clanmate.replace(regex, ' ') || data.Clanmate;
+				}
+				newData.push(data);
+			}
+
+			const renameKeys = (keysMap, object) =>
+				Object.keys(object).reduce((acc, key) => ({
+					...acc,
+					...{ [keysMap[key] || key]: object[key] },
+				}),
+				{},
+				);
+
+			newData.forEach(async clanUser => {
+				clanUser = renameKeys({ 'Clanmate': 'clanMate', ' Clan Rank': 'clanRank', ' Total XP': 'totalXP', ' Kills': 'kills' }, clanUser);
+				clanUser.discord = '';
+				clanUser.discActive = false;
+				clanUser.alt = false;
+				const dbCheck = await usersColl.findOne({ 'clanMate': clanUser.clanMate });
+				if (!dbCheck) {
+					await usersColl.insertOne(clanUser);
+				}
+				else {
+					// Updates total XP but doesn't deal with name changes, yet.
+					await usersColl.updateOne({ clanMate: clanUser.clanMate }, { $set: { totalXP: clanUser.totalXP } });
+				}
+				const adminRoles = ['Admin', 'Organiser', 'Coordinator', 'Overseer', 'Deputy Owner', 'Owner'];
+
+				if (adminRoles.includes(dbCheck.clanRank) || !dbCheck.discActive || dbCheck.alt) {return;}
+				else {
+					const setRoles = async (newRole, oldRole) => {
+						await getMember.roles.add(newRole);
+						await getMember.roles.remove(oldRole.id);
+					};
+					const server = client.guilds.cache.get('472448603642920973');
+					const getMember = server.members.cache.get(dbCheck.discord) ?? await server.members.fetch(dbCheck.discord).catch(async err => {
+						channel.send(`Unable to fetch user (${dbCheck.clanMate} - ${dbCheck.discord}) - Left the discord and marking as inactive.\`\`\`${err}\`\`\``);
+						return await usersColl.updateOne({ clanMate: dbCheck.clanMate }, { $set: { discActive: false } });
+					});
+					let role = getMember.roles.cache.filter(r => {
+						const keys = Object.keys(clanRoles);
+						return keys.find(val => r.name.toLowerCase() == val);
+					});
+					if (!role.size) return channel.send(`Unable to find role name as ${getMember.user.username} (${getMember.id}) has no rank roles.`);
+					if (role.size > 1) return channel.send(`${getMember} (${getMember.id}) has more than 1 rank role.`);
+					role = role.first();
+					if (role.name !== dbCheck.clanRank) {
+						switch(dbCheck.clanRank) {
+						case 'General':
+							await setRoles(clanRoles.general, role);
+							console.log('General:', dbCheck.clanMate, role.name, dbCheck.clanRank);
+							break;
+						case 'Captain':
+							await setRoles(clanRoles.captain, role);
+							console.log('Captain:', dbCheck.clanMate, role.name, dbCheck.clanRank);
+							break;
+						case 'Lieutenant':
+							await setRoles(clanRoles.lieutenant, role);
+							console.log('Lieutenant:', dbCheck.clanMate, role.name, dbCheck.clanRank);
+							break;
+						case 'Sergeant':
+							await setRoles(clanRoles.sergeant, role);
+							console.log('Sergeant:', dbCheck.clanMate, role.name, dbCheck.clanRank);
+							break;
+						case 'Corporal':
+							await setRoles(clanRoles.corporal, role);
+							console.log('Corporal:', dbCheck.clanMate, role.name, dbCheck.clanRank);
+							break;
+						case 'Recruit':
+							await setRoles(clanRoles.recruit, role);
+							console.log('Recruit:', dbCheck.clanMate, role.name, dbCheck.clanRank);
+							break;
+						}
+					}
+					else { return; }
+				}
+			});
+		})
+			.catch(error => console.error(error));
+	};
+
+	/**
+	 * Pulling user info
+	 *
+	 * Get data from Jagex clans
+	 * Store { _id: username, rank: current_rank, total_xp: total_clan_xp, discord_id: id }
+	 * Apply roles, update rank (if changed) + total_xp
+	 *
+	 */
+
 	const vFactsColl = await db.collection('Facts');
 	const settings = await db.collection('Settings');
 	cron.schedule('0 10 * * *', async () => {
@@ -56,12 +170,12 @@ module.exports = async client => {
 				const today_str = days[today_num];
 				// eslint-disable-next-line no-shadow
 				const newDates = function(days, hours, minutes, timer) {
-					const time = func.msCalc(days, func.doubleDigits(hours), func.doubleDigits(minutes)) + timer;
+					const time = msCalc(days, doubleDigits(hours), doubleDigits(minutes)) + timer;
 					return new Date(time).toUTCString();
 				};
 				await settings.find({}).toArray().then(res => {
 					const dayNum = days.indexOf(res[document].citadel_reset_time.day);
-					const resetString = func.nextDay(dayNum).toUTCString().split(' ');
+					const resetString = nextDay(dayNum).toUTCString().split(' ');
 					resetString.splice(4, 1, `${res[document].citadel_reset_time.hour}:${res[document].citadel_reset_time.minute}:00`);
 					const resetms = Date.parse(resetString.join(' '));
 
@@ -95,6 +209,28 @@ module.exports = async client => {
 			}, { scheduled: r[document].citadel_reset_time.scheduled });
 		}
 	});
+
+	// Normal Server Reminders //
+	// cron.schedule(`*/5 * * * *`, async () => {
+	// 	let today = new Date();
+	// 	let today_num = today.getDay();
+	// 	let today_str = days[today_num];
+	// 	await settings.find({}).toArray().then(res => {
+	// 		for (const document in res) {
+	// 			for (const remDoc in res[document].reminders) {
+	// 				if (res[document].reminders[remDoc].day !== undefined) {
+	// 					if (+res[document].reminders[remDoc].day === today_num || res[document].reminders[remDoc].day.toLowerCase() === today_str.toLowerCase() || res[document].reminders[remDoc].day.toLowerCase() === today_str.substr(0, 3).toLowerCase()) {
+	// 						if (today.getUTCHours() == +res[document].reminders[remDoc].hour) {
+	// 							if (+res[document].reminders[remDoc].minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].reminders[remDoc].minute + 1)) {
+	// 								client.channels.cache.get(res[document].reminders[remDoc].channel).send(res[document].reminders[remDoc].message)
+	// 							}
+	// 						}
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	})
+	// })
 
 	const commandCollection = client.commands.filter(cmd => cmd.name === 'wish' || cmd.name === 'future');
 	const commands = commandCollection.first(2);
@@ -202,6 +338,7 @@ module.exports = async client => {
 		if (new Date().getDay() === 3 && (new Date().getHours() === 01 || new Date().getHours() === 00) && new Date().getMinutes() === 00) {
 			scout.send();
 			vScout.send();
+			await getData();
 		}
 
 		// Monthly reset + 1 day
