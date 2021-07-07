@@ -1,6 +1,6 @@
-const getDb = require('./mongodb').getDb;
+const getDb = require('../mongodb').getDb;
 const { MessageEmbed } = require('discord.js');
-const { randomNum } = require('./functions');
+const { randomNum } = require('../functions');
 
 const vEvents = async (client, message, channels) => {
 	const db = getDb();
