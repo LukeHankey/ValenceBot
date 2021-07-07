@@ -3,8 +3,8 @@ const getDb = require('../../mongodb').getDb;
 const colors = require('../../colors.json');
 const { Permissions } = require('../../classes.js');
 const { MessageEmbed } = require('discord.js');
-const { vEvents } = require('../../valenceEvents');
-const { dsf } = require('../../dsf/main');
+const { vEvents } = require('../../valence/valenceEvents');
+const { dsf } = require('../../dsf/merch/main');
 
 module.exports = async (client, message) => {
 	const db = getDb();
