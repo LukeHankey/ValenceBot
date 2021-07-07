@@ -1,4 +1,4 @@
-const { merchRegex } = require('../constants');
+const { merchRegex } = require('./constants');
 const getDb = require('../../mongodb').getDb;
 
 const addMerchCount = async (client, message, updateDB, { errors }) => {

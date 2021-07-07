@@ -1,4 +1,4 @@
-const getDb = require('../mongodb').getDb;
+const getDb = require('../../mongodb').getDb;
 const { merchRegex } = require('./constants');
 const { addMerchCount } = require('./merchChannel/merchCount');
 const { skullTimer } = require('./merchChannel/skullTimer');
