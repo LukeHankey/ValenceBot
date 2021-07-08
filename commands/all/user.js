@@ -12,7 +12,7 @@ module.exports = {
 	guildSpecific: ['472448603642920973', '733164313744769024' ],
 	permissionLevel: 'Mod',
 	run: async (client, message, args, perms) => {
-		if (!perms.owner) return message.channel.send(perms.errorM);
+		if (!perms.mod) return message.channel.send(perms.errorM);
 		const db = getDb();
 		const usersColl = db.collection('Users');
 		const ranks = [ 'recruit', 'corporal', 'sergeant', 'lieutenant', 'captain', 'general', 'admin', 'organiser', 'coordinator', 'overseer', 'deputy owner', 'owner' ];
