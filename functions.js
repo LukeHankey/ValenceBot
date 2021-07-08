@@ -168,4 +168,11 @@ module.exports = {
 		// return result; // JavaScript object
 		return JSON.parse(JSON.stringify(result));
 	},
+	renameKeys: (keysMap, object) =>
+		Object.keys(object).reduce((acc, key) => ({
+			...acc,
+			...{ [keysMap[key] || key]: object[key] },
+		}),
+		{},
+		),
 };
