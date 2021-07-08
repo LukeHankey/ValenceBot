@@ -103,10 +103,10 @@ module.exports = async client => {
 		await classVars(vScout, 'Deep Sea Fishing', res, client);
 
 		[scout, vScout].forEach(role => {
-			addedRoles(role);
-			removedRoles(role);
+			addedRoles(role, settings);
+			removedRoles(role, settings);
 		});
-		removeInactives(scout, client);
+		removeInactives(scout, client, settings);
 
 		// Daily Reset
 		if (new Date().getHours() === 00 && new Date().getMinutes() === 00) {
