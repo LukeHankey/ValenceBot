@@ -1,4 +1,4 @@
-const getDb = require('../../mongodb').getDb;
+const getDb = require('../../../mongodb').getDb;
 
 const otherCalls = async (message, updateDB, { errors }) => {
 	// Adds count for other events channel

@@ -1,9 +1,6 @@
 const { ScouterCheck } = require('../../classes');
-const getDb = require('../../mongodb').getDb;
 const scout = new ScouterCheck('Scouter');
 const vScout = new ScouterCheck('Verified Scouter');
-
-const db = getDb();
 
 const classVars = async (name, serverName, database, client) => {
 	name._client = client;
@@ -14,8 +11,7 @@ const classVars = async (name, serverName, database, client) => {
 	return name._client && name._guild_name && name._db;
 };
 
-const addedRoles = async (name) => {
-	const settings = await db.collection('Settings');
+const addedRoles = async (name, settings) => {
 	const members = await name.checkRolesAdded();
 	members.map(async x => {
 		const role = await name.role;
@@ -26,8 +22,7 @@ const addedRoles = async (name) => {
 		});
 	});
 };
-const removedRoles = async (name) => {
-	const settings = await db.collection('Settings');
+const removedRoles = async (name, settings) => {
 	const checkRoles = await name.checkRolesRemoved();
 	checkRoles.map(async x => {
 		const role = await name.role;
@@ -39,8 +34,7 @@ const removedRoles = async (name) => {
 	});
 };
 
-const removeInactives = async (name, client) => {
-	const settings = await db.collection('Settings');
+const removeInactives = async (name, client, settings) => {
 	const inactives = await name.removeInactive();
 	const many = inactives.length;
 	const manyNames = [];
