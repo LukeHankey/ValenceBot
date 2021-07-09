@@ -1,6 +1,6 @@
 const getDb = require('../../mongodb').getDb;
 const { MessageEmbed } = require('discord.js');
-const { checkNum, renameKeys } = require('../../functions');
+const { checkNum, renameKeys, nEmbed } = require('../../functions');
 const{ green_light, red_light } = require('../../colors.json');
 const { getData } = require('../../valence/clanData');
 
@@ -11,8 +11,16 @@ module.exports = {
 	usage:  ['<Discord ID>', '<Rank name>', '<RSN>', '<RSN> set <discord/active/alt> <new value>'],
 	guildSpecific: ['472448603642920973', '733164313744769024' ],
 	permissionLevel: 'Mod',
+<<<<<<< Updated upstream
 	run: async (client, message, args, perms) => {
 		if (!perms.owner) return message.channel.send(perms.errorM);
+||||||| constructed merge base
+	run: async (client, message, args, perms) => {
+		if (!perms.mod) return message.channel.send(perms.errorM);
+=======
+	run: async (client, message, args, perms, channels) => {
+		if (!perms.mod) return message.channel.send(perms.errorM);
+>>>>>>> Stashed changes
 		const db = getDb();
 		const usersColl = db.collection('Users');
 		const ranks = [ 'recruit', 'corporal', 'sergeant', 'lieutenant', 'captain', 'general', 'admin', 'organiser', 'coordinator', 'overseer', 'deputy owner', 'owner' ];
@@ -89,6 +97,63 @@ module.exports = {
 		}
 		else if (ranks.includes(args[0].toLowerCase())) {
 			// Find by rank
+			const rankArg = args[0].toLowerCase();
+			const findGroup = usersColl.find({ $text: { $search: rankArg, $caseSensitive: false } }).project({ _id: 0, kills: 0, totalXP: 0 });
+			for await (const doc of findGroup) {
+				result.push({ name: doc.clanMate, value: `ID: ${doc.discord}\nActive: ${doc.discActive}\nAlt: ${doc.alt}`, inline: true });
+			}
+
+			let page = 0;
+			const embeds = paginate(result);
+
+			// eslint-disable-next-line no-inner-declarations
+			function paginate(pageData) {
+				const pageEmbeds = [];
+				let k = 24;
+				for (let i = 0; i < pageData.length; i += 24) {
+					const current = pageData.slice(i, k);
+					k += 24;
+					const info = current;
+					const gEmbed = nEmbed(
+						`User Profile - ${rankArg}`,
+						'A comprehensive list of all clan members within this rank. Active refers to being in this server with a valid Discord ID.',
+						green_light,
+						'',
+					)
+						.addFields(info);
+					pageEmbeds.push(gEmbed);
+				}
+				return pageEmbeds;
+			}
+
+			message.channel.send(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`))
+				.then(async msg => {
+					await msg.react('◀️');
+					await msg.react('▶️');
+
+					const react = (reaction, user) => ['◀️', '▶️'].includes(reaction.emoji.name) && user.id === message.author.id;
+					const collect = msg.createReactionCollector(react);
+
+					collect.on('collect', (r, u) => {
+						if (r.emoji.name === '▶️') {
+							if (page < embeds.length) {
+								msg.reactions.resolve('▶️').users.remove(u.id);
+								page++;
+								if (page === embeds.length) --page;
+								msg.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`));
+							}
+						}
+						else if (r.emoji.name === '◀️') {
+							if (page !== 0) {
+								msg.reactions.resolve('◀️').users.remove(u.id);
+								--page;
+								msg.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`));
+							}
+							else {msg.reactions.resolve('◀️').users.remove(u.id);}
+						}
+					});
+				})
+				.catch(err => channels.errors.send('Unknown error in lotto.js', err));
 		}
 		else {
 			// Find by rs name
