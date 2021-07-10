@@ -205,7 +205,8 @@ module.exports = {
 							const getChannel = message.guild.channels.get(id);
 							try {
 								const msg = await getChannel.messages.fetch(messageCheck.id);
-								return await msg.edit(messageContent.join(' '));
+								await msg.edit(messageContent.join(' '));
+								return message.react('✅');
 							}
 							catch (err) {
 								channels.errors.send('Unknown error in send.js', err);
@@ -222,7 +223,8 @@ module.exports = {
 							const getChannel = client.channels.cache.get(id);
 							try {
 								const msg = await getChannel.messages.fetch(messageCheck.id);
-								return await msg.edit(messageContent.join(' '));
+								await msg.edit(messageContent.join(' '));
+								return message.react('✅');
 							}
 							catch (err) {
 								channels.errors.send('Unknown error in send.js', err);
