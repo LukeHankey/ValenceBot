@@ -202,7 +202,7 @@ module.exports = {
 				if (value) {
 					if (messageCheck.value && message.author.id !== myID && messageContent.length) {
 						if (message.guild.channels.cache.has(id)) {
-							const getChannel = message.guild.channels.get(id);
+							const getChannel = message.guild.channels.cache.get(id);
 							try {
 								const msg = await getChannel.messages.fetch(messageCheck.id);
 								await msg.edit(messageContent.join(' '));
