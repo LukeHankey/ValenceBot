@@ -216,7 +216,7 @@ module.exports = {
 						});
 					})
 					.catch(err => {
-						channels.errors.send('Unknown error in profile.js', err);
+						channels.errors.send('Unknown error in profile.js', `\`\`\`${err}\`\`\``);
 					});
 				message.channel.stopTyping();
 			}

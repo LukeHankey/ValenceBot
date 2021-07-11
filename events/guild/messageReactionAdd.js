@@ -113,7 +113,7 @@ module.exports = async (client, reaction, user) => {
 								},
 							});
 						}
-						else { return channels.errors.send('Unknown error in messageReactionAdd.js', e); }
+						else { return channels.errors.send('Unknown error in messageReactionAdd.js', `\`\`\`${e}\`\`\``); }
 					}
 				});
 			}

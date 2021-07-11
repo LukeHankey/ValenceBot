@@ -54,7 +54,7 @@ module.exports = {
 						return message.channel.send(`There is no member in this server with ID: ${memberToKick}.`);
 					}
 					else {
-						channels.errors.send('Unknown error in kick.js', e);
+						channels.errors.send('Unknown error in kick.js', `\`\`\`${e}\`\`\``);
 					}
 				}
 			}

@@ -25,7 +25,7 @@ module.exports = {
 			await m.react('❓');
 		})
 			.catch(err => {
-				channels.errors.send('Unknown error in send.js', err);
+				channels.errors.send('Unknown error in send.js', `\`\`\`${err}\`\`\``);
 			});
 	},
 };

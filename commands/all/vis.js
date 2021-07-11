@@ -64,7 +64,7 @@ module.exports = {
 						});
 					})
 					.catch(err => {
-						channels.errors.send('Unknown error in vis.js', err);
+						channels.errors.send('Unknown error in vis.js', `\`\`\`${err}\`\`\``);
 					});
 			}
 			else if (array.some(x => attachment[0].includes(x))) {
@@ -79,7 +79,7 @@ module.exports = {
 						});
 					})
 					.catch(err => {
-						channels.errors.send('Unknown error in vis.js', err);
+						channels.errors.send('Unknown error in vis.js', `\`\`\`${err}\`\`\``);
 					});
 			}
 			else if (attachment[0].includes('discord.com')) { // Discord message link
@@ -116,7 +116,7 @@ module.exports = {
 						}
 					}
 					else {
-						channels.errors.send('Unknown error in vis.js', e);
+						channels.errors.send('Unknown error in vis.js', `\`\`\`${e}\`\`\``);
 					}
 				}
 			}

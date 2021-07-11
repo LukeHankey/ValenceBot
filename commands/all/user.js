@@ -145,7 +145,7 @@ module.exports = {
 						}
 					});
 				})
-				.catch(err => channels.errors.send('Unknown error in lotto.js', err));
+				.catch(err => channels.errors.send('Unknown error in lotto.js', `\`\`\`${err}\`\`\``));
 		}
 		else {
 			// Find by rs name

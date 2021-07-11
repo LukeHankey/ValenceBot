@@ -153,7 +153,7 @@ module.exports = {
 								});
 						}
 						else {
-							channels.errors.send('Unknown error in calendar.js', err);
+							channels.errors.send('Unknown error in calendar.js', `\`\`\`${err}\`\`\``);
 						}
 					}
 				}
@@ -213,7 +213,7 @@ module.exports = {
 							});
 					}
 					else {
-						channels.errors.send('Unknown error in calendar.js', err);
+						channels.errors.send('Unknown error in calendar.js', `\`\`\`${err}\`\`\``);
 					}
 				}
 			}
@@ -265,7 +265,7 @@ module.exports = {
 					catch (err) {
 						if (err.code === 10008) { message.channel.send('Try again in the <#626172209051860992> channel.'); }
 						else {
-							channels.errors.send('Unknown error in calendar.js', err);
+							channels.errors.send('Unknown error in calendar.js', `\`\`\`${err}\`\`\``);
 						}
 					}
 				}

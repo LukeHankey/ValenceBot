@@ -167,8 +167,8 @@ module.exports = {
 				grabIDAndEdit();
 			}
 		}
-		catch (e) {
-			channels.errors.send('Unknown error in future.js', e);
+		catch (err) {
+			channels.errors.send('Unknown error in future.js', `\`\`\`${err}\`\`\``);
 		}
 
 	},
