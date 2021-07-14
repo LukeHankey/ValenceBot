@@ -1,7 +1,7 @@
 /* eslint-disable no-octal */
 const getDb = require('../../mongodb').getDb;
 const cron = require('node-cron');
-const { msCalc, doubleDigits, nextDay } = require('../../functions');
+const { msCalc, doubleDigits, nextDay, removeMessage } = require('../../functions');
 const { getData } = require('../../valence/clanData');
 const { sendFact } = require('../../valence/dailyFact');
 const { scout, vScout, classVars, addedRoles, removedRoles, removeInactives } = require('../../dsf/scouts/scouters');
@@ -94,6 +94,28 @@ module.exports = async client => {
 	// 		}
 	// 	})
 	// })
+
+	// If node cycling:
+	const setSkulls = async () => {
+		const { merchChannel: { spamProtection, channelID } } = await settings.findOne({ _id: '420803245758480405' }, { projection: { merchChannel: { spamProtection: 1, channelID: 1 } } });
+		const merch = client.channels.cache.get(channelID);
+		spamProtection.forEach(async item => {
+			const msg = await merch.messages.fetch(item.messageID);
+			if (msg.reactions.cache.has('☠️')) { return; }
+			else if (Date.now() - msg.createdTimestamp >= 600000 && !msg.reactions.cache.has('☠️')) {
+				await msg.react('☠️');
+				const message = {
+					guild: {
+						id: '420803245758480405',
+					},
+				};
+				return await removeMessage(message, msg, settings);
+
+			}
+			else { return; }
+		});
+	};
+	await setSkulls();
 
 
 	// DSF Activity Posts //
