@@ -25,7 +25,7 @@ const dsf = async (client, message, channels) => {
 			:	await message.delete({ timeout: 200 });
 
 		await addMerchCount(client, message, settingsColl, channels);
-		skullTimer(message, settingsColl);
+		skullTimer(message, settingsColl, channels);
 	}
 	else if (message.channel.id === otherChannelID) {
 		await otherCalls(message, settingsColl, channels);

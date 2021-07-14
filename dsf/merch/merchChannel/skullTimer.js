@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 
-const skullTimer = (message, updateDB) => {
+const skullTimer = (message, updateDB, channels) => {
 // Checking the DB and marking dead calls
 	const timer = cron.schedule('* * * * *', async () => {
 		const { merchChannel: { messages, channelID } } = await updateDB.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.messages': 1, 'merchChannel.channelID': 1 } });
@@ -19,6 +19,7 @@ const skullTimer = (message, updateDB) => {
 						.then(async () => {
 							await updateDB.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID } } });
 							const getPerms = await merchChannelID.permissionOverwrites.get(userID);
+							console.log('Get User from Channel Permissions', getPerms);
 							if (getPerms) {
 								console.log(`Removing ${author} (${userID}) from channel overrides.`);
 								return getPerms.delete();
@@ -26,7 +27,7 @@ const skullTimer = (message, updateDB) => {
 							else { return; }
 						})
 						.catch((e) => {
-							console.log(1, e);
+							channels.errors.send('Unknown error in Skull timer - timer stopped', e);
 							return timer.stop();
 						});
 				}
