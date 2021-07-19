@@ -2,7 +2,6 @@ const getDb = require('../../mongodb').getDb;
 const { MessageEmbed } = require('discord.js');
 const { checkNum, renameKeys, nEmbed } = require('../../functions');
 const{ green_light, red_light } = require('../../colors.json');
-const { getData } = require('../../valence/clanData');
 
 module.exports = {
 	name: 'user',
@@ -11,26 +10,12 @@ module.exports = {
 	usage:  ['<Discord ID>', '<Rank name>', '<RSN>', '<RSN> set <discord/active/alt> <new value>'],
 	guildSpecific: ['472448603642920973', '733164313744769024' ],
 	permissionLevel: 'Mod',
-<<<<<<< Updated upstream
-	run: async (client, message, args, perms) => {
-		if (!perms.owner) return message.channel.send(perms.errorM);
-||||||| constructed merge base
-	run: async (client, message, args, perms) => {
-		if (!perms.mod) return message.channel.send(perms.errorM);
-=======
 	run: async (client, message, args, perms, channels) => {
 		if (!perms.mod) return message.channel.send(perms.errorM);
->>>>>>> Stashed changes
 		const db = getDb();
 		const usersColl = db.collection('Users');
 		const ranks = [ 'recruit', 'corporal', 'sergeant', 'lieutenant', 'captain', 'general', 'admin', 'organiser', 'coordinator', 'overseer', 'deputy owner', 'owner' ];
 
-		/**
-         * Goals:
-         * Find one person > Show all data + explanation
-         * Find by rank
-         * Set one persons' discord, active, alt.
-         */
 		const createEmbedForDB = async (user, { inDisc, type }, fields, desc = '') => {
 			let member;
 			if (type === 'id') {
@@ -73,7 +58,7 @@ module.exports = {
 			const userInDiscord = message.guild.members.cache.has(args[0]);
 			let findUser = await usersColl.findOne({ discord: args[0] }, { projection: { _id: 0, kills: 0 } });
 			if (findUser) {
-				findUser = renameKeys({ 'clanMate': 'RSN', 'clanRank': 'Rank', 'totalXP': 'Total XP', 'discord': 'Discord ID', 'discActive': 'Discord Active', 'alt': 'Alt Account' }, findUser);
+				findUser = renameKeys({ 'clanMate': 'RSN', 'clanRank': 'Rank', 'totalXP': 'Total XP', 'discord': 'ID', 'discActive': 'Discord', 'alt': 'Alt Account', 'gameActive:': 'Game' }, findUser);
 				for (const item in findUser) {
 					result.push({ name: item, value: findUser[item], inline: true });
 				}
@@ -91,7 +76,6 @@ module.exports = {
 			else {
 				await createEmbedForNoDB(args[0], 'The person with this ID is not in the clan, nor in the server. If they are new to the clan, please try again in 60 seconds while I get new data from Jagex.');
 				// Could have not been added yet, since on a week rotation. Give option to add (clan name, rank, discordID, discActive, alt)
-				await getData('users');
 			}
 
 		}
@@ -199,7 +183,7 @@ module.exports = {
 
 			let findUser = await usersColl.findOne({ $text: { $search: rsName.join(' '), $caseSensitive: false } }, { projection: { _id: 0, kills: 0 } });
 			if (findUser) {
-				findUser = renameKeys({ 'clanMate': 'RSN', 'clanRank': 'Rank', 'totalXP': 'Total XP', 'discord': 'Discord ID', 'discActive': 'Discord Active', 'alt': 'Alt Account' }, findUser);
+				findUser = renameKeys({ 'clanMate': 'RSN', 'clanRank': 'Rank', 'totalXP': 'Total XP', 'discord': 'ID', 'discActive': 'Discord', 'alt': 'Alt Account', 'gameActive:': 'Game' }, findUser);
 				for (const item in findUser) {
 					if (findUser['Discord ID'] === '') findUser['Discord ID'] = 'N/A';
 					result.push({ name: item, value: findUser[item], inline: true });
@@ -215,7 +199,6 @@ module.exports = {
 			}
 			else {
 				await createEmbedForNoDB(...rsName, 'Did not find any clan member by that rsn. Make sure you typed it correctly. If they are a new clan member, they may not have been added yet so try again in 60 seconds while I fetch new data from Jagex.');
-				await getData('users');
 			}
 		}
 
