@@ -24,6 +24,7 @@ const getData = async () => {
 			newData.push(info);
 		}
 
+
 		newData.forEach(async clanUser => {
 			clanUser = renameKeys({ 'Clanmate': 'clanMate', ' Clan Rank': 'clanRank', ' Total XP': 'totalXP', ' Kills': 'kills' }, clanUser);
 			clanUser.discord = '';
@@ -51,40 +52,12 @@ const getData = async () => {
 		.catch(error => console.error(error));
 };
 
-const postData = async (client, settings, users) => {
-	const channelToSend = client.channels.cache.get('731997087721586698');
-	const potentialNameChanges = await users.find({ potentialNewNames: { $exists: true } }).project({ clanMate: 1, clanRank: 1, totalXP: 1, kills: 1, _id: 0, potentialNewNames: 1 }).toArray();
-	/**
-	 * For each potential name change, pass data as an array of objects to format
-	 */
-
-	const messageSend = await channelToSend.send(`\`\`\`${formatTemplate(potentialNameChanges)}\`\`\``);
-};
-
-const formatTemplate = (data) => {
-	const headers = { clanMate: 'Name', clanRank: 'Rank', totalXP: 'Total XP', kills: 'Kills' };
-	let dataChanged = data.map(o => { return { clanMate: o.clanMate, clanRank: o.clanRank, totalXP: o.totalXP, kills: o.kills }; });
-	dataChanged.splice(0, 0, headers);
-
-	const padding = (str, start = false, max) => {
-		if (start) {
-			str = str.padStart(str.length, '| ');
-		}
-		const strMax = str.padEnd(max, ' ');
-		return strMax.concat(' | ');
-	};
-	dataChanged = dataChanged.map((profile) => {
-		return `${padding(profile.clanMate, true, Math.max(...(dataChanged.map(el => el.clanMate.length))))}${padding(profile.clanRank, false, Math.max(...(dataChanged.map(el => el.clanRank.length))))}${padding(profile.totalXP, false, Math.max(...(dataChanged.map(el => el.totalXP.length))))}${padding(profile.kills, false, Math.max(...(dataChanged.map(el => el.kills.length))))}`;
-	});
-	return dataChanged.join('\n');
-};
-
-cron.schedule('*/10 * * * * *', async () => {
-	// await getData();
-	// await addActive();
-	await postData();
+// Wednesday at 10am
+cron.schedule('0 10 * * 3', async () => {
+	await addActive();
 });
 
-module.exports = {
-	postData,
-};
+// Daily at 10am
+cron.schedule('0 10 * * *', async () => {
+	await getData();
+});

@@ -31,7 +31,7 @@ const addActive = async () => {
 			const metricsProfile = await fetch(`https://apps.runescape.com/runemetrics/profile/profile?user=${users[index].clanMate}&activities=1`).then(response => response.json()).catch(console.error());
 			let lastActivityDate;
 			if (metricsProfile.error) {
-				console.log(users[index].clanMate, metricsProfile.error);
+				// console.log(users[index].clanMate, metricsProfile.error);
 				await usersColl.updateOne({ clanMate: users[index].clanMate }, { $set: { profile: metricsProfile.error, gameActive: null } });
 			}
 			else {
@@ -39,11 +39,11 @@ const addActive = async () => {
 				lastActivityDate = Date.parse(lastActivityDate);
 
 				if ((Date.now() - 2.628e+9) > lastActivityDate) {
-					console.log(`${users[index].clanMate} is not active`);
+					// console.log(`${users[index].clanMate} is not active`);
 					await usersColl.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: false } });
 				}
 				else {
-					console.log(`${users[index].clanMate} is active`);
+					// console.log(`${users[index].clanMate} is active`);
 					await usersColl.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: true } });
 				}
 			}
@@ -69,7 +69,7 @@ const clanCheck = async (users) => {
 			metricsProfile = JSON.parse(metricsProfile.slice(34, -4));
 
 			if (metricsProfile.clan && metricsProfile.clan !== 'Valence') {
-				console.log(metricsProfile.name, 'has left Valence for', metricsProfile.clan);
+				// console.log(metricsProfile.name, 'has left Valence for', metricsProfile.clan);
 				await usersColl.deleteOne({ clanMate: metricsProfile.name }, { justOne: true });
 			}
 			else {
@@ -118,7 +118,7 @@ const nameChanges = async (missingNames) => {
 	}
 	if (nameChange.change.length) {
 		return nameChange.change.forEach(async user => {
-			console.log(`Updating ${user.clanMate} as they have potentially changed names`);
+			// console.log(`Updating ${user.clanMate} as they have potentially changed names`);
 			return await usersColl.updateOne({ clanMate: user.clanMate }, { $set: { potentialNewNames: user.potentialNewNames } });
 		});
 	}
