@@ -2,7 +2,7 @@
 const getDb = require('../../mongodb').getDb;
 const cron = require('node-cron');
 const { msCalc, doubleDigits, nextDay } = require('../../functions');
-const { getData } = require('../../valence/clanData');
+const { postData } = require('../../scheduler/clan');
 const { sendFact } = require('../../valence/dailyFact');
 const { scout, vScout, classVars, addedRoles, removedRoles, removeInactives } = require('../../dsf/scouts/scouters');
 const { updateStockTables } = require('../../dsf/stockTables');
@@ -17,11 +17,13 @@ module.exports = async client => {
 
 	const db = getDb();
 	const settings = await db.collection('Settings');
+	const users = await db.collection('Users');
 	const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 	cron.schedule('0 10 * * *', async () => {
 		sendFact(client);
 	});
+	postData(client, settings, users);
 
 	// Citadel Server Reminders //
 	await settings.find({}).toArray().then(r => {
