@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "gsheets": "node gsheets.js",
-    "dev": "set NODE_ENV=DEV&&node index.js"
+    "dev": "set NODE_ENV=DEV&&node index.js",
+    "devTasks": "concurrently \"node ./scheduler/clan.js\" \"npm run dev\""
   },
   "author": "Guys",
   "license": "ISC",
@@ -16,6 +17,7 @@
   "dependencies": {
     "@scout_apm/scout-apm": "^0.2.2",
     "assert": "^2.0.0",
+    "concurrently": "^6.2.0",
     "convert-csv-to-json": "0.0.15",
     "csvtojson": "^2.0.10",
     "discord.js": "^12.5.3",
