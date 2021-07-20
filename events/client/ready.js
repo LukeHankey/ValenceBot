@@ -2,7 +2,6 @@
 const getDb = require('../../mongodb').getDb;
 const cron = require('node-cron');
 const { msCalc, doubleDigits, nextDay, removeMessage } = require('../../functions');
-const { getData } = require('../../valence/clanData');
 const { sendFact } = require('../../valence/dailyFact');
 const { scout, vScout, classVars, addedRoles, removedRoles, removeInactives } = require('../../dsf/scouts/scouters');
 const { updateStockTables } = require('../../dsf/stockTables');
@@ -15,11 +14,48 @@ module.exports = async client => {
 		activity: { type: 'LISTENING', name: 'DMs for Bot Help!' },
 	});
 
-	const db = getDb();
-	const settings = await db.collection('Settings');
+	const db = await getDb();
+	const settings = db.collection('Settings');
+	const users = db.collection('Users');
 	const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+	const formatTemplate = (data) => {
+		const headers = { clanMate: 'Name', clanRank: 'Rank', totalXP: 'Total XP', kills: 'Kills' };
+		let dataChanged = data.map(o => { return { clanMate: o.clanMate, clanRank: o.clanRank, totalXP: o.totalXP, kills: o.kills }; });
+		dataChanged.splice(0, 0, headers);
+
+		const padding = (str, start = false, max) => {
+			if (start) {
+				str = str.padStart(str.length, '| ');
+			}
+			const strMax = str.padEnd(max, ' ');
+			return strMax.concat(' | ');
+		};
+		dataChanged = dataChanged.map((profile) => {
+			return `${padding(profile.clanMate, true, Math.max(...(dataChanged.map(el => el.clanMate.length))))}${padding(profile.clanRank, false, Math.max(...(dataChanged.map(el => el.clanRank.length))))}${padding(profile.totalXP, false, Math.max(...(dataChanged.map(el => el.totalXP.length))))}${padding(profile.kills, false, Math.max(...(dataChanged.map(el => el.kills.length))))}`;
+		});
+		dataChanged.splice(0, 0, `These are potential previous names for ${data[0].potentialNewNames[0].clanMate}.\n`);
+		dataChanged.push(' ', 'Reactions:\n✅ Takes the primary suggestion suggestion.\n❌ Not changed names or none match.\n📝 Pick another suggestion.');
+		return dataChanged.join('\n');
+	};
+
+	const postData = async () => {
+		const channelToSend = client.channels.cache.get('731997087721586698');
+		const potentialNameChanges = await users.find({ potentialNewNames: { $exists: true } }).toArray();
+		if (!potentialNameChanges.length) return;
+		const messageSend = await channelToSend.send(`\`\`\`${formatTemplate(potentialNameChanges)}\`\`\``);
+		await messageSend.react('✅');
+		await messageSend.react('❌');
+		await messageSend.react('📝');
+
+		settings.updateOne({ _id: channelToSend.guild.id }, { $set: { nameChange: [{
+			messageID: messageSend.id,
+			data: potentialNameChanges,
+		}] } });
+	};
+
 	cron.schedule('0 10 * * *', async () => {
+		postData();
 		sendFact(client);
 	});
 
@@ -139,7 +175,6 @@ module.exports = async client => {
 		if (new Date().getDay() === 3 && new Date().getHours() === 00 && new Date().getMinutes() === 00) {
 			scout.send();
 			vScout.send();
-			await getData(client);
 		}
 
 		// Monthly reset + 1 day

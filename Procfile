@@ -1,1 +1,1 @@
-worker node --gc-interval=100 index.js
+worker concurrently "node ./scheduler/clan.js" "npm run start"
