@@ -111,9 +111,9 @@ module.exports = {
 		}
 		else if (identifier === 'messageID') {
 			eventMessageCheck = database.events.map(event => { if (event.messageID === messageCheck) return { message: event.messageID, role: event.roleID };}).filter(valid => valid);
-			const eventMessage = await eventsChannel.messages.fetch(messageCheck);
-			await settings.updateOne({ _id: message.guild.id }, { $pull: { events: { messageID: messageCheck } } });
-			await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': new Date(eventMessage.createdTimestamp).toLocaleString('default', { month: 'long' }) }, { $pull: { 'calendarID.$.events': { messageID: messageCheck } } });
+			const eventMessage = await eventsChannel.messages.fetch(messageCheck).catch(e => channels.errors.send('Unable to fetch message from event channel when ending an event.', e));
+			await settings.updateOne({ _id: message.guild.id }, { $pull: { events: { roleID: eventMessageCheck[0].role } } });
+			await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': new Date(eventMessage.createdTimestamp).toLocaleString('default', { month: 'long' }) }, { $pull: { 'calendarID.$.events': { roleID: eventMessageCheck[0].role } } });
 			eventMessage.reactions.removeAll();
 		}
 		else { return;}
