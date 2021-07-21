@@ -82,7 +82,7 @@ const vEvents = async (client, message, channels) => {
 				}
 
 				await settingsColl.updateOne({ _id: message.guild.id }, { $push: { events: { $each: [ { title: eventTitle[0], messageID: last.id, roleID: newRole.id, eventTag: newRole.name.slice(eventTitle[0].length + 2), date: new Date(), members: [] } ] } } });
-				await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': new Date().toLocaleString('default', { month: 'long' }) }, { $push: { 'calendarID.$.events': { messageID: last.id, title: eventTitle[0], eventTag: newRole.name.slice(eventTitle[0].length + 2) } } });
+				await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': new Date().toLocaleString('default', { month: 'long' }) }, { $push: { 'calendarID.$.events': { messageID: last.id, title: eventTitle[0], eventTag: newRole.name.slice(eventTitle[0].length + 2), roleID: newRole.id } } });
 				await collectOneReaction.message.reactions.removeAll();
 				await last.react('📌');
 				await last.react('✅');
