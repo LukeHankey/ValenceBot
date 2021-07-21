@@ -19,7 +19,6 @@ const skullTimer = (message, updateDB, channels) => {
 						.then(async () => {
 							await updateDB.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID } } });
 							const getPerms = await merchChannelID.permissionOverwrites.get(userID);
-							console.log('Get User from Channel Permissions', getPerms);
 							if (getPerms) {
 								console.log(`Removing ${author} (${userID}) from channel overrides.`);
 								return getPerms.delete();
