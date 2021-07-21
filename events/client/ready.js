@@ -1,10 +1,11 @@
 /* eslint-disable no-octal */
 const getDb = require('../../mongodb').getDb;
 const cron = require('node-cron');
-const { msCalc, doubleDigits, nextDay, removeMessage } = require('../../functions');
+const { msCalc, doubleDigits, nextDay } = require('../../functions');
 const { sendFact } = require('../../valence/dailyFact');
 const { scout, vScout, classVars, addedRoles, removedRoles, removeInactives } = require('../../dsf/scouts/scouters');
 const { updateStockTables } = require('../../dsf/stockTables');
+const { skullTimer } = require('../../dsf/merch/merchChannel/skullTimer');
 
 module.exports = async client => {
 	console.log('Ready!');
@@ -17,7 +18,33 @@ module.exports = async client => {
 	const db = await getDb();
 	const settings = db.collection('Settings');
 	const users = db.collection('Users');
+	const { channels: { vis, errors, logs } } = await settings.findOne({ _id: 'Globals' }, { projection: { channels: { vis: 1, errors: 1, logs: 1 } } });
 	const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+	const channels = {
+		vis: {
+			id: vis,
+			send: function(content) {
+				const channel = client.channels.cache.get(this.id);
+				return channel.send(content);
+			},
+		},
+		errors: {
+			id: errors,
+			send: function(content) {
+				const channel = client.channels.cache.get(this.id);
+				content = `<@!212668377586597888>\n\n${content}`;
+				return channel.send(content);
+			},
+		},
+		logs: {
+			id: logs,
+			send: function(content) {
+				const channel = client.channels.cache.get(this.id);
+				return channel.send(content);
+			},
+		},
+	};
 
 	const formatTemplate = (data) => {
 		const headers = { clanMate: 'Name', clanRank: 'Rank', totalXP: 'Total XP', kills: 'Kills' };
@@ -132,26 +159,13 @@ module.exports = async client => {
 	// })
 
 	// If node cycling:
-	const setSkulls = async () => {
-		const { merchChannel: { spamProtection, channelID } } = await settings.findOne({ _id: '420803245758480405' }, { projection: { merchChannel: { spamProtection: 1, channelID: 1 } } });
-		const merch = client.channels.cache.get(channelID);
-		spamProtection.forEach(async item => {
-			const msg = await merch.messages.fetch(item.messageID);
-			if (msg.reactions.cache.has('☠️')) { return; }
-			else if (Date.now() - msg.createdTimestamp >= 600000 && !msg.reactions.cache.has('☠️')) {
-				await msg.react('☠️');
-				const message = {
-					guild: {
-						id: '420803245758480405',
-					},
-				};
-				return await removeMessage(message, msg, settings);
-
-			}
-			else { return; }
-		});
-	};
-	await setSkulls();
+	(async function() {
+		const { merchChannel: { channelID } } = await settings.findOne({ _id: '420803245758480405' }, { projection: { merchChannel: { channelID: 1 } } });
+		const merchantChannel = client.channels.cache.get(channelID);
+		let message = await merchantChannel.messages.fetch({ limit: 1 });
+		message = message.first();
+		skullTimer(message, settings, channels);
+	})();
 
 
 	// DSF Activity Posts //
