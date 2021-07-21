@@ -1,11 +1,12 @@
 const { merchRegex } = require('../constants');
+const { checkMemberRole, arrIncludesString, alreadyCalled } = require('../merchFunctions');
 const getDb = require('../../../mongodb').getDb;
 
 const addMerchCount = async (client, message, updateDB, { errors }) => {
 	try {
 		const db = getDb();
 		const settingsColl = db.collection('Settings');
-		const { merchChannel: { scoutTracker, channelID } } = await settingsColl.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.scoutTracker': 1, 'merchChannel.channelID': 1 } });
+		const { merchChannel: { scoutTracker, channelID, messages }, disallowedWords } = await settingsColl.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.scoutTracker': 1, 'merchChannel.channelID': 1, 'merchChannel.messages': 1, disallowedWords: 1 } });
 		const merchChannelID = client.channels.cache.get(channelID);
 		const errorLog = [];
 		const botServerWebhook = await client.channels.cache.get('784543962174062608').fetchWebhooks();
@@ -17,19 +18,10 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 		const logOne = [...mesOne.values()];
 		const msg = logOne.map(val => val);
 
-		const checkMemberRole = async (user) => {
-			const mem = message.guild.members.cache.get(user) ?? await message.guild.members.fetch(user);
-			const allowedRoles = ['Scouter', 'Verified Scouter', 'Staff', 'Moderator (Bronze Star)', 'Administrator (Silver Star)'];
-			const collectionTotal = mem.roles.cache.filter(r => allowedRoles.includes(r.name));
-			if (collectionTotal.size) { return true; }
-			else { return false; }
-		};
-
-
 		const userN = message.member;
 		const findMessage = scoutTracker.find(x => x.userID === userN.id);
 		if (!findMessage) {
-			if (!merchRegex.test(message.content)) {
+			if (!merchRegex.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, messages)) {
 				console.log(`New & Spam: ${userN.user.username} (${message.content})`, userN.id);
 				return errorLog.forEach(id => id.send(` \`\`\`diff\n\n+ Spam Message - (User has not posted before)\n- User ID: ${userN.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\``));
 			}
@@ -52,13 +44,13 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 						},
 					},
 				});
-			if (!(await checkMemberRole(userN.id))) {
+			if (!(await checkMemberRole(userN.id, message))) {
 				console.log(`Adding ${userN.nickname ?? userN.user.username} (${userN.id}) to channel overrides.`);
 				await merchChannelID.updateOverwrite(userN.id, { ADD_REACTIONS: true });
 			}
 		}
 		else {
-			if (!merchRegex.test(message.content)) {
+			if (!merchRegex.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, messages)) {
 				console.log(`Old & Spam: ${userN.user.username} (${message.content})`, userN.user.id);
 				return errorLog.forEach(id => id.send(` \`\`\`diff\n+ Spam Message - (User has posted before)\n\n- User ID: ${userN.user.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\``));
 			}
@@ -73,7 +65,7 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 					'merchChannel.scoutTracker.$.lastTimestampReadable': new Date(msg[0].createdTimestamp),
 				},
 			});
-			if (!(await checkMemberRole(userN.id))) {
+			if (!(await checkMemberRole(userN.id, message))) {
 				console.log(`Adding ${userN.user.username} (${userN.id}) to channel overrides.`);
 				await merchChannelID.updateOverwrite(userN.id, { ADD_REACTIONS: true });
 			}
@@ -86,27 +78,27 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 			else return mes;
 		});
 		const log = [...mes.values()];
-		for (const messages in log) {
-			const authorName = log[messages].member?.nickname ?? log[messages].author.username;
-			const userId = log[messages].member?.id ?? log[messages].author.id;
+		for (const msgs in log) {
+			const authorName = log[msgs].member?.nickname ?? log[msgs].author.username;
+			const userId = log[msgs].member?.id ?? log[msgs].author.id;
 			if (authorName === null) return;
 			await updateDB.findOneAndUpdate({ _id: message.guild.id },
 				{
 					$addToSet: {
 						'merchChannel.messages': {
 							$each: [{
-								messageID: log[messages].id,
-								content: log[messages].content,
-								time: log[messages].createdTimestamp,
+								messageID: log[msgs].id,
+								content: log[msgs].content,
+								time: log[msgs].createdTimestamp,
 								author: authorName,
 								userID: userId,
 							}],
 						},
 						'merchChannel.spamProtection': {
 							$each: [{
-								messageID: log[messages].id,
-								content: log[messages].content,
-								time: log[messages].createdTimestamp,
+								messageID: log[msgs].id,
+								content: log[msgs].content,
+								time: log[msgs].createdTimestamp,
 								author: authorName,
 								userID: userId,
 							}],
@@ -119,7 +111,6 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 	}
 	catch (err) {
 		errors.send('Unknown error in merchCount.js', `\`\`\`${err}\`\`\``);
-		console.log(err);
 	}
 };
 
