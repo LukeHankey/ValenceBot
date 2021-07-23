@@ -12,8 +12,8 @@ const arrIncludesString = (array, msg) => {
 const alreadyCalled = (message, messages) => {
 	const result = messages.filter(obj => {
 		const str = obj.content;
-		const numFromDb = str.replace(/^\D+|\D+$/g, '');
-		const numFromContent = message.content.replace(/^\D+|\D+$/g, '');
+		const numFromDb = str.replace(/^\D+|\D.*$/g, '');
+		const numFromContent = message.content.replace(/^\D+|\D.*$/g, '');
 		if (numFromDb === numFromContent) {
 			return obj;
 		}
