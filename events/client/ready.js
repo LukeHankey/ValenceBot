@@ -66,23 +66,20 @@ module.exports = async client => {
 		return dataChanged.join('\n');
 	};
 
-	const postData = async () => {
+	const postData = async (data) => {
 		const channelToSend = client.channels.cache.get('731997087721586698');
-		const potentialNameChanges = await users.find({ potentialNewNames: { $exists: true } }).toArray();
-		if (!potentialNameChanges.length) return;
-		const messageSend = await channelToSend.send(`\`\`\`${formatTemplate(potentialNameChanges)}\`\`\``);
+		const messageSend = await channelToSend.send(`\`\`\`${formatTemplate(data)}\`\`\``);
 		await messageSend.react('✅');
 		await messageSend.react('❌');
 		await messageSend.react('📝');
 
-		settings.updateOne({ _id: channelToSend.guild.id }, { $set: { nameChange: [{
+		await settings.updateOne({ _id: channelToSend.guild.id }, { $addToSet: { nameChange: {
 			messageID: messageSend.id,
-			data: potentialNameChanges,
-		}] } });
+			data,
+		} } });
 	};
 
 	cron.schedule('0 10 * * *', async () => {
-		postData();
 		sendFact(client);
 	});
 
@@ -157,6 +154,14 @@ module.exports = async client => {
 	// 		}
 	// 	})
 	// })
+
+	const stream = users.watch({ fullDocument: 'updateLookup' });
+	stream.on('change', next => {
+		const updated = next.updateDescription.updatedFields;
+		if ('potentialNewNames' in updated) {
+			postData([next.fullDocument]);
+		}
+	});
 
 	// If node cycling:
 	(async function() {
