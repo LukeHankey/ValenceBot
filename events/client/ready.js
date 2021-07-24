@@ -157,9 +157,11 @@ module.exports = async client => {
 
 	const stream = users.watch({ fullDocument: 'updateLookup' });
 	stream.on('change', next => {
-		const updated = next.updateDescription.updatedFields;
-		if ('potentialNewNames' in updated) {
-			postData([next.fullDocument]);
+		if (next.updateDescription) {
+			const updated = next.updateDescription.updatedFields;
+			if ('potentialNewNames' in updated) {
+				postData([next.fullDocument]);
+			}
 		}
 	});
 
