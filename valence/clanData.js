@@ -1,6 +1,4 @@
 const getDb = require('../mongodb').getDb;
-const fetch = require('node-fetch');
-const { csvJSON, renameKeys } = require('../functions');
 
 const clanRoles = {
 	recruit: '473234580904607745',
@@ -9,43 +7,6 @@ const clanRoles = {
 	lieutenant: '473233520773300257',
 	captain: '473233412925292560',
 	general: '473232083628720139',
-};
-
-const getData = async (client) => {
-	const db = getDb();
-	const usersColl = db.collection('Users');
-	const clanData = await fetch('http://services.runescape.com/m=clan-hiscores/members_lite.ws?clanName=Valence');
-	const text = clanData.text();
-	const json = text.then(body => csvJSON(body));
-
-	json.then(async res => {
-		const newData = [];
-
-		for (const data of res) {
-			const regex = /�/g;
-			if ((data.Clanmate).includes('�')) {
-				data.Clanmate = data.Clanmate.replace(regex, ' ') || data.Clanmate;
-			}
-			newData.push(data);
-		}
-
-		newData.forEach(async clanUser => {
-			clanUser = renameKeys({ 'Clanmate': 'clanMate', ' Clan Rank': 'clanRank', ' Total XP': 'totalXP', ' Kills': 'kills' }, clanUser);
-			clanUser.discord = '';
-			clanUser.discActive = false;
-			clanUser.alt = false;
-			const dbCheck = await usersColl.findOne({ 'clanMate': clanUser.clanMate });
-			if (!dbCheck) {
-				await usersColl.insertOne(clanUser);
-			}
-			else {
-				// Updates total XP but doesn't deal with name changes, yet.
-				await usersColl.updateOne({ clanMate: clanUser.clanMate }, { $set: { clanRank: clanUser.clanRank, totalXP: clanUser.totalXP, kills: clanUser.kills } });
-			}
-			if (client !== 'users') return await updateRoles(client, dbCheck);
-		});
-	})
-		.catch(error => console.error(error));
 };
 
 const updateRoles = async (client, dbCheck) => {
@@ -105,6 +66,5 @@ const updateRoles = async (client, dbCheck) => {
 };
 
 module.exports = {
-	getData,
 	updateRoles,
 };
