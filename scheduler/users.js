@@ -72,7 +72,7 @@ const clanCheck = async (users) => {
 				// console.log(metricsProfile.name, 'has left Valence for', metricsProfile.clan);
 				await usersColl.deleteOne({ clanMate: metricsProfile.name }, { justOne: true });
 			}
-			else if (metricsProfile && metricsProfile.clan === 'Valence') {
+			else if (metricsProfile.clan && metricsProfile.clan === 'Valence') {
 				console.log(metricsProfile.name, 'still in Valence');
 			}
 			else {
@@ -126,8 +126,6 @@ const nameChanges = async (missingNames) => {
 			return await usersColl.updateOne({ clanMate: user.clanMate }, { $set: { potentialNewNames: user.potentialNewNames } });
 		});
 	}
-
-
 };
 
 module.exports = {
