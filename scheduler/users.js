@@ -28,7 +28,7 @@ const addActive = async () => {
 	let index = 0;
 	const interval = setInterval(async () => {
 		try {
-			const metricsProfile = await fetch(`https://apps.runescape.com/runemetrics/profile/profile?user=${users[index].clanMate}&activities=1`).then(response => response.json()).catch(console.error());
+			const metricsProfile = await fetch(`https://apps.runescape.com/runemetrics/profile/profile?user=${users[index].clanMate}&activities=1`).then(response => response.json()).catch(err => console.error(`Unable to fetch RuneMetrics Profile for ${users[index].clanMate}.`, err));
 			let lastActivityDate;
 			if (metricsProfile.error) {
 				// console.log(users[index].clanMate, metricsProfile.error);
