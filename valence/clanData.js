@@ -8,19 +8,19 @@ const clanRoles = {
 	captain: '473233412925292560',
 	general: '473232083628720139',
 };
+const adminRoles = ['Admin', 'Organiser', 'Coordinator', 'Overseer', 'Deputy Owner', 'Owner'];
+const setRoles = async (member, newRole, oldRole) => {
+	await member.roles.add(newRole);
+	await member.roles.remove(oldRole.id);
+};
 
 const updateRoles = async (client, dbCheck) => {
 	const db = getDb();
-	const usersColl = db.collection('Users');
+	const usersColl = await db.collection('Users');
 	const channel = client.channels.cache.get('860930368994803732');
-	const adminRoles = ['Admin', 'Organiser', 'Coordinator', 'Overseer', 'Deputy Owner', 'Owner'];
 
 	if (adminRoles.includes(dbCheck.clanRank) || !dbCheck.discActive || dbCheck.alt) {return;}
 	else {
-		const setRoles = async (newRole, oldRole) => {
-			await getMember.roles.add(newRole);
-			await getMember.roles.remove(oldRole.id);
-		};
 		const server = client.guilds.cache.get('472448603642920973');
 		const getMember = server.members.cache.get(dbCheck.discord) ?? await server.members.fetch(dbCheck.discord).catch(async err => {
 			channel.send(`Unable to fetch user (${dbCheck.clanMate} - ${dbCheck.discord}) - Left the discord and marking as inactive.\`\`\`${err}\`\`\``);
@@ -36,27 +36,27 @@ const updateRoles = async (client, dbCheck) => {
 		if (role.name !== dbCheck.clanRank) {
 			switch(dbCheck.clanRank) {
 			case 'General':
-				await setRoles(clanRoles.general, role);
+				await setRoles(getMember, clanRoles.general, role);
 				console.log('General:', dbCheck.clanMate, role.name, dbCheck.clanRank);
 				break;
 			case 'Captain':
-				await setRoles(clanRoles.captain, role);
+				await setRoles(getMember, clanRoles.captain, role);
 				console.log('Captain:', dbCheck.clanMate, role.name, dbCheck.clanRank);
 				break;
 			case 'Lieutenant':
-				await setRoles(clanRoles.lieutenant, role);
+				await setRoles(getMember, clanRoles.lieutenant, role);
 				console.log('Lieutenant:', dbCheck.clanMate, role.name, dbCheck.clanRank);
 				break;
 			case 'Sergeant':
-				await setRoles(clanRoles.sergeant, role);
+				await setRoles(getMember, clanRoles.sergeant, role);
 				console.log('Sergeant:', dbCheck.clanMate, role.name, dbCheck.clanRank);
 				break;
 			case 'Corporal':
-				await setRoles(clanRoles.corporal, role);
+				await setRoles(getMember, clanRoles.corporal, role);
 				console.log('Corporal:', dbCheck.clanMate, role.name, dbCheck.clanRank);
 				break;
 			case 'Recruit':
-				await setRoles(clanRoles.recruit, role);
+				await setRoles(getMember, clanRoles.recruit, role);
 				console.log('Recruit:', dbCheck.clanMate, role.name, dbCheck.clanRank);
 				break;
 			}
