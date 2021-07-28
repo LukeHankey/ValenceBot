@@ -72,8 +72,12 @@ const clanCheck = async (users) => {
 				// console.log(metricsProfile.name, 'has left Valence for', metricsProfile.clan);
 				await usersColl.deleteOne({ clanMate: metricsProfile.name }, { justOne: true });
 			}
-			else {
+			else if (metricsProfile && metricsProfile.clan === 'Valence') {
 				console.log(metricsProfile.name, 'still in Valence');
+			}
+			else {
+				console.log(metricsProfile.name, 'is not in any clan');
+				await usersColl.deleteOne({ clanMate: metricsProfile.name }, { justOne: true });
 			}
 			index++;
 		}
@@ -103,7 +107,7 @@ const nameChanges = async (missingNames) => {
 			nameChange.left.push(potentialChangers);
 		}
 		else {
-			const xpCheck = potentialNewNames.map(user => {
+			const xpCheck = potentialNewNames.filter(user => {
 				if (Number(user.totalXP) - 10000000 < Number(potentialChangers.totalXP) && Number(user.totalXP) + 10000000 > Number(potentialChangers.totalXP)) {
 					return user;
 				}
