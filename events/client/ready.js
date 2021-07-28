@@ -3,6 +3,7 @@ const getDb = require('../../mongodb').getDb;
 const cron = require('node-cron');
 const { msCalc, doubleDigits, nextDay } = require('../../functions');
 const { sendFact } = require('../../valence/dailyFact');
+const { updateRoles } = require('../../valence/clanData');
 const { scout, vScout, classVars, addedRoles, removedRoles, removeInactives } = require('../../dsf/scouts/scouters');
 const { updateStockTables } = require('../../dsf/stockTables');
 const { skullTimer } = require('../../dsf/merch/merchChannel/skullTimer');
@@ -48,7 +49,7 @@ module.exports = async client => {
 
 	const formatTemplate = (data) => {
 		const headers = { clanMate: 'Name', clanRank: 'Rank', totalXP: 'Total XP', kills: 'Kills' };
-		let dataChanged = data.map(o => { return { clanMate: o.clanMate, clanRank: o.clanRank, totalXP: o.totalXP, kills: o.kills }; });
+		let dataChanged = data[0].potentialNewNames.map(o => { return { clanMate: o.clanMate, clanRank: o.clanRank, totalXP: o.totalXP, kills: o.kills }; });
 		dataChanged.splice(0, 0, headers);
 
 		const padding = (str, start = false, max) => {
@@ -61,7 +62,7 @@ module.exports = async client => {
 		dataChanged = dataChanged.map((profile) => {
 			return `${padding(profile.clanMate, true, Math.max(...(dataChanged.map(el => el.clanMate.length))))}${padding(profile.clanRank, false, Math.max(...(dataChanged.map(el => el.clanRank.length))))}${padding(profile.totalXP, false, Math.max(...(dataChanged.map(el => el.totalXP.length))))}${padding(profile.kills, false, Math.max(...(dataChanged.map(el => el.kills.length))))}`;
 		});
-		dataChanged.splice(0, 0, `These are potential previous names for ${data[0].potentialNewNames[0].clanMate}.\n`);
+		dataChanged.splice(0, 0, `These are potential previous names for ${data[0].clanMate}.\n`);
 		dataChanged.push(' ', 'Reactions:\n✅ Takes the primary suggestion suggestion.\n❌ Not changed names or none match.\n📝 Pick another suggestion.');
 		return dataChanged.join('\n');
 	};
@@ -196,6 +197,12 @@ module.exports = async client => {
 		if (new Date().getDay() === 3 && new Date().getHours() === 00 && new Date().getMinutes() === 00) {
 			scout.send();
 			vScout.send();
+			const allUsers = await users.find({}).toArray();
+			let index = 0;
+			while (index < allUsers.length) {
+				updateRoles(client, allUsers[index]);
+				index++;
+			}
 		}
 
 		// Monthly reset + 1 day
