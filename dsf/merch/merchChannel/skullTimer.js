@@ -2,7 +2,7 @@ const cron = require('node-cron');
 
 const skullTimer = (message, updateDB, channels) => {
 // Checking the DB and marking dead calls
-	const timer = cron.schedule('* * * * *', async () => {
+	const timer = cron.schedule('*/30 * * * * *', async () => {
 		const { merchChannel: { messages, channelID } } = await updateDB.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.messages': 1, 'merchChannel.channelID': 1 } });
 		const merchChannelID = message.guild.channels.cache.get(channelID);
 		for await (const { messageID, content, time, userID, author } of messages) {
@@ -12,13 +12,17 @@ const skullTimer = (message, updateDB, channels) => {
 					await updateDB.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID } } });
 				}
 
-				if (Date.now() - time > 600000) {
+				if (Date.now() - time > 45000) {
 					const fetched = await message.channel.messages.fetch(messageID);
 					fetched.react('☠️')
 						.then(async () => {
 							await updateDB.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID } } });
 							const getPerms = await merchChannelID.permissionOverwrites.get(userID);
 							if (getPerms) {
+								const moreThanOnce = messages.filter(obj => {
+									if (obj.userID === userID && obj.messageID !== messageID) return obj;
+								});
+								if (moreThanOnce.length) return;
 								console.log(`Removing ${author} (${userID}) from channel overrides.`);
 								return getPerms.delete();
 							}
