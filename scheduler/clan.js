@@ -52,8 +52,8 @@ const getData = async () => {
 		.catch(error => console.error(error));
 };
 
-// Wednesday at 10am
-cron.schedule('0 10 * * 3', async () => {
+// Daily at 5am
+cron.schedule('0 5 * * *', async () => {
 	await addActive();
 });
 
