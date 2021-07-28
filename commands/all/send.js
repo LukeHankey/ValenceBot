@@ -84,7 +84,7 @@ module.exports = {
 						});
 					})
 						.catch(err => {
-							channels.errors.send('Unknown error in send.js', `\`\`\`${err}\`\`\``);
+							channels.errors.send(err, module);
 						})
 					: param === 'friend'
 						? message.channel.send(friendEmbed).then(async m => {
@@ -95,7 +95,7 @@ module.exports = {
 							});
 						})
 							.catch(err => {
-								channels.errors.send('Unknown error in send.js', `\`\`\`${err}\`\`\``);
+								channels.errors.send(err, module);
 							})
 						: param === 'affiliate'
 							? message.channel.send(affiliateEmbed).then(async m => {
@@ -106,7 +106,7 @@ module.exports = {
 								});
 							})
 								.catch(err => {
-									channels.errors.send('Unknown error in send.js', `\`\`\`${err}\`\`\``);
+									channels.errors.send(err, module);
 								})
 							: message.channel.send('Parameter must be either: \`ban\`, \`friend\` or \`affiliate\`.');
 			}
@@ -140,7 +140,7 @@ module.exports = {
 						message.channel.send('Unable to find the embed to add to. - It must have been deleted! Removing it from the DataBase...')
 							.then(async m => await m.delete({ timeout: 10000 }))
 							.catch(err => {
-								channels.errors.send('Unknown error in send.js', `\`\`\`${err}\`\`\``);
+								channels.errors.send(err, module);
 							});
 
 						await settings.updateOne({ '_id': message.guild.id }, {
@@ -149,7 +149,7 @@ module.exports = {
 							},
 						});
 					}
-					else { channels.errors.send('Unknown error in send.js', `\`\`\`${err}\`\`\``); }
+					else { channels.errors.send(err, module); }
 				}
 			}
 
@@ -209,7 +209,7 @@ module.exports = {
 								return message.react('✅');
 							}
 							catch (err) {
-								channels.errors.send('Unknown error in send.js', `\`\`\`${err}\`\`\``);
+								channels.errors.send(err, module);
 							}
 						}
 						else {
@@ -227,7 +227,7 @@ module.exports = {
 								return message.react('✅');
 							}
 							catch (err) {
-								channels.errors.send('Unknown error in send.js', `\`\`\`${err}\`\`\``);
+								channels.errors.send(err, module);
 							}
 						}
 					}
@@ -279,7 +279,7 @@ module.exports = {
 								return message.channel.send(`I am missing some permissions to post in <#${checkAndGetID}>.`);
 							}
 							else {
-								return channels.errors.send('Unknown error in send.js', `\`\`\`${err}\`\`\``);
+								return channels.errors.send(err, module);
 							}
 						});
 				}
@@ -290,7 +290,7 @@ module.exports = {
 								return message.channel.send(`I am missing some permissions to post in <#${checkAndGetID}>.`);
 							}
 							else {
-								return channels.errors.send('Unknown error in send.js', `\`\`\`${err}\`\`\``);
+								return channels.errors.send(err, module);
 							}
 						});
 				}

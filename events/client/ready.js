@@ -7,6 +7,8 @@ const { updateRoles } = require('../../valence/clanData');
 const { scout, vScout, classVars, addedRoles, removedRoles, removeInactives } = require('../../dsf/scouts/scouters');
 const { updateStockTables } = require('../../dsf/stockTables');
 const { skullTimer } = require('../../dsf/merch/merchChannel/skullTimer');
+const { MessageEmbed } = require('discord.js');
+const colors = require('../../colors.json');
 
 module.exports = async client => {
 	console.log('Ready!');
@@ -32,10 +34,17 @@ module.exports = async client => {
 		},
 		errors: {
 			id: errors,
-			send: function(content) {
+			embed: function(err, module) {
+				const fileName = module.id.split('\\').pop();
+				const embed = new MessageEmbed()
+					.setTitle(`An error occured in ${fileName}`)
+					.setColor(colors.red_dark)
+					.addField(`${err.message}`, `\`\`\`${err.stack}\`\`\``);
+				return embed;
+			},
+			send: function(...args) {
 				const channel = client.channels.cache.get(this.id);
-				content = `<@!212668377586597888>\n\n${content}`;
-				return channel.send(content);
+				return channel.send(this.embed(...args));
 			},
 		},
 		logs: {

@@ -47,7 +47,7 @@ const otherCalls = async (message, updateDB, { errors }) => {
 		}
 	}
 	catch (e) {
-		errors.send('Unknown error in otherCount.js', e);
+		errors.send(e, module);
 	}
 
 };

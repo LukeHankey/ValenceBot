@@ -168,7 +168,7 @@ module.exports = {
 			}
 		}
 		catch (e) {
-			channels.errors.send('Unknown error in wish.js', `\`\`\`${err}\`\`\``);
+			channels.errors.send(e, module);
 		}
 
 	},

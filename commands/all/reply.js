@@ -20,7 +20,7 @@ module.exports = {
 				if (e.code === 10013) {
 					return message.channel.send(`Error: ${e.message}`);
 				}
-				else { channels.errors.send('Unknown error in lotto.js', `\`\`\`${e}\`\`\``); }
+				else { channels.errors.send(e, module); }
 			});
 
 

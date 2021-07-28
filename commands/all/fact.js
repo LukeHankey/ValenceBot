@@ -22,7 +22,7 @@ module.exports = {
 		const settings = db.collection('Settings');
 		const { prefix } = await settings.findOne({ _id: message.guild.id }, { projection: { prefix: 1 } });
 
-		const count = await vFactsColl.stats().then(r => r.count).catch(err => channels.errors.send('Unknown error in fact.js', `\`\`\`${err}\`\`\``));
+		const count = await vFactsColl.stats().then(r => r.count).catch(err => channels.errors.send(err, module));
 		const random = Math.floor((Math.random() * count) + 1);
 		const fact = args.slice(1).join(' ');
 		const code = '```';
@@ -65,7 +65,7 @@ module.exports = {
 								message.channel.send(`Fact #${r.number} has been deleted from the list!\n${code}${r.number}. ${r.Message}${code}`);
 								channels.logs.send(`<@${message.author.id}> removed a Fact: ${code}#${r.number}. ${r.Message}${code}`);
 							})
-							.catch(err => channels.errors.send('Unknown error in fact.js', `\`\`\`${err}\`\`\``));
+							.catch(err => channels.errors.send(err, module));
 						vFactsColl.deleteOne({ number: Number(args[1]) });
 					}
 					else {
@@ -93,7 +93,7 @@ module.exports = {
 									channels.logs.send(`<@${message.author.id}> edited Fact #${rs.number}: ${code}diff\n- ${r.value.Message}\n+ ${rs.Message}${code}`);
 								});
 						})
-						.catch(err => channels.errors.send('Unknown error in fact.js', `\`\`\`${err}\`\`\``));
+						.catch(err => channels.errors.send(err, module));
 				}
 				else if (args[1] === isNaN) {
 					console.log(typeof +args[1]);
@@ -126,7 +126,7 @@ module.exports = {
 						channels.logs.send(`<@${message.author.id}> used the Fact command in <#${message.channel.id}>. https://discordapp.com/channels/${message.guild.id}/${message.channel.id}/${message.channel.lastMessageID} ${code}#${r.number}. ${r.Message}${code}`);
 						console.log(`Fact command used by ${message.author.username} : ${r.Message}`);
 					})
-					.catch(err => channels.errors.send('Unknown error in fact.js', `\`\`\`${err}\`\`\``));
+					.catch(err => channels.errors.send(err, module));
 			}
 			else {
 				message.channel.send(perms.errorA);

@@ -49,7 +49,7 @@ module.exports = {
 					if (e.code === 50035) {
 						return message.channel.send('Too many messages stored. Use the clear command.');
 					}
-					else { channels.errors.send('Unknown error in dsf.js', `\`\`\`${e}\`\`\``); }
+					else { channels.errors.send(e, module); }
 				}
 			}
 				break;
@@ -106,7 +106,7 @@ module.exports = {
 								},
 							});
 						}
-						else { channels.errors.send('Unknown error in dsf.js', `\`\`\`${e}\`\`\``); }
+						else { channels.errors.send(e, module); }
 					}
 				});
 			}
@@ -172,7 +172,7 @@ module.exports = {
 						});
 					})
 					.catch(err => {
-						channels.errors.send('Unknown error in dsf.js', `\`\`\`${err}\`\`\``);
+						channels.errors.send(err, module);
 					});
 			}
 			}

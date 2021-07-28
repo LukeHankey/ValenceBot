@@ -20,9 +20,17 @@ module.exports = async (client, reaction, user) => {
 	const channels = {
 		errors: {
 			id: errors,
-			send: function(content) {
+			embed: function(err, module) {
+				const fileName = module.id.split('\\').pop();
+				const embed = new MessageEmbed()
+					.setTitle(`An error occured in ${fileName}`)
+					.setColor(colors.red_dark)
+					.addField(`${err.message}`, `\`\`\`${err.stack}\`\`\``);
+				return embed;
+			},
+			send: function(...args) {
 				const channel = client.channels.cache.get(this.id);
-				return channel.send(content);
+				return channel.send(this.embed(...args));
 			},
 		},
 		logs: {
@@ -33,7 +41,7 @@ module.exports = async (client, reaction, user) => {
 			},
 		},
 	};
-	if (message.partial) await message.fetch().catch(err => channels.errors.send('Unknwon error in messageReactionAdd.js', err));
+	if (message.partial) await message.fetch().catch(err => channels.errors.send(err, module));
 
 	switch (message.guild.id) {
 	case _id:
@@ -113,7 +121,7 @@ module.exports = async (client, reaction, user) => {
 								},
 							});
 						}
-						else { return channels.errors.send('Unknown error in messageReactionAdd.js', `\`\`\`${e}\`\`\``); }
+						else { return channels.errors.send(e, module); }
 					}
 				});
 			}
@@ -188,7 +196,8 @@ module.exports = async (client, reaction, user) => {
 									.setDescription(`${user.username} chose ❌ on name changes. (Not changed names or none match). User has been removed from the database.`)
 									.setColor(colors.red_dark)
 									.addField('Users old profile', `\`\`\`${JSON.stringify(userLeft)}\`\`\``);
-								channels.errors.send(embed);
+								const channel = client.channels.cache.get(channels.errors.id);
+								channel.send(embed);
 								await usersDB.deleteOne({ clanMate: userLeft.clanMate });
 							}
 							else {
@@ -249,7 +258,7 @@ module.exports = async (client, reaction, user) => {
 					}
 					catch (err) {
 						if (err) return message.channel.send('Timed out. Try again.');
-						channels.errors.send('Unknown error in messageReacitonAdd.js', err);
+						channels.errors.send(err, module);
 					}
 				}
 				else { return; }

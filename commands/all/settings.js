@@ -31,7 +31,7 @@ module.exports = {
 							channels.logs.send(`<@${message.author.id}> changed the bot Prefix in server: **${message.guild.name}**\n\`\`\`diff\n- ${r.value.prefix}\n+ ${args[2]}\`\`\``);
 						})
 						.catch(err => {
-							channels.errors.send('Unknown error in settings.js', `\`\`\`${err}\`\`\``);
+							channels.errors.send(err, module);
 						})
 					: message.channel.send('What do you want to set the prefix to?');
 				break;

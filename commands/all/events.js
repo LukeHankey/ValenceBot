@@ -25,7 +25,7 @@ module.exports = {
 			const tag = args[1];
 			const checkEventExists = data.events.map(event => { if (event.eventTag === tag) return { value: true, message: event.messageID, role: event.roleID };}).filter(valid => valid);
 			if (checkEventExists.length && checkEventExists[0].value) {
-				await removeEvents(client, message, settings, channels, data, 'eventTag', args[1]);
+				await removeEvents(client, message, settings, { channels, module: module }, data, 'eventTag', args[1]);
 				return message.react('✅');
 			}
 			else {

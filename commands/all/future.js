@@ -168,7 +168,7 @@ module.exports = {
 			}
 		}
 		catch (err) {
-			channels.errors.send('Unknown error in future.js', `\`\`\`${err}\`\`\``);
+			channels.errors.send(err, module);
 		}
 
 	},

@@ -21,9 +21,17 @@ module.exports = async (client, message) => {
 		},
 		errors: {
 			id: errors,
-			send: function(content) {
+			embed: function(err, module) {
+				const fileName = module.id.split('\\').pop();
+				const embed = new MessageEmbed()
+					.setTitle(`An error occured in ${fileName}`)
+					.setColor(colors.red_dark)
+					.addField(`${err.message}`, `\`\`\`${err.stack}\`\`\``);
+				return embed;
+			},
+			send: function(...args) {
 				const channel = client.channels.cache.get(this.id);
-				return channel.send(content);
+				return channel.send(this.embed(...args));
 			},
 		},
 		logs: {

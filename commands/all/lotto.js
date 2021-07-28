@@ -322,13 +322,13 @@ module.exports = {
 									}
 								});
 							})
-							.catch(err => channels.errors.send('Unknown error in lotto.js', `\`\`\`${err}\`\`\``));
+							.catch(err => channels.errors.send(err, module));
 					}
 				}
 			}
 		}
 		catch(err) {
-			channels.errors.send('Unknown error in lotto.js', `\`\`\`${err}\`\`\``);
+			channels.errors.send(err, module);
 		}
 	},
 };

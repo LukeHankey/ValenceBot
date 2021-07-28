@@ -110,7 +110,7 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 		}
 	}
 	catch (err) {
-		errors.send('Unknown error in merchCount.js', `\`\`\`${err}\`\`\``);
+		errors.send(err, module);
 	}
 };
 
