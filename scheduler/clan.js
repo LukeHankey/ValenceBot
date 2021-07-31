@@ -31,6 +31,7 @@ const getData = async () => {
 			clanUser.discActive = false;
 			clanUser.alt = false;
 			clanUser.gameActive = false;
+			clanUser.lastUpdated = new Date();
 			const dbCheck = await usersColl.findOne({ 'clanMate': clanUser.clanMate });
 			if (!dbCheck) {
 				if (clanUser.clanMate === '') return;
@@ -39,7 +40,7 @@ const getData = async () => {
 			}
 			else {
 				// Updates total XP
-				await usersColl.updateOne({ clanMate: clanUser.clanMate }, { $set: { clanRank: clanUser.clanRank, totalXP: clanUser.totalXP, kills: clanUser.kills } });
+				await usersColl.updateOne({ clanMate: clanUser.clanMate }, { $set: { clanRank: clanUser.clanRank, totalXP: clanUser.totalXP, kills: clanUser.kills, lastUpdated: new Date() } });
 			}
 		});
 

@@ -32,7 +32,7 @@ const addActive = async () => {
 			let lastActivityDate;
 			if (metricsProfile.error) {
 				// console.log(users[index].clanMate, metricsProfile.error);
-				await usersColl.updateOne({ clanMate: users[index].clanMate }, { $set: { profile: metricsProfile.error, gameActive: null } });
+				await usersColl.updateOne({ clanMate: users[index].clanMate }, { $set: { profile: metricsProfile.error, gameActive: null, lastUpdated: new Date() } });
 			}
 			else {
 				lastActivityDate = metricsProfile.activities.length ? metricsProfile.activities[0].date : 0;
@@ -40,11 +40,11 @@ const addActive = async () => {
 
 				if ((Date.now() - 2.628e+9) > lastActivityDate) {
 					// console.log(`${users[index].clanMate} is not active`);
-					await usersColl.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: false } });
+					await usersColl.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: false, lastUpdated: new Date() } });
 				}
 				else {
 					// console.log(`${users[index].clanMate} is active`);
-					await usersColl.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: true } });
+					await usersColl.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: true, lastUpdated: new Date() } });
 				}
 			}
 			index++;
