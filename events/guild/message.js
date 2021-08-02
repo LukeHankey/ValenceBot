@@ -83,7 +83,7 @@ module.exports = async (client, message) => {
 		}
 		if (message.channel.id === channelID || message.channel.id === otherChannelID) {
 			// DSF - Merch Calls
-			await dsf(client, message, channels);
+			return await dsf(client, message, channels);
 		}
 	}
 
