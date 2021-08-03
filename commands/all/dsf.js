@@ -267,6 +267,15 @@ module.exports = {
 					if (reaction) return message.react('✅');
 					else return message.react('❌');
 				}
+				else if (num === 'game') {
+					await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+						$inc: {
+							'merchChannel.scoutTracker.$.game': 1,
+						},
+					});
+					if (reaction) return message.react('✅');
+					else return message.react('❌');
+				}
 				else {
 					if (isNaN(parseInt(num))) {
 						return message.channel.send(`\`${num}\` is not a number.`);
@@ -306,6 +315,15 @@ module.exports = {
 					await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
 						$inc: {
 							'merchChannel.scoutTracker.$.otherCount': -1,
+						},
+					});
+					if (reaction) return message.react('✅');
+					else return message.react('❌');
+				}
+				else if (num === 'game') {
+					await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+						$inc: {
+							'merchChannel.scoutTracker.$.game': -1,
 						},
 					});
 					if (reaction) return message.react('✅');

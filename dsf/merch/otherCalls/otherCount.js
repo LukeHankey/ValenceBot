@@ -25,6 +25,7 @@ const otherCalls = async (message, updateDB, { errors }) => {
 								lastTimestamp: msg[0].createdTimestamp,
 								lastTimestampReadable: new Date(msg[0].createdTimestamp),
 								count: 0,
+								game: 0,
 								otherCount: 1,
 								assigned: [],
 							}],

@@ -38,6 +38,7 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 								lastTimestamp: msg[0].createdTimestamp,
 								lastTimestampReadable: new Date(msg[0].createdTimestamp),
 								count: 1,
+								game: 0,
 								otherCount: 0,
 								assigned: [],
 							}],

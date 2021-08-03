@@ -45,7 +45,7 @@ module.exports = {
 
 			for (const values of userData) {
 				fields.push(
-					{ name: `${values.author}`, value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true },
+					{ name: `${values.author}`, value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nGame count: ${values.game}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true },
 					{ name: 'Assigned Roles:', value: `${memberAssignedRoles.join(', ') || _text('None')}`, inline: true },
 					{ name: '\u200B', value: '\u200B', inline: true },
 					{ name: 'Self-Assign Roles:', value: `${memberSelfRoles.join(', ') || _text('None')}`, inline: true },
@@ -112,6 +112,7 @@ module.exports = {
 											lastTimestamp: col.createdTimestamp,
 											lastTimestampReadable: new Date(col.createdTimestamp),
 											count: 0,
+											game: 0,
 											otherCount: 0,
 											assigned: [],
 										},
