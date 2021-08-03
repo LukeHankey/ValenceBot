@@ -128,25 +128,36 @@ module.exports = {
 		}).filter(x => x);
 
 		const calChannel = message.guild.channels.cache.find((ch) => ch.name === 'calendar');
-		const calMessage = await calChannel.messages.fetch(info[0].msg);
-		const fields = calMessage.embeds[0].fields;
-		const foundIndex = fields.findIndex(field => {
-			const announcement = field.value.split('\n')[2];
-			const announcementID = announcement.split('/')[6].slice(0, -1);
-			if (announcementID === messageID) return field;
-		});
-		let items = fields.find(item => {
-			let announcement = item.value.split('\n')[2];
-			announcement = announcement.split('/')[6].slice(0, -1);
-			if (announcement === messageID) return item;
-		});
-		items = [items].map((values) => `${values.name}\n${values.value}\n`);
+		try {
+			const calMessage = await calChannel.messages.fetch(info[0].msg);
+			const fields = calMessage.embeds[0].fields;
+			const foundIndex = fields.findIndex(field => {
+				const announcement = field.value.split('\n')[2];
+				const announcementID = announcement.split('/')[6].slice(0, -1);
+				if (announcementID === messageID) return field;
+			});
+			let items = fields.find(item => {
+				let announcement = item.value.split('\n')[2];
+				announcement = announcement.split('/')[6].slice(0, -1);
+				if (announcement === messageID) return item;
+			});
+			items = [items].map((values) => `${values.name}\n${values.value}\n`);
 
-		const updateEmbed = new MessageEmbed(calMessage.embeds[0]);
-		updateEmbed.spliceFields(foundIndex, 1);
-		calMessage.edit(updateEmbed);
-		const remaining = updateEmbed.fields.map((values) => `${values.name}\n${values.value}\n`);
-		channels.logs.send(`Calendar updated - ${message.author} removed event: \`\`\`diff\n- Removed\n${items.join('\n')}\n+ Remaining\n ${remaining.join('\n')}\`\`\``);
+			const updateEmbed = new MessageEmbed(calMessage.embeds[0]);
+			updateEmbed.spliceFields(foundIndex, 1);
+			calMessage.edit(updateEmbed);
+			const remaining = updateEmbed.fields.map((values) => `${values.name}\n${values.value}\n`);
+			channels.logs.send(`Calendar updated - ${message.author} removed event: \`\`\`diff\n- Removed\n${items.join('\n')}\n+ Remaining\n ${remaining.join('\n')}\`\`\``);
+		}
+		catch (err) {
+			if (err.code === 10008) {
+				channels.errors.send(`The ${info[0].month} calendar was deleted from ${calChannel.toString()}. Unable to fetch that months calendar to remove events but they have been removed from the calendar and events database.`);
+			}
+			else {
+				console.error(err);
+			}
+		}
+
 	},
 	csvJSON: (csv) => {
 
