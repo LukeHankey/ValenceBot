@@ -8,7 +8,7 @@ module.exports = {
 	description: ['Lookup a clan member by Discord ID.', 'Lookup a group of ranks.', 'Lookup a clan member by their RSN.', 'Set the Discord ID/Active/Alt status of a clan member.'],
 	aliases: [''],
 	usage:  ['<Discord ID>', '<Rank name>', '<RSN>', '<RSN> set <discord/active/alt> <new value>'],
-	guildSpecific: ['472448603642920973', '733164313744769024' ],
+	guildSpecific: ['668330890790699079', '472448603642920973' ],
 	permissionLevel: 'Mod',
 	run: async (client, message, args, perms, channels) => {
 		if (!perms.mod) return message.channel.send(perms.errorM);
@@ -183,9 +183,10 @@ module.exports = {
 
 			let findUser = await usersColl.findOne({ $text: { $search: rsName.join(' '), $caseSensitive: false } }, { projection: { _id: 0, kills: 0 } });
 			if (findUser) {
-				findUser = renameKeys({ 'clanMate': 'RSN', 'clanRank': 'Rank', 'totalXP': 'Total XP', 'discord': 'ID', 'discActive': 'Discord', 'alt': 'Alt Account', 'gameActive:': 'Game' }, findUser);
+				findUser = renameKeys({ 'clanMate': 'RSN', 'clanRank': 'Rank', 'totalXP': 'Total XP', 'discord': 'ID', 'discActive': 'Discord', 'alt': 'Alt Account', 'gameActive': 'Game' }, findUser);
+				delete findUser.lastUpdated;
 				for (const item in findUser) {
-					if (findUser['Discord ID'] === '') findUser['Discord ID'] = 'N/A';
+					if (findUser['ID'] === '') findUser['ID'] = 'N/A';
 					result.push({ name: item, value: findUser[item], inline: true });
 				}
 			}
