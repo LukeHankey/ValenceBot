@@ -58,7 +58,8 @@ module.exports = {
 			const userInDiscord = message.guild.members.cache.has(args[0]);
 			let findUser = await usersColl.findOne({ discord: args[0] }, { projection: { _id: 0, kills: 0 } });
 			if (findUser) {
-				findUser = renameKeys({ 'clanMate': 'RSN', 'clanRank': 'Rank', 'totalXP': 'Total XP', 'discord': 'ID', 'discActive': 'Discord', 'alt': 'Alt Account', 'gameActive:': 'Game' }, findUser);
+				findUser = renameKeys({ 'clanMate': 'RSN', 'clanRank': 'Rank', 'totalXP': 'Total XP', 'discord': 'ID', 'discActive': 'Discord', 'alt': 'Alt Account', 'gameActive': 'Game' }, findUser);
+				delete findUser.lastUpdated;
 				for (const item in findUser) {
 					result.push({ name: item, value: findUser[item], inline: true });
 				}
