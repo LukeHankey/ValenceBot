@@ -56,7 +56,7 @@ const removeInactives = async (name, settings, { logs }) => {
 			allItems.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}). User has been marked as inactive.`);
 			await settings.updateOne(
 				{ serverName: name._guild_name, 'merchChannel.scoutTracker.userID': doc.userID },
-				{ $set: { 'merchChannel.scoutTracker': { 'active': 0 } } },
+				{ $set: { 'merchChannel.scoutTracker.$.active': 0 } },
 			);
 		}
 	});
