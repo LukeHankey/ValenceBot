@@ -195,7 +195,7 @@ module.exports = async client => {
 			addedRoles(role, settings);
 			removedRoles(role, settings);
 		});
-		removeInactives(scout, client, settings);
+		removeInactives(scout, settings, channels);
 
 		// Daily Reset
 		if (new Date().getHours() === 00 && new Date().getMinutes() === 00) {

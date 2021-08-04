@@ -40,6 +40,7 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 								count: 1,
 								game: 0,
 								otherCount: 0,
+								active: 1,
 								assigned: [],
 							}],
 						},
@@ -64,6 +65,7 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 					'merchChannel.scoutTracker.$.author': userN.nickname ?? userN.user.username,
 					'merchChannel.scoutTracker.$.lastTimestamp': msg[0].createdTimestamp,
 					'merchChannel.scoutTracker.$.lastTimestampReadable': new Date(msg[0].createdTimestamp),
+					'merchChannel.scoutTracker.$.active': 1,
 				},
 			});
 			if (!(await checkMemberRole(userN.id, message))) {
