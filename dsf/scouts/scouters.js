@@ -34,19 +34,34 @@ const removedRoles = async (name, settings) => {
 	});
 };
 
-const removeInactives = async (name, client, settings) => {
+const removeInactives = async (name, settings, { logs }) => {
 	const inactives = await name.removeInactive();
-	const many = inactives.length;
-	const manyNames = [];
+	const removed = [];
+	const allItems = [];
+	const sixMonths = 1.577e+10;
 	inactives.map(async doc => {
-		manyNames.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count})`);
-		await settings.updateOne(
-			{ serverName: name._guild_name },
-			{ $pull: { 'merchChannel.scoutTracker': { 'userID': doc.userID } } },
-		);
+		if (doc.active === 0 && (Date.now() - doc.lastTimestamp) > sixMonths) {
+			removed.push(doc.author);
+			allItems.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}).`);
+			await settings.updateOne(
+				{ serverName: name._guild_name },
+				{ $pull: { 'merchChannel.scoutTracker': { 'userID': doc.userID } } },
+			);
+		}
+		else if (doc.active === 0) {
+			allItems.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}). Last made a call on ${doc.lastTimestampReadable}.`);
+			return;
+		}
+		else {
+			allItems.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}). User has been marked as inactive.`);
+			await settings.updateOne(
+				{ serverName: name._guild_name, 'merchChannel.scoutTracker.userID': doc.userID },
+				{ $set: { 'merchChannel.scoutTracker.$.active': 0 } },
+			);
+		}
 	});
-	if (manyNames.length) {
-		return client.channels.cache.get('731997087721586698').send(`${many} profiles removed.\n\`\`\`${manyNames.join('\n')}\`\`\``);
+	if (allItems.length) {
+		return logs.get('731997087721586698').send(`${removed.length} profiles removed.\n\`\`\`${allItems.join('\n')}\`\`\``);
 	}
 };
 

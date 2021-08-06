@@ -84,8 +84,15 @@ module.exports = async (client, message) => {
 			}
 		}
 		if (message.channel.id === channelID || message.channel.id === otherChannelID) {
-			// DSF - Merch Calls
+			// DSF - Merch & Other calls
 			return await dsf(client, message, channels);
+		}
+		// Suggestions channel
+		if (message.channel.id === '872164630322118686') {
+			const up_arrow = message.guild.emojis.cache.get('872175822725857280');
+			const down_arrow = message.guild.emojis.cache.get('872175855223337060');
+			await message.react(up_arrow);
+			await message.react(down_arrow);
 		}
 	}
 

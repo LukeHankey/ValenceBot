@@ -154,20 +154,21 @@ module.exports = async (client, reaction, user) => {
 
 			if (messageMatch) {
 				let primary = message.content.split('\n')[3];
-				const allNames = [];
-				messageMatch.data[0].potentialNewNames.forEach(item => allNames.push(item.clanMate.toLowerCase()));
-				const potentialNameChangersList = messageMatch.data[0].clanMate;
+				const potentialNewNamesList = [];
+				messageMatch.data[0].potentialNewNames.forEach(item => potentialNewNamesList.push(item.clanMate.toLowerCase()));
+				const potentialPreviousName = messageMatch.data[0].clanMate;
 				let oldData = messageMatch.data.map(o => { return { _id: o._id, clanMate: o.clanMate, clanRank: o.clanRank, totalXP: o.totalXP, kills: o.kills, discord: o.discord, discActive: o.discActive, alt: o.alt, gameActive: o.gameActive }; });
 
 				if (reaction.emoji.name === '✅') {
 					primary = primary.split(' |')[0];
-					const found = messageMatch.data[0].potentialNewNames.find(u => u.clanMate === primary);
-					usersDB.updateOne({ clanMate: potentialNameChangersList }, {
+					const oldProfile = await usersDB.findOne({ clanMate: potentialPreviousName });
+					await usersDB.deleteOne({ clanMate: potentialPreviousName });
+					await usersDB.updateOne({ clanMate: primary }, {
 						$set: {
-							discord: found.discord,
-							discActive: found.discActive,
-							alt: found.alt,
-							gameActive: found.gameActive,
+							discord: oldProfile.discord,
+							discActive: oldProfile.discActive,
+							alt: oldProfile.alt,
+							gameActive: oldProfile.gameActive,
 						},
 						$unset: {
 							potentialNewNames: 1,
@@ -177,49 +178,53 @@ module.exports = async (client, reaction, user) => {
 					return message.reactions.removeAll();
 				}
 				else if (reaction.emoji.name === '❌') {
-					let index = 0;
-					const interval = setInterval(async () => {
-						try {
-							let metricsProfile = await fetch(`https://secure.runescape.com/m=website-data/playerDetails.ws?names=%5B%22${allNames[index]}%22%5D&callback=jQuery000000000000000_0000000000&_=0`).then(response => response.text());
-							metricsProfile = JSON.parse(metricsProfile.slice(34, -4));
-							const userLeft = await usersDB.findOne({ $text: { $search: allNames[index], $caseSensitive: false } }, { projection: { _id: 0, potentialNewNames: 0, profile: 0 } });
+					let metricsProfile = await fetch(`https://secure.runescape.com/m=website-data/playerDetails.ws?names=%5B%22${potentialPreviousName}%22%5D&callback=jQuery000000000000000_0000000000&_=0`).then(response => response.text());
+					metricsProfile = JSON.parse(metricsProfile.slice(34, -4));
+					const userLeft = await usersDB.findOne({ $text: { $search: potentialPreviousName, $caseSensitive: false } }, { projection: { _id: 0, potentialNewNames: 0, profile: 0 } });
 
-							if (metricsProfile.clan && metricsProfile.clan !== 'Valence') {
-								const embed = new MessageEmbed()
-									.setTitle(`${userLeft.clanMate} is no longer in Valence`)
-									.setDescription(`${user.username} chose ❌ on name changes. (Not changed names or none match). User has been removed from the database.`)
-									.setColor(colors.red_dark)
-									.addField('Users old profile', `\`\`\`${JSON.stringify(userLeft)}\`\`\``);
-								const channel = client.channels.cache.get(channels.errors.id);
-								channel.send({ embeds: [ embed ] });
-								await usersDB.deleteOne({ clanMate: userLeft.clanMate });
-							}
-							else {
-								// Checks if the potential previous name is equal to the current name.
-								// eslint-disable-next-line no-lonely-if
-								if (userLeft.clanMate === potentialNameChangersList) {
-									oldData = oldData.find(u => u.clanMate.toLowerCase() === potentialNameChangersList.toLowerCase());
-									await usersDB.deleteOne({ clanMate: potentialNameChangersList });
-									await usersDB.insertOne(oldData);
-								}
-							}
-							index++;
-						}
-						catch (err) {
-							console.error(err);
-						}
+					if (metricsProfile.clan && metricsProfile.clan !== 'Valence') {
+						const embed = new MessageEmbed()
+							.setTitle(`${userLeft.clanMate} is no longer in Valence`)
+							.setDescription(`${user.username} chose ❌ on name changes. (Not changed names or none match). User has been removed from the database.`)
+							.setColor(colors.red_dark)
+							.addField('Users old profile', `\`\`\`${JSON.stringify(userLeft)}\`\`\``);
+						const channel = client.channels.cache.get(channels.errors.id);
+						channel.send(embed);
+						await usersDB.deleteOne({ clanMate: userLeft.clanMate });
+					}
+					else {
+						// Checks if the potential previous name is equal to the current name.
+						let metricsProfile = await fetch(`https://secure.runescape.com/m=website-data/playerDetails.ws?names=%5B%22${potentialPreviousName}%22%5D&callback=jQuery000000000000000_0000000000&_=0`).then(response => response.text());
+						metricsProfile = JSON.parse(metricsProfile.slice(34, -4));
+						const userLeft = await usersDB.findOne({ $text: { $search: potentialPreviousName, $caseSensitive: false } }, { projection: { _id: 0, potentialNewNames: 0, profile: 0 } });
 
-						if (index === allNames.length) {
-							clearInterval(interval);
+						if (metricsProfile.clan && metricsProfile.clan !== 'Valence') {
+							const embed = new MessageEmbed()
+								.setTitle(`${userLeft.clanMate} is no longer in Valence`)
+								.setDescription(`${user.username} chose ❌ on name changes. (Not changed names or none match). User has been removed from the database.`)
+								.setColor(colors.red_dark)
+								.addField('Users old profile', `\`\`\`${JSON.stringify(userLeft)}\`\`\``);
+							const channel = client.channels.cache.get(channels.errors.id);
+							channel.send(embed);
+							await usersDB.deleteOne({ clanMate: userLeft.clanMate });
 						}
-					}, 1000);
-					settingsColl.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } });
-					return message.reactions.removeAll();
+						else {
+							// Checks if the potential previous name is equal to the current name.
+							// eslint-disable-next-line no-lonely-if
+							if (userLeft.clanMate === potentialPreviousName) {
+								oldData = oldData.find(u => u.clanMate.toLowerCase() === potentialPreviousName.toLowerCase());
+								await usersDB.deleteOne({ clanMate: potentialPreviousName });
+								await usersDB.insertOne(oldData);
+							}
+						}
+						settingsColl.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } });
+						return message.reactions.removeAll();
+					}
 				}
 				else if (reaction.emoji.name === '📝') {
 					try {
 						message.channel.send('Please type out one of the above suggested names.');
-						const filter = m => allNames.includes(m.content.toLowerCase());
+						const filter = m => potentialNewNamesList.includes(m.content.toLowerCase());
 						let msg = await message.channel.awaitMessages({ filter, max: 1, time: 15000, errors: ['time'] });
 						msg = msg.first();
 						const found = messageMatch.data[0].potentialNewNames.find(u => u.clanMate.toLowerCase() === msg.content.toLowerCase());
@@ -235,18 +240,16 @@ module.exports = async (client, reaction, user) => {
 							return result;
 						};
 
-						const info = details(messageMatch.data[0], found);
-						usersDB.updateOne({ clanMate: potentialNameChangersList }, {
+						const info = details(found, messageMatch.data[0]);
+						usersDB.updateOne({ clanMate: found[0].clanMate }, {
 							$set: {
 								discord: info.discord,
 								discActive: info.discActive,
 								alt: info.alt,
 								gameActive: info.gameActive,
 							},
-							$unset: {
-								potentialNewNames: 1,
-							},
 						});
+						usersDB.deleteOne({ clanMate: potentialPreviousName });
 						settingsColl.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } });
 						return message.reactions.removeAll();
 					}
