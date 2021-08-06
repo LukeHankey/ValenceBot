@@ -1,4 +1,4 @@
-const Discord = require('discord.js');
+const { MessageEmbed, Util, Formatters } = require('discord.js');
 const getDb = require('../../mongodb').getDb;
 const randomColor = Math.floor(Math.random() * 16777215).toString(16);
 const func = require('../../functions.js');
@@ -20,7 +20,7 @@ module.exports = {
 		const db = getDb();
 		const vFactsColl = db.collection('Facts');
 		const settings = db.collection('Settings');
-		const { prefix } = await settings.findOne({ _id: message.guild.id }, { projection: { prefix: 1 } });
+		const { prefix } = await settings.findOne({ _id: message.channel.guild.id }, { projection: { prefix: 1 } });
 
 		const count = await vFactsColl.stats().then(r => r.count).catch(err => channels.errors.send(err, module));
 		const random = Math.floor((Math.random() * count) + 1);
@@ -28,7 +28,7 @@ module.exports = {
 		const code = '```';
 
 		const factEmbed = function(factMessage) {
-			const embed = new Discord.MessageEmbed()
+			const embed = new MessageEmbed()
 				.setTitle('**Daily Valence Fact**')
 				.setDescription(factMessage)
 				.setColor(`#${randomColor}`)
@@ -41,12 +41,11 @@ module.exports = {
 		case 'add':
 			if (perms.admin) {
 				if (!args[1]) {
-					console.log('No 2nd argument given.');
-					message.channel.send('Give me a message to add to the DataBase.');
+					message.channel.send({ content: 'Write a message to add to the DataBase.' });
 				}
 				else {
 					await vFactsColl.insertOne({ Message: fact,	number: count + 1 });
-					message.channel.send(`Fact #${count + 1} has been added to the list!\n${code}${count + 1}. ${fact}${code}`);
+					message.channel.send({ content: `Fact #${count + 1} has been added to the list!\n${code}${count + 1}. ${fact}${code}` });
 					channels.logs.send(`<@${message.author.id}> added a Fact: ${code}#${count + 1}. ${fact}${code}`);
 				}
 			}
@@ -61,20 +60,18 @@ module.exports = {
 						await vFactsColl.findOne({ number: Number(args[1]) })
 							.then(r => {
 								vFactsColl.updateMany({ number: { $gt: r.number } }, { $inc: { number: -1 } });
-								console.log(`Total facts decreased to: ${count - 1}`);
-								message.channel.send(`Fact #${r.number} has been deleted from the list!\n${code}${r.number}. ${r.Message}${code}`);
+								message.channel.send({ content: `Fact #${r.number} has been deleted from the list!\n${code}${r.number}. ${r.Message}${code}` });
 								channels.logs.send(`<@${message.author.id}> removed a Fact: ${code}#${r.number}. ${r.Message}${code}`);
 							})
 							.catch(err => channels.errors.send(err, module));
 						vFactsColl.deleteOne({ number: Number(args[1]) });
 					}
 					else {
-						message.channel.send(`Invalid Fact ID! The ID should be between 1 & ${count}.`);
+						message.channel.send({ content: `Invalid Fact ID! The ID should be between 1 & ${count}.` });
 					}
 				}
 				else {
-					console.log('No 2nd argument given - remove.');
-					message.channel.send(`You must provide a Fact Number to remove. Use \`${prefix}fact list\` to see the number.`);
+					message.channel.send({ content: `You must provide a Fact Number to remove. Use \`${prefix}fact list\` to see the number.` });
 				}
 			}
 			else {
@@ -89,17 +86,14 @@ module.exports = {
 						.then(r => {
 							vFactsColl.findOne({ number: r.value.number })
 								.then(rs => {
-									message.channel.send(`Fact #${rs.number} has been edited successfully!\n${code}${r.value.number}. ${r.value.Message} >>> ${rs.Message}${code}`);
+									message.channel.send({ content: `Fact #${rs.number} has been edited successfully!\n${code}${r.value.number}. ${r.value.Message} >>> ${rs.Message}${code}` });
 									channels.logs.send(`<@${message.author.id}> edited Fact #${rs.number}: ${code}diff\n- ${r.value.Message}\n+ ${rs.Message}${code}`);
 								});
 						})
 						.catch(err => channels.errors.send(err, module));
 				}
 				else if (args[1] === isNaN) {
-					console.log(typeof +args[1]);
-					console.log(args[1] !== isNaN);
-					console.log(+args[1] !== isNaN);
-					message.channel.send(`"${args[1]}" is not a valid number!`);
+					message.channel.send({ content: `"${args[1]}" is not a valid number!` });
 				}
 			}
 			else {
@@ -111,7 +105,8 @@ module.exports = {
 				const list = [];
 				await vFactsColl.find({ }).sort({ number: 1 })
 					.forEach(x => list.push(`${x.number}. ${x.Message}\n`));
-				await message.channel.send(`${list.join('')}`, { split: true, code: '' });
+				const split = Util.splitMessage(list.join(''));
+				split.forEach(content => message.channel.send({ content: Formatters.codeBlock(content) }));
 			}
 			else {
 				message.channel.send(perms.errorM);
@@ -120,11 +115,10 @@ module.exports = {
 		default:
 			if (perms.admin) {
 				vFactsColl.findOne({ number: random })
-					.then(r => {
+					.then(async r => {
 						message.delete();
-						message.channel.send(factEmbed(r.Message));
-						channels.logs.send(`<@${message.author.id}> used the Fact command in <#${message.channel.id}>. https://discordapp.com/channels/${message.guild.id}/${message.channel.id}/${message.channel.lastMessageID} ${code}#${r.number}. ${r.Message}${code}`);
-						console.log(`Fact command used by ${message.author.username} : ${r.Message}`);
+						const sentFact = await message.channel.send({ embeds: [ factEmbed(r.Message) ] });
+						channels.logs.send(`<@${message.author.id}> used the Fact command in <#${message.channel.id}>. https://discordapp.com/channels/${message.channel.guild.id}/${message.channel.id}/${sentFact.id} ${code}#${r.number}. ${r.Message}${code}`);
 					})
 					.catch(err => channels.errors.send(err, module));
 			}

@@ -5,7 +5,7 @@ const { randomNum } = require('../functions');
 const vEvents = async (client, message, channels) => {
 	const db = getDb();
 	const settingsColl = db.collection('Settings');
-	const DB = await settingsColl.findOne({ _id: message.guild.id, 'channels.events': { $exists: true } }, { projection: { channels: 1, calendarID: 1 } });
+	const DB = await settingsColl.findOne({ _id: message.channel.guild.id, 'channels.events': { $exists: true } }, { projection: { channels: 1, calendarID: 1 } });
 
 	// eslint-disable-next-line no-useless-escape
 	if (!DB) return;
@@ -27,18 +27,18 @@ const vEvents = async (client, message, channels) => {
 
 		try {
 			const filter = (reaction, user) => ['❌', '✅'].includes(reaction.emoji.name) && user.id === message.author.id;
-			const collectOne = await message.awaitReactions(filter, { max: 1, time: 300000, errors: ['time'] });
+			const collectOne = await message.awaitReactions({ filter, max: 1, time: 300000, errors: ['time'] });
 			const collectOneReaction = collectOne.first();
 
 			if (collectOneReaction.emoji.name === '❌') {
 				return collectOneReaction.message.reactions.removeAll();
 			}
 			else if (collectOneReaction.emoji.name === '✅') {
-				const newRole = await message.guild.roles.create({ data: {
+				const newRole = await message.channel.guild.roles.create({
 					name: eventTitle[0].concat(` #${randomNum()}`),
-				} });
+				});
 
-				const calChannel = message.guild.channels.cache.find((ch) => ch.name === 'calendar');
+				const calChannel = message.channel.guild.channels.cache.find((ch) => ch.name === 'calendar');
 				const dateRegex = /^(Date(:)?\s)+((3[0-1]|2\d|1\d|[1-9])(st|nd|rd|th)?)+\s?((-|to)+\s?((3[0-1]|2\d|1\d|[1-9])(st|nd|rd|th)?)+)?(\s)?$/im;
 				const timeRegex = /^(Time(:)?\s)+(([1-6]+(\s)?(day(s)?|week(s)?|month(s)?)(\s)?$)?|(([0-1]\d|2[0-3]):([0-5]\d)\s?)?((-|to)+\s?(([0-1]\d|2[0-3]):([0-5]\d))?)?)$/im;
 				const link = `https://discord.com/channels/${last.guild.id}/${last.channel.id}/${last.id}`;
@@ -58,11 +58,11 @@ const vEvents = async (client, message, channels) => {
 					}
 					if (time === 'null' || date === 'null') {
 						if (time === 'null' && date === 'null') {
-							client.channels.cache.get(DB.channels.mod).send(`${last.author}, there was an error with both the  \`Time\` and \`Date\` parameters and they have been set as null. Please go update the calendar for your event.`);
+							client.channels.cache.get(DB.channels.mod).send({ content: `${last.author}, there was an error with both the  \`Time\` and \`Date\` parameters and they have been set as null. Please go update the calendar for your event.` });
 						}
 						else {
 							// eslint-disable-next-line no-useless-escape
-							client.channels.cache.get(DB.channels.mod).send(`${last.author}, ${time === 'null' ? 'there was an error with the  \`Time\` parameter and it has been set as null. Please go update the calendar for your event.' : 'there was an error with the  \`Date\` parameter and it has been set as null. Please go update the calendar for your event.'}`);
+							client.channels.cache.get(DB.channels.mod).send({ content: `${last.author}, ${time === 'null' ? 'there was an error with the  \`Time\` parameter and it has been set as null. Please go update the calendar for your event.' : 'there was an error with the  \`Date\` parameter and it has been set as null. Please go update the calendar for your event.'}` });
 						}
 					}
 
@@ -70,7 +70,7 @@ const vEvents = async (client, message, channels) => {
 					editEmbed.addFields(
 						{ name: date, value: `Event: ${eventTitle[0]}\nTime: ${time}\n[Announcement](${link})\nHost: ${last.author}` },
 					);
-					m.edit(editEmbed);
+					m.edit({ embeds: [ editEmbed ] });
 					channels.logs.send(`Calendar updated - ${message.author} added an event automatically: \`\`\`Date: ${date}, Event: ${eventTitle[0]}, Time: ${time}, Link: ${link}, Host: ${last.author}\`\`\``);
 				};
 
@@ -81,8 +81,8 @@ const vEvents = async (client, message, channels) => {
 					addToCal(dateR, timeR);
 				}
 
-				await settingsColl.updateOne({ _id: message.guild.id }, { $push: { events: { $each: [ { title: eventTitle[0], messageID: last.id, roleID: newRole.id, eventTag: newRole.name.slice(eventTitle[0].length + 2), date: new Date(), members: [] } ] } } });
-				await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': new Date().toLocaleString('default', { month: 'long' }) }, { $push: { 'calendarID.$.events': { messageID: last.id, title: eventTitle[0], eventTag: newRole.name.slice(eventTitle[0].length + 2), roleID: newRole.id } } });
+				await settingsColl.updateOne({ _id: message.channel.guild.id }, { $push: { events: { $each: [ { title: eventTitle[0], messageID: last.id, roleID: newRole.id, eventTag: newRole.name.slice(eventTitle[0].length + 2), date: new Date(), members: [] } ] } } });
+				await settingsColl.findOneAndUpdate({ _id: message.channel.guild.id, 'calendarID.month': new Date().toLocaleString('default', { month: 'long' }) }, { $push: { 'calendarID.$.events': { messageID: last.id, title: eventTitle[0], eventTag: newRole.name.slice(eventTitle[0].length + 2), roleID: newRole.id } } });
 				await collectOneReaction.message.reactions.removeAll();
 				await last.react('📌');
 				await last.react('✅');
@@ -92,7 +92,7 @@ const vEvents = async (client, message, channels) => {
 		catch (err) {
 			console.log(err);
 			if (err.code === 500035) {
-				message.guild.channels.cache.get(DB.channels.mod).send(`${message.member} reacted with ✅ but the Event Title (1st line) is too long. Max of 100 characters.`);
+				message.channel.guild.channels.cache.get(DB.channels.mod).send({ content: `${message.member} reacted with ✅ but the Event Title (1st line) is too long. Max of 100 characters.` });
 			}
 		}
 	}

@@ -26,7 +26,7 @@ const sendFact = async (client) => {
 	const ID = ['732014449182900247', '473235620991336468'];
 
 	ID.forEach(channel => {
-		client.channels.cache.get(channel).send(factEmbed(factDB.Message));
+		client.channels.cache.get(channel).send({ embeds: [ factEmbed(factDB.Message) ] });
 	});
 };
 

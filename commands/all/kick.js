@@ -21,21 +21,21 @@ module.exports = {
 
 		const permissionCheck = () => {
 			// Owner check
-			if (message.guild.ownerID === memberToKick) return true;
+			if (message.channel.guild.ownerId === memberToKick) return true;
 			// Kicking self by ID
 			if (message.author.id === memberToKick) return true;
 			// Kicking owner by Tag
-			if (mentionedMember && message.guild.ownerID === mentionedMember.id) return true;
+			if (mentionedMember && message.channel.guild.ownerId === mentionedMember.id) return true;
 			// Kicking self by Tag
 			if (mentionedMember && message.author.id === mentionedMember.id) return true;
 		};
 
-		if (!message.guild.me.hasPermission('KICK_MEMBERS')) return message.channel.send('I do not have permission to kick members from this server. I require \`KICK_MEMBERS\` permission.');
+		if (!message.channel.guild.me.hasPermission('KICK_MEMBERS')) return message.channel.send({ content: 'I do not have permission to kick members from this server. I require \`KICK_MEMBERS\` permission.' });
 		if (permissionCheck()) return message.react('❌');
 
 		if (checkNum(memberToKick, 1, Infinity)) {
-			if (message.guild.members.cache.has(memberToKick)) {
-				const memberObj = message.guild.members.cache.get(memberToKick);
+			if (message.channel.guild.members.cache.has(memberToKick)) {
+				const memberObj = message.channel.guild.members.cache.get(memberToKick);
 				if (memberObj.roles.highest.rawPosition > authorHighestRole) return message.react('❌');
 				if (reason) memberObj.kick(reason);
 				else memberObj.kick();
@@ -43,7 +43,7 @@ module.exports = {
 			}
 			else {
 				try {
-					const fetchMember = await message.guild.members.fetch(memberToKick);
+					const fetchMember = await message.channel.guild.members.fetch(memberToKick);
 					if (fetchMember.roles.highest.rawPosition > authorHighestRole) return message.react('❌');
 					if (reason) fetchMember.kick(reason);
 					else fetchMember.kick();
@@ -51,7 +51,7 @@ module.exports = {
 				}
 				catch (e) {
 					if (e.code === 10013) {
-						return message.channel.send(`There is no member in this server with ID: ${memberToKick}.`);
+						return message.channel.send({ content: `There is no member in this server with ID: ${memberToKick}.` });
 					}
 					else {
 						channels.errors.send(e, module);

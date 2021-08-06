@@ -1,4 +1,5 @@
 const getDb = require('../../mongodb').getDb;
+const { Formatters } = require('discord.js');
 
 /**
  * 668330890790699079 - Valence Bot Server
@@ -10,7 +11,7 @@ module.exports = {
 	description: ['Looks stuff up in the database'],
 	aliases: [''],
 	usage:  ['<code>'],
-	guildSpecific: ['668330890790699079', '733164313744769024' ],
+	guildSpecific: ['668330890790699079' ],
 	permissionLevel: 'Owner',
 	run: async (client, message, args, perms) => {
 		if (!perms.owner) return message.channel.send(perms.errorO);
@@ -23,32 +24,38 @@ module.exports = {
 		if (identifier === 'all') {
 			const info = await settingsColl.find({}).toArray();
 			const IDs = info.map(data => {return `${data._id} - ${data.serverName}`;});
-			return message.channel.send(`\`\`\`diff\n- All server IDs\n\n+ ${IDs.join('\n+ ')}\`\`\``);
+			const content = Formatters.codeBlock('diff', `All server IDs\n\n+ ${IDs.join('\n+ ')}`);
+			return message.channel.send({ content });
 		}
 
 		let result;
+		let content;
 
 		switch (project) {
 		case 'serverName':
 			result = await settingsColl.findOne({ _id: identifier }, { projection: { serverName: 1 } });
-			message.channel.send(`\`\`\`diff\n- ${result._id}\n\n+ ${result.serverName}\`\`\``);
+			content = Formatters.codeBlock('diff', `${result._id}\n\n+ ${result.serverName}`);
+			message.channel.send({ content });
 			break;
 		case 'prefix':
 			result = await settingsColl.findOne({ _id: identifier }, { projection: { prefix: 1 } });
-			message.channel.send(`\`\`\`diff\n- ${result._id}\n\n+ ${result.prefix}\`\`\``);
+			content = Formatters.codeBlock('diff', `- ${result._id}\n\n+ ${result.prefix}`);
+			message.channel.send({ content });
 			break;
 		case 'roles': {
 			result = await settingsColl.findOne({ _id: identifier }, { projection: { roles: 1 } });
 			let roles = Object.entries(result.roles);
 			roles = roles.map(([role, id]) => { return `${role} - ${id}`;});
-			message.channel.send(`\`\`\`diff\n- ${result._id}\n\n+ ${roles.join('\n+ ')}\`\`\``);
+			content = Formatters.codeBlock('diff', `- ${result._id}\n\n+ ${roles.join('\n+ ')}`);
+			message.channel.send({ content });
 		}
 			break;
 		case 'channels': {
 			result = await settingsColl.findOne({ _id: identifier }, { projection: { channels: 1 } });
 			let channels = Object.entries(result.channels);
 			channels = channels.map(([ch, id]) => { return `${ch} - ${id}`;});
-			message.channel.send(`\`\`\`diff\n- ${result._id}\n\n+ ${channels.join('\n+ ')}\`\`\``);
+			content = Formatters.codeBlock('diff', `- ${result._id}\n\n+ ${channels.join('\n+ ')}`);
+			message.channel.send({ content });
 		}
 			break;
 		}

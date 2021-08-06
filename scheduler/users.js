@@ -1,23 +1,3 @@
-/**
- * Name change would be considered a new member
- * Check users rank. If > recruit, most likely a name change. Handle recruits differently.
- * Active check:
-    * Function that grabs the players runemetrics profile > activities[0].date. Parse that and check if Date.now() - 1 month > parsed date. If so, then inactive at least 1 month.
-        * Add to database profile gameActive: false
-    * Corp+ :
-    * Active check for members in the same rank. Compare XP + kills.
-    * Hold all ^ member names in an array.
-    * Send a message to a channel (currently bot logs) to have manual confirmation that changed name to y as a suggestion + list of other potential members based on comparing criteria.
-    * If the primary suggestion, react with tick, if no name change react with x.
-    * If not primary suggestion but is another suggestion, other reaction which awaits messages for a username specified in member array (lowercase).
-    * Format message as Name | Rank | Total XP | Kills
-                        xyz  | corp | 12345678 | 1
-        * Equally spaced
-* Recruit:
-    * Active check
-    * Compare kills and totalxp
-    */
-
 const fetch = require('node-fetch');
 const getDb = require('../mongodb').getDb;
 
@@ -32,7 +12,7 @@ const addActive = async () => {
 			let lastActivityDate;
 			if (metricsProfile.error) {
 				// console.log(users[index].clanMate, metricsProfile.error);
-				await usersColl.updateOne({ clanMate: users[index].clanMate }, { $set: { profile: metricsProfile.error, gameActive: null, lastUpdated: new Date() } });
+				await usersColl.updateOne({ clanMate: users[index].clanMate }, { $set: { profile: metricsProfile.error, gameActive: null } });
 			}
 			else {
 				lastActivityDate = metricsProfile.activities.length ? metricsProfile.activities[0].date : 0;
@@ -40,11 +20,11 @@ const addActive = async () => {
 
 				if ((Date.now() - 2.628e+9) > lastActivityDate) {
 					// console.log(`${users[index].clanMate} is not active`);
-					await usersColl.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: false, lastUpdated: new Date() } });
+					await usersColl.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: false } });
 				}
 				else {
 					// console.log(`${users[index].clanMate} is active`);
-					await usersColl.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: true, lastUpdated: new Date() } });
+					await usersColl.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: true } });
 				}
 			}
 			index++;

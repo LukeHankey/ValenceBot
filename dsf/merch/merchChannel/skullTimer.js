@@ -3,21 +3,21 @@ const cron = require('node-cron');
 const skullTimer = (message, updateDB, channels) => {
 // Checking the DB and marking dead calls
 	const timer = cron.schedule('* * * * *', async () => {
-		const { merchChannel: { messages, channelID } } = await updateDB.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.messages': 1, 'merchChannel.channelID': 1 } });
-		const merchChannelID = message.guild.channels.cache.get(channelID);
+		const { merchChannel: { messages, channelID } } = await updateDB.findOne({ _id: message.channel.guild.id }, { projection: { 'merchChannel.messages': 1, 'merchChannel.channelID': 1 } });
+		const merchChannelID = message.channel.guild.channels.cache.get(channelID);
 		for await (const { messageID, content, time, userID, author } of messages) {
 			try {
 				// Removes bot messages
 				if (userID === '668330399033851924' || content.includes('<@&670842187461820436>')) {
-					await updateDB.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID } } });
+					await updateDB.updateOne({ _id: message.channel.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID } } });
 				}
 
 				if (Date.now() - time > 600000) {
 					const fetched = await message.channel.messages.fetch(messageID);
 					fetched.react('☠️')
 						.then(async () => {
-							await updateDB.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID } } });
-							const getPerms = await merchChannelID.permissionOverwrites.get(userID);
+							await updateDB.updateOne({ _id: message.channel.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID } } });
+							const getPerms = await merchChannelID.permissionOverwrites.cache.get(userID);
 							if (getPerms) {
 								const moreThanOnce = messages.filter(obj => {
 									if (obj.userID === userID && obj.messageID !== messageID) return obj;
@@ -37,9 +37,9 @@ const skullTimer = (message, updateDB, channels) => {
 			catch (e) {
 				if (e.code === 10008) {
 					const errorMessageID = e.path.split('/')[4];
-					return await updateDB.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: errorMessageID } } });
+					return await updateDB.updateOne({ _id: message.channel.guild.id }, { $pull: { 'merchChannel.messages': { messageID: errorMessageID } } });
 				}
-				else { return console.error('Error in message timer:', e); }
+				else { return channels.errors.send(e, module); }
 			}
 		}
 
@@ -53,8 +53,8 @@ const skullTimer = (message, updateDB, channels) => {
 			if (dupe > 1) {
 				const message_id = getKeyByValue(counts, dupe);
 				const entry = messages.find(id => id.messageID === message_id);
-				updateDB.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: message_id } } });
-				return updateDB.updateOne({ _id: message.guild.id }, { $addToSet: { 'merchChannel.messages': entry } });
+				updateDB.updateOne({ _id: message.channel.guild.id }, { $pull: { 'merchChannel.messages': { messageID: message_id } } });
+				return updateDB.updateOne({ _id: message.channel.guild.id }, { $addToSet: { 'merchChannel.messages': entry } });
 			}
 			else {return;}
 		});

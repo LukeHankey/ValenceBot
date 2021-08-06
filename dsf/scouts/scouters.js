@@ -61,7 +61,7 @@ const removeInactives = async (name, settings, { logs }) => {
 		}
 	});
 	if (allItems.length) {
-		return logs.send(`${removed.length} profiles removed.\n\`\`\`${allItems.join('\n')}\`\`\``);
+		return logs.get('731997087721586698').send(`${removed.length} profiles removed.\n\`\`\`${allItems.join('\n')}\`\`\``);
 	}
 };
 

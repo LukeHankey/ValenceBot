@@ -17,7 +17,7 @@ module.exports = {
 
 		const embed = new MessageEmbed()
 			.setTitle('New Vis Wax Upload')
-			.setDescription(`**${message.member.nickname ?? message.author.tag}** uploaded a new Vis Wax Image from Server:\n**${message.guild.name}** - ${message.guild.id}.`)
+			.setDescription(`**${message.member.nickname ?? message.author.tag}** uploaded a new Vis Wax Image from Server:\n**${message.channel.guild.name}** - ${message.channel.guild.id}.`)
 			.setTimestamp()
 			.setThumbnail(message.author.displayAvatarURL())
 			.setColor(colors.cream);
@@ -32,7 +32,7 @@ module.exports = {
 				const savedDate = visTime.toString().split(' ');
 
 				if (year !== savedDate[3] || month !== savedDate[1] || day !== savedDate[2]) {
-					message.channel.send('No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.');
+					message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' });
 					return await settings.updateOne({ _id: 'Globals' }, {
 						$set: {
 							vis: null,
@@ -40,21 +40,19 @@ module.exports = {
 					});
 				}
 				if (vis === null) {
-					return message.channel.send('No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.');
+					return message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' });
 				}
-				return message.channel.send(`**Image uploaded at:** ${visTime}`, {
-					files: [`${vis}`],
-				});
+				return message.channel.send({ content: `**Image uploaded at:** ${visTime}`, files: [`${vis}`] });
 			}
 			catch (err) {
-				return message.channel.send('No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.');
+				return message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' });
 			}
 		}
 		else { // Image URL
 			const array = ['gif', 'jpeg', 'tiff', 'png', 'webp', 'bmp', 'prnt.sc', 'gyazo.com'];
 			if (message.attachments.size) {
 				message.react('✅');
-				return channels.vis.send(embed.setImage(message.attachments.first().url))
+				return channels.vis.send({ embeds: [ embed.setImage(message.attachments.first().url) ] })
 					.then(async () => {
 						return await settings.updateOne({ _id: 'Globals' }, {
 							$set: {
@@ -69,7 +67,7 @@ module.exports = {
 			}
 			else if (array.some(x => attachment[0].includes(x))) {
 				message.react('✅');
-				return channels.vis.send(embed.setImage(attachment[0]))
+				return channels.vis.send({ embeds: [ embed.setImage(attachment[0]) ] })
 					.then(async () => {
 						return await settings.updateOne({ _id: 'Globals' }, {
 							$set: {
@@ -91,7 +89,7 @@ module.exports = {
 					const channelFetch = await guildFetch.channels.cache.get(c);
 					const messageFetch = await channelFetch.messages.fetch(m);
 					const newEmbed = embed.setImage(`${messageFetch.attachments.first().attachment}`);
-					channels.vis.send(newEmbed);
+					channels.vis.send({ embeds: [ newEmbed ] });
 					message.react('✅');
 					return await settings.updateOne({ _id: 'Globals' }, {
 						$set: {
@@ -104,18 +102,19 @@ module.exports = {
 					// Catch errors for a guild where the bot isn't in. Same for channel or message
 					if (e.code === 50001) {
 						if (e.path.includes('guilds')) {
-							return message.channel.send('I am not in that server so I cannot access that message link.');
+							return message.channel.send({ content: 'I am not in that server so I cannot access that message link.' });
 						}
 						else {
-							return message.channel.send('I do not have access to that channel to view the message.');
+							return message.channel.send({ content: 'I do not have access to that channel to view the message.' });
 						}
 					}
 					else if (e.code === 10008) {
 						if (e.message === 'Unknown Message') {
-							return message.channel.send('I am unable to find that message. Maybe it has been deleted?');
+							return message.channel.send({ content: 'I am unable to find that message. Maybe it has been deleted?' });
 						}
 					}
 					else {
+						console.log(channels.errors);
 						channels.errors.send(e, module);
 					}
 				}
@@ -124,7 +123,7 @@ module.exports = {
 				if (!perms.admin) return message.channel.send(perms.errorA);
 
 				if (vis === null) {
-					message.channel.send('There currently isn\'t any Vis Wax image uploaded.');
+					message.channel.send({ content: 'There currently isn\'t any Vis Wax image uploaded.' });
 					return message.react('❌');
 				}
 				else {
@@ -133,12 +132,12 @@ module.exports = {
 							vis: null,
 						},
 					});
-					channels.vis.send(`${message.author.tag} reset the Vis command in **${message.guild.name}.**`);
+					channels.vis.send(`${message.author.tag} reset the Vis command in **${message.channel.guild.name}.**`);
 					return message.react('✅');
 				}
 			}
 			else {
-				return message.channel.send('Couldn\'t find attachment/image.');
+				return message.channel.send({ content: 'Couldn\'t find attachment/image.' });
 			}
 		}
 	},

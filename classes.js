@@ -65,14 +65,16 @@ class Permissions {
 	}
 
 	ownerError() {
-		return func.nEmbed('Permission Denied', 'You do not have permission to use this command!', colors.red_dark)
+		const embed = func.nEmbed('Permission Denied', 'You do not have permission to use this command!', colors.red_dark)
 			.addField('Only the bot owner can:', `<@!${this.owner}>`);
+		return { embeds: [ embed] };
 	}
 
 	error() {
-		return func.nEmbed('Permission Denied', 'You do not have permission to use this command!', colors.red_dark)
+		const embed = func.nEmbed('Permission Denied', 'You do not have permission to use this command!', colors.red_dark)
 			.addField('Only the following Roles & Users can:', `${this.higherRoles().length > 0 ? this.higherRoles().join(', ') : '0'}`, true)
 			.addField('\u200b', `<@${this.msg.guild.ownerID}>`, true);
+		return { embeds: [ embed] };
 	}
 
 }
@@ -179,7 +181,7 @@ class ScouterCheck {
 		const fields = await this._checkForScouts();
 
 		if (fields.length) { // Perhaps look at adding something if there are > 25
-			return this._client.channels.cache.get(chan).send(embed.addFields(fields));
+			return this._client.channels.cache.get(chan).send({ embeds: [ embed.addFields(fields) ] });
 		}
 		return;
 	}

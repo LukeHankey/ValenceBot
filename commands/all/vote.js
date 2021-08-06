@@ -19,7 +19,7 @@ module.exports = {
 			.setTimestamp();
 
 		message.delete();
-		message.channel.send(embed).then(async m => {
+		message.channel.send({ embeds: [ embed ] }).then(async m => {
 			await m.react('✅');
 			await m.react('❌');
 			await m.react('❓');
