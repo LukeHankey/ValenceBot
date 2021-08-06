@@ -1,5 +1,5 @@
 const checkMemberRole = async (user, message) => {
-	const mem = message.guild.members.cache.get(user) ?? await message.guild.members.fetch(user);
+	const mem = message.channel.guild.members.cache.get(user) ?? await message.channel.guild.members.fetch(user);
 	const allowedRoles = ['Scouter', 'Verified Scouter', 'Staff', 'Moderator (Bronze Star)', 'Administrator (Silver Star)'];
 	const collectionTotal = mem.roles.cache.filter(r => allowedRoles.includes(r.name));
 	if (collectionTotal.size) { return true; }

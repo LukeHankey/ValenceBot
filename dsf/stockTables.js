@@ -1,7 +1,7 @@
 const updateStockTables = async (client, settings) => {
 	const commandCollection = client.commands.filter(cmd => cmd.name === 'wish' || cmd.name === 'future');
 	const commands = commandCollection.first(2);
-	const { merchantWishes: { range }, futureStock } = await settings.findOne({ _id: '420803245758480405' }, { projection: { 'merchantWishes.range': 1, futureStock: 1 } });
+	const { merchantWishes: { range }, futureStock } = await settings.findOne({ _id: '733164313744769024' }, { projection: { 'merchantWishes.range': 1, futureStock: 1 } });
 
 	const increaseRange = (oldRange) => {
 		const split = oldRange.split(':');
@@ -13,12 +13,12 @@ const updateStockTables = async (client, settings) => {
 	};
 
 	console.log('Running reset tasks.', `old wish range: ${range}`, `new wish range: ${increaseRange(range)}`, `old future range: ${futureStock.range}`, `new future range: ${increaseRange(futureStock.range)}`);
-	await settings.updateOne({ _id: '420803245758480405' }, {
+	await settings.updateOne({ _id: '733164313744769024' }, {
 		$set: {
 			'merchantWishes.range': increaseRange(range),
 		},
 	});
-	await settings.updateOne({ _id: '420803245758480405' }, {
+	await settings.updateOne({ _id: '733164313744769024' }, {
 		$set: {
 			'futureStock.range': increaseRange(futureStock.range),
 		},

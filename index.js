@@ -1,8 +1,8 @@
-const { Client, Collection, Intents } = require('discord.js');
+const { Client, Collection } = require('discord.js');
 const connection = require('./mongodb').initDb;
 require('dotenv').config();
 
-const client = new Client({ ws: { intents: [ Intents.NON_PRIVILEGED, 'GUILD_MEMBERS'] }, partials: ['MESSAGE', 'REACTION'] });
+const client = new Client({ intents: [ 'GUILDS', 'GUILD_MEMBERS', 'GUILD_BANS', 'GUILD_INTEGRATIONS', 'GUILD_WEBHOOKS', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS', 'DIRECT_MESSAGES'], partials: ['MESSAGE', 'REACTION', 'CHANNEL'] });
 client.commands = new Collection();
 
 ['commands', 'events'].forEach(x => require(`./handlers/${x}`)(client));

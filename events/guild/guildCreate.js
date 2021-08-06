@@ -17,10 +17,11 @@ module.exports = async (client, guild) => {
 			},
 			channels: {
 				adminChannel: null,
+				modChannel: null,
+				eventsChannel: null,
 			},
 			citadel_reset_time: { hour: '*', minute: '*', day: '*', scheduled: 'false', reminders: [],
 			},
-			reminders: [],
 		},
 		{ forceServerObjectId: true },
 	);
@@ -29,7 +30,7 @@ module.exports = async (client, guild) => {
     \n${code}diff\n
 + Server name: ${guild.name}
 + Server ID: ${guild.id}
-+ Owner: <@!${guild.ownerID}>
++ Owner: ${await guild.fetchOwner().nickname}
 + Channel count: ${guild.channels.cache.size}
 + Member count: ${guild.memberCount}${code}`);
 };

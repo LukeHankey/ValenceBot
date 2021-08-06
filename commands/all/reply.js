@@ -9,16 +9,16 @@ module.exports = {
 		if (!perms.owner) return message.channel.send(perms.errorO);
 		const [userID, ...content] = args;
 
-		if (!content.length) return message.channel.send('Error: Cannot send an empty message.');
+		if (!content.length) return message.channel.send({ content: 'Error: Cannot send an empty message.' });
 
 		client.users.fetch(userID)
 			.then(user => {
-				user.send(content.join(' '));
+				user.send({ content: content.join(' ') });
 				return message.react('✅');
 			})
 			.catch(e => {
 				if (e.code === 10013) {
-					return message.channel.send(`Error: ${e.message}`);
+					return message.channel.send({ content: `Error: ${e.message}` });
 				}
 				else { channels.errors.send(e, module); }
 			});

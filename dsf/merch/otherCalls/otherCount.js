@@ -5,7 +5,7 @@ const otherCalls = async (message, updateDB, { errors }) => {
 	try {
 		const db = getDb();
 		const settingsColl = db.collection('Settings');
-		const { merchChannel: { scoutTracker } } = await settingsColl.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.scoutTracker': 1 } });
+		const { merchChannel: { scoutTracker } } = await settingsColl.findOne({ _id: message.channel.guild.id }, { projection: { 'merchChannel.scoutTracker': 1 } });
 		const mesOne = await message.channel.messages.fetch({ limit: 1 });
 		const logOne = [...mesOne.values()];
 		const msg = logOne.map(val => val);
@@ -13,7 +13,7 @@ const otherCalls = async (message, updateDB, { errors }) => {
 		const findMessage = await scoutTracker.find(x => x.userID === msg[0].author.id);
 		if (!findMessage) {
 			console.log(`New other: ${msg[0].author.username} (${message.content})`, msg[0].author.id);
-			await updateDB.findOneAndUpdate({ _id: message.guild.id },
+			await updateDB.findOneAndUpdate({ _id: message.channel.guild.id },
 				{
 					$addToSet: {
 						'merchChannel.scoutTracker': {
@@ -25,9 +25,7 @@ const otherCalls = async (message, updateDB, { errors }) => {
 								lastTimestamp: msg[0].createdTimestamp,
 								lastTimestampReadable: new Date(msg[0].createdTimestamp),
 								count: 0,
-								game: 0,
 								otherCount: 1,
-								active: 1,
 								assigned: [],
 							}],
 						},
@@ -36,7 +34,7 @@ const otherCalls = async (message, updateDB, { errors }) => {
 		}
 		else {
 			console.log(`Old other: ${msg[0].author.username} (${message.content})`, msg[0].author.id);
-			await updateDB.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
+			await updateDB.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
 				$inc: {
 					'merchChannel.scoutTracker.$.otherCount': 1,
 				},
@@ -44,7 +42,6 @@ const otherCalls = async (message, updateDB, { errors }) => {
 					'merchChannel.scoutTracker.$.author': msg[0].member?.nickname ?? msg[0].author.username,
 					'merchChannel.scoutTracker.$.lastTimestamp': msg[0].createdTimestamp,
 					'merchChannel.scoutTracker.$.lastTimestampReadable': new Date(msg[0].createdTimestamp),
-					'merchChannel.scoutTracker.$.active': 1,
 				},
 			});
 		}
@@ -52,7 +49,6 @@ const otherCalls = async (message, updateDB, { errors }) => {
 	catch (e) {
 		errors.send(e, module);
 	}
-
 };
 
 module.exports = {

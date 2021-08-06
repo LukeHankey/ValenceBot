@@ -12,20 +12,16 @@
   "author": "Guys",
   "license": "ISC",
   "engines": {
-    "node": "14.x"
+    "node": "16.6.1"
   },
   "dependencies": {
-    "@scout_apm/scout-apm": "^0.2.2",
     "assert": "^2.0.0",
     "concurrently": "^6.2.0",
-    "convert-csv-to-json": "0.0.15",
-    "csvtojson": "^2.0.10",
-    "discord.js": "^12.5.3",
+    "discord.js": "^13.0.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "googleapis": "^64.0.0",
     "mongodb": "^3.6.4",
-    "node": "^14.17.4",
     "node-cron": "^2.0.3",
     "node-fetch": "^2.6.0",
     "pretty-ms": "^7.0.1"

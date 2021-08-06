@@ -73,7 +73,7 @@ module.exports = {
 						.addFields(num);
 				};
 
-				const channelToPush = client.channels.cache.get('844416432258285578');
+				const channelToPush = client.channels.cache.get(merchantWishes.channelID);
 				const openMessage = '**Travelling Merchant Wishes**\n\nWith the release of the wishes that came out on Monday 24th May, we thought we would compile the last 30 days of stock for you so you are able to see which items and on which days the different stock was available. Please note that you will only be able to purchase the stock if you had not already purchased it on that specific day.';
 
 				const firstDate = `${dataArr[0][0]} - ${dataArr[21][0]}`;
@@ -88,11 +88,11 @@ module.exports = {
 
 				if (message !== 'readyEvent') {
 					message.delete();
-					const opening = await channelToPush.send(openMessage);
-					const firstID = await channelToPush.send(firstEmbed);
-					const secondID = await channelToPush.send(secondEmbed);
-					const thirdID = await channelToPush.send(thirdEmbed);
-					const fourthID = await channelToPush.send(fourthEmbed);
+					const opening = await channelToPush.send({ content: openMessage });
+					const firstID = await channelToPush.send({ embeds: [ firstEmbed ] });
+					const secondID = await channelToPush.send({ embeds: [ secondEmbed ] });
+					const thirdID = await channelToPush.send({ embeds: [ thirdEmbed ] });
+					const fourthID = await channelToPush.send({ embeds: [ fourthEmbed ] });
 
 					const sendLinks = async (msgToEdit = opening) => {
 						const msgCollection = await channelToPush.messages.fetch({ limit: 4 });
@@ -104,9 +104,9 @@ module.exports = {
 						const embed = new MessageEmbed()
 							.setColor(colors.aqua)
 							.setDescription(editFormat.reverse().join('\n'));
-						await msgToEdit.edit(`${openMessage}\n\n`, { embed });
-						const after = await channelToPush.send('**Links**', embed);
-						await settings.updateOne({ _id: message.guild.id }, {
+						await msgToEdit.edit({ content: `${openMessage}\n\n`, embeds: [ embed ] });
+						const after = await channelToPush.send({ content: '**Links**', embeds: [ embed ] });
+						await settings.updateOne({ _id: message.channel.guild.id }, {
 							$set: {
 								'merchantWishes.messages.links.opening': msgToEdit.id,
 								'merchantWishes.messages.links.after': after.id,
@@ -115,7 +115,7 @@ module.exports = {
 					};
 					sendLinks();
 
-					settings.updateOne({ _id: message.guild.id }, {
+					settings.updateOne({ _id: message.channel.guild.id }, {
 						$set: {
 							'merchantWishes.messages.first': firstID.id,
 							'merchantWishes.messages.second': secondID.id,
@@ -137,7 +137,7 @@ module.exports = {
 					];
 					const embedEditor = (info) => {
 						const embed = new MessageEmbed(info);
-						return embed;
+						return { embeds: [ embed ] };
 					};
 					const channel = client.channels.cache.get(merchantWishes.channelID);
 
@@ -150,7 +150,7 @@ module.exports = {
 							const embed = new MessageEmbed().setDescription(format).setColor(colors.aqua);
 							return dataArray.filter(prop => prop.links === true).forEach(async arrData => {
 								const msg = await channel.messages.fetch(arrData.messageID);
-								await msg.edit(embed);
+								await msg.edit({ embeds: [ embed ] });
 							});
 						}
 						else {

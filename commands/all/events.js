@@ -18,7 +18,7 @@ module.exports = {
 		if (!perms.mod) return message.channel.send(perms.errorM);
 		const db = getDb();
 		const settings = db.collection('Settings');
-		const data = await settings.findOne({ _id: message.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } });
+		const data = await settings.findOne({ _id: message.channel.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } });
 
 		switch(args[0]) {
 		case 'end': {
@@ -30,7 +30,7 @@ module.exports = {
 			}
 			else {
 				message.react('❌');
-				message.channel.send(`There is no event found with ID: \`${tag}\``);
+				message.channel.send({ content: `There is no event found with ID: \`${tag}\`` });
 			}
 
 		}
@@ -48,7 +48,7 @@ module.exports = {
 				.setColor(cyan)
 				.setDescription('These are all of the events currently stored. Some may be old ones, others relatively new and ongoing. Feel free to remove events by their event ID.')
 				.addFields(fieldHolder);
-			message.channel.send(embed);
+			message.channel.send({ embeds: [ embed ] });
 		}
 		}
 	},

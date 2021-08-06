@@ -6,7 +6,7 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 	try {
 		const db = getDb();
 		const settingsColl = db.collection('Settings');
-		const { merchChannel: { scoutTracker, channelID, messages }, disallowedWords } = await settingsColl.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.scoutTracker': 1, 'merchChannel.channelID': 1, 'merchChannel.messages': 1, disallowedWords: 1 } });
+		const { merchChannel: { scoutTracker, channelID, messages }, disallowedWords } = await settingsColl.findOne({ _id: message.channel.guild.id }, { projection: { 'merchChannel.scoutTracker': 1, 'merchChannel.channelID': 1, 'merchChannel.messages': 1, disallowedWords: 1 } });
 		const merchChannelID = client.channels.cache.get(channelID);
 		const errorLog = [];
 		const botServerWebhook = await client.channels.cache.get('784543962174062608').fetchWebhooks();
@@ -23,10 +23,10 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 		if (!findMessage) {
 			if (!merchRegex.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, messages)) {
 				console.log(`New & Spam: ${userN.user.username} (${message.content})`, userN.id);
-				return errorLog.forEach(id => id.send(` \`\`\`diff\n\n+ Spam Message - (User has not posted before)\n- User ID: ${userN.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\``));
+				return errorLog.forEach(id => id.send({ content: ` \`\`\`diff\n\n+ Spam Message - (User has not posted before)\n- User ID: ${userN.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\`` }));
 			}
 			console.log(`New: ${userN.user.username} (${message.content})`, userN.id);
-			await updateDB.findOneAndUpdate({ _id: message.guild.id },
+			await updateDB.findOneAndUpdate({ _id: message.channel.guild.id },
 				{
 					$addToSet: {
 						'merchChannel.scoutTracker': {
@@ -38,9 +38,7 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 								lastTimestamp: msg[0].createdTimestamp,
 								lastTimestampReadable: new Date(msg[0].createdTimestamp),
 								count: 1,
-								game: 0,
 								otherCount: 0,
-								active: 1,
 								assigned: [],
 							}],
 						},
@@ -48,16 +46,16 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 				});
 			if (!(await checkMemberRole(userN.id, message))) {
 				console.log(`Adding ${userN.nickname ?? userN.user.username} (${userN.id}) to channel overrides.`);
-				await merchChannelID.updateOverwrite(userN.id, { ADD_REACTIONS: true });
+				await merchChannelID.permissionOverwrites.create(userN.id, { ADD_REACTIONS: true });
 			}
 		}
 		else {
 			if (!merchRegex.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, messages)) {
 				console.log(`Old & Spam: ${userN.user.username} (${message.content})`, userN.user.id);
-				return errorLog.forEach(id => id.send(` \`\`\`diff\n+ Spam Message - (User has posted before)\n\n- User ID: ${userN.user.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\``));
+				return errorLog.forEach(id => id.send({ content: ` \`\`\`diff\n+ Spam Message - (User has posted before)\n\n- User ID: ${userN.user.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\`` }));
 			}
 			console.log(`Old: ${userN.user.username} (${message.content})`, findMessage.userID === userN.id, findMessage.userID, userN.id);
-			await updateDB.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
+			await updateDB.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
 				$inc: {
 					'merchChannel.scoutTracker.$.count': 1,
 				},
@@ -65,12 +63,11 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 					'merchChannel.scoutTracker.$.author': userN.nickname ?? userN.user.username,
 					'merchChannel.scoutTracker.$.lastTimestamp': msg[0].createdTimestamp,
 					'merchChannel.scoutTracker.$.lastTimestampReadable': new Date(msg[0].createdTimestamp),
-					'merchChannel.scoutTracker.$.active': 1,
 				},
 			});
 			if (!(await checkMemberRole(userN.id, message))) {
 				console.log(`Adding ${userN.user.username} (${userN.id}) to channel overrides.`);
-				await merchChannelID.updateOverwrite(userN.id, { ADD_REACTIONS: true });
+				await merchChannelID.permissionOverwrites.create(userN.id, { ADD_REACTIONS: true });
 			}
 		}
 
@@ -85,7 +82,7 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 			const authorName = log[msgs].member?.nickname ?? log[msgs].author.username;
 			const userId = log[msgs].member?.id ?? log[msgs].author.id;
 			if (authorName === null) return;
-			await updateDB.findOneAndUpdate({ _id: message.guild.id },
+			await updateDB.findOneAndUpdate({ _id: message.channel.guild.id },
 				{
 					$addToSet: {
 						'merchChannel.messages': {
