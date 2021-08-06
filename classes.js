@@ -229,7 +229,7 @@ class ScouterCheck {
 		return new Promise(async (res) => {
 			let merch = await db.merchChannel.scoutTracker;
 			merch = merch.filter(doc => {
-				const totalCount = (doc.count + (doc.otherCount ?? 0)) < 5;
+				const totalCount = (doc.count + (doc.otherCount ?? 0)) < 10;
 				const timeGone = 1000 * 60 * 60 * 24 * 31;
 				const timeNoPost = (Date.now() - doc.lastTimestamp) > timeGone;
 				return timeNoPost && totalCount;
