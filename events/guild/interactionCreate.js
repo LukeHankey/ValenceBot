@@ -5,11 +5,7 @@ module.exports = async (client, interaction) => {
 	const settings = db.collection('Settings');
 	if (!interaction.isCommand()) return;
 
-	if (interaction.commandName === 'ping') {
-		await interaction.reply({ content: 'Pinging...' });
-		interaction.editReply({ content: `API Latency is ${Math.round(client.ws.ping)}ms` });
-	}
-	else if (interaction.commandName === 'vis') {
+	if (interaction.commandName === 'vis') {
 		const { visTime, vis } = await settings.findOne({ _id: 'Globals' }, { projection: { visTime: 1, vis: 1 } });
 		let currentDate = new Date().toUTCString();
 		currentDate = currentDate.split(' ');
