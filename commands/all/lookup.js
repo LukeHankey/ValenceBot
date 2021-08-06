@@ -13,11 +13,11 @@ module.exports = {
 	description: [''],
 	aliases: ['lu'],
 	usage: [''],
-	guildSpecific: ['420803245758480405', '733164313744769024', '668330890790699079'],
+	guildSpecific: ['420803245758480405', '668330890790699079'],
 	permissionLevel: 'Admin',
 	run: async (client, message, args, perms) => {
 		if (!perms.admin) return message.channel.send(perms.errorA);
-		if (!args[0]) return message.channel.send('Please provide a User ID');
+		if (!args[0]) return message.channel.send({ content: 'Please provide a User ID' });
 		const db = getDb();
 		const settingsColl = db.collection('Settings');
 
@@ -44,10 +44,10 @@ module.exports = {
 
 		if (member[0]) {
 			const embed = func.nEmbed(`Diagnostic DB Lookup - ${member[0].author} [${dataIndex}/${allData}]`, 'Testing command to lookup user info for DSF in DB.', colors.gold);
-			return message.channel.send(embed.addFields(fields));
+			return message.channel.send({ embeds: [ embed.addFields(fields) ] });
 		}
 		else {
-			message.channel.send('No profile found for this ID.');
+			message.channel.send({ content: 'No profile found for this ID.' });
 		}
 	},
 };

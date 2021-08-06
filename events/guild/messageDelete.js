@@ -5,25 +5,20 @@ const colors = require('../../colors.json');
 module.exports = async (client, message) => {
 	const db = getDb();
 	const settingsColl = db.collection('Settings');
-	const fullDB = await settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } });
+	const fullDB = await settingsColl.findOne({ _id: message.channel.guild.id, merchChannel: { $exists: true } });
 	if (!fullDB) return;
 	const { messages, channelID } = fullDB.merchChannel;
-	const merchChannelID = message.guild.channels.cache.get(channelID);
-
-	if (process.env.NODE_ENV === 'DEV') {
-		if (message.guild.id !== '733164313744769024') return;
-	}
-	else if (message.guild.id === '733164313744769024') {return;}
+	const merchChannelID = message.channel.guild.channels.cache.get(channelID);
 
 	const botServerWebhook = await client.channels.cache.get('784543962174062608').fetchWebhooks();
 	const dsfServerWebhook = await client.channels.cache.get('794608385106509824').fetchWebhooks();
 
 	const sendAndUpdate = async (webhook, embed, data) => {
 		const webhookDetails = webhook.first();
-		const sentWebhook = await webhookDetails.send(embed);
+		const sentWebhook = await webhookDetails.send({ embeds: [ embed ] });
 		const { userID } = data;
-		if (sentWebhook.guild.id === message.guild.id) {
-			await settingsColl.updateOne({ _id: message.guild.id }, {
+		if (sentWebhook.guild.id === message.channel.guild.id) {
+			await settingsColl.updateOne({ _id: message.channel.guild.id }, {
 				$pull: { 'merchChannel.messages': { messageID: data.messageID } },
 				$addToSet: { 'merchChannel.deletions.messages': { messageID: sentWebhook.id, authorID: userID } },
 			})
@@ -37,8 +32,8 @@ module.exports = async (client, message) => {
 	// Cached messages only show the message object without null //
 
 	// No DMs and only in merch channels
-	if (!message.guild || channelID !== message.channel.id) return;
-	const fetchedLogs = await message.guild.fetchAuditLogs({
+	if (!message.channel.guild || channelID !== message.channel.id) return;
+	const fetchedLogs = await message.channel.guild.fetchAuditLogs({
 		limit: 1,
 		type: 'MESSAGE_DELETE',
 	});
@@ -62,7 +57,7 @@ module.exports = async (client, message) => {
 		return embed;
 	};
 
-	if (message.guild === null || message.author === null) return console.log('Failed to fetch data for an uncached message.');
+	if (message.channel.guild === null || message.author === null) return console.log('Failed to fetch data for an uncached message.');
 
 	// Self deletion
 	if (target.id !== message.author.id) {
@@ -73,7 +68,7 @@ module.exports = async (client, message) => {
 		const checkDB = messages.find(entry => entry.messageID === message.id);
 		if (checkDB === undefined) {return console.log('Deleted message was not uploaded to the DataBase.');}
 		else {
-			const user = await message.guild.members
+			const user = await message.channel.guild.members
 				.fetch(checkDB.userID)
 				.catch(err => console.error('message delete', err));
 
@@ -82,11 +77,10 @@ module.exports = async (client, message) => {
 				.setThumbnail(user.user.displayAvatarURL())
 				.setFooter('Click the ✅ or use the command to remove merch count.');
 
-			// Remove count by posting or bot to remove
 			await sendAndUpdate(botServerWebhook, embed, checkDB);
 			await sendAndUpdate(dsfServerWebhook, embed, checkDB);
 
-			const getPerms = await merchChannelID.permissionOverwrites.get(checkDB.userID);
+			const getPerms = await merchChannelID.permissionOverwrites.cache.get(checkDB.userID);
 			if (getPerms) {
 				console.log(`Removing ${user.user.username} (${checkDB.userID}) from channel overrides.`);
 				return getPerms.delete();
@@ -102,7 +96,7 @@ module.exports = async (client, message) => {
 		const checkDB = messages.find(entry => entry.messageID === message.id);
 		if (checkDB === undefined) {return console.log('Deleted message was not uploaded to the DataBase.');}
 		else {
-			const user = await message.guild.members
+			const user = await message.channel.guild.members
 				.fetch(checkDB.userID)
 				.catch(err => console.error('message delete own', err));
 
@@ -114,7 +108,7 @@ module.exports = async (client, message) => {
 			await sendAndUpdate(botServerWebhook, embed, checkDB);
 			await sendAndUpdate(dsfServerWebhook, embed, checkDB);
 
-			const getPerms = await merchChannelID.permissionOverwrites.get(checkDB.userID);
+			const getPerms = await merchChannelID.permissionOverwrites.cache.get(checkDB.userID);
 			if (getPerms) {
 				console.log(`Removing ${user.user.username} (${checkDB.userID}) from channel overrides.`);
 				return getPerms.delete();

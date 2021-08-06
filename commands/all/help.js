@@ -13,11 +13,11 @@ module.exports = {
 		const { commands } = message.client;
 		const db = getDb();
 		const settings = db.collection('Settings');
-		const { prefix } = await settings.findOne({ _id: message.guild.id }, { projection: { prefix: 1 } });
+		const { prefix } = await settings.findOne({ _id: message.channel.guild.id }, { projection: { prefix: 1 } });
 
 		if (!args.length) {
 			const com = commands.map(command => {
-				if (command.guildSpecific.includes(message.guild.id) || command.guildSpecific === 'all') {
+				if (command.guildSpecific.includes(message.channel.guild.id) || command.guildSpecific === 'all') {
 					switch (perms) {
 					default:
 						if (perms.owner) {
@@ -42,7 +42,7 @@ module.exports = {
 			 */
 
 
-			message.channel.send(func.nEmbed(
+			message.channel.send({ embeds: [ func.nEmbed(
 				'**Help Commands List**',
 				'Here\'s a list of all my commands:',
 				colors.cyan,
@@ -52,8 +52,8 @@ module.exports = {
 				.addFields(
 					{ name: '**Commands:**', value: join, inline: false },
 					{ name: `**The bot prefix is: ${prefix}**`, value: `\nYou can send \`${prefix}help [command name]\` to get info on a specific command!`, inline: false },
-				),
-			);
+				)],
+			});
 		}
 		else {
 			const name = args[0];
@@ -74,15 +74,15 @@ module.exports = {
 				}
 			}
 
-			message.channel.send(func.nEmbed(
+			message.channel.send({ embeds: [ func.nEmbed(
 				`**Command:** ${cName}`,
 				`**Aliases:** ${command.aliases.join(', ') || '[NO ALIASES]'}\n**Permission Level:** ${command.permissionLevel}\n**Usage:**`,
 				colors.aqua,
 				message.member.user.displayAvatarURL(),
 				client.user.displayAvatarURL(),
 			)
-				.addFields(fields),
-			);
+				.addFields(fields)],
+			});
 		}
 	},
 };

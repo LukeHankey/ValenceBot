@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-octal */
 const getDb = require('../../mongodb').getDb;
 const cron = require('node-cron');
@@ -7,7 +8,7 @@ const { updateRoles } = require('../../valence/clanData');
 const { scout, vScout, classVars, addedRoles, removedRoles, removeInactives } = require('../../dsf/scouts/scouters');
 const { updateStockTables } = require('../../dsf/stockTables');
 const { skullTimer } = require('../../dsf/merch/merchChannel/skullTimer');
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed, Formatters } = require('discord.js');
 const colors = require('../../colors.json');
 
 module.exports = async client => {
@@ -15,23 +16,16 @@ module.exports = async client => {
 
 	client.user.setPresence({
 		status: 'idle',
-		activity: { type: 'LISTENING', name: 'DMs for Bot Help!' },
+		activities: [{ type: 'LISTENING', name: 'DMs for queries regarding the bot.' }],
 	});
 
 	const db = await getDb();
 	const settings = db.collection('Settings');
 	const users = db.collection('Users');
-	const { channels: { vis, errors, logs } } = await settings.findOne({ _id: 'Globals' }, { projection: { channels: { vis: 1, errors: 1, logs: 1 } } });
+	const { channels: { errors, logs } } = await settings.findOne({ _id: 'Globals' }, { projection: { channels: { errors: 1, logs: 1 } } });
 	const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 	const channels = {
-		vis: {
-			id: vis,
-			send: function(content) {
-				const channel = client.channels.cache.get(this.id);
-				return channel.send(content);
-			},
-		},
 		errors: {
 			id: errors,
 			embed: function(err, module) {
@@ -39,7 +33,7 @@ module.exports = async client => {
 				const embed = new MessageEmbed()
 					.setTitle(`An error occured in ${fileName}`)
 					.setColor(colors.red_dark)
-					.addField(`${err.message}`, `\`\`\`${err.stack}\`\`\``);
+					.addField(`${err.message}`, `${Formatters.codeBlock(err.stack)}`);
 				return embed;
 			},
 			send: function(...args) {
@@ -51,7 +45,7 @@ module.exports = async client => {
 			id: logs,
 			send: function(content) {
 				const channel = client.channels.cache.get(this.id);
-				return channel.send(content);
+				return channel.send({ content });
 			},
 		},
 	};
@@ -71,19 +65,18 @@ module.exports = async client => {
 		dataChanged = dataChanged.map((profile) => {
 			return `${padding(profile.clanMate, true, Math.max(...(dataChanged.map(el => el.clanMate.length))))}${padding(profile.clanRank, false, Math.max(...(dataChanged.map(el => el.clanRank.length))))}${padding(profile.totalXP, false, Math.max(...(dataChanged.map(el => el.totalXP.length))))}${padding(profile.kills, false, Math.max(...(dataChanged.map(el => el.kills.length))))}`;
 		});
-		dataChanged.splice(0, 0, `'${data[0].clanMate}' might have changed names to one of these potential new names.\n`);
-		dataChanged.push(' ', 'Reactions:\n✅ Takes the primary suggestion.\n❌ Not changed names or none match.\n📝 Pick another suggestion.');
+		dataChanged.splice(0, 0, `These are potential previous names for ${data[0].clanMate}.\n`);
+		dataChanged.push(' ', 'Reactions:\n✅ Takes the primary suggestion suggestion.\n❌ Not changed names or none match.\n📝 Pick another suggestion.');
 		return dataChanged.join('\n');
 	};
 
 	const postData = async (data) => {
-		const channelToSend = client.channels.cache.get('731997087721586698');
-		const messageSend = await channelToSend.send(`\`\`\`${formatTemplate(data)}\`\`\``);
+		const messageSend = await channels.logs.send(`${Formatters.codeBlock(formatTemplate(data))}`);
 		await messageSend.react('✅');
 		await messageSend.react('❌');
 		await messageSend.react('📝');
 
-		await settings.updateOne({ _id: channelToSend.guild.id }, { $addToSet: { nameChange: {
+		await settings.updateOne({ _id: messageSend.guild.id }, { $addToSet: { nameChange: {
 			messageID: messageSend.id,
 			data,
 		} } });
@@ -143,28 +136,6 @@ module.exports = async client => {
 		}
 	});
 
-	// Normal Server Reminders //
-	// cron.schedule(`*/5 * * * *`, async () => {
-	// 	let today = new Date();
-	// 	let today_num = today.getDay();
-	// 	let today_str = days[today_num];
-	// 	await settings.find({}).toArray().then(res => {
-	// 		for (const document in res) {
-	// 			for (const remDoc in res[document].reminders) {
-	// 				if (res[document].reminders[remDoc].day !== undefined) {
-	// 					if (+res[document].reminders[remDoc].day === today_num || res[document].reminders[remDoc].day.toLowerCase() === today_str.toLowerCase() || res[document].reminders[remDoc].day.toLowerCase() === today_str.substr(0, 3).toLowerCase()) {
-	// 						if (today.getUTCHours() == +res[document].reminders[remDoc].hour) {
-	// 							if (+res[document].reminders[remDoc].minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].reminders[remDoc].minute + 1)) {
-	// 								client.channels.cache.get(res[document].reminders[remDoc].channel).send(res[document].reminders[remDoc].message)
-	// 							}
-	// 						}
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-	// 	})
-	// })
-
 	const stream = users.watch({ fullDocument: 'updateLookup' });
 	stream.on('change', next => {
 		if (next.updateDescription) {
@@ -195,7 +166,7 @@ module.exports = async client => {
 			addedRoles(role, settings);
 			removedRoles(role, settings);
 		});
-		removeInactives(scout, settings, channels);
+		removeInactives(scout, client, settings);
 
 		// Daily Reset
 		if (new Date().getHours() === 00 && new Date().getMinutes() === 00) {

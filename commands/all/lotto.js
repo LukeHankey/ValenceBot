@@ -17,12 +17,12 @@ module.exports = {
 	description: ['Shows a list of everyone in the current months lottery.', 'Displays the current total pot for the Lottery!', 'Updates the google sheet name.', 'Shows information about the <user> lottery entry.', 'Adds a clanmate\'s lottery entry to google sheet.\nExample:\n```js\n;lotto add 1000000 clan bank / J ulian\n;lotto add 500000 clan bank / Guys / double```'],
 	aliases: ['lottery'],
 	usage: ['', 'total', 'sheet <Google Sheet Name>', '<user>', 'add <amount> <collector> / <clanmate> / double (optional)'],
-	guildSpecific: ['472448603642920973', '733164313744769024', '668330890790699079'],
+	guildSpecific: ['472448603642920973', '668330890790699079'],
 	permissionLevel: 'Everyone',
 	run: async (client, message, args, perms, channels) => {
 		const db = getDb();
 		const settingsColl = db.collection('Settings');
-		const database = await settingsColl.findOne({ _id: message.guild.id });
+		const database = await settingsColl.findOne({ _id: message.channel.guild.id });
 
 		const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 		const altMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
@@ -87,13 +87,14 @@ module.exports = {
 				const tag = args.slice(-1).join('');
 				const colName = dataC.find(val => val.toLowerCase() == colNameArgs.toLowerCase());
 
-				const lottoEmbed = func.nEmbed('Lotto entry added successfully!', '', colors.green_light, message.author.displayAvatarURL(), client.user.displayAvatarURL())
+				const lottoEmbed = { embeds: [ func.nEmbed('Lotto entry added successfully!', '', colors.green_light, message.author.displayAvatarURL(), client.user.displayAvatarURL())
 					.addFields(
 						{ name: 'RuneScape Name:', value: `${rsn || undefined}`, inline: true },
 						{ name: 'Amount:', value: '500,000', inline: true },
 						{ name: 'To:', value: `${colName}`, inline: true },
 						{ name: 'Donations Updated:', value: 'N/A', inline: true },
-					);
+					)],
+				};
 
 				switch (args[0]) {
 				case 'add':
@@ -101,16 +102,16 @@ module.exports = {
 						switch (args[1]) {
 						case '500000':
 							if (!args[2]) {
-								message.channel.send('Add who\'s entry?\nFormat: <amount> <collector name> <clanmate>');
+								message.channel.send({ content: 'Add who\'s entry?\nFormat: <amount> <collector name> <clanmate>' });
 							}
 							else if (colName === undefined) {
-								message.channel.send(
+								message.channel.send({ embeds: [
 									func.nEmbed('Lottery Collectors', `**${colNameArgs}** is not a Lottery Collector.`, colors.red_dark, message.author.displayAvatarURL(), client.user.displayAvatarURL())
-										.addField('Current Collectors', dataC.join(', ')),
-								);
+										.addField('Current Collectors', dataC.join(', '))],
+								});
 							}
 							else if (!rsn) {
-								return message.channel.send('Please provide the RSN of the lottery entree.');
+								return message.channel.send({ content: 'Please provide the RSN of the lottery entree.' });
 							}
 							else { // If there is an rsn
 								if (dataArr.length > userData.length) {
@@ -136,19 +137,19 @@ module.exports = {
 							break;
 						default:
 							if (isNaN(parseInt(args[1]))) {
-								return message.channel.send('Please make sure you give the amount as a number only, without any formatting.');
+								return message.channel.send({ content: 'Please make sure you give the amount as a number only, without any formatting.' });
 							}
 							else if (!args[2]) {
-								message.channel.send('Add who\'s entry?\nFormat: <amount> <collector name> <clanmate>');
+								message.channel.send({ content: 'Add who\'s entry?\nFormat: <amount> <collector name> <clanmate>' });
 							}
 							else if (colName === undefined) {
-								message.channel.send(
+								message.channel.send({ embeds: [
 									func.nEmbed('Lottery Collectors', `**${colNameArgs}** is not a Lottery Collector.`, colors.red_dark, message.author.displayAvatarURL(), client.user.displayAvatarURL())
-										.addField('Current Collectors', dataC.join(', ')),
-								);
+										.addField('Current Collectors', dataC.join(', '))],
+								});
 							}
 							else if (!rsn) {
-								return message.channel.send('Please provide the RSN of the lottery entree.');
+								return message.channel.send({ content: 'Please provide the RSN of the lottery entree.' });
 							}
 							else { // If there is an rsn
 								if (dataArr.length > userData.length) {
@@ -198,18 +199,18 @@ module.exports = {
 						const fields = { name: values[0], value: values[1], inline: true };
 						totalValues.push(fields);
 					}
-					message.channel.send(totalEmbed.addFields(totalValues).spliceFields(2, 0, { name: '\u200B', value: '\u200B', inline: true }));
+					message.channel.send({ embeds: [ totalEmbed.addFields(totalValues).spliceFields(2, 0, { name: '\u200B', value: '\u200B', inline: true }) ] });
 					break;
 				case 'sheet':
 					if (perms.mod) {
 						const newSheet = args.slice(1).join(' ');
 						if (newSheet) {
-							await settingsColl.findOneAndUpdate({ _id: message.guild.id }, { $set: { lottoSheet: newSheet } });
+							await settingsColl.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { lottoSheet: newSheet } });
 							await message.react('✅');
 						}
 						else {
-							const newName = await settingsColl.findOne({ _id: message.guild.id });
-							return message.channel.send(`The current Lotto Sheet name is : \`${newName.lottoSheet}\``);
+							const newName = await settingsColl.findOne({ _id: message.channel.guild.id });
+							return message.channel.send({ content: `The current Lotto Sheet name is : \`${newName.lottoSheet}\`` });
 						}
 					}
 					else {
@@ -229,7 +230,7 @@ module.exports = {
 						}
 
 						if (nameFound && nameFound.length === 1) {
-							message.channel.send(func.nEmbed(
+							message.channel.send({ embeds: [ func.nEmbed(
 								'Lottery Entrance',
 								'You are in the lottery only once for this month!',
 								colors.green_dark,
@@ -238,38 +239,41 @@ module.exports = {
 							)
 								.addFields(found)
 								.addField('Want to enter twice for double the chance of winning?', 'It only costs 30 Clan Points! Let the Admins know in <#640641467798519808>!'),
-							);
+							] });
 						}
 						else if (nameFound && nameFound.length === 2) {
-							message.channel.send(func.nEmbed(
+							message.channel.send({ embeds: [ func.nEmbed(
 								'Lottery Entrance',
 								`You are in the lottery ${nameFound.length} times for this month!`,
 								colors.green_dark,
 								message.author.displayAvatarURL(),
 								client.user.displayAvatarURL(),
 							)
-								.addFields(found));
+								.addFields(found),
+							] });
 						// .addField(`\u200B`, `\u200B`)
 						}
 						else if (nameFound && nameFound.length > 2) {
-							message.channel.send(func.nEmbed(
+							message.channel.send({ embeds: [ func.nEmbed(
 								'Lottery Entrance - Error',
 								`You have been entered in the lottery more than two times! (Total of ${nameFound.length})`,
 								colors.red_light,
 								message.author.displayAvatarURL(),
 								client.user.displayAvatarURL(),
 							)
-								.addField('Solution:', 'Please let an Admin know to fix your entries!'));
+								.addField('Solution:', 'Please let an Admin know to fix your entries!'),
+							] });
 						}
 						else {
-							message.channel.send(func.nEmbed(
+							message.channel.send({ embeds: [ func.nEmbed(
 								'Lottery Entrance',
 								'You are **Not** in the lottery for this month!',
 								colors.red_dark,
 								message.author.displayAvatarURL(),
 								client.user.displayAvatarURL(),
 							)
-								.addField('Get your lotto entry in!', 'Message any Admin in game to pay the 500k entry fee!'));
+								.addField('Get your lotto entry in!', 'Message any Admin in game to pay the 500k entry fee!'),
+							] });
 						}
 					}
 					else if (!username) {
@@ -295,13 +299,13 @@ module.exports = {
 							}
 							return pageEmbeds;
 						}
-						message.channel.send(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`))
+						message.channel.send({ embeds: [ embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`) ] })
 							.then(async msg => {
 								await msg.react('◀️');
 								await msg.react('▶️');
 
 								const react = (reaction, user) => ['◀️', '▶️'].includes(reaction.emoji.name) && user.id === message.author.id;
-								const collect = msg.createReactionCollector(react);
+								const collect = msg.createReactionCollector({ filter: react });
 
 								collect.on('collect', (r, u) => {
 									if (r.emoji.name === '▶️') {
@@ -309,14 +313,14 @@ module.exports = {
 											msg.reactions.resolve('▶️').users.remove(u.id);
 											page++;
 											if (page === embeds.length) --page;
-											msg.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`));
+											msg.edit({ embeds: [ embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`) ] });
 										}
 									}
 									else if (r.emoji.name === '◀️') {
 										if (page !== 0) {
 											msg.reactions.resolve('◀️').users.remove(u.id);
 											--page;
-											msg.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`));
+											msg.edit({ embeds: [ embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`) ] });
 										}
 										else {msg.reactions.resolve('◀️').users.remove(u.id);}
 									}

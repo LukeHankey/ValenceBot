@@ -15,11 +15,11 @@ module.exports = {
 		const rName = roleName.join(' ').trim();
 		let rNameMulti = rName.split(',');
 		rNameMulti = rNameMulti.map(x => x.trim().toLowerCase());
-		const botRole = message.guild.me.roles.cache.find(r => r.managed);
+		const botRole = message.channel.guild.me.roles.cache.find(r => r.managed);
 		const highBotRoleID = botRole.id;
 
 		const role = rNameMulti.map(rN => {
-			return message.guild.roles.cache.find(roles => {
+			return message.channel.guild.roles.cache.find(roles => {
 				return roles.name.toLowerCase() === rN;
 			});
 		});
@@ -31,10 +31,10 @@ module.exports = {
 		const wrong = pos.map(v => rNameMulti[v]);
 
 		if (!args[0]) {
-			return message.channel.send('Please provide the role name(s) to add/remove.');
+			return message.channel.send({ content: 'Please provide the role name(s) to add/remove.' });
 		}
 
-		const botRoleHighest = message.guild.roles.cache.get(highBotRoleID);
+		const botRoleHighest = message.channel.guild.roles.cache.get(highBotRoleID);
 		const botHighest = role.filter(x => {
 			if (x === undefined) return;
 			return botRoleHighest.position > x.position;
@@ -44,11 +44,11 @@ module.exports = {
 			.setTitle('Self-Assigned Information')
 			.setTimestamp()
 			.setColor(colors.green_light)
-			.setFooter(`${client.user.username} created by Luke_#8346`, message.guild.iconURL());
+			.setFooter(`${client.user.username} created by Luke_#8346`, message.channel.guild.iconURL());
 
 		if (args[0] === 'roles') {
 			let allAvailableRoles = [];
-			message.guild.roles.cache.filter(allRoles => {
+			message.channel.guild.roles.cache.filter(allRoles => {
 				if (allRoles.position < botRoleHighest.position) {
 					allAvailableRoles.push(allRoles.name);
 				}
@@ -60,7 +60,9 @@ module.exports = {
 				.sort()
 				.join(' | ');
 
-			return message.channel.send(embed.setColor(colors.cyan).addField('Available roles to add:', allAvailableRoles));
+			if (!allAvailableRoles.length) return message.channel.send({ content: 'No roles are assignable as no roles are above my highest role.' });
+
+			return message.channel.send({ embeds: [ embed.setColor(colors.cyan).addField('Available roles to add:', allAvailableRoles) ] });
 
 		}
 
@@ -77,7 +79,6 @@ module.exports = {
 				: memberRole.add(rID) && added.push(rNames);
 		});
 
-
 		const fieldAdd = { name: 'Roles Added:', value: `\`\`\`css\n${!added.length ? 'None' : added[0].join(', ')}\`\`\``, inline: true };
 		const fieldRemove = { name: 'Roles Removed:', value: `\`\`\`fix\n${!removed.length ? 'None' : removed[0].join(', ')}\`\`\``, inline: true };
 		const wrongAdd = { name: 'Can\'t find:', value: `\`\`\`cs\n'${wrong.join(', ')}'\`\`\``, inline: true };
@@ -86,8 +87,8 @@ module.exports = {
 
 		console.log(added, removed, wrong);
 
-		wrong.length && (!added.length && !removed.length) ? message.channel.send(embed.setColor(colors.red_light).addFields(wrongAdd).setDescription('Can\'t find the role name? Use `;sa roles` for a full list of self-assignable role names.'))
-			: wrong.length ? message.channel.send(embed.addFields(fieldsPlus).setDescription('Can\'t find the role name? Use `;sa roles` for a full list of self-assignable role names.'))
-				: message.channel.send(embed.addFields(fields));
+		wrong.length && (!added.length && !removed.length) ? message.channel.send({ embeds: [ embed.setColor(colors.red_light).addFields(wrongAdd).setDescription('Can\'t find the role name? Use `;sa roles` for a full list of self-assignable role names.') ] })
+			: wrong.length ? message.channel.send({ embeds: [ embed.addFields(fieldsPlus).setDescription('Can\'t find the role name? Use `;sa roles` for a full list of self-assignable role names.') ] })
+				: message.channel.send({ embeds: [ embed.addFields(fields) ] });
 	},
 };

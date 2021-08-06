@@ -20,7 +20,7 @@ module.exports = {
 		}
 		const db = getDb();
 		const settings = db.collection('Settings');
-		const { futureStock } = await settings.findOne({ _id: '420803245758480405' });
+		const { futureStock } = await settings.findOne({ _id: '733164313744769024' });
 		const splitIntoX = (arr, x) => {
 			arr = arr.flat();
 			return new Array(Math.ceil(arr.length / x))
@@ -59,7 +59,7 @@ module.exports = {
 					const fields = { name: `${values[0]}`, value: `${values[1]}`, inline: true };
 					embedData.push(fields);
 				}
-				const dsfServer = client.guilds.cache.get('420803245758480405');
+				const dsfServer = client.guilds.cache.get('733164313744769024');
 
 				const first = embedData.slice(0, 24);
 				const second = embedData.slice(24, 48);
@@ -73,7 +73,7 @@ module.exports = {
 						.addFields(num);
 				};
 
-				const channelToPush = client.channels.cache.get(futureStock.channelID);
+				const futureChannel = client.channels.cache.get(futureStock.channelID);
 				const openMessage = '**Travelling Merchant Future Stock**\n\n';
 
 				const firstDate = `${dataArr[0][0]} - ${dataArr[21][0]}`;
@@ -88,15 +88,15 @@ module.exports = {
 
 				if (message !== 'readyEvent') {
 					message.delete();
-					const opening = await channelToPush.send(openMessage);
-					const firstID = await channelToPush.send(firstEmbed);
-					const secondID = await channelToPush.send(secondEmbed);
-					const thirdID = await channelToPush.send(thirdEmbed);
-					const fourthID = await channelToPush.send(fourthEmbed);
+					const opening = await futureChannel.send({ content: openMessage });
+					const firstID = await futureChannel.send({ embeds: [ firstEmbed ] });
+					const secondID = await futureChannel.send({ embeds: [ secondEmbed ] });
+					const thirdID = await futureChannel.send({ embeds: [ thirdEmbed ] });
+					const fourthID = await futureChannel.send({ embeds: [ fourthEmbed ] });
 
 					const sendLinks = async (msgToEdit = opening) => {
-						const msgCollection = await channelToPush.messages.fetch({ limit: 4 });
-						const baseURL = `https://discord.com/channels/${channelToPush.guild.id}/${channelToPush.id}`;
+						const msgCollection = await futureChannel.messages.fetch({ limit: 4 });
+						const baseURL = `https://discord.com/channels/${futureChannel.guild.id}/${futureChannel.id}`;
 						const editFormat = msgCollection.map(item => {
 							const title = item.embeds[0].title.slice(7);
 							return `- [${title}](${baseURL}/${item.id})`;
@@ -104,9 +104,9 @@ module.exports = {
 						const embed = new MessageEmbed()
 							.setColor(colors.aqua)
 							.setDescription(editFormat.reverse().join('\n'));
-						await msgToEdit.edit(`${openMessage}\n\n`, { embed });
-						const after = await channelToPush.send('**Links**', embed);
-						await settings.updateOne({ _id: message.guild.id }, {
+						await msgToEdit.edit({ content: `${openMessage}\n\n`, embeds: [ embed ] });
+						const after = await futureChannel.send({ content: '**Links**', embeds: [ embed ] });
+						await settings.updateOne({ _id: message.channel.guild.id }, {
 							$set: {
 								'futureStock.messages.links.opening': msgToEdit.id,
 								'futureStock.messages.links.after': after.id,
@@ -115,7 +115,7 @@ module.exports = {
 					};
 					sendLinks();
 
-					settings.updateOne({ _id: message.guild.id }, {
+					settings.updateOne({ _id: message.channel.guild.id }, {
 						$set: {
 							'futureStock.messages.first': firstID.id,
 							'futureStock.messages.second': secondID.id,
@@ -124,47 +124,45 @@ module.exports = {
 						},
 					});
 				}
+				else {
+					const grabIDAndEdit = async () => {
+						const postData = [
+							{ links: false, date: firstDate, messageID: futureStock.messages.first, embed: firstEmbed },
+							{ links: false, date: secondDate, messageID: futureStock.messages.second, embed: secondEmbed },
+							{ links: false, date: thirdDate, messageID: futureStock.messages.third, embed: thirdEmbed },
+							{ links: false, date: fourthDate, messageID: futureStock.messages.fourth, embed: fourthEmbed },
+							{ links: true, messageID: futureStock.messages.links.opening },
+							{ links: true, messageID: futureStock.messages.links.after },
+						];
+						const embedEditor = (info) => {
+							const embed = new MessageEmbed(info);
+							return embed;
+						};
 
-
-				const grabIDAndEdit = async () => {
-					const postData = [
-						{ links: false, date: firstDate, messageID: futureStock.messages.first, embed: firstEmbed },
-						{ links: false, date: secondDate, messageID: futureStock.messages.second, embed: secondEmbed },
-						{ links: false, date: thirdDate, messageID: futureStock.messages.third, embed: thirdEmbed },
-						{ links: false, date: fourthDate, messageID: futureStock.messages.fourth, embed: fourthEmbed },
-						{ links: true, messageID: futureStock.messages.links.opening },
-						{ links: true, messageID: futureStock.messages.links.after },
-					];
-					const embedEditor = (info) => {
-						const embed = new MessageEmbed(info);
-						return embed;
+						const editStockPosts = (dataArray, links = false) => {
+							if (links) {
+								const baseURL = `https://discord.com/channels/${futureChannel.guild.id}/${futureChannel.id}`;
+								const format = dataArray.filter(prop => prop.links === false).map(obj => {
+									return `- [${obj.date}](${baseURL}/${obj.messageID})`;
+								});
+								const embed = new MessageEmbed().setDescription(format.join('\n')).setColor(colors.aqua);
+								return dataArray.filter(prop => prop.links === true).forEach(async arrData => {
+									const msg = await futureChannel.messages.fetch(arrData.messageID);
+									await msg.edit({ embeds: [ embed ] });
+								});
+							}
+							else {
+								dataArray.filter(prop => prop.links === false).forEach(async arrData => {
+									const msg = await futureChannel.messages.fetch(arrData.messageID);
+									await msg.edit({ embeds: [ embedEditor(arrData.embed) ] });
+								});
+							}
+						};
+						editStockPosts(postData);
+						editStockPosts(postData, true);
 					};
-					const channel = client.channels.cache.get(futureStock.channelID);
-
-					const editStockPosts = (dataArray, links = false) => {
-						if (links) {
-							const baseURL = `https://discord.com/channels/${channel.guild.id}/${channel.id}`;
-							const format = postData.filter(prop => prop.links === false).map(obj => {
-								return `- [${obj.date}](${baseURL}/${obj.messageID})`;
-							});
-							const embed = new MessageEmbed().setDescription(format).setColor(colors.aqua);
-							return dataArray.filter(prop => prop.links === true).forEach(async arrData => {
-								const msg = await channel.messages.fetch(arrData.messageID);
-								await msg.edit(embed);
-							});
-						}
-						else {
-							dataArray.filter(prop => prop.links === false).forEach(async arrData => {
-								const msg = await channel.messages.fetch(arrData.messageID);
-								await msg.edit(embedEditor(arrData.embed));
-							});
-						}
-					};
-					editStockPosts(postData);
-					editStockPosts(postData, true);
-
-				};
-				grabIDAndEdit();
+					grabIDAndEdit();
+				}
 			}
 		}
 		catch (err) {

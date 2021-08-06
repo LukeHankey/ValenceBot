@@ -1,4 +1,6 @@
 const getDb = require('../mongodb').getDb;
+const { MessageEmbed } = require('discord.js');
+const colors = require('../colors.json');
 
 const clanRoles = {
 	recruit: '473234580904607745',
@@ -8,6 +10,7 @@ const clanRoles = {
 	captain: '473233412925292560',
 	general: '473232083628720139',
 };
+const guestRole = '473265487581544448';
 const adminRoles = ['Admin', 'Organiser', 'Coordinator', 'Overseer', 'Deputy Owner', 'Owner'];
 const setRoles = async (member, newRole, oldRole) => {
 	await member.roles.add(newRole);
@@ -17,21 +20,40 @@ const setRoles = async (member, newRole, oldRole) => {
 const updateRoles = async (client, dbCheck) => {
 	const db = getDb();
 	const usersColl = await db.collection('Users');
-	const channel = client.channels.cache.get('860930368994803732');
+	const errors = client.channels.cache.get('860930368994803732');
+
+	const channels = {
+		errors: {
+			id: errors,
+			embed: function(err, module) {
+				const fileName = module.id.split('\\').pop();
+				const embed = new MessageEmbed()
+					.setTitle(`An error occured in ${fileName}`)
+					.setColor(colors.red_dark)
+					.addField(`${err.message}`, `\`\`\`${err.stack}\`\`\``);
+				return embed;
+			},
+			send: function(...args) {
+				const channel = client.channels.cache.get(this.id);
+				return channel.send({ embeds: [ this.embed(...args) ] });
+			},
+		},
+	};
 
 	if (adminRoles.includes(dbCheck.clanRank) || !dbCheck.discActive || dbCheck.alt) {return;}
 	else {
+		// Valence Server
 		const server = client.guilds.cache.get('472448603642920973');
 		const getMember = server.members.cache.get(dbCheck.discord) ?? await server.members.fetch(dbCheck.discord).catch(async err => {
-			channel.send(`Unable to fetch user (${dbCheck.clanMate} - ${dbCheck.discord}) - Left the discord and marking as inactive.\`\`\`${err}\`\`\``);
+			channels.errors.send(err, module);
 			return await usersColl.updateOne({ clanMate: dbCheck.clanMate }, { $set: { discActive: false } });
 		});
 		let role = getMember.roles.cache.filter(r => {
 			const keys = Object.keys(clanRoles);
 			return keys.find(val => r.name.toLowerCase() == val);
 		});
-		if (!role.size) return channel.send(`Unable to find role name as ${getMember.user.username} (${getMember.id}) has no rank roles.`);
-		if (role.size > 1) return channel.send(`${getMember} (${getMember.id}) has more than 1 rank role.`);
+		if (!role.size) return getMember.roles.add(guestRole);
+		if (role.size > 1) return errors.send(`${getMember} (${getMember.id}) has more than 1 rank role.`);
 		role = role.first();
 		if (role.name !== dbCheck.clanRank) {
 			switch(dbCheck.clanRank) {
