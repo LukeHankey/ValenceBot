@@ -157,53 +157,58 @@ module.exports = async client => {
 
 
 	// DSF Activity Posts //
-	cron.schedule('0 */6 * * *', async () => {
-		const res = await settings.find({}).toArray();
-		await classVars(scout, 'Deep Sea Fishing', res, client);
+	cron.schedule('*/30 * * * * *', async () => {
+		// cron.schedule('0 */6 * * *', async () => {
+		const res = await settings.find({}).toArray()
+		await classVars(scout, 'Deep Sea Fishing', res, client)
 		await classVars(vScout, 'Deep Sea Fishing', res, client);
 
 		[scout, vScout].forEach(role => {
-			addedRoles(role, settings);
-			removedRoles(role, settings);
-		});
-		removeInactives(scout, settings, channels);
+			addedRoles(role, settings)
+			removedRoles(role, settings)
+		})
+		// removeInactives(scout, settings, channels)
+		// await removeButtons(client, settings, channels)
 
-		// Daily Reset
-		if (new Date().getHours() === 00 && new Date().getMinutes() === 00) {
-			updateStockTables(client, settings);
-		}
+		// // Daily Reset
+		// if (new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
+		// 	updateStockTables(client, settings, channels)
+		// }
 
-		// Weekly reset
-		if (new Date().getDay() === 3 && new Date().getHours() === 00 && new Date().getMinutes() === 00) {
-			scout.send();
-			vScout.send();
-			const allUsers = await users.find({}).toArray();
-			let index = 0;
-			while (index < allUsers.length) {
-				updateRoles(client, allUsers[index]);
-				index++;
-			}
-		}
+		// // Weekly reset
+		// if (new Date().getDay() === 3 && new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
+		// 	scout.send()
+		// 	vScout.send()
+		// 	const allUsers = await users.find({}).toArray()
+		// 	let index = 0
+		// 	const interval = setInterval(() => {
+		// 		updateRoles(client, allUsers[index])
+		// 		index++
 
-		// Monthly reset + 1 day
-		if (new Date().getDate() === 2 && (new Date().getHours() === 01 || new Date().getHours() === 00) && new Date().getMinutes() === 00) {
-			console.log(new Date().getDate(), 'Setting lottoSheet to Null');
-			await settings.updateMany({ gSheet: { $exists: true } }, { $set: { lottoSheet: null } });
-		}
+		// 		if (index === allUsers.length) {
+		// 			clearInterval(interval)
+		// 		}
+		// 	}, 1000)
+		// }
 
-		// Reset Info Count back to 0 to allow use of command
-		await settings.find({}).toArray().then(r => {
-			r = r.filter(doc => doc.resetInfoCount >= 0);
-			for (const doc in r) {
-				if (r[doc].resetInfoCount === 1 && r[doc].resetInfoTime < r[doc].resetInfoTime + 86400000) {
-					return settings.updateOne({ 'serverName': r[doc].serverName }, {
-						$set: {
-							resetInfoCount: 0,
-						},
-					});
-				}
-			}
-		});
+		// // Monthly reset + 1 day
+		// if (new Date().getDate() === 2 && (new Date().getHours() === 0o1 || new Date().getHours() === 0o0) && new Date().getMinutes() === 0o0) {
+		// 	console.log(new Date().getDate(), 'Setting lottoSheet to Null')
+		// 	await settings.updateMany({ gSheet: { $exists: true } }, { $set: { lottoSheet: null } })
+		// }
 
-	});
-};
+		// // Reset Info Count back to 0 to allow use of command
+		// await settings.find({}).toArray().then(r => {
+		// 	r = r.filter(doc => doc.resetInfoCount >= 0)
+		// 	for (const doc in r) {
+		// 		if (r[doc].resetInfoCount === 1 && r[doc].resetInfoTime < r[doc].resetInfoTime + 86400000) {
+		// 			return settings.updateOne({ serverName: r[doc].serverName }, {
+		// 				$set: {
+		// 					resetInfoCount: 0
+		// 				}
+		// 			})
+		// 		}
+		// 	}
+		// })
+	})
+}

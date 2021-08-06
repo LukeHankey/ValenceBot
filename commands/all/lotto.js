@@ -1,10 +1,8 @@
-/* eslint-disable no-case-declarations */
-/* eslint-disable no-inline-comments */
-const gsheet = require('../../gsheets');
-const { google } = require('googleapis');
-const func = require('../../functions');
-const colors = require('../../colors.json');
-const getDb = require('../../mongodb').getDb;
+import { googleClient } from '../../gsheets.js'
+import { google } from 'googleapis'
+import { nEmbed } from '../../functions.js'
+import { greenLight, redDark, gold, greenDark, redLight } from '../../colors.js'
+import { getDb } from '../../mongodb.js'
 
 /**
  * 733164313744769024 - Test Server
@@ -28,11 +26,11 @@ module.exports = {
 		const altMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 		const monthIndex = (new Date()).getUTCMonth();
 		try {
-			gsheet.googleClient.authorize(err => {
-				if (err) console.error(err);
-				googleSheets(gsheet.googleClient);
-			});
-			let rangeName;
+			googleClient.authorize(err => {
+				if (err) console.error(err)
+				googleSheets(googleClient)
+			})
+			let rangeName
 			if (database.lottoSheet === null) {
 				rangeName = `${altMonths[monthIndex]} ${new Date().getUTCFullYear()} Lotto`;
 			}

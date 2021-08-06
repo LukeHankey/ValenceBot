@@ -1,13 +1,11 @@
-/* eslint-disable no-inner-declarations */
-/* eslint-disable no-inline-comments */
-const colors = require('../../colors.json');
-const gsheet = require('../../gsheets');
-const { google } = require('googleapis');
-const { nEmbed } = require('../../functions');
-const { MessageEmbed } = require('discord.js');
-const getDb = require('../../mongodb').getDb;
+import { cream, aqua } from '../../colors.js'
+import { googleClient } from '../../gsheets.js'
+import { google } from 'googleapis'
+import { nEmbed } from '../../functions.js'
+import { MessageEmbed } from 'discord.js'
+import { getDb } from '../../mongodb.js'
 
-module.exports = {
+export default {
 	name: 'wish',
 	description: ['Posts the embed and populates with wish data.'],
 	aliases: [],
@@ -29,10 +27,10 @@ module.exports = {
 		};
 
 		try {
-			gsheet.googleClient.authorize(err => {
-				if (err) console.error(err);
-				googleSheets(gsheet.googleClient);
-			});
+			googleClient.authorize(err => {
+				if (err) console.error(err)
+				googleSheets(googleClient)
+			})
 
 			const rangeName = 'TM Coupon';
 

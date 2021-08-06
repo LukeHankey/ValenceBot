@@ -10,6 +10,90 @@ module.exports = {
 	usage: ['', '<image URL or discord message link>', 'new'],
 	guildSpecific: 'all',
 	permissionLevel: 'Everyone',
+	data: new SlashCommandBuilder()
+		.setName('vis')
+		.setDescription(description[0])
+		.addSubcommand(subcommand =>
+			subcommand
+				.setName('wax')
+				.setDescription('Todays Vis Wax combinations.')),
+	// 	.addSubcommand(subcommand =>
+	// 		subcommand
+	// 			.setName('other_commands')
+	// 			.setDescription('Shows other vix wax commands')
+	// 			.addIntegerOption(option =>
+	// 				option.setName('reset')
+	// 					.setDescription(`${description[2]} [ADMIN]`)
+	// 					.addChoice('True', 1))),
+	// // Add back when files are allowed to be uploaded with slash commands
+	// .addStringOption(option =>
+	// 	option.setName('upload')
+	// 		.setDescription(`${description[1]}`)
+	// 		.addChoice('File', 'file_upload')
+	// 		.addChoice('Message Link', 'message_link')
+	// 		.addChoice('Image URL', 'image_url')));
+	slash: async (interaction, perms, channels) => {
+		const db = getDb()
+		const settings = db.collection('Settings')
+		const { visTime, vis, visContent } = await settings.findOne({ _id: 'Globals' }, { projection: { visTime: 1, vis: 1, visContent: 1 } })
+		if (!interaction.options.getInteger('reset')) {
+			let currentDate = new Date().toUTCString();
+			currentDate = currentDate.split(' ');
+			// eslint-disable-next-line no-unused-vars
+			const [day, month, year, ...rest] = currentDate.slice(1);
+			const savedDate = visTime.toString().split(' ');
+
+			if (year !== savedDate[3] || month !== savedDate[1] || day !== savedDate[2]) {
+				interaction.reply({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' });
+				return await settings.updateOne({ _id: 'Globals' }, {
+					$set: {
+						vis: null,
+						visContent: []
+					}
+				})
+			}
+			if (vis === null && visContent.length === 0) {
+				return await interaction.reply({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' })
+			} else if (vis) {
+				return interaction.reply({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}>\nSource: [Vis Wax Server](https://discord.gg/wv9Ecs4)`, files: [vis] })
+			} else {
+				const content = visContent.flat()
+				const slotOneIndex = content.findIndex(el => el.match(/slot/i))
+				const newContent = content.slice(slotOneIndex).map(el => {
+					const match = el.match(/<:[\w_]{1,14}:\d{1,18}>/g)
+					if (match) {
+						el = el.trim().slice(match[0].length)
+						return `\t${el}`
+					}
+					return el
+				})
+
+				return await interaction.reply({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}>\nSource: [Vis Wax Server](https://discord.gg/wv9Ecs4)\n${newContent.join('\n')}` })
+			}
+			else {
+				return await interaction.reply({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}>`, files: [vis] });
+			}
+		}
+		else if (interaction.options.getInteger('reset')) {
+			console.log(interaction.options.getInteger('reset'));
+			if (!perms.owner) return await interaction.reply(perms.errorO);
+			if (vis === null) {
+				return interaction.reply({ content: 'There currently isn\'t any Vis Wax image uploaded.', ephemeral: true });
+			}
+			else {
+				await settings.updateOne({ _id: 'Globals' }, {
+					$set: {
+						vis: null,
+					},
+				});
+				return channels.vis.send(`${interaction.member.user.tag} reset the Vis command in **${interaction.channel.guild.name}.**`);
+			}
+		}
+		else {
+			return;
+		}
+
+	},
 	run: async (client, message, args, perms, channels) => {
 		const db = getDb();
 		const settings = db.collection('Settings');
@@ -22,7 +106,7 @@ module.exports = {
 			.setThumbnail(message.author.displayAvatarURL())
 			.setColor(colors.cream);
 
-		const { visTime, vis } = await settings.findOne({ _id: 'Globals' }, { projection: { visTime: 1, vis: 1 } });
+		const { visTime, vis, visContent } = await settings.findOne({ _id: 'Globals' }, { projection: { visTime: 1, vis: 1, visContent: 1 } })
 		if (!args.length && !message.attachments.size) {
 			try {
 				let currentDate = new Date().toUTCString();
@@ -36,13 +120,31 @@ module.exports = {
 					return await settings.updateOne({ _id: 'Globals' }, {
 						$set: {
 							vis: null,
-						},
-					});
+							visContent: []
+						}
+					})
 				}
-				if (vis === null) {
-					return message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' });
+
+				if (vis === null && visContent.length === 0) {
+					return message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' })
+				} else if (vis) {
+					return message.channel.send({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}>\nSource: Vis Wax Server | <https://discord.gg/wv9Ecs4>`, files: [vis] })
+				} else {
+					const content = visContent.flat()
+					const slotOneIndex = content.findIndex(el => el.match(/slot/i))
+					const newContent = content.slice(slotOneIndex).map(el => {
+						const match = el.match(/<:[\w_]{1,14}:\d{1,18}>/g)
+						if (match) {
+							el = el.trim().slice(match[0].length)
+							return `\t${el}`
+						}
+						return el
+					})
+
+					return await message.channel.send({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}>\nSource: Vis Wax Server | <https://discord.gg/wv9Ecs4>\n${newContent.join('\n')}` })
 				}
-				return message.channel.send({ content: `**Image uploaded at:** ${visTime}`, files: [`${vis}`] });
+			} catch (err) {
+				return message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' })
 			}
 			catch (err) {
 				return message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' });
