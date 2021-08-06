@@ -8,7 +8,7 @@ module.exports = {
 	description: ['Deploys slash commands.'],
 	aliases: [''],
 	usage:  [''],
-	guildSpecific: ['668330890790699079' ],
+	guildSpecific: 'all',
 	permissionLevel: 'Owner',
 	run: async (client, message, args, perms) => {
 		if (!perms.owner) return message.channel.send(perms.errorO);
