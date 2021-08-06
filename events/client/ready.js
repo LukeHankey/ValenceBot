@@ -65,8 +65,8 @@ module.exports = async client => {
 		dataChanged = dataChanged.map((profile) => {
 			return `${padding(profile.clanMate, true, Math.max(...(dataChanged.map(el => el.clanMate.length))))}${padding(profile.clanRank, false, Math.max(...(dataChanged.map(el => el.clanRank.length))))}${padding(profile.totalXP, false, Math.max(...(dataChanged.map(el => el.totalXP.length))))}${padding(profile.kills, false, Math.max(...(dataChanged.map(el => el.kills.length))))}`;
 		});
-		dataChanged.splice(0, 0, `These are potential previous names for ${data[0].clanMate}.\n`);
-		dataChanged.push(' ', 'Reactions:\n✅ Takes the primary suggestion suggestion.\n❌ Not changed names or none match.\n📝 Pick another suggestion.');
+		dataChanged.splice(0, 0, `'${data[0].clanMate}' might have changed names to one of these potential new names.\n`);
+		dataChanged.push(' ', 'Reactions:\n✅ Takes the primary suggestion.\n❌ Not changed names or none match.\n📝 Pick another suggestion.');
 		return dataChanged.join('\n');
 	};
 
@@ -166,7 +166,7 @@ module.exports = async client => {
 			addedRoles(role, settings);
 			removedRoles(role, settings);
 		});
-		removeInactives(scout, client, settings);
+		removeInactives(scout, settings, channels);
 
 		// Daily Reset
 		if (new Date().getHours() === 00 && new Date().getMinutes() === 00) {

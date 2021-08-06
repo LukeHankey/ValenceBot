@@ -25,7 +25,9 @@ const otherCalls = async (message, updateDB, { errors }) => {
 								lastTimestamp: msg[0].createdTimestamp,
 								lastTimestampReadable: new Date(msg[0].createdTimestamp),
 								count: 0,
+								game: 0,
 								otherCount: 1,
+								active: 1,
 								assigned: [],
 							}],
 						},
@@ -42,6 +44,7 @@ const otherCalls = async (message, updateDB, { errors }) => {
 					'merchChannel.scoutTracker.$.author': msg[0].member?.nickname ?? msg[0].author.username,
 					'merchChannel.scoutTracker.$.lastTimestamp': msg[0].createdTimestamp,
 					'merchChannel.scoutTracker.$.lastTimestampReadable': new Date(msg[0].createdTimestamp),
+					'merchChannel.scoutTracker.$.active': 1,
 				},
 			});
 		}
