@@ -71,7 +71,9 @@ module.exports = async client => {
 	};
 
 	const postData = async (data) => {
-		const messageSend = await channels.logs.send(`${Formatters.codeBlock(formatTemplate(data))}`);
+		const valenceChannels = await settings.findOne({ _id: '472448603642920973' }, { projection: { channels: 1 } });
+		const valenceAdminChannel = client.channels.cache.get(valenceChannels.adminChannel);
+		const messageSend = await valenceAdminChannel.send(`${Formatters.codeBlock(formatTemplate(data))}`);
 		await messageSend.react('✅');
 		await messageSend.react('❌');
 		await messageSend.react('📝');
