@@ -20,7 +20,7 @@ module.exports = {
 		}
 		const db = getDb();
 		const settings = db.collection('Settings');
-		const { futureStock } = await settings.findOne({ _id: '733164313744769024' });
+		const { futureStock } = await settings.findOne({ _id: '420803245758480405' });
 		const splitIntoX = (arr, x) => {
 			arr = arr.flat();
 			return new Array(Math.ceil(arr.length / x))
@@ -59,7 +59,7 @@ module.exports = {
 					const fields = { name: `${values[0]}`, value: `${values[1]}`, inline: true };
 					embedData.push(fields);
 				}
-				const dsfServer = client.guilds.cache.get('733164313744769024');
+				const dsfServer = client.guilds.cache.get('420803245758480405');
 
 				const first = embedData.slice(0, 24);
 				const second = embedData.slice(24, 48);

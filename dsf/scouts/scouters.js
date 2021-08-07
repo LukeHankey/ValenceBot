@@ -1,6 +1,7 @@
 const { ScouterCheck } = require('../../classes');
 const scout = new ScouterCheck('Scouter');
 const vScout = new ScouterCheck('Verified Scouter');
+const { Util, Formatters } = require('discord.js');
 
 const classVars = async (name, serverName, database, client) => {
 	name._client = client;
@@ -49,7 +50,8 @@ const removeInactives = async (name, settings, { logs }) => {
 			);
 		}
 		else if (doc.active === 0) {
-			allItems.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}). Last made a call on ${doc.lastTimestampReadable}.`);
+			const timeStamp = doc.lastTimestampReadable.split(' ');
+			allItems.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}). Last made a call on ${timeStamp.slice(0, 5)}.`);
 			return;
 		}
 		else {
@@ -61,7 +63,8 @@ const removeInactives = async (name, settings, { logs }) => {
 		}
 	});
 	if (allItems.length) {
-		return logs.get('731997087721586698').send(`${removed.length} profiles removed.\n\`\`\`${allItems.join('\n')}\`\`\``);
+		const split = Util.splitMessage(`${allItems.join('\n')}`);
+		return split.forEach(content => logs.send(`${removed.length} profiles removed.\n${Formatters.codeBlock(content)}`));
 	}
 };
 
