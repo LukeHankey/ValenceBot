@@ -156,8 +156,7 @@ module.exports = async client => {
 	})();
 
 	// DSF Activity Posts //
-	// cron.schedule('0 */6 * * *', async () => {
-		cron.schedule('*/32 * * * *', async () => {
+	cron.schedule('0 */6 * * *', async () => {
 		const res = await settings.find({}).toArray();
 		await classVars(scout, 'Deep Sea Fishing', res, client);
 		await classVars(vScout, 'Deep Sea Fishing', res, client);
