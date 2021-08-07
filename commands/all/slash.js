@@ -23,8 +23,13 @@ module.exports = {
 				name: 'vis',
 				description: commandData('vis').first().description[0],
 			},
+			{
+				name: 'invite',
+				description: 'Invite me to your server',
+			},
 		];
 
 		await client.application?.commands.set(data);
+		// await client.guilds.cache.get('668330890790699079')?.commands.set(data);
 	},
 };
