@@ -145,7 +145,7 @@ export default {
 							const format = postData.filter(prop => prop.links === false).map(obj => {
 								return `- [${obj.date}](${baseURL}/${obj.messageID})`;
 							});
-							const embed = new MessageEmbed().setDescription(format).setColor(colors.aqua);
+							const embed = new MessageEmbed().setDescription(format.join('\n')).setColor(colors.aqua);
 							return dataArray.filter(prop => prop.links === true).forEach(async arrData => {
 								const msg = await channel.messages.fetch(arrData.messageID);
 								await msg.edit({ embeds: [ embed ] });

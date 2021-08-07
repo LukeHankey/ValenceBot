@@ -155,7 +155,6 @@ module.exports = async client => {
 		skullTimer(message, settings, channels);
 	})();
 
-
 	// DSF Activity Posts //
 	cron.schedule('*/30 * * * * *', async () => {
 		// cron.schedule('0 */6 * * *', async () => {
