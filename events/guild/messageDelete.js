@@ -3,6 +3,11 @@ const { MessageEmbed } = require('discord.js');
 const colors = require('../../colors.json');
 
 module.exports = async (client, message) => {
+	if (process.env.NODE_ENV === 'DEV') {
+		const devGuild = client.guilds.cache.get('668330890790699079');
+		if (devGuild.id !== message.channel.guild.id) return;
+	}
+
 	const db = getDb();
 	const settingsColl = db.collection('Settings');
 	const fullDB = await settingsColl.findOne({ _id: message.channel.guild.id, merchChannel: { $exists: true } });

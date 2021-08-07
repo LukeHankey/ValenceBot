@@ -10,6 +10,11 @@ module.exports = async (client, reaction, user) => {
 	const settingsColl = db.collection('Settings');
 	const message = reaction.message;
 
+	if (process.env.NODE_ENV === 'DEV') {
+		const devGuild = client.guilds.cache.get('668330890790699079');
+		if (devGuild.id !== message.channel.guild.id) return;
+	}
+
 	const { _id } = await settingsColl.findOne({ _id: message.channel.guild.id });
 	const { channels: { errors, logs } } = await settingsColl.findOne({ _id: 'Globals' }, { projection: { channels: { errors: 1, logs: 1 } } });
 	const channels = {
