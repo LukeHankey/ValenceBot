@@ -1,4 +1,6 @@
 const getDb = require('../../mongodb').getDb;
+const { MessageEmbed } = require('discord.js');
+const { cyan } = require('../../colors.json');
 
 module.exports = async (client, interaction) => {
 	const db = getDb();
@@ -28,4 +30,10 @@ module.exports = async (client, interaction) => {
 			await interaction.reply({ content: `**Image uploaded at:** ${visTime}`, files: [vis] });
 		}
 	}
+	else if (interaction.commandName === 'invite') {
+		const invite = client.generateInvite({ scopes: ['bot', 'applications.commands'], permissions: 123212262595n });
+		const embed = new MessageEmbed().setTitle('Here is your invite link.').setURL(invite).setColor(cyan);
+		await interaction.reply({ embeds: [embed], ephemeral: true });
+	}
+	else { return; }
 };
