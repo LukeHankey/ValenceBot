@@ -157,7 +157,6 @@ module.exports = {
 					: message.channel.send({ content: 'You don\'t have permission to use this command.' });
 			}
 			else if (args[0] === 'all') {
-				message.channel.startTyping();
 				const { merchChannel: { scoutTracker } } = await settings.findOne({ _id: message.channel.guild.id }, { projection: { 'merchChannel.scoutTracker': 1 } });
 				const items = scoutTracker.sort((a, b) => b.count - a.count);
 				let fields = [];
@@ -219,7 +218,6 @@ module.exports = {
 					.catch(err => {
 						channels.errors.send(err, module);
 					});
-				message.channel.stopTyping();
 			}
 			else {
 				message.channel.send({ content: `Unable to find \`${args[0]}\` as a member ID/mention or role mention.` });
