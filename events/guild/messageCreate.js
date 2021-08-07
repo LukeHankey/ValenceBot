@@ -87,20 +87,13 @@ module.exports = async (client, message) => {
 			// DSF - Merch & Other calls
 			return await dsf(client, message, channels);
 		}
-	}
-
-	// Daily Vis Wax
-	if (message.guild.id === '668330890790699079' && message.channel.id === '732014449182900247') {
-		if (message.reference?.guildId === '38804222271055w4624') {
-			// Then msg is from Vis wax server.
-			console.log('Vis Wax Combinations: ', message.content)
-			const contentArr = message.content.split('\n')
-			await settingsColl.updateOne({ _id: 'Globals' }, {
-				$set: {
-					visContent: contentArr,
-					visTime: message.createdAt
-				}
-			})
+		// Suggestions channel
+		if (message.channel.id === '872164630322118686') {
+			const up_arrow = message.guild.emojis.cache.get('872175822725857280');
+			const down_arrow = message.guild.emojis.cache.get('872175855223337060');
+			await message.react(up_arrow);
+			await message.react(down_arrow);
+			await message.startThread({ name: `Suggestion from ${message.member.nickname ?? message.author.username}`, autoArchiveDuration: 4320 });
 		}
 	}
 
