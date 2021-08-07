@@ -42,27 +42,143 @@ module.exports = async (client, reaction, user) => {
 	case _id:
 		// Valence
 		if (_id === '472448603642920973' || _id === '733164313744769024') {
+			if (user.bot) return;
+			const usersDB = db.collection('Users');
 			const data = await settingsColl.findOne({ _id: message.channel.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } });
-			const messageMatch = data.events.filter(m => m.messageID === message.id);
+			const { nameChange } = await settingsColl.findOne({ _id: message.channel.guild.id }, { projection: { nameChange: 1, _id: 0 } });
 
-			if (!messageMatch.length || user.bot) return;
-			if (reaction.emoji.name === '✅') {
-				if (user.id !== message.author.id) {
-					message.reactions.resolve('✅').users.remove(user.id);
-					return;
+			if (message.channel.id === data.channels.events) {
+				const messageMatch = data.events.filter(m => m.messageID === message.id);
+
+				if (!messageMatch.length) return;
+				if (reaction.emoji.name === '✅') {
+					if (user.id !== message.author.id) {
+						message.reactions.resolve('✅').users.remove(user.id);
+						return;
+					}
+
+					await removeEvents(client, message, settingsColl, { channels, module: module }, data, 'messageID', message.id);
 				}
-
-				await removeEvents(client, message, settingsColl, { channels, module: module }, data, 'messageID', message.id);
+				else if (reaction.emoji.name === '📌') {
+					const userFetch = await message.channel.guild.members.fetch(user.id);
+					const eventFound = data.events.find(e => e.messageID === message.id);
+					userFetch.roles.add(eventFound.roleID);
+					await settingsColl.findOneAndUpdate({ _id: message.channel.guild.id, 'events.messageID': eventFound.messageID }, { $addToSet: { 'events.$.members': user.id } });
+				}
 			}
-			else if (reaction.emoji.name === '📌') {
-				const userFetch = await message.channel.guild.members.fetch(user.id);
-				const eventFound = data.events.find(e => e.messageID === message.id);
-				userFetch.roles.add(eventFound.roleID);
-				await settingsColl.findOneAndUpdate({ _id: message.channel.guild.id, 'events.messageID': eventFound.messageID }, { $addToSet: { 'events.$.members': user.id } });
+			else if (message.channel.id === data.channels.adminChannel) {
+				const messageMatch = nameChange.find(o => o.messageID === message.id);
+				if (messageMatch) {
+					let primary = message.content.split('\n')[3];
+					const potentialNewNamesList = [];
+					messageMatch.data[0].potentialNewNames.forEach(item => potentialNewNamesList.push(item.clanMate.toLowerCase()));
+					const potentialPreviousName = messageMatch.data[0].clanMate;
+					let oldData = messageMatch.data.map(o => { return { _id: o._id, clanMate: o.clanMate, clanRank: o.clanRank, totalXP: o.totalXP, kills: o.kills, discord: o.discord, discActive: o.discActive, alt: o.alt, gameActive: o.gameActive }; });
+					if (reaction.emoji.name === '✅') {
+						primary = primary.split(' |')[0];
+						const oldProfile = await usersDB.findOne({ clanMate: potentialPreviousName });
+						await usersDB.deleteOne({ clanMate: potentialPreviousName });
+						await usersDB.updateOne({ clanMate: primary }, {
+							$set: {
+								discord: oldProfile.discord,
+								discActive: oldProfile.discActive,
+								alt: oldProfile.alt,
+								gameActive: oldProfile.gameActive,
+							},
+							$unset: {
+								potentialNewNames: 1,
+							},
+						});
+						settingsColl.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } });
+						return message.reactions.removeAll();
+					}
+					else if (reaction.emoji.name === '❌') {
+						let metricsProfile = await fetch(`https://secure.runescape.com/m=website-data/playerDetails.ws?names=%5B%22${potentialPreviousName}%22%5D&callback=jQuery000000000000000_0000000000&_=0`).then(response => response.text());
+						metricsProfile = JSON.parse(metricsProfile.slice(34, -4));
+						const userLeft = await usersDB.findOne({ $text: { $search: potentialPreviousName, $caseSensitive: false } }, { projection: { _id: 0, potentialNewNames: 0, profile: 0 } });
+
+						if (metricsProfile.clan && metricsProfile.clan !== 'Valence') {
+							const embed = new MessageEmbed()
+								.setTitle(`${userLeft.clanMate} is no longer in Valence`)
+								.setDescription(`${user.username} chose ❌ on name changes. (Not changed names or none match). User has been removed from the database.`)
+								.setColor(colors.red_dark)
+								.addField('Users old profile', `\`\`\`${JSON.stringify(userLeft)}\`\`\``);
+							const channel = client.channels.cache.get(channels.errors.id);
+							channel.send(embed);
+							await usersDB.deleteOne({ clanMate: userLeft.clanMate });
+						}
+						else {
+							// Checks if the potential previous name is equal to the current name.
+							let metricsProfile = await fetch(`https://secure.runescape.com/m=website-data/playerDetails.ws?names=%5B%22${potentialPreviousName}%22%5D&callback=jQuery000000000000000_0000000000&_=0`).then(response => response.text());
+							metricsProfile = JSON.parse(metricsProfile.slice(34, -4));
+							const userLeft = await usersDB.findOne({ $text: { $search: potentialPreviousName, $caseSensitive: false } }, { projection: { _id: 0, potentialNewNames: 0, profile: 0 } });
+
+							if (metricsProfile.clan && metricsProfile.clan !== 'Valence') {
+								const embed = new MessageEmbed()
+									.setTitle(`${userLeft.clanMate} is no longer in Valence`)
+									.setDescription(`${user.username} chose ❌ on name changes. (Not changed names or none match). User has been removed from the database.`)
+									.setColor(colors.red_dark)
+									.addField('Users old profile', `\`\`\`${JSON.stringify(userLeft)}\`\`\``);
+								const channel = client.channels.cache.get(channels.errors.id);
+								channel.send(embed);
+								await usersDB.deleteOne({ clanMate: userLeft.clanMate });
+							}
+							else {
+								// Checks if the potential previous name is equal to the current name.
+								// eslint-disable-next-line no-lonely-if
+								if (userLeft.clanMate === potentialPreviousName) {
+									oldData = oldData.find(u => u.clanMate.toLowerCase() === potentialPreviousName.toLowerCase());
+									await usersDB.deleteOne({ clanMate: potentialPreviousName });
+									await usersDB.insertOne(oldData);
+								}
+							}
+							settingsColl.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } });
+							return message.reactions.removeAll();
+						}
+					}
+					else if (reaction.emoji.name === '📝') {
+						try {
+							message.channel.send('Please type out one of the above suggested names.');
+							const filter = m => potentialNewNamesList.includes(m.content.toLowerCase());
+							let msg = await message.channel.awaitMessages({ filter, max: 1, time: 15000, errors: ['time'] });
+							msg = msg.first();
+							const found = messageMatch.data[0].potentialNewNames.find(u => u.clanMate.toLowerCase() === msg.content.toLowerCase());
+
+							const details = (currentName, previousName) => {
+								const result = {};
+								if (currentName.discActive || previousName.discActive) {
+									result.discActive = true;
+									currentName.discActive ? result.discord = currentName.discord : result.discord = previousName.discord;
+								}
+								currentName.alt || previousName.alt ? result.alt = true : result.alt = false;
+								currentName.gameActive || previousName.gameActive ? result.gameActive = true : result.gameActive = false;
+								return result;
+							};
+
+							const info = details(found, messageMatch.data[0]);
+							usersDB.updateOne({ clanMate: found[0].clanMate }, {
+								$set: {
+									discord: info.discord,
+									discActive: info.discActive,
+									alt: info.alt,
+									gameActive: info.gameActive,
+								},
+							});
+							usersDB.deleteOne({ clanMate: potentialPreviousName });
+							settingsColl.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } });
+							return message.reactions.removeAll();
+						}
+						catch (err) {
+							if (err) return message.channel.send({ content: 'Timed out. Try again.' });
+							channels.errors.send(err, module);
+						}
+					}
+					else { return; }
+				}
 			}
 		}
 		// DSF & Test servers
-		else if (_id === '420803245758480405' || _id === '733164313744769024') {
+		else if (_id === '420803245758480405') {
 			const { merchChannel: {
 				channelID,
 				spamProtection,
@@ -79,8 +195,6 @@ module.exports = async (client, reaction, user) => {
 			switch (message.channel.id) {
 			case channelID: {
 				if (user.bot) return;
-				// Logging reaction timestamps
-				// console.log('Reaction added:', `MessageID: ${message.id}`, `By: ${user.username} (${user.id})`, `Reaction: ${reaction.emoji.toString() || reaction.reactionEmoji.toString()} | ${reaction.emoji.name || reaction.reactionEmoji.name} `, `${new Date(Date.now()).toString().split(' ').slice(0, -4).join(' ')} ${(new Date(Date.now()).getMilliseconds())}`);
 
 				const merchChannelID = client.channels.cache.get(channelID);
 				spamProtection.forEach(async (msgObj) => {
@@ -124,8 +238,8 @@ module.exports = async (client, reaction, user) => {
 			case deletions.channelID: {
 				if (reaction.me) return;
 				const item = deletions.messages.find(item => item.messageID === message.id);
-				const dsfServerWebhook = await client.channels.cache.get('794608385106509824').fetchWebhooks();
-				const channelToSend = dsfServerWebhook.first();
+				// const dsfServerWebhook = await client.channels.cache.get('794608385106509824').fetchWebhooks();
+				// const channelToSend = dsfServerWebhook.first();
 				if (reaction.emoji.name !== '✅') return;
 				if (item) {
 					await settingsColl.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': item.authorID }, {
@@ -140,127 +254,12 @@ module.exports = async (client, reaction, user) => {
 					});
 					const newEmbed = new MessageEmbed(message.embeds[0]);
 					newEmbed.setColor(colors.green_light).setTitle('Message Deleted - Count Removed');
-					message.delete();
-					return await channelToSend.send({ embeds: [ newEmbed ] });
+					message.edit({ embeds: [newEmbed] });
+					// message.delete();
+					// return await channelToSend.send({ embeds: [ newEmbed ] });
 				}
 			}
 			}
-		}
-		else if (_id === '668330890790699079') {
-			if (user.bot) return;
-			const usersDB = db.collection('Users');
-			const { nameChange } = await settingsColl.findOne({ _id: message.channel.guild.id }, { projection: { nameChange: 1, _id: 0 } });
-			const messageMatch = nameChange.find(o => o.messageID === message.id);
-
-			if (messageMatch) {
-				let primary = message.content.split('\n')[3];
-				const potentialNewNamesList = [];
-				messageMatch.data[0].potentialNewNames.forEach(item => potentialNewNamesList.push(item.clanMate.toLowerCase()));
-				const potentialPreviousName = messageMatch.data[0].clanMate;
-				let oldData = messageMatch.data.map(o => { return { _id: o._id, clanMate: o.clanMate, clanRank: o.clanRank, totalXP: o.totalXP, kills: o.kills, discord: o.discord, discActive: o.discActive, alt: o.alt, gameActive: o.gameActive }; });
-
-				if (reaction.emoji.name === '✅') {
-					primary = primary.split(' |')[0];
-					const oldProfile = await usersDB.findOne({ clanMate: potentialPreviousName });
-					await usersDB.deleteOne({ clanMate: potentialPreviousName });
-					await usersDB.updateOne({ clanMate: primary }, {
-						$set: {
-							discord: oldProfile.discord,
-							discActive: oldProfile.discActive,
-							alt: oldProfile.alt,
-							gameActive: oldProfile.gameActive,
-						},
-						$unset: {
-							potentialNewNames: 1,
-						},
-					});
-					settingsColl.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } });
-					return message.reactions.removeAll();
-				}
-				else if (reaction.emoji.name === '❌') {
-					let metricsProfile = await fetch(`https://secure.runescape.com/m=website-data/playerDetails.ws?names=%5B%22${potentialPreviousName}%22%5D&callback=jQuery000000000000000_0000000000&_=0`).then(response => response.text());
-					metricsProfile = JSON.parse(metricsProfile.slice(34, -4));
-					const userLeft = await usersDB.findOne({ $text: { $search: potentialPreviousName, $caseSensitive: false } }, { projection: { _id: 0, potentialNewNames: 0, profile: 0 } });
-
-					if (metricsProfile.clan && metricsProfile.clan !== 'Valence') {
-						const embed = new MessageEmbed()
-							.setTitle(`${userLeft.clanMate} is no longer in Valence`)
-							.setDescription(`${user.username} chose ❌ on name changes. (Not changed names or none match). User has been removed from the database.`)
-							.setColor(colors.red_dark)
-							.addField('Users old profile', `\`\`\`${JSON.stringify(userLeft)}\`\`\``);
-						const channel = client.channels.cache.get(channels.errors.id);
-						channel.send(embed);
-						await usersDB.deleteOne({ clanMate: userLeft.clanMate });
-					}
-					else {
-						// Checks if the potential previous name is equal to the current name.
-						let metricsProfile = await fetch(`https://secure.runescape.com/m=website-data/playerDetails.ws?names=%5B%22${potentialPreviousName}%22%5D&callback=jQuery000000000000000_0000000000&_=0`).then(response => response.text());
-						metricsProfile = JSON.parse(metricsProfile.slice(34, -4));
-						const userLeft = await usersDB.findOne({ $text: { $search: potentialPreviousName, $caseSensitive: false } }, { projection: { _id: 0, potentialNewNames: 0, profile: 0 } });
-
-						if (metricsProfile.clan && metricsProfile.clan !== 'Valence') {
-							const embed = new MessageEmbed()
-								.setTitle(`${userLeft.clanMate} is no longer in Valence`)
-								.setDescription(`${user.username} chose ❌ on name changes. (Not changed names or none match). User has been removed from the database.`)
-								.setColor(colors.red_dark)
-								.addField('Users old profile', `\`\`\`${JSON.stringify(userLeft)}\`\`\``);
-							const channel = client.channels.cache.get(channels.errors.id);
-							channel.send(embed);
-							await usersDB.deleteOne({ clanMate: userLeft.clanMate });
-						}
-						else {
-							// Checks if the potential previous name is equal to the current name.
-							// eslint-disable-next-line no-lonely-if
-							if (userLeft.clanMate === potentialPreviousName) {
-								oldData = oldData.find(u => u.clanMate.toLowerCase() === potentialPreviousName.toLowerCase());
-								await usersDB.deleteOne({ clanMate: potentialPreviousName });
-								await usersDB.insertOne(oldData);
-							}
-						}
-						settingsColl.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } });
-						return message.reactions.removeAll();
-					}
-				}
-				else if (reaction.emoji.name === '📝') {
-					try {
-						message.channel.send('Please type out one of the above suggested names.');
-						const filter = m => potentialNewNamesList.includes(m.content.toLowerCase());
-						let msg = await message.channel.awaitMessages({ filter, max: 1, time: 15000, errors: ['time'] });
-						msg = msg.first();
-						const found = messageMatch.data[0].potentialNewNames.find(u => u.clanMate.toLowerCase() === msg.content.toLowerCase());
-
-						const details = (currentName, previousName) => {
-							const result = {};
-							if (currentName.discActive || previousName.discActive) {
-								result.discActive = true;
-								currentName.discActive ? result.discord = currentName.discord : result.discord = previousName.discord;
-							}
-							currentName.alt || previousName.alt ? result.alt = true : result.alt = false;
-							currentName.gameActive || previousName.gameActive ? result.gameActive = true : result.gameActive = false;
-							return result;
-						};
-
-						const info = details(found, messageMatch.data[0]);
-						usersDB.updateOne({ clanMate: found[0].clanMate }, {
-							$set: {
-								discord: info.discord,
-								discActive: info.discActive,
-								alt: info.alt,
-								gameActive: info.gameActive,
-							},
-						});
-						usersDB.deleteOne({ clanMate: potentialPreviousName });
-						settingsColl.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } });
-						return message.reactions.removeAll();
-					}
-					catch (err) {
-						if (err) return message.channel.send({ content: 'Timed out. Try again.' });
-						channels.errors.send(err, module);
-					}
-				}
-				else { return; }
-			}
-
 		}
 		else { return; }
 	}
