@@ -25,7 +25,7 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 				console.log(`New & Spam: ${userN.user.username} (${message.content})`, userN.id);
 				if (message.guild.id === '668330890790699079') {
 					errorLog = errorLog.pop();
-					return errorLog.forEach(id => id.send({ content: ` \`\`\`diff\n\n+ Spam Message - (User has not posted before)\n- User ID: ${userN.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\`` }));
+					return errorLog.send({ content: ` \`\`\`diff\n\n+ Spam Message - (User has not posted before)\n- User ID: ${userN.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\`` });
 				}
 				return errorLog.forEach(id => id.send({ content: ` \`\`\`diff\n\n+ Spam Message - (User has not posted before)\n- User ID: ${userN.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\`` }));
 			}
@@ -60,7 +60,7 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 				console.log(`Old & Spam: ${userN.user.username} (${message.content})`, userN.user.id);
 				if (message.guild.id === '668330890790699079') {
 					errorLog = errorLog.pop();
-					return errorLog.forEach(id => id.send({ content: ` \`\`\`diff\n+ Spam Message - (User has posted before)\n\n- User ID: ${userN.user.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\`` }));
+					return errorLog.send({ content: ` \`\`\`diff\n+ Spam Message - (User has posted before)\n\n- User ID: ${userN.user.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\`` });
 				}
 				return errorLog.forEach(id => id.send({ content: ` \`\`\`diff\n+ Spam Message - (User has posted before)\n\n- User ID: ${userN.user.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\`` }));
 			}
