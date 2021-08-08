@@ -10,6 +10,11 @@ module.exports = async (client, reaction, user) => {
 	const settingsColl = db.collection('Settings');
 	const message = reaction.message;
 
+	if (process.env.NODE_ENV === 'DEV') {
+		if (message.guild.id !== '668330890790699079') return;
+	}
+	else if (message.guild.id === '668330890790699079') {return;}
+
 	const { _id } = await settingsColl.findOne({ _id: message.channel.guild.id });
 	const { channels: { errors, logs } } = await settingsColl.findOne({ _id: 'Globals' }, { projection: { channels: { errors: 1, logs: 1 } } });
 	const channels = {
@@ -237,10 +242,9 @@ module.exports = async (client, reaction, user) => {
 				break;
 			case deletions.channelID: {
 				if (reaction.me) return;
-				const item = deletions.messages.find(item => item.messageID === message.id);
-				const dsfServerWebhook = await client.channels.cache.get('794608385106509824').fetchWebhooks();
-				const channelToSend = dsfServerWebhook.first();
 				if (reaction.emoji.name !== '✅') return;
+				const item = deletions.messages.find(item => item.messageID === message.id);
+				console.log(item);
 				if (item) {
 					await settingsColl.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': item.authorID }, {
 						$inc: {
@@ -252,6 +256,8 @@ module.exports = async (client, reaction, user) => {
 							'merchChannel.deletions.messages': { messageID: item.messageID },
 						},
 					});
+					const dsfServerWebhook = await client.channels.cache.get('794608385106509824').fetchWebhooks();
+					const channelToSend = dsfServerWebhook.first();
 					const newEmbed = new MessageEmbed(message.embeds[0]);
 					newEmbed.setColor(colors.green_light).setTitle('Message Deleted - Count Removed');
 					message.delete();

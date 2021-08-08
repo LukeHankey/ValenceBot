@@ -14,7 +14,7 @@ module.exports = {
 	description: ['Displays a random fact about Valence.', 'Adds a Valence Fact to the DataBase.', 'Removes a specified Fact from the DataBase.', 'Edit the message by providing the Fact number.', 'Shows the entire list of Facts.'],
 	aliases: ['f'],
 	usage:  ['', 'add <fact>', 'remove <number>', 'edit <number>', 'list'],
-	guildSpecific: ['733164313744769024', '668330890790699079', '472448603642920973'],
+	guildSpecific: ['668330890790699079', '472448603642920973'],
 	permissionLevel: 'Mod',
 	run: async (client, message, args, perms, channels) => {
 		const db = getDb();

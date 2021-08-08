@@ -8,7 +8,7 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 		const settingsColl = db.collection('Settings');
 		const { merchChannel: { scoutTracker, channelID, messages }, disallowedWords } = await settingsColl.findOne({ _id: message.channel.guild.id }, { projection: { 'merchChannel.scoutTracker': 1, 'merchChannel.channelID': 1, 'merchChannel.messages': 1, disallowedWords: 1 } });
 		const merchChannelID = client.channels.cache.get(channelID);
-		const errorLog = [];
+		let errorLog = [];
 		const botServerWebhook = await client.channels.cache.get('784543962174062608').fetchWebhooks();
 		const dsfServerWebhook = await client.channels.cache.get('794608385106509824').fetchWebhooks();
 		errorLog.push(dsfServerWebhook.first(), botServerWebhook.first());
@@ -23,6 +23,10 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 		if (!findMessage) {
 			if (!merchRegex.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, messages)) {
 				console.log(`New & Spam: ${userN.user.username} (${message.content})`, userN.id);
+				if (message.guild.id === '668330890790699079') {
+					errorLog = errorLog.pop();
+					return errorLog.send({ content: ` \`\`\`diff\n\n+ Spam Message - (User has not posted before)\n- User ID: ${userN.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\`` });
+				}
 				return errorLog.forEach(id => id.send({ content: ` \`\`\`diff\n\n+ Spam Message - (User has not posted before)\n- User ID: ${userN.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\`` }));
 			}
 			console.log(`New: ${userN.user.username} (${message.content})`, userN.id);
@@ -54,6 +58,10 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 		else {
 			if (!merchRegex.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, messages)) {
 				console.log(`Old & Spam: ${userN.user.username} (${message.content})`, userN.user.id);
+				if (message.guild.id === '668330890790699079') {
+					errorLog = errorLog.pop();
+					return errorLog.send({ content: ` \`\`\`diff\n+ Spam Message - (User has posted before)\n\n- User ID: ${userN.user.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\`` });
+				}
 				return errorLog.forEach(id => id.send({ content: ` \`\`\`diff\n+ Spam Message - (User has posted before)\n\n- User ID: ${userN.user.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\`` }));
 			}
 			console.log(`Old: ${userN.user.username} (${message.content})`, findMessage.userID === userN.id, findMessage.userID, userN.id);

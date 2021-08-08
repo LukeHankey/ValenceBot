@@ -18,7 +18,7 @@ module.exports = {
 	description: ['Lists out the citadel commands.', 'Toggles the citadel reset time & reminders on/off.', 'Shows the current Citadel Reset Time.', 'Allows a user to suggest the reset time - Sends info to the current Admin Channel.', 'Sets the new Citadel Reset Time.', 'Lists the current citadel reminders by ID.', 'Adds a new citadel reminder.', 'Adds a citadel reminder which sends the set message at reset +<date/time>.', 'Removes a citadel reminder.', 'Edit an existing citadel reminder by ID, then the field you want to change; then the updated value.'],
 	aliases: ['c', 'cit'],
 	usage:  ['', 'on/off', 'reset', 'reset info', 'reset set', 'reminders', 'reminders add <channel> <message>', 'reminders add <channel> reset +<days/time> <message>', 'reminders remove <id>', 'reminders edit <id> <parameter> <new value>'],
-	guildSpecific: ['733164313744769024', '668330890790699079', '472448603642920973'],
+	guildSpecific: ['668330890790699079', '472448603642920973'],
 	permissionLevel: 'Everyone',
 	run: async (client, message, args, perms, channels) => {
 		const db = getDb();
