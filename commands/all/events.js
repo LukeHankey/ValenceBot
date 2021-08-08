@@ -10,7 +10,7 @@ const { removeEvents } = require('../../functions');
 module.exports = {
 	name: 'events',
 	description: ['List the current events.', 'Ends an event and removes the role.'],
-	aliases: ['e'],
+	aliases: ['e', 'event'],
 	usage:  ['', 'end [ID]'],
 	guildSpecific: 'all',
 	permissionLevel: 'Mod',
