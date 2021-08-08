@@ -23,8 +23,52 @@ const alreadyCalled = (message, messages) => {
 	else { return true; }
 };
 
+const updateButtonData = async (updateDB, message, userN, button) => {
+	return await updateDB.updateOne({ _id: message.guild.id }, {
+		$addToSet: {
+			'merchChannel.components': {
+				messageID: message.id,
+				userID: userN.user.id,
+				time: message.createdTimestamp,
+				content: message.content,
+				primaryID: `primary_${userN.user.id}`,
+				dangerID: `danger_${userN.user.id}`,
+				buttonMessageID: button.id,
+			},
+		},
+	});
+};
+
+const removeButtons = async (client, database, { errors }) => {
+	try {
+		let merchDB = await database.find({ merchChannel: { $exists: true } }).toArray();
+		[ merchDB ] = merchDB.filter(db => db.serverName = 'Deep Sea Fishing');
+		// const oneDay = 8.64e+7;
+		const oneDay = 60000;
+		const components = merchDB.merchChannel.components;
+		if (components.length) {
+			const errorChannel = client.channels.cache.get(merchDB.merchChannel.deletions.channelID);
+			const removeMessageButtons = components.filter(obj => {
+				if ((Date.now() - obj.time) > oneDay) {
+					return obj;
+				}
+			});
+			return removeMessageButtons.forEach(async o => {
+				const msg = await errorChannel.messages.fetch(o.buttonMessageID);
+				await msg.edit({ components: [] });
+			});
+		}
+		else { return; }
+	}
+	catch (err) {
+		errors.send(err, module);
+	}
+};
+
 module.exports = {
 	checkMemberRole,
 	arrIncludesString,
 	alreadyCalled,
+	updateButtonData,
+	removeButtons,
 };

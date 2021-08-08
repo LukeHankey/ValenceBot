@@ -1,12 +1,12 @@
 const getDb = require('../../mongodb').getDb;
-const { MessageEmbed } = require('discord.js');
-const { cyan } = require('../../colors.json');
+const { MessageEmbed, MessageButton, MessageActionRow, MessageSelectMenu } = require('discord.js');
+const { cyan, red_dark } = require('../../colors.json');
 
 module.exports = async (client, interaction) => {
 	const db = getDb();
 	const settings = db.collection('Settings');
 	const data = await settings.findOne({ _id: interaction.guildId }, { projection: { merchChannel: { components: 1 } } });
-	const { channels: { vis, errors, logs }, visTime } = await settings.findOne({ _id: 'Globals' }, { projection: { channels: { vis: 1, errors: 1, logs: 1 }, visTime: 1 } });
+	const { channels: { vis, visTime, errors, logs } } = await settings.findOne({ _id: 'Globals' }, { projection: { channels: { vis: 1, visTime: 1, errors: 1, logs: 1 } } });
 
 	const channels = {
 		errors: {
@@ -91,17 +91,73 @@ module.exports = async (client, interaction) => {
 		catch (err) {
 			channels.errors.send(err, module);
 		}
-		if (vis === null) {
-			await interaction.reply({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' });
-		}
-		else {
-			await interaction.reply({ content: `**Image uploaded at:** ${visTime}`, files: [vis] });
-		}
 	}
-	else if (interaction.commandName === 'invite') {
-		const invite = client.generateInvite({ scopes: ['bot', 'applications.commands'], permissions: 123212262595n });
-		const embed = new MessageEmbed().setTitle('Here is your invite link.').setURL(invite).setColor(cyan);
-		await interaction.reply({ embeds: [embed], ephemeral: true });
+	else if (interaction.isCommand()) {
+		if (interaction.commandName === 'vis') {
+			let currentDate = new Date().toUTCString();
+			currentDate = currentDate.split(' ');
+			// eslint-disable-next-line no-unused-vars
+			const [day, month, year, ...rest] = currentDate.slice(1);
+			const savedDate = visTime.toString().split(' ');
+
+			if (year !== savedDate[3] || month !== savedDate[1] || day !== savedDate[2]) {
+				interaction.reply({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' });
+				return await settings.updateOne({ _id: 'Globals' }, {
+					$set: {
+						vis: null,
+					},
+				});
+			}
+			if (vis === null) {
+				await interaction.reply({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' });
+			}
+			else {
+				await interaction.reply({ content: `**Image uploaded at:** ${visTime}`, files: [vis] });
+			}
+		}
+		else if (interaction.commandName === 'invite') {
+			const invite = client.generateInvite({ scopes: ['bot', 'applications.commands'], permissions: 123212262595n });
+			const embed = new MessageEmbed().setTitle('Here is your invite link.').setURL(invite).setColor(cyan);
+			await interaction.reply({ embeds: [embed], ephemeral: true });
+		}
+		else { return; }
+	}
+	else if (interaction.isSelectMenu()) {
+		const dmData = await settings.findOne({ 'merchChannel.components': { $exists: true } }, { projection: { merchChannel: { components: 1, deletions: 1 } } });
+		const thisSelection = dmData.merchChannel.components.filter(b => {
+			return b.selectMessageID === interaction.message.id;
+		});
+		if (interaction.customId === thisSelection[0].selectID) {
+			try {
+				await interaction.update({ components: [] });
+				const errorChannel = client.channels.cache.get(dmData.merchChannel.deletions.channelID);
+				const buttonMessage = await errorChannel.messages.fetch(thisSelection[0].buttonMessageID);
+				if (interaction.values.includes('yes')) {
+					interaction.followUp({ content: 'Thank you for responding, the log has been automatically removed.' });
+					buttonMessage.delete();
+					errorChannel.send({ content: `A password was confirmed by <@!${thisSelection[0].userID}> and the message has been deleted.` });
+					await settings.updateOne({ serverName: 'Deep Sea Fishing' }, {
+						$pull: {
+							'merchChannel.components': thisSelection[0],
+						},
+					});
+				}
+				else {
+					interaction.followUp({ content: 'Thank you for responding.' });
+					buttonMessage.edit({ components: [] });
+					await settings.updateOne({ serverName: 'Deep Sea Fishing' }, {
+						$pull: {
+							'merchChannel.components': thisSelection[0],
+						},
+					});
+				}
+			}
+			catch(err) {
+				channels.errors.send(err, module);
+			}
+		}
+
 	}
 	else { return; }
+
 };

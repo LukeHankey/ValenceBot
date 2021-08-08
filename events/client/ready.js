@@ -8,6 +8,7 @@ const { updateRoles } = require('../../valence/clanData');
 const { scout, vScout, classVars, addedRoles, removedRoles, removeInactives } = require('../../dsf/scouts/scouters');
 const { updateStockTables } = require('../../dsf/stockTables');
 const { skullTimer } = require('../../dsf/merch/merchChannel/skullTimer');
+const { removeButtons } = require('../../dsf/merch/merchFunctions');
 const { MessageEmbed, Formatters } = require('discord.js');
 const colors = require('../../colors.json');
 
@@ -165,51 +166,48 @@ module.exports = async client => {
 		await classVars(vScout, 'Deep Sea Fishing', res, client);
 
 		[scout, vScout].forEach(role => {
-			addedRoles(role, settings)
-			removedRoles(role, settings)
-		})
-		// removeInactives(scout, settings, channels)
-		// await removeButtons(client, settings, channels)
+			addedRoles(role, settings);
+			removedRoles(role, settings);
+		});
+		removeInactives(scout, settings, channels);
+		await removeButtons(client, settings, channels);
 
-		// // Daily Reset
-		// if (new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
-		// 	updateStockTables(client, settings, channels)
-		// }
+		// Daily Reset
+		if (new Date().getHours() === 00 && new Date().getMinutes() === 00) {
+			updateStockTables(client, settings);
+		}
 
-		// // Weekly reset
-		// if (new Date().getDay() === 3 && new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
-		// 	scout.send()
-		// 	vScout.send()
-		// 	const allUsers = await users.find({}).toArray()
-		// 	let index = 0
-		// 	const interval = setInterval(() => {
-		// 		updateRoles(client, allUsers[index])
-		// 		index++
+		// Weekly reset
+		if (new Date().getDay() === 3 && new Date().getHours() === 00 && new Date().getMinutes() === 00) {
+			scout.send();
+			vScout.send();
+			const allUsers = await users.find({}).toArray();
+			let index = 0;
+			while (index < allUsers.length) {
+				updateRoles(client, allUsers[index]);
+				index++;
+			}
+		}
 
-		// 		if (index === allUsers.length) {
-		// 			clearInterval(interval)
-		// 		}
-		// 	}, 1000)
-		// }
+		// Monthly reset + 1 day
+		if (new Date().getDate() === 2 && (new Date().getHours() === 01 || new Date().getHours() === 00) && new Date().getMinutes() === 00) {
+			console.log(new Date().getDate(), 'Setting lottoSheet to Null');
+			await settings.updateMany({ gSheet: { $exists: true } }, { $set: { lottoSheet: null } });
+		}
 
-		// // Monthly reset + 1 day
-		// if (new Date().getDate() === 2 && (new Date().getHours() === 0o1 || new Date().getHours() === 0o0) && new Date().getMinutes() === 0o0) {
-		// 	console.log(new Date().getDate(), 'Setting lottoSheet to Null')
-		// 	await settings.updateMany({ gSheet: { $exists: true } }, { $set: { lottoSheet: null } })
-		// }
+		// Reset Info Count back to 0 to allow use of command
+		await settings.find({}).toArray().then(r => {
+			r = r.filter(doc => doc.resetInfoCount >= 0);
+			for (const doc in r) {
+				if (r[doc].resetInfoCount === 1 && r[doc].resetInfoTime < r[doc].resetInfoTime + 86400000) {
+					return settings.updateOne({ 'serverName': r[doc].serverName }, {
+						$set: {
+							resetInfoCount: 0,
+						},
+					});
+				}
+			}
+		});
 
-		// // Reset Info Count back to 0 to allow use of command
-		// await settings.find({}).toArray().then(r => {
-		// 	r = r.filter(doc => doc.resetInfoCount >= 0)
-		// 	for (const doc in r) {
-		// 		if (r[doc].resetInfoCount === 1 && r[doc].resetInfoTime < r[doc].resetInfoTime + 86400000) {
-		// 			return settings.updateOne({ serverName: r[doc].serverName }, {
-		// 				$set: {
-		// 					resetInfoCount: 0
-		// 				}
-		// 			})
-		// 		}
-		// 	}
-		// })
-	})
-}
+	});
+};
