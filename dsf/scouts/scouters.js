@@ -51,7 +51,7 @@ const removeInactives = async (name, settings, { logs }) => {
 		}
 		else if (doc.active === 0) {
 			const timeStamp = doc.lastTimestampReadable.toString().split(' ');
-			allItems.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}). Last made a call on ${timeStamp.slice(0, 5).join(' ')}.`);
+			allItems.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}). ${timeStamp.slice(0, 5).join(' ')}.`);
 			return;
 		}
 		else {
