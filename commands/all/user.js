@@ -186,6 +186,7 @@ module.exports = {
 			let findUser = await usersColl.findOne({ $text: { $search: rsName.join(' '), $caseSensitive: false } }, { projection: { _id: 0, kills: 0 } });
 			if (findUser) {
 				findUser = renameKeys({ 'clanMate': 'RSN', 'clanRank': 'Rank', 'totalXP': 'Total XP', 'discord': 'ID', 'discActive': 'Discord', 'alt': 'Alt Account', 'gameActive': 'Game' }, findUser);
+				delete findUser['lastUpdated'];
 				for (const item in findUser) {
 					if (findUser['ID'] === '') findUser['ID'] = 'N/A';
 					if (typeof findUser[item] === 'boolean') findUser[item] = `${findUser[item]}`;
