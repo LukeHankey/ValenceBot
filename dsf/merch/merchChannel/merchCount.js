@@ -11,12 +11,11 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 		const errorLog = [];
 		const botServerWebhook = await client.channels.cache.get('784543962174062608').fetchWebhooks();
 		const dsfServerWebhook = await client.channels.cache.get('794608385106509824').fetchWebhooks();
-		errorLog.push(dsfServerWebhook.first(), botServerWebhook.first());
 
 		if (process.env.NODE_ENV === 'DEV') {
-			if (message.guild.id !== '668330890790699079') return errorLog.push(dsfServerWebhook.first(), botServerWebhook.first());
+			if (message.guild.id !== '668330890790699079') errorLog.push(dsfServerWebhook.first(), botServerWebhook.first());
 		}
-		else if (message.guild.id === '668330890790699079') {return errorLog.push(botServerWebhook.first());}
+		else if (message.guild.id === '668330890790699079') {errorLog.push(botServerWebhook.first());}
 
 		// Adding count to members
 		const mesOne = await message.channel.messages.fetch({ limit: 1 });
