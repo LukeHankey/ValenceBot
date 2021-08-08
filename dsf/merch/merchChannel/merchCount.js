@@ -58,6 +58,10 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 		else {
 			if (!merchRegex.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, messages)) {
 				console.log(`Old & Spam: ${userN.user.username} (${message.content})`, userN.user.id);
+				if (message.guild.id === '668330890790699079') {
+					errorLog = errorLog.pop();
+					return errorLog.forEach(id => id.send({ content: ` \`\`\`diff\n+ Spam Message - (User has posted before)\n\n- User ID: ${userN.user.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\`` }));
+				}
 				return errorLog.forEach(id => id.send({ content: ` \`\`\`diff\n+ Spam Message - (User has posted before)\n\n- User ID: ${userN.user.id}\n- User: ${userN.user.username}\n- Content: ${message.content}\`\`\`` }));
 			}
 			console.log(`Old: ${userN.user.username} (${message.content})`, findMessage.userID === userN.id, findMessage.userID, userN.id);
