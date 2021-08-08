@@ -12,7 +12,7 @@ module.exports = {
 	description: ['Posts the embed and populates with wish data.'],
 	aliases: [],
 	usage: [''],
-	guildSpecific: ['733164313744769024', '420803245758480405'],
+	guildSpecific: ['668330890790699079', '420803245758480405'],
 	permissionLevel: 'Owner',
 	run: async (client, message, args, perms, channels) => {
 		if (message !== 'readyEvent') {

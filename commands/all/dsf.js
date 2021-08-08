@@ -17,7 +17,7 @@ module.exports = {
 	description: ['Displays all of the current stored messages.', 'Clears all of the current stored messages.', 'Shows the list of potential scouters/verified scouters with the set scout count, or count adjusted.', 'Add 1 or <num> merch count to the member provided.', 'Remove 1 or <num> merch count to the member provided.', 'Displays all of the current stored messages where reacts need to be cleared.', 'Clears all of the current stored messages where reacts are older than 1 hour.'],
 	aliases: [],
 	usage: ['messages', 'messages clear', 'view scouter/verified <num (optional)>', 'user memberID/@member add <num (optional)> <other>', 'user memberID/@member remove <num (optional)> <other>', 'reacts', 'reacts clear'],
-	guildSpecific: ['733164313744769024', '420803245758480405'],
+	guildSpecific: ['668330890790699079', '420803245758480405'],
 	permissionLevel: 'Admin',
 	run: async (client, message, args, perms, channels) => {
 		if (!perms.admin) return message.channel.send(perms.errorA);
