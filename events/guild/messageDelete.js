@@ -16,7 +16,7 @@ module.exports = async (client, message) => {
 	const merchChannelID = message.channel.guild.channels.cache.get(channelID);
 
 	const botServerWebhook = await client.channels.cache.get('784543962174062608').fetchWebhooks();
-	// const dsfServerWebhook = await client.channels.cache.get('794608385106509824').fetchWebhooks();
+	const dsfServerWebhook = await client.channels.cache.get('794608385106509824').fetchWebhooks();
 
 	const sendAndUpdate = async (webhook, embed, data) => {
 		const webhookDetails = webhook.first();
@@ -83,7 +83,7 @@ module.exports = async (client, message) => {
 				.setFooter('Click the ✅ or use the command to remove merch count.');
 
 			await sendAndUpdate(botServerWebhook, embed, checkDB);
-			// await sendAndUpdate(dsfServerWebhook, embed, checkDB);
+			await sendAndUpdate(dsfServerWebhook, embed, checkDB);
 
 			const getPerms = await merchChannelID.permissionOverwrites.cache.get(checkDB.userID);
 			if (getPerms) {
@@ -111,7 +111,7 @@ module.exports = async (client, message) => {
 
 			// Remove count by posting or bot to remove
 			await sendAndUpdate(botServerWebhook, embed, checkDB);
-			// await sendAndUpdate(dsfServerWebhook, embed, checkDB);
+			await sendAndUpdate(dsfServerWebhook, embed, checkDB);
 
 			const getPerms = await merchChannelID.permissionOverwrites.cache.get(checkDB.userID);
 			if (getPerms) {

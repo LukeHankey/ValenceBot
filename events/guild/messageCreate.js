@@ -12,11 +12,6 @@ module.exports = async (client, message) => {
 	const settingsColl = await db.collection('Settings');
 	const { channels: { vis, errors, logs } } = await settingsColl.findOne({ _id: 'Globals' }, { projection: { channels: { vis: 1, errors: 1, logs: 1 } } });
 
-	if (process.env.NODE_ENV === 'DEV') {
-		if (message.guild.id !== '668330890790699079') return;
-	}
-	else if (message.guild.id === '668330890790699079') {return;}
-
 	const channels = {
 		vis: {
 			id: vis,
@@ -73,6 +68,12 @@ module.exports = async (client, message) => {
 
 		return client.channels.cache.get('788525524782940187').send({ embeds: [ embed ] });
 	}
+
+	if (process.env.NODE_ENV === 'DEV') {
+		if (message.guild === null) return;
+		if (message.guild.id !== '668330890790699079') return;
+	}
+	else if (message.guild.id === '668330890790699079') {return;}
 
 	// Deep Sea Fishing
 	if (message.channel.guild.id === '420803245758480405' || message.channel.guild.id === '668330890790699079') {
