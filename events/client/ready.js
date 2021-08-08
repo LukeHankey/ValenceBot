@@ -8,6 +8,7 @@ const { updateRoles } = require('../../valence/clanData');
 const { scout, vScout, classVars, addedRoles, removedRoles, removeInactives } = require('../../dsf/scouts/scouters');
 const { updateStockTables } = require('../../dsf/stockTables');
 const { skullTimer } = require('../../dsf/merch/merchChannel/skullTimer');
+const { removeButtons } = require('../../dsf/merch/merchFunctions');
 const { MessageEmbed, Formatters } = require('discord.js');
 const colors = require('../../colors.json');
 
@@ -168,6 +169,7 @@ module.exports = async client => {
 			removedRoles(role, settings);
 		});
 		removeInactives(scout, settings, channels);
+		await removeButtons(client, settings, channels);
 
 		// Daily Reset
 		if (new Date().getHours() === 00 && new Date().getMinutes() === 00) {
