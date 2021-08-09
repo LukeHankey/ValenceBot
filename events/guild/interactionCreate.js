@@ -6,7 +6,7 @@ module.exports = async (client, interaction) => {
 	const db = getDb();
 	const settings = db.collection('Settings');
 	const data = await settings.findOne({ _id: interaction.guildId }, { projection: { merchChannel: { components: 1 } } });
-	const { channels: { vis, errors, logs }, visTime } = await settings.findOne({ _id: 'Globals' }, { projection: { channels: { vis: 1, errors: 1, logs: 1 }, visTime: 1 } });
+	const { channels: { vis, errors, logs }, visTime } = await settings.findOne({ _id: 'Globals' }, { projection: { channels: { errors: 1, logs: 1 }, visTime: 1, vis: 1 } });
 
 	const channels = {
 		errors: {
