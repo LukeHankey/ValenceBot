@@ -9,12 +9,13 @@ module.exports = async (client, reaction, user) => {
 	const db = getDb();
 	const settingsColl = db.collection('Settings');
 	const message = reaction.message;
+	console.log(4);
 
 	if (process.env.NODE_ENV === 'DEV') {
 		if (message.guild.id !== '668330890790699079') return;
 	}
 	else if (message.guild.id === '668330890790699079') {return;}
-
+	console.log(5);
 	const { _id } = await settingsColl.findOne({ _id: message.channel.guild.id });
 	const { channels: { errors, logs } } = await settingsColl.findOne({ _id: 'Globals' }, { projection: { channels: { errors: 1, logs: 1 } } });
 	const channels = {
@@ -42,7 +43,7 @@ module.exports = async (client, reaction, user) => {
 		},
 	};
 	if (message.partial) await message.fetch().catch(err => channels.errors.send(err, module));
-
+	console.log(6)
 	switch (message.channel.guild.id) {
 	case _id:
 		// Valence
@@ -196,6 +197,7 @@ module.exports = async (client, reaction, user) => {
 					'merchChannel.deletions': 1,
 				},
 				});
+			console.log(1);
 
 			switch (message.channel.id) {
 			case channelID: {
@@ -241,7 +243,9 @@ module.exports = async (client, reaction, user) => {
 			}
 				break;
 			case deletions.channelID: {
+				console.log(2);
 				if (reaction.me) return;
+				console.log(3);
 				if (reaction.emoji.name !== '✅') return;
 				const item = deletions.messages.find(item => item.messageID === message.id);
 				console.log(item);
