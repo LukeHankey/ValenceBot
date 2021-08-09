@@ -43,7 +43,7 @@ module.exports = async (client, reaction, user) => {
 		},
 	};
 	if (message.partial) await message.fetch().catch(err => channels.errors.send(err, module));
-	console.log(6)
+	console.log(6);
 	switch (message.channel.guild.id) {
 	case _id:
 		// Valence
