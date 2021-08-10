@@ -239,10 +239,7 @@ module.exports = async (client, reaction, user) => {
 			}
 				break;
 			case deletions.channelID: {
-				console.log(2, reaction);
-				if (reaction.me) return;
-				console.log(3);
-				if (reaction.emoji.name !== '✅') return;
+				if (user.bot || reaction.emoji.name !== '✅') return;
 				const item = deletions.messages.find(item => item.messageID === message.id);
 				console.log(item);
 				if (item) {
