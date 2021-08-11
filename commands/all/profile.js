@@ -134,7 +134,7 @@ module.exports = {
 
 			if (checkNum(args[0])) {
 				try {
-					userID = message.channel.guild.cache.get(args[0]) ?? await message.channel.guild.members.fetch(args[0]);
+					userID = message.guild.members.cache.get(args[0]) ?? await message.channel.guild.members.fetch(args[0]);
 				}
 				catch(err) {
 					channels.errors.send(err, module);
