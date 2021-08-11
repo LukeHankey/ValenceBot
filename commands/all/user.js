@@ -159,11 +159,10 @@ module.exports = {
 				const { clanMate } = await usersColl.findOne({ $text: { $search: fullRSN, $caseSensitive: false } }, { projection: { _id: 0, clanMate: 1 } });
 
 				switch (param) {
-				case 'discord':
-				case 'Discord':
-					await usersColl.updateOne({ clanMate }, { $set: { discord: other.join(' ') } });
+				case 'id':
+					await usersColl.updateOne({ clanMate }, { $set: { discord: other.join(' '), discActive: true } });
 					return await message.react('✅');
-				case 'active':
+				case 'discord':
 				case 'discActive':
 					if (other.join(' ') === 'true' || other.join(' ') === 'false') {
 						await usersColl.updateOne({ clanMate }, { $set: { discActive: booleanConvert(other.join(' ')) } });
