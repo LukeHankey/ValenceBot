@@ -133,7 +133,12 @@ module.exports = {
 			let userMention;
 
 			if (checkNum(args[0])) {
-				userID = message.channel.guild.cache.get(args[0]) ?? await message.channel.guild.members.fetch(args[0]);
+				try {
+					userID = message.channel.guild.cache.get(args[0]) ?? await message.channel.guild.members.fetch(args[0]);
+				}
+				catch(err) {
+					channels.errors.send(err, module);
+				}
 			}
 			else {
 				roleMention = message.channel.guild.roles.cache.has(args[0].slice(3, 21));
