@@ -66,7 +66,8 @@ module.exports = async (client, interaction) => {
 
 				const passwordDM = `Hello.\n\nWe saw you typed into the #merch-calls channel on ${date_time} and the Deep Sea Fishing Admins have flagged this as a potential password which is why you are receiving this DM. That specific channel has all messages logged.\n\nYour message content: ${potential_password}\n\nIf it is a password, then we recommend that you change it ASAP, even though it got deleted straight away. Please respond with one of the selections to let our Admins know if we should also delete that message from our message logs.\n\nDSF Admin Team.`;
 
-				const sentDM = await interaction.member.user.send({ content: passwordDM, components: [menu] });
+				const fetchUser = await interaction.guild.members.fetch(thisButton[0].userID);
+				const sentDM = await fetchUser.send({ content: passwordDM, components: [menu] });
 				const row = new MessageActionRow()
 					.addComponents(new MessageButton(interaction.message.components[0].components[0]).setEmoji('📩').setLabel('DM sent...').setDisabled());
 				await interaction.update({ components: [row] });
