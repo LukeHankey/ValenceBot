@@ -126,6 +126,7 @@ module.exports = async (client, interaction) => {
 	else if (interaction.isSelectMenu()) {
 		const dmData = await settings.findOne({ 'merchChannel.components': { $exists: true } }, { projection: { merchChannel: { components: 1, deletions: 1 } } });
 		const thisSelection = dmData.merchChannel.components.filter(b => {
+			console.log(b, b.selectMessageID, interaction.message.id);
 			return b.selectMessageID === interaction.message.id;
 		});
 		if (interaction.customId === thisSelection[0].selectID) {
@@ -134,8 +135,8 @@ module.exports = async (client, interaction) => {
 				const errorChannel = client.channels.cache.get(dmData.merchChannel.deletions.channelID);
 				const buttonMessage = await errorChannel.messages.fetch(thisSelection[0].buttonMessageID);
 				if (interaction.values.includes('yes')) {
-					interaction.followUp({ content: 'Thank you for responding, the log has been automatically removed.' });
-					buttonMessage.delete();
+					await interaction.followUp({ content: 'Thank you for responding, the log has been automatically removed.' });
+					await buttonMessage.delete();
 					errorChannel.send({ content: `A password was confirmed by <@!${thisSelection[0].userID}> and the message has been deleted.` });
 					await settings.updateOne({ serverName: 'Deep Sea Fishing' }, {
 						$pull: {

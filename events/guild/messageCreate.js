@@ -46,7 +46,7 @@ module.exports = async (client, message) => {
 	};
 
 	// Handling DMs
-	if (message.channel.guild === null) {
+	if (message.guild === null) {
 		const dm = message.channel;
 		let dmMessages = await dm.messages.fetch({ limit: 1 });
 		const dmPerson = dm.recipient; // User object
