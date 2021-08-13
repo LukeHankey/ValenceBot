@@ -63,8 +63,9 @@ module.exports = async (client, interaction) => {
 					);
 				const date_time = new Date(thisButton[0].time).toUTCString();
 				const potential_password = thisButton[0].content;
+				const server_name = interaction.member.guild.name;
 
-				const passwordDM = `Hello.\n\nWe saw you typed into the #merch-calls channel on ${date_time} and the Deep Sea Fishing Admins have flagged this as a potential password which is why you are receiving this DM. That specific channel has all messages logged.\n\nYour message content: ${potential_password}\n\nIf it is a password, then we recommend that you change it ASAP, even though it got deleted straight away. Please respond with one of the selections to let our Admins know if we should also delete that message from our message logs.\n\nDSF Admin Team.`;
+				const passwordDM = `${server_name}\n\nHello.\n\nWe saw you typed into the #merch-calls channel on ${date_time} and the Deep Sea Fishing Admins have flagged this as a potential password which is why you are receiving this DM. That specific channel has all messages logged.\n\nYour message content: ${potential_password}\n\nIf it is a password, then we recommend that you change it ASAP, even though it got deleted straight away. Please respond with one of the selections to let our Admins know if we should also delete that message from our message logs.\n\nDSF Admin Team.`;
 
 				const fetchUser = await interaction.guild.members.fetch(thisButton[0].userID);
 				const sentDM = await fetchUser.send({ content: passwordDM, components: [menu] });
@@ -124,9 +125,9 @@ module.exports = async (client, interaction) => {
 		else { return; }
 	}
 	else if (interaction.isSelectMenu()) {
-		const dmData = await settings.findOne({ 'merchChannel.components': { $exists: true } }, { projection: { merchChannel: { components: 1, deletions: 1 } } });
+		const serverName = interaction.message.content.split('\n')[0];
+		const dmData = await settings.findOne({ serverName }, { projection: { merchChannel: { components: 1, deletions: 1 } } });
 		const thisSelection = dmData.merchChannel.components.filter(b => {
-			console.log(b, b.selectMessageID, interaction.message.id);
 			return b.selectMessageID === interaction.message.id;
 		});
 		if (interaction.customId === thisSelection[0].selectID) {
