@@ -14,9 +14,9 @@ const { removeMessage } = require('../../functions');
 
 module.exports = {
 	name: 'dsf',
-	description: ['Displays all of the current stored messages.', 'Clears all of the current stored messages.', 'Shows the list of potential scouters/verified scouters with the set scout count, or count adjusted.', 'Add 1 or <num> merch count to the member provided.', 'Remove 1 or <num> merch count to the member provided.', 'Displays all of the current stored messages where reacts need to be cleared.', 'Clears all of the current stored messages where reacts are older than 1 hour.'],
+	description: ['Displays all of the current stored messages.', 'Clears all of the current stored messages.', 'Shows the list of potential scouters/verified scouters with the set scout count, or count adjusted.', 'Add 1 or <num> merch/other/game count to the member provided.', 'Remove 1 or <num> merch/other/game count to the member provided.', 'Displays all of the current stored messages where reacts need to be cleared.', 'Clears all of the current stored messages where reacts are older than 1 hour.'],
 	aliases: [],
-	usage: ['messages', 'messages clear', 'view scouter/verified <num (optional)>', 'user memberID/@member add <num (optional)> <other>', 'user memberID/@member remove <num (optional)> <other>', 'reacts', 'reacts clear'],
+	usage: ['messages', 'messages clear', 'view scouter/verified <num (optional)>', 'user memberID/@member add <num (optional)> <other/game>', 'user memberID/@member remove <num (optional)> <other/game>', 'reacts', 'reacts clear'],
 	guildSpecific: ['668330890790699079', '420803245758480405'],
 	permissionLevel: 'Admin',
 	run: async (client, message, args, perms, channels) => {
@@ -364,7 +364,7 @@ module.exports = {
 		default:
 			return message.channel.send({ embeds: [ nEmbed(
 				'**DSF Admin Commands List**',
-				'Here\'s a list of all the DSF commands you can use. Any parameter(s) in \`<>\` are optional:\n\n\`messages|m\`\n\`messages|m clear\`\n\`view scouter <num>\`\n\`view verified <num>\`\n\`user memberID/@member add <other> <num>\`\n\`user memberID/@member remove <other> <num>\`\n\`reacts\`\n\`reacts clear\`',
+				'Here\'s a list of all the DSF commands you can use. Any parameter(s) in \`<>\` are optional:\n\n\`messages|m\`\n\`messages|m clear\`\n\`view scouter <num>\`\n\`view verified <num>\`\n\`user memberID/@member add <other/game> <num>\`\n\`user memberID/@member remove <other/game> <num>\`\n\`reacts\`\n\`reacts clear\`',
 				cyan,
 				client.user.displayAvatarURL(),
 			)],
