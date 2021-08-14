@@ -182,6 +182,7 @@ module.exports = {
 					});
 			}
 			else if (args[0] === 'active') {
+				if (memberRoles < botRole.position) return;
 				const { merchChannel: { scoutTracker } } = await settings.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.scoutTracker': 1 } });
 				const items = scoutTracker.filter(profile => profile.active).sort((a, b) => b.count - a.count);
 				let fields = [];
@@ -202,6 +203,7 @@ module.exports = {
 					});
 			}
 			else if (args[0] === 'inactive') {
+				if (memberRoles < botRole.position) return;
 				const { merchChannel: { scoutTracker } } = await settings.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.scoutTracker': 1 } });
 				const items = scoutTracker.filter(profile => !profile.active).sort((a, b) => a.lastTimestamp - b.lastTimestamp);
 				let fields = [];
