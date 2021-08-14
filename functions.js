@@ -185,4 +185,49 @@ module.exports = {
 		}),
 		{},
 		),
+	paginate: (data, { author }, text, desc = '') => {
+		const embeds = [];
+		let k = 24;
+		for (let i = 0; i < data.length; i += 24) {
+			const current = data.slice(i, k);
+			k += 24;
+			const info = current;
+			const embed = new MessageEmbed()
+				.setTitle(`${text} Member Profiles - Top Scouters`)
+				.setDescription(`Current tracked stats in this server for the top 24 ${desc} scouters per page.`)
+				.setColor(colors.aqua)
+				.setThumbnail(author.displayAvatarURL())
+				.setTimestamp()
+				.addFields(info);
+			embeds.push(embed);
+		}
+		return embeds;
+	},
+	paginateFollowUP: async (msg, { author }, page, embeds, client) => {
+		await msg.react('◀️');
+		await msg.react('▶️');
+
+		const react = (reaction, user) => ['◀️', '▶️'].includes(reaction.emoji.name) && user.id === author.id;
+		const collect = msg.createReactionCollector({ filter: react });
+
+		collect.on('collect', (r, u) => {
+			if (r.emoji.name === '▶️') {
+				if (page < embeds.length) {
+					msg.reactions.resolve('▶️').users.remove(u.id);
+					page++;
+					if (page === embeds.length) --page;
+					msg.edit({ embeds: [ embeds[page].setFooter(`Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, client.user.displayAvatarURL()) ] });
+				}
+				else {return;}
+			}
+			else if (r.emoji.name === '◀️') {
+				if (page !== 0) {
+					msg.reactions.resolve('◀️').users.remove(u.id);
+					--page;
+					msg.edit({ embeds: [ embeds[page].setFooter(`Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, client.user.displayAvatarURL()) ] });
+				}
+				else {msg.reactions.resolve('◀️').users.remove(u.id);}
+			}
+		});
+	},
 };
