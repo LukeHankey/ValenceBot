@@ -49,11 +49,6 @@ const removeInactives = async (name, settings, { logs }) => {
 				{ $pull: { 'merchChannel.scoutTracker': { 'userID': doc.userID } } },
 			);
 		}
-		else if (doc.active === 0) {
-			const timeStamp = doc.lastTimestampReadable.toString().split(' ');
-			allItems.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}). ${timeStamp.slice(0, 5).join(' ')}.`);
-			return;
-		}
 		else {
 			allItems.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}). User has been marked as inactive.`);
 			await settings.updateOne(
