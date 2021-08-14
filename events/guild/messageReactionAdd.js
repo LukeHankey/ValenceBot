@@ -241,7 +241,6 @@ module.exports = async (client, reaction, user) => {
 			case deletions.channelID: {
 				if (user.bot || reaction.emoji.name !== '✅') return;
 				const item = deletions.messages.find(item => item.messageID === message.id);
-				console.log(item);
 				if (item) {
 					await settingsColl.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': item.authorID }, {
 						$inc: {
@@ -253,12 +252,10 @@ module.exports = async (client, reaction, user) => {
 							'merchChannel.deletions.messages': { messageID: item.messageID },
 						},
 					});
-					const dsfServerWebhook = await client.channels.cache.get('794608385106509824').fetchWebhooks();
-					const channelToSend = dsfServerWebhook.first();
 					const newEmbed = new MessageEmbed(message.embeds[0]);
 					newEmbed.setColor(colors.green_light).setTitle('Message Deleted - Count Removed');
-					message.delete();
-					return await channelToSend.send({ embeds: [ newEmbed ] });
+					await message.edit({ embeds: [ newEmbed ] });
+					return message.reactions.removeAll();
 				}
 			}
 			}

@@ -10,25 +10,23 @@ module.exports = async (client, message) => {
 
 	const db = getDb();
 	const settingsColl = db.collection('Settings');
-	const fullDB = await settingsColl.findOne({ _id: message.channel.guild.id, merchChannel: { $exists: true } });
-	if (!fullDB) return;
-	const { messages, channelID } = fullDB.merchChannel;
+	const { merchChannel: { messages, channelID } } = await settingsColl.findOne({ _id: message.channel.guild.id, merchChannel: { $exists: true } }, { projection: { merchChannel: { messages: 1, channelID: 1 } } });
+	if (!messages) return;
 	const merchChannelID = message.channel.guild.channels.cache.get(channelID);
 
-	const botServerWebhook = await client.channels.cache.get('784543962174062608').fetchWebhooks();
-	const dsfServerWebhook = await client.channels.cache.get('794608385106509824').fetchWebhooks();
+	const botServerChannel = await client.channels.cache.get('784543962174062608');
+	const dsfServerChannel = await client.channels.cache.get('794608385106509824');
 
 	const sendAndUpdate = async (webhook, embed, data) => {
-		const webhookDetails = webhook.first();
-		const sentWebhook = await webhookDetails.send({ embeds: [ embed ] });
+		const sentChannel = await webhook.send({ embeds: [ embed ] });
 		const { userID } = data;
-		if (sentWebhook.guild.id === message.channel.guild.id) {
+		if (sentChannel.guild.id === message.channel.guild.id) {
 			await settingsColl.updateOne({ _id: message.channel.guild.id }, {
 				$pull: { 'merchChannel.messages': { messageID: data.messageID } },
-				$addToSet: { 'merchChannel.deletions.messages': { messageID: sentWebhook.id, authorID: userID } },
+				$addToSet: { 'merchChannel.deletions.messages': { messageID: sentChannel.id, authorID: userID } },
 			})
 				.then(() => {
-					sentWebhook.react('✅');
+					sentChannel.react('✅');
 				});
 		}
 		else {return;}
@@ -82,8 +80,8 @@ module.exports = async (client, message) => {
 				.setThumbnail(user.user.displayAvatarURL())
 				.setFooter('Click the ✅ or use the command to remove merch count.');
 
-			await sendAndUpdate(botServerWebhook, embed, checkDB);
-			await sendAndUpdate(dsfServerWebhook, embed, checkDB);
+			await sendAndUpdate(botServerChannel, embed, checkDB);
+			await sendAndUpdate(dsfServerChannel, embed, checkDB);
 
 			const getPerms = await merchChannelID.permissionOverwrites.cache.get(checkDB.userID);
 			if (getPerms) {
@@ -110,8 +108,8 @@ module.exports = async (client, message) => {
 				.setThumbnail(user.user.displayAvatarURL());
 
 			// Remove count by posting or bot to remove
-			await sendAndUpdate(botServerWebhook, embed, checkDB);
-			await sendAndUpdate(dsfServerWebhook, embed, checkDB);
+			await sendAndUpdate(botServerChannel, embed, checkDB);
+			await sendAndUpdate(dsfServerChannel, embed, checkDB);
 
 			const getPerms = await merchChannelID.permissionOverwrites.cache.get(checkDB.userID);
 			if (getPerms) {
