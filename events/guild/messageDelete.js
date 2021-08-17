@@ -10,9 +10,9 @@ module.exports = async (client, message) => {
 
 	const db = getDb();
 	const settingsColl = db.collection('Settings');
-	const { merchChannel: { messages, channelID } } = await settingsColl.findOne({ _id: message.channel.guild.id, merchChannel: { $exists: true } }, { projection: { merchChannel: { messages: 1, channelID: 1 } } });
-	if (!messages) return;
-	const merchChannelID = message.channel.guild.channels.cache.get(channelID);
+	const fullDB = await settingsColl.findOne({ _id: message.channel.guild.id, merchChannel: { $exists: true } }, { projection: { merchChannel: { messages: 1, channelID: 1 } } });
+	if (!fullDB) return;
+	const merchChannelID = message.channel.guild.channels.cache.get(fullDB.merchChannel.channelID);
 
 	const botServerChannel = await client.channels.cache.get('784543962174062608');
 	const dsfServerChannel = await client.channels.cache.get('794608385106509824');
@@ -35,7 +35,7 @@ module.exports = async (client, message) => {
 	// Cached messages only show the message object without null //
 
 	// No DMs and only in merch channels
-	if (!message.channel.guild || channelID !== message.channel.id) return;
+	if (!message.channel.guild || fullDB.merchChannel.channelID !== message.channel.id) return;
 	const fetchedLogs = await message.channel.guild.fetchAuditLogs({
 		limit: 1,
 		type: 'MESSAGE_DELETE',
@@ -68,7 +68,7 @@ module.exports = async (client, message) => {
 		console.log('Message deleted:', message.content, message.author.id);
 		if (message.author.id === '668330399033851924') return;
 
-		const checkDB = messages.find(entry => entry.messageID === message.id);
+		const checkDB = fullDB.merchChannel.messages.find(entry => entry.messageID === message.id);
 		if (checkDB === undefined) {return console.log('Deleted message was not uploaded to the DataBase.');}
 		else {
 			const user = await message.channel.guild.members
@@ -96,7 +96,7 @@ module.exports = async (client, message) => {
 		// Bot deleting own posts
 		if (target.id === '668330399033851924') return;
 
-		const checkDB = messages.find(entry => entry.messageID === message.id);
+		const checkDB = fullDB.merchChannel.messages.find(entry => entry.messageID === message.id);
 		if (checkDB === undefined) {return console.log('Deleted message was not uploaded to the DataBase.');}
 		else {
 			const user = await message.channel.guild.members
