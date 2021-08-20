@@ -30,7 +30,7 @@ module.exports = async (client, guild) => {
     \n${code}diff\n
 + Server name: ${guild.name}
 + Server ID: ${guild.id}
-+ Owner: ${await guild.fetchOwner().nickname}
++ Owner: ${await guild.fetchOwner().nickname ?? guild.fetchOwner().user.username}
 + Channel count: ${guild.channels.cache.size}
 + Member count: ${guild.memberCount}${code}`);
 };
