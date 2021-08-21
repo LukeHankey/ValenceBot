@@ -27,6 +27,9 @@ const dsf = async (client, message, channels) => {
 		skullTimer(message, settingsColl, channels);
 	}
 	else if (message.channel.id === otherChannelID) {
+		if (arrIncludesString(disallowedWords, message.content)) {
+			return message.delete();
+		}
 		await otherCalls(message, settingsColl, channels);
 	}
 	else {return;}
