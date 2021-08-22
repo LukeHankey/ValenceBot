@@ -5,7 +5,6 @@ import { greenLight, redDark, gold, greenDark, redLight } from '../../colors.js'
 import { getDb } from '../../mongodb.js'
 
 /**
- * 733164313744769024 - Test Server
  * 668330890790699079 - Valence Bot Test
  * 472448603642920973 - Valence
  */
