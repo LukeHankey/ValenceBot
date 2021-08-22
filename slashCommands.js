@@ -14,7 +14,6 @@ const guildId = '668330890790699079';
 // Comment out to remove all guild-specific commands
 for (const file of commandFiles) {
 	const command = require(`./commands/all/${file}`);
-	if (command.name !== 'send_guild') continue;
 	if (!command.data) continue;
 	commands.push(command.data.toJSON());
 }
@@ -26,15 +25,15 @@ const rest = new REST({ version: '9' }).setToken(process.env.BOT_TOKEN);
 	try {
 		console.log('Started refreshing application (/) commands.');
 
-		await rest.put(
-			Routes.applicationGuildCommands(clientId, guildId),
-			{ body: commands },
-		);
-
 		// await rest.put(
-		// 	Routes.applicationCommands(clientId),
+		// 	Routes.applicationGuildCommands(clientId, guildId),
 		// 	{ body: commands },
 		// );
+
+		await rest.put(
+			Routes.applicationCommands(clientId),
+			{ body: commands },
+		);
 
 		console.log('Successfully reloaded application (/) commands.');
 	}
