@@ -67,7 +67,7 @@ class Permissions {
 	ownerError() {
 		const embed = func.nEmbed('Permission Denied', 'You do not have permission to use this command!', colors.red_dark)
 			.addField('Only the bot owner can:', `<@!${this.owner}>`);
-		return { embeds: [ embed] };
+		return { embeds: [ embed ] };
 	}
 
 	error() {
@@ -238,8 +238,43 @@ class ScouterCheck {
 		});
 	}
 }
+class GoogleSheet {
+	constructor(gsapi, { spreadsheetId, ranges, valueInputOption = 'USER_ENTERED', resource = {} }) {
+		this.gsapi = gsapi;
+		this.spreadsheetId = spreadsheetId;
+		this.ranges = ranges;
+		this.valueInputOption = valueInputOption;
+		this.resource = resource;
+		this.readRequest = { spreadsheetId, ranges };
+		this.fullData = this._getData();
+	}
+
+	async _getData() {
+		const data = await this.gsapi.spreadsheets.values.batchGet(this.readRequest);
+		return data.data;
+	}
+
+	async data(range = null) {
+		const full = await this.fullData;
+		if (!range) {
+			return full;
+		}
+		else {
+			const ranges = ['Friends', 'Boosters', 'Affiliates', 'Ranks', 'Banned'];
+			if (!ranges.includes(range)) throw new Error(`Invalid range name '${range}'. Must be one of: ${ranges.join(', ')}`);
+			const rangeNames = await full.valueRanges.filter(sheet => {
+				const name = sheet.range.split('!');
+				if (range.toLowerCase() === name[0].toLowerCase()) return sheet;
+			});
+			if (rangeNames.length) { return rangeNames[0];}
+		}
+	}
+
+
+}
 
 module.exports = {
 	Permissions,
 	ScouterCheck,
+	GoogleSheet,
 };
