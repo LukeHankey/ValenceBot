@@ -5,4 +5,4 @@ Webhook
 .eslintrc.json
 client_secret.json
 reminders*
-newrelic_agent.log
+test*
