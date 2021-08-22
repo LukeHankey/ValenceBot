@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "gsheets": "node gsheets.js",
+    "slash": "set NODE_ENV=DEV&&node slashCommands.js&&node index.js",
     "dev": "set NODE_ENV=DEV&&node index.js",
     "devTasks": "concurrently \"node ./scheduler/clan.js\" \"npm run dev\""
   },
@@ -15,9 +15,10 @@
     "node": "16.6.1"
   },
   "dependencies": {
+    "@discordjs/rest": "^0.1.0-canary.0",
     "assert": "^2.0.0",
     "concurrently": "^6.2.0",
-    "discord.js": "^13.0.1",
+    "discord.js": "^13.1.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "googleapis": "^64.0.0",
