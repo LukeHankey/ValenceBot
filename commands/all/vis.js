@@ -1,15 +1,87 @@
 /* eslint-disable no-inline-comments */
+const { SlashCommandBuilder } = require('@discordjs/builders');
 const getDb = require('../../mongodb').getDb;
 const { MessageEmbed } = require('discord.js');
 const colors = require('../../colors.json');
 
+const description = ['Shows the current Vis Wax combinations.', 'Upload an image of the current Vis wax combinations or a message link which includes an attachment.', 'Force reset of image.'];
+
+const data = new SlashCommandBuilder()
+	.setName('vis')
+	.setDescription(description[0])
+	.addSubcommand(subcommand =>
+		subcommand
+			.setName('wax')
+			.setDescription('Todays Vis Wax combinations.'))
+	.addSubcommand(subcommand =>
+		subcommand
+			.setName('other_commands')
+			.setDescription('Shows other vix wax commands')
+			.addIntegerOption(option =>
+				option.setName('reset')
+					.setDescription(`${description[2]} [ADMIN]`)
+					.addChoice('True', 1)));
+// Add back when files are allowed to be uploaded with slash commands
+// .addStringOption(option =>
+// 	option.setName('upload')
+// 		.setDescription(`${description[1]}`)
+// 		.addChoice('File', 'file_upload')
+// 		.addChoice('Message Link', 'message_link')
+// 		.addChoice('Image URL', 'image_url')));
+
 module.exports = {
 	name: 'vis',
-	description: ['Shows the current Vis Wax combinations.', 'Upload an image of the current Vis wax combinations or a message link which includes an attachment.', 'Force reset of image.'],
+	description,
 	aliases: [],
 	usage: ['', '<image URL or discord message link>', 'new'],
 	guildSpecific: 'all',
 	permissionLevel: 'Everyone',
+	data,
+	slash: async (interaction, perms, channels) => {
+		const db = getDb();
+		const settings = db.collection('Settings');
+		const { visTime, vis } = await settings.findOne({ _id: 'Globals' }, { projection: { visTime: 1, vis: 1 } });
+		if (!interaction.options.getInteger('reset')) {
+			let currentDate = new Date().toUTCString();
+			currentDate = currentDate.split(' ');
+			// eslint-disable-next-line no-unused-vars
+			const [day, month, year, ...rest] = currentDate.slice(1);
+			const savedDate = visTime.toString().split(' ');
+
+			if (year !== savedDate[3] || month !== savedDate[1] || day !== savedDate[2]) {
+				interaction.reply({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' });
+				return await settings.updateOne({ _id: 'Globals' }, {
+					$set: {
+						vis: null,
+					},
+				});
+			}
+			if (vis === null) {
+				return await interaction.reply({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' });
+			}
+			else {
+				return await interaction.reply({ content: `**Image uploaded at:** ${visTime}`, files: [vis] });
+			}
+		}
+		else if (interaction.options.getInteger('reset')) {
+			if (!perms.owner) return await interaction.reply(perms.errorO);
+			if (vis === null) {
+				return interaction.reply({ content: 'There currently isn\'t any Vis Wax image uploaded.', ephemeral: true });
+			}
+			else {
+				await settings.updateOne({ _id: 'Globals' }, {
+					$set: {
+						vis: null,
+					},
+				});
+				return channels.vis.send(`${interaction.member.user.tag} reset the Vis command in **${interaction.channel.guild.name}.**`);
+			}
+		}
+		else {
+			return;
+		}
+
+	},
 	run: async (client, message, args, perms, channels) => {
 		const db = getDb();
 		const settings = db.collection('Settings');
@@ -114,26 +186,8 @@ module.exports = {
 						}
 					}
 					else {
-						console.log(channels.errors);
 						channels.errors.send(e, module);
 					}
-				}
-			}
-			else if (args[0] === 'new') {
-				if (!perms.admin) return message.channel.send(perms.errorA);
-
-				if (vis === null) {
-					message.channel.send({ content: 'There currently isn\'t any Vis Wax image uploaded.' });
-					return message.react('❌');
-				}
-				else {
-					await settings.updateOne({ _id: 'Globals' }, {
-						$set: {
-							vis: null,
-						},
-					});
-					channels.vis.send(`${message.author.tag} reset the Vis command in **${message.channel.guild.name}.**`);
-					return message.react('✅');
 				}
 			}
 			else {
