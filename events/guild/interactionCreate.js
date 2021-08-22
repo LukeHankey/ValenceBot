@@ -1,12 +1,13 @@
 const getDb = require('../../mongodb').getDb;
 const { MessageEmbed, MessageButton, MessageActionRow, MessageSelectMenu } = require('discord.js');
-const { cyan, red_dark } = require('../../colors.json');
+const { Permissions } = require('../../classes.js');
+const { red_dark } = require('../../colors.json');
 
 module.exports = async (client, interaction) => {
 	const db = getDb();
 	const settings = db.collection('Settings');
 	const data = await settings.findOne({ _id: interaction.guildId }, { projection: { merchChannel: { components: 1 } } });
-	const { channels: { errors, logs }, visTime, vis } = await settings.findOne({ _id: 'Globals' }, { projection: { channels: { errors: 1, logs: 1 }, visTime: 1, vis: 1 } });
+	const { channels: { errors, logs } } = await settings.findOne({ _id: 'Globals' }, { projection: { channels: { errors: 1, logs: 1 } } });
 
 	const channels = {
 		errors: {
@@ -95,34 +96,67 @@ module.exports = async (client, interaction) => {
 		}
 	}
 	else if (interaction.isCommand()) {
-		if (interaction.commandName === 'vis') {
-			let currentDate = new Date().toUTCString();
-			currentDate = currentDate.split(' ');
-			// eslint-disable-next-line no-unused-vars
-			const [day, month, year, ...rest] = currentDate.slice(1);
-			const savedDate = visTime.toString().split(' ');
+		const commandDB = await settings.findOne({ _id: interaction.channel.guild.id }, { projection: { prefix: 1, roles: 1 } });
+		const command = client.commands.get(interaction.commandName);
+		if (!command) return;
 
-			if (year !== savedDate[3] || month !== savedDate[1] || day !== savedDate[2]) {
-				interaction.reply({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' });
-				return await settings.updateOne({ _id: 'Globals' }, {
-					$set: {
-						vis: null,
-					},
-				});
-			}
-			if (vis === null) {
-				await interaction.reply({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' });
-			}
-			else {
-				await interaction.reply({ content: `**Image uploaded at:** ${visTime}`, files: [vis] });
-			}
+		const aR = new Permissions('adminRole', commandDB, interaction);
+		const mR = new Permissions('modRole', commandDB, interaction);
+		const owner = new Permissions('owner', commandDB, interaction);
+
+		const perms = {
+			owner: owner.botOwner(),
+			admin: interaction.member.roles.cache.has(aR.memberRole()[0]) || interaction.member.roles.cache.has(aR.roleID) || interaction.member.id === interaction.channel.guild.ownerId,
+			mod: interaction.member.roles.cache.has(mR.memberRole()[0]) || interaction.member.roles.cache.has(mR.roleID) || mR.modPlusRoles() >= mR._role.rawPosition || interaction.member.id === interaction.channel.guild.ownerId,
+			errorO: owner.ownerError(),
+			errorM: mR.error(),
+			errorA: aR.error(),
+		};
+
+		/**
+		 * Must fetch the commands first so they are in the cache
+		 * This allows to get the ApplicationComamnd to edit/delete
+		 * Can set permissions here
+		 */
+
+		// Test Server
+		// const commandI = await client.guilds.cache.get('668330890790699079')?.commands.fetch();
+		// console.log(commandI, interaction.commandId);
+		// const guildInteractionPerms = await interaction.guild.commands.permissions.fetch({ guild: interaction.guild.id });
+		// View all permissions
+		// console.log(guildInteractionPerms);
+
+		// await interaction.command.edit({ defaultPermission: false });
+		// await interaction.command.permissions.set({ permissions:
+		// [{
+		// 	id: '668519504233627679',
+		// 	type: 'ROLE',
+		// 	permission: true,
+		// },
+		// {
+		// 	id: '212668377586597888',
+		// 	type: 'USER',
+		// 	permission: true,
+		// }],
+		// });
+		// const comF = commandI.filter(app => app.name === interaction.commandName).first();
+		// Currently no builder to apply defaultPermission, so have to edit manually where false means nobody can use the command.
+		// await comF.edit({ defaultPermission: true });
+		// Resets permissions on bot restart. Have to reuse a command for them to take effect.
+		// await comF.permissions.set({ permissions: [{
+		// 	id: '668519504233627679',
+		// 	type: 'ROLE',
+		// 	permission: true,
+		// }],
+		// });
+
+		try {
+			await command.slash(interaction, perms, channels);
 		}
-		else if (interaction.commandName === 'invite') {
-			const invite = client.generateInvite({ scopes: ['bot', 'applications.commands'], permissions: 123212262595n });
-			const embed = new MessageEmbed().setTitle('Here is your invite link.').setURL(invite).setColor(cyan);
-			await interaction.reply({ embeds: [embed], ephemeral: true });
+		catch (error) {
+			console.error(error);
+			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 		}
-		else { return; }
 	}
 	else if (interaction.isSelectMenu()) {
 		const serverName = interaction.message.content.split('\n')[0];
