@@ -38,8 +38,8 @@ module.exports = {
 	guildSpecific: 'all',
 	permissionLevel: 'Admin',
 	data,
-	slash: async (interaction, perms, channels) => {
-		if (interaction.options.getSubcommand() === 'to_channel') {
+	slash: async (interaction) => {
+		if (interaction.options.getSubcommand() === 'to') {
 			const options = interaction.options;
 			const channel = options.getChannel('channel');
 			const content = options.getString('message');
@@ -61,7 +61,6 @@ module.exports = {
 			}
 			await channel.send(content);
 			await interaction.reply({ content: 'Message successfully sent', ephemeral: true });
-			// Do this
 		}
 		else { return; }
 	},
