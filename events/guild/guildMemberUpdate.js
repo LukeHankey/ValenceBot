@@ -41,6 +41,8 @@ module.exports = async (client, oldMember, newMember) => {
 
 	try {
 		if (oldMember.premiumSince !== newMember.premiumSince) {
+			const hadBoostRole = oldMember.roles.cache.find(role => role.id === boostRoleId);
+			if (hadBoostRole) return;
 			gsheet.googleClient.authorize(err => {
 				if (err) console.error(err);
 				googleSheets(gsheet.googleClient);

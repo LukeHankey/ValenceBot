@@ -129,7 +129,7 @@ module.exports = {
 								name: event.concat(` #${randomNum()}`),
 							});
 							await settings.findOneAndUpdate({ _id: message.channel.guild.id, 'calendarID.month': monthInc[0].month }, { $push: { 'calendarID.$.events': { messageID: link.split('/')[6], title: event, eventTag: newRole.name.slice(event.length + 2), roleID: newRole.id } } });
-							await settings.updateOne({ _id: message.channel.guild.id }, { $push: { events: { title: event, messageID: link.split('/')[6], roleID: newRole.id, eventTag: newRole.name.slice(event.length + 2), date: new Date(), members: [] } } });
+							await settings.updateOne({ _id: message.channel.guild.id }, { $push: { events: { title: event, messageID: link.split('/')[6], roleID: newRole.id, eventTag: newRole.name.slice(event.length + 2), date: new Date(), dateEnd: date, members: [] } } });
 							channels.logs.send(`Calendar updated - ${message.author} added an event: ${Formatters.codeBlock(message.content)}`);
 						}
 					}
@@ -189,7 +189,7 @@ module.exports = {
 							name: event.concat(` #${randomNum()}`),
 						});
 						await settings.findOneAndUpdate({ _id: message.channel.guild.id, 'calendarID.month': currentMonthMessage[0].month }, { $push: { 'calendarID.$.events': { messageID: link.split('/')[6], title: event, eventTag: newRole.name.slice(event.length + 2), roleID: newRole.id } } });
-						await settings.updateOne({ _id: message.channel.guild.id }, { $push: { events: { title: event, messageID: link.split('/')[6], roleID: newRole.id, eventTag: newRole.name.slice(event.length + 2), date: new Date(), members: [] } } });
+						await settings.updateOne({ _id: message.channel.guild.id }, { $push: { events: { title: event, messageID: link.split('/')[6], roleID: newRole.id, eventTag: newRole.name.slice(event.length + 2), date: new Date(), dateEnd: date, members: [] } } });
 						channels.logs.send(`Calendar updated - ${message.author} added an event: ${Formatters.codeBlock(message.content)}`);
 					}
 				}
