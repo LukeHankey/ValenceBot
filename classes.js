@@ -73,7 +73,7 @@ class Permissions {
 	error() {
 		const embed = func.nEmbed('Permission Denied', 'You do not have permission to use this command!', colors.red_dark)
 			.addField('Only the following Roles & Users can:', `${this.higherRoles().length > 0 ? this.higherRoles().join(', ') : '0'}`, true)
-			.addField('\u200b', `<@${this.msg.guild.ownerID}>`, true);
+			.addField('\u200b', `<@${this.msg.guild.ownerId}>`, true);
 		return { embeds: [ embed] };
 	}
 
