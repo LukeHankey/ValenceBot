@@ -38,7 +38,8 @@ module.exports = {
 	guildSpecific: 'all',
 	permissionLevel: 'Admin',
 	data,
-	slash: async (interaction) => {
+	slash: async (interaction, perms) => {
+		if (!perms.admin) return interaction.reply(perms.errorA);
 		if (interaction.options.getSubcommand() === 'to') {
 			const options = interaction.options;
 			const channel = options.getChannel('channel');
