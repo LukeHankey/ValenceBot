@@ -6,6 +6,7 @@ const { Permissions } = require('../../classes.js');
 const { MessageEmbed } = require('discord.js');
 const { vEvents } = require('../../valence/valenceEvents');
 const { dsf } = require('../../dsf/merch/main');
+const { newBoost } = require('../../dsf/boosters');
 
 module.exports = async (client, message) => {
 	const db = getDb();
@@ -78,23 +79,30 @@ module.exports = async (client, message) => {
 	// Deep Sea Fishing
 	if (message.channel.guild.id === '420803245758480405' || message.channel.guild.id === '668330890790699079') {
 		const { merchChannel: { channelID, otherChannelID } } = await settingsColl.findOne({ _id: message.channel.guild.id, merchChannel: { $exists: true } }, { projection: { 'merchChannel.channelID': 1, 'merchChannel.otherChannelID': 1 } });
-		// Merch Posts Publish
-		if (message.channel.id === '770307127557357648') {
+
+		const [ stockChannel, merchCalls, otherCalls, suggestions, boosters ] = ['770307127557357648', channelID, otherChannelID, '872164630322118686', '586267152152002562'];
+
+		switch (message.channel.id) {
+		case stockChannel:
 			if (message.author.bot && message.crosspostable) {
 				message.crosspost();
 			}
-		}
-		if (message.channel.id === channelID || message.channel.id === otherChannelID) {
-			// DSF - Merch & Other calls
-			return await dsf(client, message, channels);
-		}
-		// Suggestions channel
-		if (message.channel.id === '872164630322118686') {
+			break;
+		case merchCalls:
+		case otherCalls:
+			await dsf(client, message, channels);
+			break;
+		case suggestions: {
 			const up_arrow = message.guild.emojis.cache.get('872175822725857280');
 			const down_arrow = message.guild.emojis.cache.get('872175855223337060');
 			await message.react(up_arrow);
 			await message.react(down_arrow);
 			await message.startThread({ name: `Suggestion from ${message.member.nickname ?? message.author.username}`, autoArchiveDuration: 4320 });
+		}
+			break;
+		case boosters:
+			await newBoost(message, boosters);
+
 		}
 	}
 
