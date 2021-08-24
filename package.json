@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node slashCommands.js&&node index.js",
     "slash": "set NODE_ENV=DEV&&node slashCommands.js&&node index.js",
     "dev": "set NODE_ENV=DEV&&node index.js",
     "devTasks": "concurrently \"node ./scheduler/clan.js\" \"npm run dev\""
