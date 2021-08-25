@@ -91,7 +91,7 @@ const vEvents = async (client, message, channels) => {
 		}
 		catch (err) {
 			console.log(err);
-			if (err.code === 500035) {
+			if (err.code === 50035) {
 				message.channel.guild.channels.cache.get(DB.channels.mod).send({ content: `${message.member} reacted with ✅ but the Event Title (1st line) is too long. Max of 100 characters.` });
 			}
 		}
