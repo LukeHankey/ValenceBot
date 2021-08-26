@@ -7,7 +7,7 @@
     "start": "node slashCommands.js&&node index.js",
     "slash": "set NODE_ENV=DEV&&node slashCommands.js&&node index.js",
     "dev": "set NODE_ENV=DEV&&node index.js",
-    "devTasks": "concurrently \"node ./scheduler/clan.js\" \"npm run dev\""
+    "devTasks": "concurrently  \"set NODE_ENV=DEV&&node index.js\" \"node ./scheduler/clan.js\""
   },
   "author": "Guys",
   "license": "ISC",
@@ -15,6 +15,7 @@
     "node": "16.6.1"
   },
   "dependencies": {
+    "@discordjs/builders": "^0.6.0",
     "@discordjs/rest": "^0.1.0-canary.0",
     "assert": "^2.0.0",
     "concurrently": "^6.2.0",
