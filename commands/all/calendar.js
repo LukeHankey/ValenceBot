@@ -280,12 +280,21 @@ module.exports = {
 				const n = new MessageEmbed(editE.embeds[0]);
 
 				const fields = n.fields[args[1] - 1];
+				console.log(1, args, args[1]);
+				console.log(2, rest[0].toLowerCase());
+				console.log(3, fieldParams[parameter]);
+				console.log(4, fieldParams[0]);
+				console.log(5, rest, rest.slice(1));
+				console.log(6, fields, fields.value);
+				console.log(7, rest.slice(1).join(' '), 8, fields.value);
 				if (fieldParams.includes(args[2].toLowerCase())) {
 					if (fieldParams[0] === rest[0].toLowerCase()) {
+						console.log(9, editE, n);
 						n.spliceFields(args[1] - 1, 1, { name: rest.slice(1).join(' '), value: fields.value });
-						editE.edit({ emebds: [ n ] });
+						editE.edit({ embeds: [ n ] });
 					}
 					else if (fieldParams[parameter] === rest[0].toLowerCase() && rest[0].toLowerCase() !== fieldParams[0]) {
+						console.log(10);
 						const values = fields.value.split('\n');
 						let newValue = ` ${rest.slice(1).join(' ')}`;
 						if (fieldParams[parameter] !== fieldParams[3]) {
@@ -293,13 +302,13 @@ module.exports = {
 							// eslint-disable-next-line no-inline-comments
 							const fieldValue = value.join(' ').split(`${capitalise(fieldParams[parameter])}`); // Doesn't work for announcement
 							n.spliceFields(args[1] - 1, 1, { name: fields.name, value: fields.value.replace(fieldValue[1], newValue) });
-							editE.edit({ emebds: [ n ] });
+							editE.edit({ embeds: [ n ] });
 						}
 						else {
 							const annVal = values[2].split('](');
 							newValue = ` ${rest.slice(1).join(' ')})`;
 							n.spliceFields(args[1] - 1, 1, { name: fields.name, value: fields.value.replace(annVal[1], newValue) });
-							editE.edit({ emebds: [ n ] });
+							editE.edit({ embeds: [ n ] });
 						}
 					}
 					message.delete();

@@ -56,7 +56,6 @@ const newBoost = async (message, boostChannel) => {
 						const discordID = boosters[3];
 						const fetched = message.guild.members.cache.get(discordID) ?? await message.guild.members.fetch(discordID);
 						const roleCheck = fetched.roles.cache.has(boostRoleId);
-						if (discordID === '430229790369382400') continue;
 						if (roleCheck) { nitros.push([boosters[0], fetched.premiumSince, monthDiff(fetched.premiumSince, new Date()), discordID, fetched.displayName]); }
 						else { return; }
 					}
@@ -96,6 +95,6 @@ const newBoost = async (message, boostChannel) => {
 	}
 };
 
-module.exprts = {
+module.exports = {
 	newBoost,
 };
