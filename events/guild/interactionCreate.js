@@ -9,6 +9,12 @@ module.exports = async (client, interaction) => {
 	const data = await settings.findOne({ _id: interaction.guildId }, { projection: { merchChannel: { components: 1 } } });
 	const { channels: { errors, logs } } = await settings.findOne({ _id: 'Globals' }, { projection: { channels: { errors: 1, logs: 1 } } });
 
+	if (process.env.NODE_ENV === 'DEV') {
+		if (interaction.guild === null) return;
+		if (interaction.guild.id !== '668330890790699079') return;
+	}
+	else if (interaction.guild.id === '668330890790699079') {return;}
+
 	const channels = {
 		errors: {
 			id: errors,
@@ -73,6 +79,7 @@ module.exports = async (client, interaction) => {
 				const row = new MessageActionRow()
 					.addComponents(new MessageButton(interaction.message.components[0].components[0]).setEmoji('📩').setLabel('DM sent...').setDisabled());
 				await interaction.update({ components: [row] });
+				console.log(`Action: Password Button\nBy: ${interaction.user.username}\nUser: ${fetchUser.user.username}`);
 				await settings.updateOne({ _id: interaction.guildId, 'merchChannel.components.messageID': userMessageId }, {
 					$set: {
 						'merchChannel.components.$.selectID': selectID,
@@ -82,7 +89,9 @@ module.exports = async (client, interaction) => {
 			}
 				break;
 			case thisButton[0].dangerID: {
+				const content = interaction.message.content.split('\n');
 				await interaction.update({ components: [] });
+				console.log(`Action: Clear Button\nBy: ${interaction.user.username}\nContent: ${content.slice(3).join(' ')}`);
 				await settings.updateOne({ _id: interaction.guildId }, {
 					$pull: {
 						'merchChannel.components': thisButton[0],

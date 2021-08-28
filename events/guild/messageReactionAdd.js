@@ -93,6 +93,7 @@ module.exports = async (client, reaction, user) => {
 							},
 						});
 						settingsColl.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } });
+						message.edit({ content: `Action: ✅, by: ${user.username}\n${message.content}` });
 						return message.reactions.removeAll();
 					}
 					else if (reaction.emoji.name === '❌') {
@@ -136,6 +137,7 @@ module.exports = async (client, reaction, user) => {
 								}
 							}
 							settingsColl.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } });
+							message.edit({ content: `Action: ❌, by: ${user.username}\n${message.content}` });
 							return message.reactions.removeAll();
 						}
 					}
@@ -169,6 +171,7 @@ module.exports = async (client, reaction, user) => {
 							});
 							usersDB.deleteOne({ clanMate: potentialPreviousName });
 							settingsColl.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } });
+							message.edit({ content: `Action: 📝, by: ${user.username}\n${message.content}` });
 							return message.reactions.removeAll();
 						}
 						catch (err) {

@@ -35,6 +35,7 @@ const getData = async () => {
 				if (clanUser.clanMate === '') return;
 				clanUser.gameActive = 'undefined';
 				await usersColl.insertOne(clanUser);
+				console.log(`${clanUser.Clanmate} new to the clan.`);
 			}
 			else {
 				// Updates total XP
@@ -50,6 +51,7 @@ const getData = async () => {
 	})
 		.catch(error => console.error(error));
 };
+
 
 // Daily at 5am
 cron.schedule('0 5 * * *', async () => {
