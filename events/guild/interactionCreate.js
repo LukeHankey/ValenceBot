@@ -6,14 +6,14 @@ const { red_dark } = require('../../colors.json');
 module.exports = async (client, interaction) => {
 	const db = getDb();
 	const settings = db.collection('Settings');
-	const data = await settings.findOne({ _id: interaction.guildId }, { projection: { merchChannel: { components: 1 } } });
+	const data = await settings.findOne({ _id: interaction.guildId }, { projection: { merchChannel: { components: 1, channelID: 1 } } });
 	const { channels: { errors, logs } } = await settings.findOne({ _id: 'Globals' }, { projection: { channels: { errors: 1, logs: 1 } } });
 
-	if (process.env.NODE_ENV === 'DEV') {
-		if (interaction.guild === null) return;
-		if (interaction.guild.id !== '668330890790699079') return;
-	}
-	else if (interaction.guild.id === '668330890790699079') {return;}
+	// if (process.env.NODE_ENV === 'DEV') {
+	// 	if (interaction.guild === null) return;
+	// 	if (interaction.guild.id !== '668330890790699079') return;
+	// }
+	// else if (interaction.guild.id === '668330890790699079') {return;}
 
 	const channels = {
 		errors: {
@@ -203,6 +203,43 @@ module.exports = async (client, interaction) => {
 			}
 		}
 
+	}
+	else if (interaction.isContextMenu()) {
+		if (interaction.channel.id === data.merchChannel.channelID) {
+			interaction.deferReply({ ephemeral: true });
+			try {
+				const dsfServerErrorChannel = await client.channels.cache.get('794608385106509824');
+				const message = await interaction.channel.messages.cache.get(interaction.targetId);
+				const reaction = await message.react('☠️');
+				const userReactCollection = await reaction.users.fetch();
+				if (userReactCollection.size > 1) {
+					return await interaction.editReply({ content: 'This call is already marked as dead.' });
+				}
+				await interaction.editReply({ content: 'Thank you for marking this call as dead.' });
+				dsfServerErrorChannel.send({ content: ` \`\`\`diff\n\n+ Reaction Added by ${interaction.member.displayName} - Content: ${message.content}\n- User ID: ${interaction.member.id}\`\`\`` });
+			}
+			catch (err) {
+				if (err.code === 50001) {
+					// Missing Access
+					return await interaction.editReply({ content: 'I am not able to access this channel.' });
+				}
+				channels.errors.send(err, module);
+			}
+		}
+		else {
+			interaction.reply({ content: 'You can\'t use that in this channel.', ephemeral: true });
+		}
+
+		const contextMenu = await interaction.guild?.commands.fetch(interaction.commandId);
+		const permissions = [
+			{
+				id: '881696440747958342',
+				type: 'ROLE',
+				permission: false,
+			},
+		];
+		const perms = await contextMenu.permissions.set({ permissions });
+		console.log(perms);
 	}
 	else { return; }
 

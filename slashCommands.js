@@ -9,7 +9,7 @@ const commandFiles = fs.readdirSync('./commands/all').filter(file => file.endsWi
 // Place your client and guild ids here
 const clientId = '668330399033851924';
 // eslint-disable-next-line no-unused-vars
-const guildId = '668330890790699079';
+const guildId = '420803245758480405';
 
 // Comment out to remove all guild-specific commands
 for (const file of commandFiles) {
@@ -18,6 +18,15 @@ for (const file of commandFiles) {
 	commands.push(command.data.toJSON());
 }
 console.log(commands);
+
+// Context Menu
+
+const menuData = {
+	name: 'Skull this message.',
+	type: 3,
+};
+
+commands.push(menuData);
 
 const rest = new REST({ version: '9' }).setToken(process.env.BOT_TOKEN);
 
