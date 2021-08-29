@@ -64,6 +64,7 @@ module.exports = {
 			}
 		}
 		else if (interaction.options.getInteger('reset')) {
+			console.log(interaction.options.getInteger('reset'));
 			if (!perms.owner) return await interaction.reply(perms.errorO);
 			if (vis === null) {
 				return interaction.reply({ content: 'There currently isn\'t any Vis Wax image uploaded.', ephemeral: true });

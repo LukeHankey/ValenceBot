@@ -1,1 +1,1 @@
-worker concurrently "node ./scheduler/clan.js" "npm run start" --max-old-space-size=1024
+worker concurrently "node ./scheduler/clan.js" "node index.js" --max-old-space-size=1024
