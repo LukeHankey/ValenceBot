@@ -49,7 +49,19 @@ module.exports = {
 		if (args[0] === 'roles') {
 			let allAvailableRoles = [];
 			message.channel.guild.roles.cache.filter(allRoles => {
-				if (allRoles.position < botRoleHighest.position) {
+				if (message.guild.id === '472448603642920973') {
+					if (allRoles.position < 36) {
+						allAvailableRoles.push(allRoles.name);
+					}
+				}
+				// DSF
+				else if (message.guild.id === '420803245758480405') {
+					const reactionRestrict = message.guild.roles.cache.get('881696440747958342');
+					if (allRoles.position < reactionRestrict.position) {
+						allAvailableRoles.push(allRoles.name);
+					}
+				}
+				else if (allRoles.position < botRoleHighest.position) {
 					allAvailableRoles.push(allRoles.name);
 				}
 			});
@@ -62,7 +74,7 @@ module.exports = {
 
 			if (!allAvailableRoles.length) return message.channel.send({ content: 'No roles are assignable as no roles are above my highest role.' });
 
-			return message.channel.send({ embeds: [ embed.setColor(colors.cyan).addField('Available roles to add:', allAvailableRoles) ] });
+			return message.channel.send({ embeds: [ embed.setColor(colors.cyan).setDescription(`Available roles to add:\n ${allAvailableRoles}`) ] });
 
 		}
 
