@@ -27,6 +27,7 @@ module.exports = {
 		const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 		const monthIndex = (new Date()).getUTCMonth();
 		const currentMonth = months[monthIndex];
+		const currentYear = new Date().getFullYear();
 		const code = '```';
 		const calChannel = message.channel.guild.channels.cache.find((ch) => ch.name === 'calendar');
 		function embed(title, description = 'This months events are as follows:') {
@@ -51,7 +52,7 @@ module.exports = {
 									$push: {
 										calendarID: {
 											$each: [
-												{ messageID: msg.id, month: `${currentMonth}`, year: new Date().getUTCFullYear(), events: [] },
+												{ messageID: msg.id, month: `${currentMonth}`, year: currentYear, events: [] },
 											],
 										},
 									},
@@ -158,7 +159,7 @@ module.exports = {
 				}
 			}
 			else {
-				const currentMonthMessage = data.calendarID.filter((obj) => obj.year === new Date().getUTCFullYear() && obj.month === currentMonth);
+				const currentMonthMessage = data.calendarID.filter((obj) => obj.year === currentYear && obj.month === currentMonth);
 				try {
 					const [...rest] = args.slice(1);
 					const m = await message.channel.messages.fetch(currentMonthMessage[0].messageID);
@@ -270,7 +271,7 @@ module.exports = {
 				}
 			}
 			else {
-				const currentMonthMessage = data.calendarID.filter((obj) => obj.month === currentMonth);
+				const currentMonthMessage = data.calendarID.filter((obj) => obj.year === currentYear && obj.month === currentMonth);
 				const [...rest] = args.slice(2);
 				const fieldParams = ['date:', 'event:', 'time:', 'announcement:', 'host:'];
 				const parameter = fieldParams.indexOf(args[2].toLowerCase());
@@ -280,21 +281,12 @@ module.exports = {
 				const n = new MessageEmbed(editE.embeds[0]);
 
 				const fields = n.fields[args[1] - 1];
-				console.log(1, args, args[1]);
-				console.log(2, rest[0].toLowerCase());
-				console.log(3, fieldParams[parameter]);
-				console.log(4, fieldParams[0]);
-				console.log(5, rest, rest.slice(1));
-				console.log(6, fields, fields.value);
-				console.log(7, rest.slice(1).join(' '), 8, fields.value);
 				if (fieldParams.includes(args[2].toLowerCase())) {
 					if (fieldParams[0] === rest[0].toLowerCase()) {
-						console.log(9, editE, n);
 						n.spliceFields(args[1] - 1, 1, { name: rest.slice(1).join(' '), value: fields.value });
 						editE.edit({ embeds: [ n ] });
 					}
 					else if (fieldParams[parameter] === rest[0].toLowerCase() && rest[0].toLowerCase() !== fieldParams[0]) {
-						console.log(10);
 						const values = fields.value.split('\n');
 						let newValue = ` ${rest.slice(1).join(' ')}`;
 						if (fieldParams[parameter] !== fieldParams[3]) {
