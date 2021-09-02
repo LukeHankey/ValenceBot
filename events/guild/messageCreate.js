@@ -77,8 +77,24 @@ module.exports = async (client, message) => {
 	else if (message.guild.id === '668330890790699079') {return;}
 
 	// Deep Sea Fishing
-	if (message.channel.guild.id === '420803245758480405' || message.channel.guild.id === '668330890790699079') {
-		const { merchChannel: { channelID, otherChannelID } } = await settingsColl.findOne({ _id: message.channel.guild.id, merchChannel: { $exists: true } }, { projection: { 'merchChannel.channelID': 1, 'merchChannel.otherChannelID': 1 } });
+	if (message.guild.id === '420803245758480405' || message.guild.id === '668330890790699079') {
+		const { merchChannel: { channelID, otherChannelID }, channels: { adminChannel } } = await settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } }, { projection: { 'merchChannel.channelID': 1, 'merchChannel.otherChannelID': 1, channels: 1 } });
+
+		const scamDetect = /(glft|steamcom|dlsco|dlisco|\/gif)\w+/gi;
+		if (scamDetect.test(message.content)) {
+			const bannedMember = message.member;
+			// Check for permissions
+			const perms = message.guild.me.permissions.has('BAN_MEMBERS');
+			if (perms) {
+				await bannedMember.ban({ days: 7, reason: 'Posted a scam link' });
+				const bChannel = message.guild.channels.cache.get('624655664920395786');
+				await bChannel.send({ content: `Banned: ${bannedMember.displayName} - ${bannedMember.id} -- Posting a scam link.` });
+			}
+			else {
+				const aChannel = message.guild.channels.cache.get(adminChannel);
+				aChannel.send({ content: `I am unable to ban ${message.member.displayName} as I do not have the \`BAN_MEMBERS\` permission.` });
+			}
+		}
 
 		const [ stockChannel, merchCalls, otherCalls, suggestions, boosters ] = ['770307127557357648', channelID, otherChannelID, '872164630322118686', '586267152152002562'];
 
@@ -107,6 +123,27 @@ module.exports = async (client, message) => {
 	}
 
 	if (message.author.bot) return;
+
+	// Dealing with scams
+	if (message.guild.id === '668330890790699079') {
+		const scamDetect = /(glft|steamcom|dlsco)\w+/gi;
+		if (scamDetect.test(message.content)) {
+			const bannedMember = message.member;
+			// Check for permissions
+			const perms = message.guild.me.permissions.has('BAN_MEMBERS');
+			if (perms) {
+				bannedMember.ban({ days: 1, reason: 'Posted a scam link' });
+				const banChannel = '732014449182900247'; // Change
+				const channel = message.guild.channels.cache.get(banChannel);
+				await channel.send({ content: `Banned: ${bannedMember.displayName} - ${bannedMember.id} -- Posting a scam link.` });
+			}
+			else {
+				const { channels: { adminChannel } } = await settingsColl.findOne({ _id: message.guild.id }, { projection: { channels: 1 } });
+				const channel = message.guild.channels.cache.get(adminChannel);
+				channel.send({ content: `I am unable to ban ${message.member.displayName} as I do not have the \`BAN_MEMBERS\` permission.` });
+			}
+		}
+	}
 
 	// Valence Events Channel
 	if (message.channel.guild.id === '472448603642920973' || message.channel.guild.id === '668330890790699079') {
