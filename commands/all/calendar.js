@@ -167,7 +167,7 @@ module.exports = {
 					const event = slicer(['event', 'time'], rest);
 					const time = slicer(['time', 'announcement'], rest);
 					const link = slicer(['announcement', 'host'], rest);
-					const hostCollection = message.mentions.members.keyArray().map((id) => `<@${id}>`);
+					const hostCollection = message.mentions.members.map((mem) => `<@${mem.id}>`);
 					const host = hostCollection.join(' ') || message.mentions.roles.first();
 
 					if (!date || !event || !time || !link || !host) {
