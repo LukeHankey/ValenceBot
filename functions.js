@@ -111,24 +111,37 @@ module.exports = {
 		}
 		else if (identifier === 'messageID') {
 			eventMessageCheck = database.events.map(event => { if (event.messageID === messageCheck) return { message: event.messageID, role: event.roleID };}).filter(valid => valid);
+
+			// Send error to error channel if the post was not made in the events channel (Might have been done directly with commands.
 			const eventMessage = await eventsChannel.messages.fetch(messageCheck).catch(e => channels.errors.send(e, module));
-			await settings.updateOne({ _id: message.channel.guild.id }, { $pull: { events: { roleID: eventMessageCheck[0].role } } });
-			await settings.findOneAndUpdate({ _id: message.channel.guild.id, 'calendarID.month': new Date(eventMessage.createdTimestamp).toLocaleString('default', { month: 'long' }) }, { $pull: { 'calendarID.$.events': { roleID: eventMessageCheck[0].role } } });
+
+			// Remove from events
+			await settings.updateOne({ _id: message.guild.id }, { $pull: { events: { roleID: eventMessageCheck[0].role } } });
+
+			// Remove from calendar
+			await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': new Date(eventMessage.createdTimestamp).toLocaleString('default', { month: 'long' }) }, { $pull: { 'calendarID.$.events': { roleID: eventMessageCheck[0].role } } });
+
+			// Remove reactions from event post
 			eventMessage.reactions.removeAll();
 		}
 		else { return;}
 
-		await message.channel.guild.roles.fetch(eventMessageCheck[0].role).then(r => r.delete()).catch(err => channels.errors.send(err, module));
+		// Remove role from server
+		await message.guild.roles.fetch(eventMessageCheck[0].role).then(r => r.delete()).catch(err => channels.errors.send(err, module));
 
 		const messageID = eventMessageCheck[0].message;
+
+		// Returns the event month | msg.id
 		const info = database.calendarID.map(months => {
 			if (!months.events || !months.events.length) return;
 			const check = months.events.some(elem => elem.messageID === messageID);
 			if (check) return { msg: months.messageID, month: months.month };
 		}).filter(x => x);
 
-		const calChannel = message.channel.guild.channels.cache.find((ch) => ch.name === 'calendar');
+		const calChannel = message.guild.channels.cache.find((ch) => ch.name === 'calendar');
+
 		try {
+			// Rest is for messageReactionAdd
 			const calMessage = await calChannel.messages.fetch(info[0].msg);
 			const fields = calMessage.embeds[0].fields;
 			const foundIndex = fields.findIndex(field => {
@@ -139,9 +152,14 @@ module.exports = {
 			let items = fields.find(item => {
 				let announcement = item.value.split('\n')[2];
 				announcement = announcement.split('/')[6].slice(0, -1);
-				if (announcement === messageID) return item;
+				if (announcement === messageID) {return item;}
+				else { return null; }
 			});
-			items = [items].map((values) => `${values.name}\n${values.value}\n`);
+			if (!items) return;
+			items = [items].map((values) => {
+				if (values === null) return null;
+				else return `${values.name}\n${values.value}\n`;
+			});
 
 			const updateEmbed = new MessageEmbed(calMessage.embeds[0]);
 			updateEmbed.spliceFields(foundIndex, 1);
