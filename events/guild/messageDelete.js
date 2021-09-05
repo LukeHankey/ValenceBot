@@ -15,7 +15,7 @@ module.exports = async (client, message) => {
 	const merchChannelID = message.channel.guild.channels.cache.get(fullDB.merchChannel.channelID);
 
 	const botServerChannel = await client.channels.cache.get('784543962174062608');
-	const dsfServerChannel = await client.channels.cache.get('794608385106509824');
+	const dsfServerChannel = await client.channels.cache.get('884076361940078682');
 
 	const sendAndUpdate = async (webhook, embed, data) => {
 		const sentChannel = await webhook.send({ embeds: [ embed ] });

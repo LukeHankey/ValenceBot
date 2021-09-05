@@ -235,7 +235,7 @@ module.exports = async (client, interaction) => {
 		if (interaction.channel.id === data.merchChannel.channelID) {
 			interaction.deferReply({ ephemeral: true });
 			try {
-				const dsfServerErrorChannel = await client.channels.cache.get('794608385106509824');
+				const dsfServerErrorChannel = await client.channels.cache.get('884076361940078682');
 				const message = await interaction.channel.messages.cache.get(interaction.targetId);
 				const reaction = await message.react('☠️');
 				const userReactCollection = await reaction.users.fetch();
