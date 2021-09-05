@@ -44,7 +44,7 @@ module.exports = async (client, reaction, user) => {
 	switch (message.channel.guild.id) {
 	case _id:
 		// Valence
-		if (_id === '472448603642920973') {
+		if (_id === '472448603642920973' | _id === '668330890790699079') {
 			if (user.bot) return;
 			const usersDB = db.collection('Users');
 			const data = await settingsColl.findOne({ _id: message.channel.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } });
@@ -60,7 +60,9 @@ module.exports = async (client, reaction, user) => {
 						return;
 					}
 
-					await removeEvents(client, message, settingsColl, { channels, module: module }, data, 'messageID', message.id);
+					const [ event ] = data.events.filter(e => e.messageID === message.id);
+
+					await removeEvents(message, settingsColl, channels, module, data, event.eventTag);
 				}
 				else if (reaction.emoji.name === '📌') {
 					const userFetch = await message.channel.guild.members.fetch(user.id);

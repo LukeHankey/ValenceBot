@@ -22,15 +22,20 @@ module.exports = {
 
 		switch(args[0]) {
 		case 'end': {
-			const tag = args[1];
-			const checkEventExists = data.events.map(event => { if (event.eventTag === tag) return { value: true, message: event.messageID, role: event.roleID };}).filter(valid => valid);
-			if (checkEventExists.length && checkEventExists[0].value) {
-				await removeEvents(client, message, settings, { channels, module: module }, data, 'eventTag', args[1]);
-				return message.react('✅');
+			try {
+				const tag = args[1];
+				const checkEventExists = data.events.map(event => { if (event.eventTag === tag) return { value: true, message: event.messageID, role: event.roleID };}).filter(valid => valid);
+				if (checkEventExists.length && checkEventExists[0].value) {
+					await removeEvents(message, settings, channels, module, data, tag);
+					return message.react('✅');
+				}
+				else {
+					message.react('❌');
+					message.channel.send({ content: `There is no event found with ID: \`${tag}\`` });
+				}
 			}
-			else {
-				message.react('❌');
-				message.channel.send({ content: `There is no event found with ID: \`${tag}\`` });
+			catch (err) {
+				channels.errors.send(err, module);
 			}
 
 		}
