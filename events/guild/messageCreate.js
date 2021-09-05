@@ -88,11 +88,11 @@ module.exports = async (client, message) => {
 			if (perms) {
 				await bannedMember.ban({ days: 7, reason: 'Posted a scam link' });
 				const bChannel = message.guild.channels.cache.get('624655664920395786');
-				await bChannel.send({ content: `Banned: ${bannedMember.displayName} - ${bannedMember.id} -- Posting a scam link.` });
+				return await bChannel.send({ content: `Banned: ${bannedMember.displayName} - ${bannedMember.id} -- Posting a scam link.` });
 			}
 			else {
 				const aChannel = message.guild.channels.cache.get(adminChannel);
-				aChannel.send({ content: `I am unable to ban ${message.member.displayName} as I do not have the \`BAN_MEMBERS\` permission.` });
+				return aChannel.send({ content: `I am unable to ban ${message.member.displayName} as I do not have the \`BAN_MEMBERS\` permission.` });
 			}
 		}
 
