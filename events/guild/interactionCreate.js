@@ -129,7 +129,7 @@ module.exports = async (client, interaction) => {
 		 */
 
 		// Test Server
-		// const commandI = await client.guilds.cache.get('668330890790699079')?.commands.fetch();
+		// const commandI = await client.guilds.cache.get('472448603642920973')?.commands.fetch();
 		// console.log(commandI, interaction.commandId);
 		// const guildInteractionPerms = await interaction.guild.commands.permissions.fetch({ guild: interaction.guild.id });
 		// View all permissions
@@ -148,19 +148,46 @@ module.exports = async (client, interaction) => {
 		// 	permission: true,
 		// }],
 		// });
-		// const comF = commandI.filter(app => app.name === interaction.commandName).first();
-		// Currently no builder to apply defaultPermission, so have to edit manually where false means nobody can use the command.
-		// await comF.edit({ defaultPermission: true });
+		// const comF = commandI.filter(app => app.name === 'calendar').first();
+		// console.log(comF);
+		// await comF.edit({ defaultPermission: false });
 		// Resets permissions on bot restart. Have to reuse a command for them to take effect.
-		// await comF.permissions.set({ permissions: [{
-		// 	id: '668519504233627679',
-		// 	type: 'ROLE',
-		// 	permission: true,
-		// }],
+		// const per = await comF.permissions.set({ permissions: [
+		// 	{ // Admin
+		// 		id: '473229033069346837',
+		// 		type: 'ROLE',
+		// 		permission: true,
+		// 	},
+		// 	{ // Organiser
+		// 		id: '473228599290232843',
+		// 		type: 'ROLE',
+		// 		permission: true,
+		// 	},
+		// 	{ // Coordinator
+		// 		id: '473227930546470922',
+		// 		type: 'ROLE',
+		// 		permission: true,
+		// 	},
+		// 	{ // Overseer
+		// 		id: '473216082749030412',
+		// 		type: 'ROLE',
+		// 		permission: true,
+		// 	},
+		// 	{ // Deputy Owner
+		// 		id: '736601479254638613',
+		// 		type: 'ROLE',
+		// 		permission: true,
+		// 	},
+		// 	{ // Owner
+		// 		id: '473215918785167360',
+		// 		type: 'ROLE',
+		// 		permission: true,
+		// 	},
+		// ],
 		// });
 
 		try {
-			await command.slash(interaction, perms, channels);
+			await command.slash(interaction, perms, channels, settings);
 		}
 		catch (error) {
 			console.error(error);

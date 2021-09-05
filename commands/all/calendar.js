@@ -358,7 +358,7 @@ module.exports = {
 			const deletedField = calEmbed.fields[position - 1].value;
 
 			calEmbed.spliceFields(position - 1, deleteNum);
-			message.edit({ embeds: [ calEmbed ] });
+			await message.edit({ embeds: [ calEmbed ] });
 
 			// Logging
 			const log = message.embeds[0].fields.splice(position - 1, deleteNum);
@@ -378,9 +378,12 @@ module.exports = {
 			const to = interaction.options.getInteger('to');
 
 			const month_to = interaction.options.getString('month_to') ?? null;
-			const monthFromDb_to = dataFromDb.calendarID.filter(obj => {
-				return obj.month.toLowerCase() === month_to.toLowerCase() && obj.year === currentYear;
-			});
+			let monthFromDb_to;
+			if (month_to) {
+				monthFromDb_to = dataFromDb.calendarID.filter(obj => {
+					return obj.month.toLowerCase() === month_to.toLowerCase() && obj.year === currentYear;
+				});
+			}
 
 			const message = await interaction.channel.messages.fetch(monthFromDb[0].messageID);
 			const calEmbed = new MessageEmbed(message.embeds[0]);
@@ -407,6 +410,7 @@ module.exports = {
 				await move_message.edit({ embeds: [ calEmbed_to ] });
 			}
 			else {
+				calEmbed.spliceFields(from - 1, 1);
 				calEmbed.spliceFields(to - 1, 0, {
 					name: event.name,
 					value: event.value,
