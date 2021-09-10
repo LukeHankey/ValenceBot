@@ -36,19 +36,24 @@ module.exports = {
 		}
 			break;
 		default: {
-			// Listing events
-			const link = `https://discord.com/channels/${data._id}/${data.channels.events}/`;
-			const fieldHolder = data.events.map(obj => {
-				const members = obj.members.map(mem => { return `<@!${mem}>`;});
-				return { name: obj.title, value: `ID: ${obj.eventTag}\nRole: <@&${obj.roleID}>\n[Event posted ${obj.date ? 'on ' + obj.date.toString().split(' ').slice(0, 4).join(' ') : ''}](${link}${obj.messageID})\nEvent ends on ${obj.dateEnd}\nInterested 📌: ${members.join(', ')}` };
-			});
+			try {
+				// Listing events
+				const link = `https://discord.com/channels/${data._id}/${data.channels.events}/`;
+				const fieldHolder = data.events.map(obj => {
+					const members = obj.members.map(mem => { return `<@!${mem}>`;});
+					return { name: obj.title, value: `ID: ${obj.eventTag}\nRole: <@&${obj.roleID}>\n[Event posted ${obj.date ? 'on ' + obj.date.toString().split(' ').slice(0, 4).join(' ') : ''}](${link}${obj.messageID})\nEvent ends on ${obj.dateEnd}\nInterested 📌: ${members.join(', ')}` };
+				});
 
-			const embed = new MessageEmbed()
-				.setTitle('Event Listing')
-				.setColor(cyan)
-				.setDescription('These are all of the events currently stored. Some may be old ones, others relatively new and ongoing. Feel free to remove events by their event ID.')
-				.addFields(fieldHolder);
-			message.channel.send({ embeds: [ embed ] });
+				const embed = new MessageEmbed()
+					.setTitle('Event Listing')
+					.setColor(cyan)
+					.setDescription('These are all of the events currently stored. Some may be old ones, others relatively new and ongoing. Feel free to remove events by their event ID.')
+					.addFields(fieldHolder);
+				message.channel.send({ embeds: [ embed ] });
+			}
+			catch (err) {
+				channels.errors.send(err, module);
+			}
 		}
 		}
 	},
