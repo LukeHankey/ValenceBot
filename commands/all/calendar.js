@@ -262,15 +262,17 @@ module.exports = {
 					calEmbed.spliceFields(pos - 1, 0, { name: date, value: `Event: ${title}\nTime: ${time}\n[Announcement](${announcement})\nHost: ${member}` });
 
 					await message.edit({ embeds: [ calEmbed ] });
-					return await interaction.reply({ content: 'The calendar has been updated with the new event.', ephemeral: true });
+					await interaction.reply({ content: 'The calendar has been updated with the new event.', ephemeral: true });
 				}
-				calEmbed.addFields(
-					{ name: date, value: `Event: ${title}\nTime: ${time}\n[Announcement](${announcement})\nHost: ${member}` },
-				);
+				else {
+					calEmbed.addFields(
+						{ name: date, value: `Event: ${title}\nTime: ${time}\n[Announcement](${announcement})\nHost: ${member}` },
+					);
 
-				// Edit the embed with the new event
-				await message.edit({ embeds: [ calEmbed ] });
-				await interaction.reply({ content: 'The calendar has been updated with the new event.', ephemeral: true });
+					// Edit the embed with the new event
+					await message.edit({ embeds: [ calEmbed ] });
+					await interaction.reply({ content: 'The calendar has been updated with the new event.', ephemeral: true });
+				}
 
 				// Create the new role and update the database
 				const newRole = await interaction.guild.roles.create({
@@ -287,7 +289,7 @@ module.exports = {
                         { title, messageID: announcement.split('/')[6], roleID: newRole.id, eventTag: newRole.name.slice(title.length + 2), date: new Date(), dateEnd: date, members: [] },
 					} });
 
-				channels.logs.send(`Calendar updated - ${interaction.member.displayName} added an event.`);
+				return channels.logs.send(`Calendar updated - ${interaction.member.displayName} added an event.`);
 			};
 
 			if (position) { await addToCalendar(position);}
