@@ -269,16 +269,17 @@ module.exports = {
 					);
 
 					await message.edit({ embeds: [ calEmbed ] });
-					return await interaction.reply({ content: 'The calendar has been updated with the new event.', ephemeral: true });
+					await interaction.reply({ content: 'The calendar has been updated with the new event.', ephemeral: true });
 				}
 				else {
 					calEmbed.addFields(
-						{ name: date, value: `Event: ${title}\nTime: ${time}\n[Announcement](${announcement})\nHost: ${member}\nRole: ${newRole}` },
+						{ name: date, value: `Event: ${title}\nTime: ${time}\n[Announcement](${announcement})\nHost: ${member}` },
 					);
 
-				// Edit the embed with the new event
-				await message.edit({ embeds: [ calEmbed ] });
-				await interaction.reply({ content: 'The calendar has been updated with the new event.', ephemeral: true });
+					// Edit the embed with the new event
+					await message.edit({ embeds: [ calEmbed ] });
+					await interaction.reply({ content: 'The calendar has been updated with the new event.', ephemeral: true });
+				}
 
 				await database.findOneAndUpdate({ _id: interaction.guild.id, 'calendarID.month': monthFromDb[0].month },
 					{ $push: { 'calendarID.$.events':
@@ -290,8 +291,7 @@ module.exports = {
                         { messageID: announcement.split('/')[6], title, eventTag: newRole.name.slice(title.length + 2), roleID: newRole.id, date: new Date(), dateEnd: date, members: [], month },
 					} });
 
-
-				return channels.logs.send(`Calendar updated - ${interaction.member.displayName} added an event.\n\n/${interaction.commandName} ${interaction.options._subcommand} date: ${date} title: ${title} time: ${time} announcement ${announcement} member: ${member} position: ${position} month ${month}`);
+				return channels.logs.send(`Calendar updated - ${interaction.member.displayName} added an event.`);
 			};
 
 			if (position) { await addToCalendar(position);}
