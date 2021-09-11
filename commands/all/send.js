@@ -5,39 +5,35 @@ const { checkNum } = require('../../functions.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { Util } = require('discord.js');
 
-const description = ['Sends a message to a channel.', 'Edits a message by providing the channel and message ID and overwrite the previous post with new content.', 'Creates a new embed for the Ban/Friends List.', 'Adds an RSN to the ban list with a reason.', 'Edits an rsn or reason by finding the given rsn. Example:\n```css\n;send edit ban 1 Guys Reason: Is a noob.```', 'Removes a member from the ban or friends list by specifying their rsn and which embed they are in. Alternatively removes all info from the embed if the rsn is replaced with \'clear\'.'];
-
-const data = new SlashCommandBuilder()
-	.setName('send')
-	.setDescription('Send a message to a channel')
-	.addSubcommand((subcommand) =>
-		subcommand
-			.setName('to')
-			.setDescription('Sends or edits a message to a specific channel in the server.')
-			.addChannelOption((option) =>
-				option.setName('channel').setDescription('The channel you want to send a message to.').setRequired(true),
-			)
-			.addStringOption((option) =>
-				option
-					.setName('message')
-					.setDescription('Write your message.')
-					.setRequired(true),
-			)
-			.addStringOption(option =>
-				option
-					.setName('edit_message')
-					.setDescription('If editing a message, provide the message ID.'),
-			),
-	);
-
 module.exports = {
 	name: 'send',
-	description,
+	description: ['Sends a message to a channel.', 'Edits a message by providing the channel and message ID and overwrite the previous post with new content.', 'Creates a new embed for the Ban/Friends List.', 'Adds an RSN to the ban list with a reason.', 'Edits an rsn or reason by finding the given rsn. Example:\n```css\n;send edit ban 1 Guys Reason: Is a noob.```', 'Removes a member from the ban or friends list by specifying their rsn and which embed they are in. Alternatively removes all info from the embed if the rsn is replaced with \'clear\'.'],
 	aliases: [''],
 	usage: ['<channel Tag/ID> <message content>', 'edit <channel Tag/ID> <message ID> <new message content>', 'embed <ban/friend/affiliate> <number>', 'info <ban/friend/affiliate> <num> RSN: <rsn> Reason: <reason>', 'edit <ban/friend/affiliate> <num> <rsn> <RSN:/Reason:> <value>', 'remove <ban/friend/affiliate> <num> <rsn/clear>'],
 	guildSpecific: 'all',
 	permissionLevel: 'Admin',
-	data,
+	data: new SlashCommandBuilder()
+		.setName('send')
+		.setDescription('Send a message to a channel')
+		.addSubcommand((subcommand) =>
+			subcommand
+				.setName('to')
+				.setDescription('Sends or edits a message to a specific channel in the server.')
+				.addChannelOption((option) =>
+					option.setName('channel').setDescription('The channel you want to send a message to.').setRequired(true),
+				)
+				.addStringOption((option) =>
+					option
+						.setName('message')
+						.setDescription('Write your message.')
+						.setRequired(true),
+				)
+				.addStringOption(option =>
+					option
+						.setName('edit_message')
+						.setDescription('If editing a message, provide the message ID.'),
+				),
+		),
 	slash: async (interaction, perms) => {
 		if (!perms.admin) return interaction.reply(perms.errorA);
 		if (interaction.options.getSubcommand() === 'to') {
