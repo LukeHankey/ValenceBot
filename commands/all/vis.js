@@ -19,16 +19,16 @@ module.exports = {
 		.addSubcommand(subcommand =>
 			subcommand
 				.setName('wax')
-				.setDescription('Todays Vis Wax combinations.'))
-		.addSubcommand(subcommand =>
-			subcommand
-				.setName('other_commands')
-				.setDescription('Shows other vix wax commands')
-				.addIntegerOption(option =>
-					option.setName('reset')
-						.setDescription(`${description[2]} [ADMIN]`)
-						.addChoice('True', 1))),
-	// Add back when files are allowed to be uploaded with slash commands
+				.setDescription('Todays Vis Wax combinations.')),
+	// 	.addSubcommand(subcommand =>
+	// 		subcommand
+	// 			.setName('other_commands')
+	// 			.setDescription('Shows other vix wax commands')
+	// 			.addIntegerOption(option =>
+	// 				option.setName('reset')
+	// 					.setDescription(`${description[2]} [ADMIN]`)
+	// 					.addChoice('True', 1))),
+	// // Add back when files are allowed to be uploaded with slash commands
 	// .addStringOption(option =>
 	// 	option.setName('upload')
 	// 		.setDescription(`${description[1]}`)
@@ -58,7 +58,7 @@ module.exports = {
 				return await interaction.reply({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' });
 			}
 			else {
-				return await interaction.reply({ content: `**Image uploaded at:** ${visTime}`, files: [vis] });
+				return await interaction.reply({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}>`, files: [vis] });
 			}
 		}
 		else if (interaction.options.getInteger('reset')) {
@@ -113,7 +113,7 @@ module.exports = {
 				if (vis === null) {
 					return message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' });
 				}
-				return message.channel.send({ content: `**Image uploaded at:** ${visTime}`, files: [`${vis}`] });
+				return message.channel.send({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}> | Try out the slash command: \`/vis wax\``, files: [`${vis}`] });
 			}
 			catch (err) {
 				return message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' });
