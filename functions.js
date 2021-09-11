@@ -98,82 +98,49 @@ module.exports = {
 	randomNum: function() {
 		return (Math.round(Math.random() * 10000) + 1);
 	},
-	removeEvents: async function(client, message, settings, { channels, module }, database, identifier, messageCheck) {
-		const eventsChannel = client.channels.cache.get(database.channels.events);
-		let eventMessageCheck;
-
-		if (identifier === 'eventTag') {
-			eventMessageCheck = database.events.map(event => { if (event.eventTag === messageCheck) return { value: true, message: event.messageID, role: event.roleID };}).filter(valid => valid);
-			const eventMessage = await eventsChannel.messages.fetch(eventMessageCheck[0].message).catch((e) => { return channels.errors.send(e, module);});
-			await settings.updateOne({ _id: message.channel.guild.id }, { $pull: { events: { eventTag: messageCheck } } });
-			await settings.findOneAndUpdate({ _id: message.channel.guild.id, 'calendarID.month': new Date(eventMessage.createdTimestamp).toLocaleString('default', { month: 'long' }) }, { $pull: { 'calendarID.$.events': { eventTag: messageCheck } } });
-			eventMessage.reactions.removeAll();
-		}
-		else if (identifier === 'messageID') {
-			eventMessageCheck = database.events.map(event => { if (event.messageID === messageCheck) return { message: event.messageID, role: event.roleID };}).filter(valid => valid);
-
-			// Send error to error channel if the post was not made in the events channel (Might have been done directly with commands.
-			const eventMessage = await eventsChannel.messages.fetch(messageCheck).catch(e => channels.errors.send(e, module));
+	removeEvents: async function(message, settings, channels, module, database, eventTag) {
+		try {
+			const eventsChannel = message.guild.channels.cache.get(database.channels.events);
+			const [ eventMessageCheck ] = database.events.filter(event => { if (event.eventTag === eventTag) return event; });
 
 			// Remove from events
-			await settings.updateOne({ _id: message.guild.id }, { $pull: { events: { roleID: eventMessageCheck[0].role } } });
+			await settings.updateOne({ _id: message.guild.id }, { $pull: { events: { eventTag } } });
 
 			// Remove from calendar
-			await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': new Date(eventMessage.createdTimestamp).toLocaleString('default', { month: 'long' }) }, { $pull: { 'calendarID.$.events': { roleID: eventMessageCheck[0].role } } });
+			await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': eventMessageCheck.month }, { $pull: { 'calendarID.$.events': { eventTag } } });
 
-			// Remove reactions from event post
-			eventMessage.reactions.removeAll();
-		}
-		else { return;}
+			// Remove role from server
+			await message.guild.roles.fetch(eventMessageCheck.roleID).then(r => r.delete());
 
-		// Remove role from server
-		await message.guild.roles.fetch(eventMessageCheck[0].role).then(r => r.delete()).catch(err => channels.errors.send(err, module));
+			const calChannel = message.guild.channels.cache.find((ch) => ch.name === 'calendar');
 
-		const messageID = eventMessageCheck[0].message;
+			if (eventMessageCheck.messageID) {
+				// Fetch the event message and remove reactions from event post
+				const eventMessage = await eventsChannel.messages.fetch(eventMessageCheck.messageID);
+				await eventMessage.reactions.removeAll();
+			}
 
-		// Returns the event month | msg.id
-		const info = database.calendarID.map(months => {
-			if (!months.events || !months.events.length) return;
-			const check = months.events.some(elem => elem.messageID === messageID);
-			if (check) return { msg: months.messageID, month: months.month };
-		}).filter(x => x);
+			if (module.exports.name === 'calendar') return;
 
-		const calChannel = message.guild.channels.cache.find((ch) => ch.name === 'calendar');
-
-		try {
-			// Rest is for messageReactionAdd
-			const calMessage = await calChannel.messages.fetch(info[0].msg);
+			// Remove the post from the calendar
+			const [ calendarMessage ] = database.calendarID.filter(month => { if (month.month === eventMessageCheck.month) return month; });
+			const calMessage = await calChannel.messages.fetch(calendarMessage.messageID);
 			const fields = calMessage.embeds[0].fields;
+
 			const foundIndex = fields.findIndex(field => {
-				const announcement = field.value.split('\n')[2];
-				const announcementID = announcement.split('/')[6].slice(0, -1);
-				if (announcementID === messageID) return field;
-			});
-			let items = fields.find(item => {
-				let announcement = item.value.split('\n')[2];
-				announcement = announcement.split('/')[6].slice(0, -1);
-				if (announcement === messageID) {return item;}
-				else { return null; }
-			});
-			if (!items) return;
-			items = [items].map((values) => {
-				if (values === null) return null;
-				else return `${values.name}\n${values.value}\n`;
+				const roleItem = field.value.split('\n')[4];
+				const roleId = roleItem.slice(9, 27);
+				if (roleId === eventMessageCheck.roleID) return field;
 			});
 
+			const removedItem = [fields[foundIndex]].map(obj => `${obj.name}\n${obj.value}`);
 			const updateEmbed = new MessageEmbed(calMessage.embeds[0]);
 			updateEmbed.spliceFields(foundIndex, 1);
 			calMessage.edit({ embeds: [ updateEmbed ] });
-			const remaining = updateEmbed.fields.map((values) => `${values.name}\n${values.value}\n`);
-			channels.logs.send(`Calendar updated - ${message.author} removed event: \`\`\`diff\n- Removed\n${items.join('\n')}\n+ Remaining\n ${remaining.join('\n')}\`\`\``);
+			channels.logs.send(`Calendar updated - ${message.displayName} removed event: \`\`\`diff\n- Removed\n${removedItem.join()}\`\`\``);
 		}
 		catch (err) {
-			if (err.code === 10008) {
-				channels.errors.send(`The ${info[0].month} calendar was deleted from ${calChannel.toString()}. Unable to fetch that months calendar to remove events but they have been removed from the calendar and events database.`);
-			}
-			else {
-				console.error(err);
-			}
+			channels.errors.send(err, module);
 		}
 	},
 	csvJSON: (csv) => {

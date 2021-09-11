@@ -257,16 +257,15 @@ module.exports = async (client, interaction) => {
 			interaction.reply({ content: 'You can\'t use that in this channel.', ephemeral: true });
 		}
 
-		const contextMenu = await interaction.guild?.commands.fetch(interaction.commandId);
-		const permissions = [
-			{
-				id: '881696440747958342',
-				type: 'ROLE',
-				permission: false,
-			},
-		];
-		const perms = await contextMenu.permissions.set({ permissions });
-		console.log(perms);
+		// const contextMenu = await interaction.guild?.commands.fetch(interaction.commandId);
+		// const permissions = [
+		// 	{
+		// 		id: '881696440747958342',
+		// 		type: 'ROLE',
+		// 		permission: false,
+		// 	},
+		// ];
+		// await contextMenu.permissions.set({ permissions });
 	}
 	else { return; }
 

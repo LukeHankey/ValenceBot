@@ -68,10 +68,10 @@ const vEvents = async (client, message, channels) => {
 
 					const editEmbed = new MessageEmbed(m.embeds[0]);
 					editEmbed.addFields(
-						{ name: date, value: `Event: ${eventTitle[0]}\nTime: ${time}\n[Announcement](${link})\nHost: ${last.author}` },
+						{ name: date, value: `Event: ${eventTitle[0]}\nTime: ${time}\n[Announcement](${link})\nHost: ${last.author}\nRole: ${newRole}` },
 					);
 					m.edit({ embeds: [ editEmbed ] });
-					channels.logs.send(`Calendar updated - ${message.author} added an event automatically: \`\`\`Date: ${date}, Event: ${eventTitle[0]}, Time: ${time}, Link: ${link}, Host: ${last.author}\`\`\``);
+					channels.logs.send(`Calendar updated - ${message.member.displayName} added an event automatically: \`\`\`Date: ${date}, Event: ${eventTitle[0]}, Time: ${time}, Link: ${link}, Host: ${last.author}\`\`\``);
 				};
 
 				if (!dateRegex.test(last.content) || !timeRegex.test(last.content)) {
@@ -81,8 +81,16 @@ const vEvents = async (client, message, channels) => {
 					addToCal(dateR, timeR);
 				}
 
-				await settingsColl.updateOne({ _id: message.channel.guild.id }, { $push: { events: { $each: [ { title: eventTitle[0], messageID: last.id, roleID: newRole.id, eventTag: newRole.name.slice(eventTitle[0].length + 2), date: new Date(), dateEnd: dateR, members: [] } ] } } });
-				await settingsColl.findOneAndUpdate({ _id: message.channel.guild.id, 'calendarID.month': new Date().toLocaleString('default', { month: 'long' }) }, { $push: { 'calendarID.$.events': { messageID: last.id, title: eventTitle[0], eventTag: newRole.name.slice(eventTitle[0].length + 2), roleID: newRole.id } } });
+				await settingsColl.updateOne({ _id: message.channel.guild.id },
+					{ $push: { events:
+						{ messageID: last.id, title: eventTitle[0], eventTag: newRole.name.slice(eventTitle[0].length + 2), roleID: newRole.id, date: new Date(), dateEnd: dateR, members: [], month: new Date().toLocaleString('default', { month: 'long' }) },
+					} });
+
+				await settingsColl.findOneAndUpdate({ _id: message.channel.guild.id, 'calendarID.month': new Date().toLocaleString('default', { month: 'long' }) },
+					{ $push: { 'calendarID.$.events':
+						{ messageID: last.id, title: eventTitle[0], eventTag: newRole.name.slice(eventTitle[0].length + 2), roleID: newRole.id },
+					} });
+
 				await collectOneReaction.message.reactions.removeAll();
 				await last.react('📌');
 				await last.react('✅');
