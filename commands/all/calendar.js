@@ -18,156 +18,6 @@ const monthChoices = [
 	[ 'December', 'December' ],
 ];
 
-const data = new SlashCommandBuilder()
-	.setName('calendar')
-	.setDescription('Various commands to interact with the calendar.')
-	.setDefaultPermission(false)
-	.addSubcommand(subcommand =>
-		subcommand
-			.setName('create')
-			.setDescription('Creates an embed for a calender. Defaults to the current month.')
-			.addStringOption(option =>
-				option
-					.setName('month')
-					.setDescription('Choose a month for the current embed.')
-					.addChoices(monthChoices),
-			),
-	)
-	.addSubcommand(subcommand =>
-		subcommand
-			.setName('add')
-			.setDescription('Adds a new event to the calendar.')
-			.addStringOption(option =>
-				option
-					.setName('date')
-					.setDescription('Set the date of the event.')
-					.setRequired(true),
-			)
-			.addStringOption(option =>
-				option
-					.setName('title')
-					.setDescription('Set the title of the event.')
-					.setRequired(true),
-			)
-			.addStringOption(option =>
-				option
-					.setName('time')
-					.setDescription('Set the time of the event.')
-					.setRequired(true),
-			)
-			.addStringOption(option =>
-				option
-					.setName('announcement')
-					.setDescription('Provide the event announcement link to.')
-					.setRequired(true),
-			)
-			.addUserOption(option =>
-				option
-					.setName('member')
-					.setDescription('Set the main host of the event.')
-					.setRequired(true),
-			)
-			.addIntegerOption(option =>
-				option
-					.setName('position')
-					.setDescription('If included, adds this event to the specified ordered position on the embed.'),
-			)
-			.addStringOption(option =>
-				option
-					.setName('month')
-					.setDescription('Choose the month of the calendar you want to add to.')
-					.addChoices(monthChoices),
-			),
-	)
-	.addSubcommand(subcommand =>
-		subcommand
-			.setName('edit')
-			.setDescription('Edit the current or specified calendar month by field name (Date|Event|Time|Announcement|Host).')
-			.addIntegerOption(option =>
-				option
-					.setName('position')
-					.setDescription('The ordered number in the calendar, top down from 1.')
-					.setRequired(true),
-			)
-			.addStringOption(option =>
-				option
-					.setName('field')
-					.setDescription('The field name in which to edit.')
-					.addChoices([
-						['Date', 'date'],
-						['Title', 'event'],
-						['Time', 'time'],
-						['Announcement', 'announcement'],
-						['Host', 'host'],
-					])
-					.setRequired(true),
-			)
-			.addStringOption(option =>
-				option
-					.setName('value')
-					.setDescription('Set the new value for the specified field.')
-					.setRequired(true),
-			)
-			.addStringOption(option =>
-				option
-					.setName('month')
-					.setDescription('Choose the month of the calendar you want to edit.')
-					.addChoices(monthChoices),
-			),
-	)
-	.addSubcommand(subcommand =>
-		subcommand
-			.setName('remove')
-			.setDescription('Remove an event from a specific calendar.')
-			.addIntegerOption(option =>
-				option
-					.setName('position')
-					.setDescription('The ordered number in the calendar, top down from 1.')
-					.setRequired(true),
-			)
-			.addIntegerOption(option =>
-				option
-					.setName('delete')
-					.setDescription('How many to delete. Defaults to 1 (current event).'),
-			)
-			.addStringOption(option =>
-				option
-					.setName('month')
-					.setDescription('Choose the month of the calendar you want to edit.')
-					.addChoices(monthChoices),
-			),
-	)
-	.addSubcommand(subcommand =>
-		subcommand
-			.setName('move')
-			.setDescription('Reorder the calendar by moving events.')
-			.addIntegerOption(option =>
-				option
-					.setName('from')
-					.setDescription('The ordered number in the calendar, top down from 1.')
-					.setRequired(true),
-			)
-			.addIntegerOption(option =>
-				option
-					.setName('to')
-					.setDescription('The ordered number in the calendar, top down from 1.')
-					.setRequired(true),
-
-			)
-			.addStringOption(option =>
-				option
-					.setName('month')
-					.setDescription('Choose the month of the calendar you want to move an event from.')
-					.addChoices(monthChoices),
-			)
-			.addStringOption(option =>
-				option
-					.setName('month_to')
-					.setDescription('Choose the month of the calendar you want to move an event to.')
-					.addChoices(monthChoices),
-			),
-	);
-
 module.exports = {
 	name: 'calendar',
 	description: ['Creates an embed for a calender - defaults to the current month.', 'Add an event to the current or specified calendar month. Position defaults to the end of the calendar. \nExample:\n ```css\n;calendar add 4 Date: 13th Event: New Event Title! Time: 20:00 - 21:00 Announcement: <link> Host: @everyone```', 'Edit the current or specified calendar month by field name:\n Date: / Event: / Time: / Announcement: / Host:', 'Removes 1 or more events from the current or specified calendar month.', 'Moves one event from x position to y position in the current or specified calendar month.'],
@@ -175,7 +25,155 @@ module.exports = {
 	usage: ['create <month (optional)>', 'add <month (optional)> <position (optional)> Date: <Date> Event: <event text> Time: <time> Announcement: <link> Host: <@member(s)/role>', 'edit <month (optional)> <starting field> <event field> <new value>', 'remove <month (optional)> <starting field> <delete count>', 'move <month (optional)> <from position> <to position>'],
 	guildSpecific: ['472448603642920973', '668330890790699079'],
 	permissionLevel: 'Mod',
-	data,
+	data: new SlashCommandBuilder()
+		.setName('calendar')
+		.setDescription('Various commands to interact with the calendar.')
+		.setDefaultPermission(false)
+		.addSubcommand(subcommand =>
+			subcommand
+				.setName('create')
+				.setDescription('Creates an embed for a calender. Defaults to the current month.')
+				.addStringOption(option =>
+					option
+						.setName('month')
+						.setDescription('Choose a month for the current embed.')
+						.addChoices(monthChoices),
+				),
+		)
+		.addSubcommand(subcommand =>
+			subcommand
+				.setName('add')
+				.setDescription('Adds a new event to the calendar.')
+				.addStringOption(option =>
+					option
+						.setName('date')
+						.setDescription('Set the date of the event.')
+						.setRequired(true),
+				)
+				.addStringOption(option =>
+					option
+						.setName('title')
+						.setDescription('Set the title of the event.')
+						.setRequired(true),
+				)
+				.addStringOption(option =>
+					option
+						.setName('time')
+						.setDescription('Set the time of the event.')
+						.setRequired(true),
+				)
+				.addStringOption(option =>
+					option
+						.setName('announcement')
+						.setDescription('Provide the event announcement link to.')
+						.setRequired(true),
+				)
+				.addUserOption(option =>
+					option
+						.setName('member')
+						.setDescription('Set the main host of the event.')
+						.setRequired(true),
+				)
+				.addIntegerOption(option =>
+					option
+						.setName('position')
+						.setDescription('If included, adds this event to the specified ordered position on the embed.'),
+				)
+				.addStringOption(option =>
+					option
+						.setName('month')
+						.setDescription('Choose the month of the calendar you want to add to.')
+						.addChoices(monthChoices),
+				),
+		)
+		.addSubcommand(subcommand =>
+			subcommand
+				.setName('edit')
+				.setDescription('Edit the current or specified calendar month by field name (Date|Event|Time|Announcement|Host).')
+				.addIntegerOption(option =>
+					option
+						.setName('position')
+						.setDescription('The ordered number in the calendar, top down from 1.')
+						.setRequired(true),
+				)
+				.addStringOption(option =>
+					option
+						.setName('field')
+						.setDescription('The field name in which to edit.')
+						.addChoices([
+							['Date', 'date'],
+							['Title', 'event'],
+							['Time', 'time'],
+							['Announcement', 'announcement'],
+							['Host', 'host'],
+						])
+						.setRequired(true),
+				)
+				.addStringOption(option =>
+					option
+						.setName('value')
+						.setDescription('Set the new value for the specified field.')
+						.setRequired(true),
+				)
+				.addStringOption(option =>
+					option
+						.setName('month')
+						.setDescription('Choose the month of the calendar you want to edit.')
+						.addChoices(monthChoices),
+				),
+		)
+		.addSubcommand(subcommand =>
+			subcommand
+				.setName('remove')
+				.setDescription('Remove an event from a specific calendar.')
+				.addIntegerOption(option =>
+					option
+						.setName('position')
+						.setDescription('The ordered number in the calendar, top down from 1.')
+						.setRequired(true),
+				)
+				.addIntegerOption(option =>
+					option
+						.setName('delete')
+						.setDescription('How many to delete. Defaults to 1 (current event).'),
+				)
+				.addStringOption(option =>
+					option
+						.setName('month')
+						.setDescription('Choose the month of the calendar you want to edit.')
+						.addChoices(monthChoices),
+				),
+		)
+		.addSubcommand(subcommand =>
+			subcommand
+				.setName('move')
+				.setDescription('Reorder the calendar by moving events.')
+				.addIntegerOption(option =>
+					option
+						.setName('from')
+						.setDescription('The ordered number in the calendar, top down from 1.')
+						.setRequired(true),
+				)
+				.addIntegerOption(option =>
+					option
+						.setName('to')
+						.setDescription('The ordered number in the calendar, top down from 1.')
+						.setRequired(true),
+
+				)
+				.addStringOption(option =>
+					option
+						.setName('month')
+						.setDescription('Choose the month of the calendar you want to move an event from.')
+						.addChoices(monthChoices),
+				)
+				.addStringOption(option =>
+					option
+						.setName('month_to')
+						.setDescription('Choose the month of the calendar you want to move an event to.')
+						.addChoices(monthChoices),
+				),
+		),
 	slash: async (interaction, perms, channels, database) => {
 		const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 

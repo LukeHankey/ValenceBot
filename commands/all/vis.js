@@ -6,29 +6,6 @@ const colors = require('../../colors.json');
 
 const description = ['Shows the current Vis Wax combinations.', 'Upload an image of the current Vis wax combinations or a message link which includes an attachment.', 'Force reset of image.'];
 
-const data = new SlashCommandBuilder()
-	.setName('vis')
-	.setDescription(description[0])
-	.addSubcommand(subcommand =>
-		subcommand
-			.setName('wax')
-			.setDescription('Todays Vis Wax combinations.'))
-	.addSubcommand(subcommand =>
-		subcommand
-			.setName('other_commands')
-			.setDescription('Shows other vix wax commands')
-			.addIntegerOption(option =>
-				option.setName('reset')
-					.setDescription(`${description[2]} [ADMIN]`)
-					.addChoice('True', 1)));
-// Add back when files are allowed to be uploaded with slash commands
-// .addStringOption(option =>
-// 	option.setName('upload')
-// 		.setDescription(`${description[1]}`)
-// 		.addChoice('File', 'file_upload')
-// 		.addChoice('Message Link', 'message_link')
-// 		.addChoice('Image URL', 'image_url')));
-
 module.exports = {
 	name: 'vis',
 	description,
@@ -36,7 +13,28 @@ module.exports = {
 	usage: ['', '<image URL or discord message link>', 'new'],
 	guildSpecific: 'all',
 	permissionLevel: 'Everyone',
-	data,
+	data: new SlashCommandBuilder()
+		.setName('vis')
+		.setDescription(description[0])
+		.addSubcommand(subcommand =>
+			subcommand
+				.setName('wax')
+				.setDescription('Todays Vis Wax combinations.'))
+		.addSubcommand(subcommand =>
+			subcommand
+				.setName('other_commands')
+				.setDescription('Shows other vix wax commands')
+				.addIntegerOption(option =>
+					option.setName('reset')
+						.setDescription(`${description[2]} [ADMIN]`)
+						.addChoice('True', 1))),
+	// Add back when files are allowed to be uploaded with slash commands
+	// .addStringOption(option =>
+	// 	option.setName('upload')
+	// 		.setDescription(`${description[1]}`)
+	// 		.addChoice('File', 'file_upload')
+	// 		.addChoice('Message Link', 'message_link')
+	// 		.addChoice('Image URL', 'image_url')));
 	slash: async (interaction, perms, channels) => {
 		const db = getDb();
 		const settings = db.collection('Settings');
