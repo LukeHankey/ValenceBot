@@ -1,4 +1,5 @@
 const getDb = require('../../mongodb').getDb;
+const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed } = require('discord.js');
 const { cyan } = require('../../colors.json');
 const { removeEvents } = require('../../functions');
@@ -14,6 +15,66 @@ module.exports = {
 	usage:  ['', 'end [ID]'],
 	guildSpecific: 'all',
 	permissionLevel: 'Mod',
+	data: new SlashCommandBuilder()
+		.setName('events')
+		.setDescription('Event commands.')
+		.setDefaultPermission(false)
+		.addSubcommand(subcommand =>
+			subcommand
+				.setName('list')
+				.setDescription('List the current events.'),
+		)
+		.addSubcommand(subcommand =>
+			subcommand
+				.setName('end')
+				.setDescription('Ends an event.')
+				.addStringOption(option =>
+					option
+						.setName('tag')
+						.setDescription('The event tag that matches the event.')
+						.setRequired(true),
+				),
+		),
+	slash: async (interaction, perms, channels, database) => {
+		const data = await database.findOne({ _id: interaction.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } });
+		switch (interaction.options.getSubcommand()) {
+		case 'list':
+			try {
+				// Listing events
+				const link = `https://discord.com/channels/${data._id}/${data.channels.events}/`;
+				const fieldHolder = data.events.map(obj => {
+					const members = obj.members.map(mem => { return `<@!${mem}>`;});
+					return { name: obj.title, value: `ID: ${obj.eventTag}\nRole: <@&${obj.roleID}>\n[Event posted ${obj.date ? 'on ' + obj.date.toString().split(' ').slice(0, 4).join(' ') : ''}](${link}${obj.messageID})\nEvent ends on ${obj.dateEnd}\nInterested 📌: ${members.join(', ')}` };
+				});
+
+				const embed = new MessageEmbed()
+					.setTitle('Event Listing')
+					.setColor(cyan)
+					.setDescription('These are all of the events currently stored. Some may be old ones, others relatively new and ongoing. Feel free to remove events by their event ID.')
+					.addFields(fieldHolder);
+				interaction.reply({ embeds: [ embed ] });
+			}
+			catch (err) {
+				channels.errors.send(err, module);
+			}
+			break;
+		case 'end':
+			try {
+				const tag = interaction.options.getString('tag');
+				const checkEventExists = data.events.map(event => { if (event.eventTag === tag) return { value: true, message: event.messageID, role: event.roleID };}).filter(valid => valid);
+				if (checkEventExists.length && checkEventExists[0].value) {
+					await removeEvents(interaction, database, channels, module, data, tag);
+					return interaction.reply({ content: 'Event has been removed.', ephemeral: true });
+				}
+				else {
+					interaction.reply({ content: `There is no event found with ID: \`${tag}\`` });
+				}
+			}
+			catch (err) {
+				channels.errors.send(err, module);
+			}
+		}
+	},
 	run: async (client, message, args, perms, channels) => {
 		if (!perms.mod) return message.channel.send(perms.errorM);
 		const db = getDb();
