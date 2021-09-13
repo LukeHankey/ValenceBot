@@ -203,7 +203,7 @@ module.exports = async (client, interaction) => {
 		if (interaction.customId === thisSelection[0].selectID) {
 			try {
 				await interaction.update({ components: [] });
-				const errorChannel = client.channels.cache.get(dmData.merchChannel.deletions.channelID);
+				const errorChannel = client.channels.cache.get('794608385106509824');
 				const buttonMessage = await errorChannel.messages.fetch(thisSelection[0].buttonMessageID);
 				if (interaction.values.includes('yes')) {
 					await interaction.followUp({ content: 'Thank you for responding, the log has been automatically removed.' });
