@@ -86,14 +86,13 @@ module.exports = {
 				const tag = args.slice(-1).join('');
 				const colName = dataC.find(val => val.toLowerCase() == colNameArgs.toLowerCase());
 
-				const lottoEmbed = { embeds: [ func.nEmbed('Lotto entry added successfully!', '', colors.green_light, message.author.displayAvatarURL(), client.user.displayAvatarURL())
+				const lottoEmbed = func.nEmbed('Lotto entry added successfully!', '', colors.green_light, message.author.displayAvatarURL(), client.user.displayAvatarURL())
 					.addFields(
 						{ name: 'RuneScape Name:', value: `${rsn || undefined}`, inline: true },
 						{ name: 'Amount:', value: '500,000', inline: true },
 						{ name: 'To:', value: `${colName}`, inline: true },
 						{ name: 'Donations Updated:', value: 'N/A', inline: true },
-					)],
-				};
+					);
 
 				switch (args[0]) {
 				case 'add':
@@ -123,15 +122,14 @@ module.exports = {
 								if (tag && tag === 'double') {
 									newArr.push([userData.length + 1, rsn.trim().split(/ /g).join(' '), '500,000', colName, 'N/A', 'Double Entry']);
 									await gsapi.spreadsheets.values.append(optW);
-									return message.channel.send(lottoEmbed
+									return message.channel.send({ embeds: [ lottoEmbed
 										.spliceFields(0, 1, { name: 'RuneScape Name:', value: `${rsn.split(/ /g).slice(0, -1).join(' ')}`, inline: true })
-										.addField('Double Entry:', 'Yes', true));
+										.addField('Double Entry:', 'Yes', true) ],
+									});
 								}
 								newArr.push([userData.length + 1, rsn.trim(), '500,000', colName, 'N/A']);
 								await gsapi.spreadsheets.values.append(optW);
-								return message.channel.send(lottoEmbed
-									.spliceFields(2, 1, { name: 'To:', value: `${colName}`, inline: true }),
-								);
+								return message.channel.send({ embeds: [lottoEmbed.spliceFields(2, 1, { name: 'To:', value: `${colName}`, inline: true })] });
 							}
 							break;
 						default:
@@ -161,18 +159,19 @@ module.exports = {
 								if (tag && tag === 'double') {
 									newArr.push([userData.length + 1, rsn.trim().split(/ /g).join(' '), args[1], colName, 'No', 'Double Entry']);
 									await gsapi.spreadsheets.values.append(optW);
-									return message.channel.send(lottoEmbed
+									return message.channel.send({ embeds: [ lottoEmbed
 										.spliceFields(1, 1, { name: 'Amount:', value: `${args[1]}`, inline: true })
 										.spliceFields(0, 1, { name: 'RuneScape Name:', value: `${rsn.split(/ /g).slice(0, -1).join(' ')}`, inline: true })
-										.addField('Double Entry:', 'Yes', true));
+										.addField('Double Entry:', 'Yes', true) ],
+									});
 								}
 								newArr.push([userData.length + 1, rsn.trim(), args[1], colName, 'No']);
 								await gsapi.spreadsheets.values.append(optW);
-								return message.channel.send(lottoEmbed
+								return message.channel.send({ embeds: [ lottoEmbed
 									.spliceFields(1, 1, { name: 'Amount:', value: `${args[1]}`, inline: true })
 									.spliceFields(2, 1, { name: 'To:', value: `${colName}`, inline: true })
-									.spliceFields(3, 1, { name: 'Donations Updated:', value: 'No', inline: true }),
-								);
+									.spliceFields(3, 1, { name: 'Donations Updated:', value: 'No', inline: true }) ],
+								});
 							}
 						}
 					}
