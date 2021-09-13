@@ -123,7 +123,8 @@ module.exports = {
 			if (module.exports.name === 'calendar') return;
 
 			// Remove the post from the calendar
-			const [ calendarMessage ] = database.calendarID.filter(month => { if (month.month === eventMessageCheck.month) return month; });
+			const currentYear = new Date().getFullYear();
+			const [ calendarMessage ] = database.calendarID.filter(month => { if (month.month === eventMessageCheck.month && month.year === currentYear) return month; });
 			const calMessage = await calChannel.messages.fetch(calendarMessage.messageID);
 			const fields = calMessage.embeds[0].fields;
 
