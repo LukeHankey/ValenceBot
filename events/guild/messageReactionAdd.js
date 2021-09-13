@@ -82,7 +82,6 @@ module.exports = async (client, reaction, user) => {
 					if (reaction.emoji.name === '✅') {
 						primary = primary.split(' |')[0];
 						const oldProfile = await usersDB.findOne({ clanMate: potentialPreviousName });
-						await usersDB.deleteOne({ clanMate: potentialPreviousName });
 						await usersDB.updateOne({ clanMate: primary }, {
 							$set: {
 								discord: oldProfile.discord,
@@ -93,7 +92,8 @@ module.exports = async (client, reaction, user) => {
 							$unset: {
 								potentialNewNames: 1,
 							},
-						});
+						}).then(() => usersDB.deleteOne({ clanMate: potentialPreviousName }));
+
 						settingsColl.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } });
 						message.edit({ content: `Action: ✅, by: ${user.username}\n${message.content}` });
 						return message.reactions.removeAll();
