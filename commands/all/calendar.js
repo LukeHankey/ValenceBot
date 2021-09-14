@@ -174,7 +174,7 @@ module.exports = {
 						.addChoices(monthChoices),
 				),
 		),
-	slash: async (interaction, perms, channels, database) => {
+	slash: async (interaction, _, channels, database) => {
 		const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 		// Variables
