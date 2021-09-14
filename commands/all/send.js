@@ -15,12 +15,16 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('send')
 		.setDescription('Send a message to a channel')
+		.setDefaultPermission(false)
 		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('to')
 				.setDescription('Sends or edits a message to a specific channel in the server.')
 				.addChannelOption((option) =>
-					option.setName('channel').setDescription('The channel you want to send a message to.').setRequired(true),
+					option
+						.setName('channel')
+						.setDescription('The channel you want to send a message to.')
+						.setRequired(true),
 				)
 				.addStringOption((option) =>
 					option

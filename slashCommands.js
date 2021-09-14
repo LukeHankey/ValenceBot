@@ -9,16 +9,19 @@ const commandFiles = fs.readdirSync('./commands/all').filter(file => file.endsWi
 // Place your client and guild ids here
 const clientId = '668330399033851924';
 // eslint-disable-next-line no-unused-vars
-const guildId = '668330890790699079'; // Test
+// eslint-disable-next-line no-inline-comments
+const guildId = '420803245758480405'; // DSF
+// const guildId = '472448603642920973'; // Valence
+// const guildId = '668330890790699079'; // Test
 
 // Comment out to remove all guild-specific commands
 for (const file of commandFiles) {
 	const command = require(`./commands/all/${file}`);
 	if (!command.data) continue;
-	// if (['nick', 'events', 'calendar'].includes(command.name)) continue;
+	if (['nick', 'events', 'calendar'].includes(command.name)) continue;
 	commands.push(command.data.toJSON());
 }
-console.log(commands);
+// console.log(commands);
 
 // Context Menu
 
@@ -27,7 +30,7 @@ const menuData = {
 	type: 3,
 };
 
-commands.push(menuData);
+// commands.push(menuData);
 
 const rest = new REST({ version: '9' }).setToken(process.env.BOT_TOKEN);
 
@@ -35,15 +38,19 @@ const rest = new REST({ version: '9' }).setToken(process.env.BOT_TOKEN);
 	try {
 		console.log('Started refreshing application (/) commands.');
 
-		await rest.put(
+		// Valence done
+		// Add menu to dsf when its gone
+		const gcoms = await rest.get(
 			Routes.applicationGuildCommands(clientId, guildId),
-			{ body: commands },
+			// { body: commands },
 		);
+		console.log(1, gcoms);
 
-		// await rest.put(
+		// const coms = await rest.get(
 		// 	Routes.applicationCommands(clientId),
-		// 	{ body: commands },
+		// 	// { body: commands },
 		// );
+		// console.log(2, coms);
 
 		console.log('Successfully reloaded application (/) commands.');
 	}

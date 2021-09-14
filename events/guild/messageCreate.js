@@ -70,12 +70,6 @@ module.exports = async (client, message) => {
 		return client.channels.cache.get('788525524782940187').send({ embeds: [ embed ] });
 	}
 
-	if (process.env.NODE_ENV === 'DEV') {
-		if (message.guild === null) return;
-		if (message.guild.id !== '668330890790699079') return;
-	}
-	else if (message.guild.id === '668330890790699079') {return;}
-
 	// Deep Sea Fishing
 	if (message.guild.id === '420803245758480405' || message.guild.id === '668330890790699079') {
 		const { merchChannel: { channelID, otherChannelID }, channels: { adminChannel } } = await settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } }, { projection: { 'merchChannel.channelID': 1, 'merchChannel.otherChannelID': 1, channels: 1 } });
