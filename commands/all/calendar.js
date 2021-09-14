@@ -380,7 +380,7 @@ module.exports = {
 
 			for (const item of logValues) {
 				const items = item.split('\n');
-				const title = items[0];
+				const title = items[1].slice(7);
 				const roleId = items[5].slice(9, 27);
 				const role = message.guild.roles.cache.get(roleId) ?? await message.guild.roles.fetch(roleId);
 				const eventTag = role.name.slice(title.length + 2);

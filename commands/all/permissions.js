@@ -65,7 +65,12 @@ module.exports = {
 		let guild = true;
 		let guildCommand = await interaction.client.guilds.cache.get(interaction.guild.id)?.commands.fetch();
 		let globalCommands = await interaction.client.application?.commands.fetch();
-		guildCommand = guildCommand.filter(com => commandArray.push(com.name));
+		guildCommand = guildCommand.filter(com => {
+			commandArray.push(com.name);
+			if (com.name === commandName) {
+				return com;
+			}
+		});
 		globalCommands = globalCommands.filter(com => {
 			commandArray.push(com.name);
 			if (com.name === commandName) {
@@ -82,12 +87,13 @@ module.exports = {
 			const userOrRole = interaction.options.getMentionable('mention') instanceof GuildMember ? 'USER' : 'ROLE';
 			const value = interaction.options.getBoolean('value');
 			const permType = interaction.options.getString('type');
+			let guildPerms;
+			if (guild) guildPerms = await interaction.client.guilds.cache.get(interaction.guild.id)?.commands.fetch(guildCommand.first().permissions.commandId);
 
 			switch (permType) {
 			case 'Add': {
 				if (guild) {
-					await interaction.command.permissions.add({
-						command: guildCommand.first().permissions.commandId,
+					await guildPerms.permissions.add({
 						permissions: [
 							{
 								id: userOrRoleId,
@@ -114,13 +120,13 @@ module.exports = {
 				break;
 			case 'Remove': {
 				if (guild && userOrRole === 'ROLE') {
-					await interaction.command.permissions.remove({
+					await guildPerms.permissions.remove({
 						command: guildCommand.first().permissions.commandId,
 						roles: [userOrRoleId],
 					});
 				}
 				else if (guild && userOrRole === 'USER') {
-					await interaction.command.permissions.remove({
+					await guildPerms.permissions.remove({
 						command: guildCommand.first().permissions.commandId,
 						users: [userOrRoleId],
 					});
@@ -170,7 +176,7 @@ module.exports = {
 
 			try {
 				if (cmd.size) {
-					const perms = await interaction.command.permissions.fetch({ command: cmd.first().id });
+					const perms = await interaction.guild.commands.permissions.fetch({ command: cmd.first().id });
 					return interaction.reply({ embeds: [displayPerms(perms)], ephemeral: true });
 				}
 

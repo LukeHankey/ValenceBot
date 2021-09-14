@@ -13,6 +13,8 @@ const vEvents = async (client, message, channels) => {
 
 	const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 	const monthIndex = (new Date()).getUTCMonth();
+	const currentMonth = months[monthIndex];
+	const currentYear = new Date().getFullYear();
 
 	if (message.channel.id === eventChannel) {
 		const last = message.channel.lastMessage;
@@ -42,7 +44,7 @@ const vEvents = async (client, message, channels) => {
 				const dateRegex = /^(Date(:)?\s)+((3[0-1]|2\d|1\d|[1-9])(st|nd|rd|th)?)+\s?((-|to)+\s?((3[0-1]|2\d|1\d|[1-9])(st|nd|rd|th)?)+)?(\s)?$/im;
 				const timeRegex = /^(Time(:)?\s)+(([1-6]+(\s)?(day(s)?|week(s)?|month(s)?)(\s)?$)?|(([0-1]\d|2[0-3]):([0-5]\d)\s?)?((-|to)+\s?(([0-1]\d|2[0-3]):([0-5]\d))?)?)$/im;
 				const link = `https://discord.com/channels/${last.guild.id}/${last.channel.id}/${last.id}`;
-				const thisCal = await DB.calendarID.filter(prop => (prop.year === new Date().getUTCFullYear()) && prop.month === months[monthIndex]);
+				const thisCal = await DB.calendarID.filter(prop => { if((prop.year === currentYear) && prop.month === currentMonth) return prop; });
 				const m = await calChannel.messages.fetch(thisCal[0].messageID);
 				let dateR, timeR;
 
@@ -81,12 +83,12 @@ const vEvents = async (client, message, channels) => {
 					addToCal(dateR, timeR);
 				}
 
-				await settingsColl.updateOne({ _id: message.channel.guild.id },
+				await settingsColl.updateOne({ _id: message.guild.id },
 					{ $push: { events:
-						{ messageID: last.id, title: eventTitle[0], eventTag: newRole.name.slice(eventTitle[0].length + 2), roleID: newRole.id, date: new Date(), dateEnd: dateR, members: [], month: new Date().toLocaleString('default', { month: 'long' }) },
+						{ messageID: last.id, title: eventTitle[0], eventTag: newRole.name.slice(eventTitle[0].length + 2), roleID: newRole.id, date: new Date(), dateEnd: dateR, members: [], month: currentMonth, calendarID: m.id },
 					} });
 
-				await settingsColl.findOneAndUpdate({ _id: message.channel.guild.id, 'calendarID.month': new Date().toLocaleString('default', { month: 'long' }) },
+				await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'calendarID.messageID': m.id },
 					{ $push: { 'calendarID.$.events':
 						{ messageID: last.id, title: eventTitle[0], eventTag: newRole.name.slice(eventTitle[0].length + 2), roleID: newRole.id },
 					} });
