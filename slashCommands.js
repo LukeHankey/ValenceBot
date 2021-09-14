@@ -9,12 +9,13 @@ const commandFiles = fs.readdirSync('./commands/all').filter(file => file.endsWi
 // Place your client and guild ids here
 const clientId = '668330399033851924';
 // eslint-disable-next-line no-unused-vars
-const guildId = '420803245758480405';
+const guildId = '668330890790699079'; // Test
 
 // Comment out to remove all guild-specific commands
 for (const file of commandFiles) {
 	const command = require(`./commands/all/${file}`);
 	if (!command.data) continue;
+	// if (['nick', 'events', 'calendar'].includes(command.name)) continue;
 	commands.push(command.data.toJSON());
 }
 console.log(commands);
@@ -34,15 +35,15 @@ const rest = new REST({ version: '9' }).setToken(process.env.BOT_TOKEN);
 	try {
 		console.log('Started refreshing application (/) commands.');
 
-		// await rest.put(
-		// 	Routes.applicationGuildCommands(clientId, guildId),
-		// 	{ body: commands },
-		// );
-
 		await rest.put(
-			Routes.applicationCommands(clientId),
+			Routes.applicationGuildCommands(clientId, guildId),
 			{ body: commands },
 		);
+
+		// await rest.put(
+		// 	Routes.applicationCommands(clientId),
+		// 	{ body: commands },
+		// );
 
 		console.log('Successfully reloaded application (/) commands.');
 	}
