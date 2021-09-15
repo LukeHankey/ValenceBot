@@ -87,7 +87,8 @@ module.exports = {
 			const userOrRole = interaction.options.getMentionable('mention') instanceof GuildMember ? 'USER' : 'ROLE';
 			const value = interaction.options.getBoolean('value');
 			const permType = interaction.options.getString('type');
-			const guildPerms = await interaction.client.guilds.cache.get(interaction.guild.id)?.commands.fetch(guildCommand.first().permissions.commandId);
+			let guildPerms;
+			if (guild) guildPerms = await interaction.client.guilds.cache.get(interaction.guild.id)?.commands.fetch(guildCommand.first().permissions.commandId);
 
 			switch (permType) {
 			case 'Add': {
