@@ -107,7 +107,7 @@ module.exports = {
 			await settings.updateOne({ _id: message.guild.id }, { $pull: { events: { eventTag } } });
 
 			// Remove from calendar
-			await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.month': eventMessageCheck.month }, { $pull: { 'calendarID.$.events': { eventTag } } });
+			await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.messageID': eventMessageCheck.calendarID }, { $pull: { 'calendarID.$.events': { 'eventTag': eventTag } } });
 
 			// Remove role from server
 			await message.guild.roles.fetch(eventMessageCheck.roleID).then(r => r.delete());

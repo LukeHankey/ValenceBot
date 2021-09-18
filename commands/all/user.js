@@ -20,15 +20,16 @@ module.exports = {
 			let member;
 			if (type === 'id') {
 				if (user.discord !== '' && inDisc) {
-					member = message.channel.guild.members.cache.get(user['Discord ID']) ?? await message.channel.guild.members.fetch(user['Discord ID']);
+					member = message.guild.members.cache.get(user.ID) ?? await message.guild.members.fetch(user.ID);
 				}
 			}
 			else if (type === 'rsn') {
 				if (user.discord !== '' && user.discActive) {
-					member = message.channel.guild.members.cache.get(user['Discord ID']) ?? await message.channel.guild.members.fetch(user['Discord ID']);
+					member = message.guild.members.cache.get(user.ID) ?? await message.guild.members.fetch(user.ID);
 				}
 			}
 			else { return; }
+
 
 			const embed = new MessageEmbed()
 				.setTitle(`User Profile - ${user.RSN}`)
@@ -55,18 +56,19 @@ module.exports = {
 
 		if (args.length === 1 && checkNum(args[0], 1, Infinity)) {
 			// Discord ID
-			const userInDiscord = message.channel.guild.members.cache.has(args[0]);
+			const userInDiscord = await message.guild.members.fetch(args[0]);
 			let findUser = await usersColl.findOne({ discord: args[0] }, { projection: { _id: 0, kills: 0 } });
 			if (findUser) {
 				findUser = renameKeys({ 'clanMate': 'RSN', 'clanRank': 'Rank', 'totalXP': 'Total XP', 'discord': 'ID', 'discActive': 'Discord', 'alt': 'Alt Account', 'gameActive': 'Game' }, findUser);
 				delete findUser.lastUpdated;
 				for (const item in findUser) {
 					if (findUser['ID'] === '') findUser['ID'] = 'N/A';
-					result.push({ name: item, value: findUser[item], inline: true });
+					result.push({ name: item, value: findUser[item].toString(), inline: true });
 				}
 			}
 
 			if (userInDiscord && findUser) {
+				console.log(result);
 				await createEmbedForDB(findUser, { inDisc: userInDiscord, type: 'id' }, result);
 			}
 			else if (userInDiscord && !findUser) {
@@ -76,7 +78,7 @@ module.exports = {
 				await createEmbedForDB(findUser, { inDisc: userInDiscord, type: 'id' }, result, 'This person is not in the server but they are in the clan.');
 			}
 			else {
-				await createEmbedForNoDB(args[0], 'The person with this ID is not in the clan, nor in the server. If they are new to the clan, please try again in 60 seconds while I get new data from Jagex.');
+				await createEmbedForNoDB(args[0], 'The person with this ID is not in the clan, nor in the server.');
 			}
 
 		}
