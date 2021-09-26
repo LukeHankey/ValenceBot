@@ -95,7 +95,7 @@ module.exports = async (client, reaction, user) => {
 						}).then(() => usersDB.deleteOne({ clanMate: potentialPreviousName }));
 
 						settingsColl.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } });
-						message.edit({ content: `Action: ✅, by: ${user.username}\n${message.content}` });
+						message.edit({ content: `Action: ✅, by: ${user.username}\n${message.content}\nDon't forget to merge their name: https://rsclanadmin.com/Clan/Manager/Members/245 to update their points.` });
 						return message.reactions.removeAll();
 					}
 					else if (reaction.emoji.name === '❌') {
