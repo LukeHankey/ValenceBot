@@ -348,7 +348,7 @@ module.exports = {
 								else {
 									const { value } = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { resetInfoCount: 0 } });
 									if (value.resetInfoCount == 0) {
-										client.channels.cache.get(value.channels.adminChannel).send(infoEmbedOne)
+										client.channels.cache.get(value.channels.adminChannel).send({ embeds: [infoEmbedOne] })
 											.then(async m => {
 												await m.react('✅');
 												await m.react('❌');

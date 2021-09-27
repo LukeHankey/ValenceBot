@@ -11,6 +11,7 @@ const { skullTimer } = require('../../dsf/merch/merchChannel/skullTimer');
 const { removeButtons } = require('../../dsf/merch/merchFunctions');
 const { MessageEmbed, Formatters } = require('discord.js');
 const colors = require('../../colors.json');
+const os = require('os');
 
 module.exports = async client => {
 	console.log('Ready!');
@@ -50,6 +51,28 @@ module.exports = async client => {
 			},
 		},
 	};
+
+	setInterval(() => {
+		const formatMemoryUsage = (data) => `${Math.round(data / 1024 / 1024 * 100) / 100} MB`;
+
+		const memoryData = process.memoryUsage();
+		const memoryArr = [];
+
+		const memoryUsage = {
+			rss: `${formatMemoryUsage(memoryData.rss)} -> Resident Set Size - total memory allocated for the process execution`,
+			heapTotal: `${formatMemoryUsage(memoryData.heapTotal)} -> total size of the allocated heap`,
+			heapUsed: `${formatMemoryUsage(memoryData.heapUsed)} -> actual memory used during the execution`,
+			external: `${formatMemoryUsage(memoryData.external)} -> V8 external memory`,
+			osTotalMemory: `${formatMemoryUsage(os.totalmem())} -> Total memory`,
+			osFreeMemory: `${formatMemoryUsage(os.freemem())} -> Free memory`,
+		};
+
+		for (const mem in memoryUsage) {
+			memoryArr.push(`${mem}: ${memoryUsage[mem]}\n`);
+		}
+
+		channels.logs.send(`${Formatters.codeBlock(memoryArr.join(''))}`);
+	}, 3.6e+6);
 
 	const formatTemplate = (data) => {
 		const headers = { clanMate: 'Name', clanRank: 'Rank', totalXP: 'Total XP', kills: 'Kills' };
