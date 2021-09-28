@@ -42,21 +42,30 @@ const updateButtonData = async (updateDB, message, userN, button) => {
 const removeButtons = async (client, database, { errors }) => {
 	try {
 		let merchDB = await database.find({ merchChannel: { $exists: true } }).toArray();
-		[ merchDB ] = merchDB.filter(db => db.serverName = 'Deep Sea Fishing');
-		// const oneDay = 8.64e+7;
-		const oneDay = 60000;
+		[ merchDB ] = merchDB.filter(db => db.serverName === 'Deep Sea Fishing');
+		const oneDay = 8.64e+7;
 		const components = merchDB.merchChannel.components;
 		if (components.length) {
-			const errorChannel = client.channels.cache.get(merchDB.merchChannel.deletions.channelID);
-			const removeMessageButtons = components.filter(obj => {
-				if ((Date.now() - obj.time) > oneDay) {
-					return obj;
-				}
-			});
-			return removeMessageButtons.forEach(async o => {
-				const msg = await errorChannel.messages.fetch(o.buttonMessageID);
-				await msg.edit({ components: [] });
-			});
+			try {
+				const errorChannel = client.channels.cache.get(merchDB.merchChannel.deletions.channelID);
+				const removeMessageButtons = components.filter(obj => {
+					if ((Date.now() - obj.time) > oneDay) {
+						return obj;
+					}
+				});
+				return removeMessageButtons.forEach(async o => {
+					const msg = await errorChannel.messages.fetch(o.buttonMessageID);
+					await msg.edit({ components: [] });
+					await database.updateOne({ serverName: 'Deep Sea Fishing' }, {
+						$pull: {
+							'merchChannel.components': { buttonMessageID: o.buttonMessageID },
+						},
+					});
+				});
+			}
+			catch (err) {
+				errors.send(err, module);
+			}
 		}
 		else { return; }
 	}
