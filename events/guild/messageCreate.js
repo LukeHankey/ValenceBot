@@ -120,7 +120,7 @@ module.exports = async (client, message) => {
 
 	// Dealing with scams
 	if (message.guild.id === '668330890790699079') {
-		const scamDetect = /(glft|steamcom|dlsco)\w+/gi;
+		const scamDetect = /(glft|steamcom|dlsco|csord-)\w+/gi;
 		if (scamDetect.test(message.content)) {
 			const bannedMember = message.member;
 			// Check for permissions
