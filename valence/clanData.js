@@ -25,9 +25,8 @@ const updateRoles = async (client, dbCheck) => {
 	const channels = {
 		errors: {
 			id: errors.id,
-			embed: function (err) {
-				const filePath = import.meta.url.split('/')
-				const fileName = filePath[filePath.length - 1]
+			embed: function(err, module) {
+				const fileName = module.id.split('\\').pop();
 				const embed = new MessageEmbed()
 					.setTitle(`An error occured in ${fileName}`)
 					.setColor(colors.red_dark)
@@ -46,16 +45,16 @@ const updateRoles = async (client, dbCheck) => {
 		// Valence Server
 		const server = client.guilds.cache.get('472448603642920973');
 		const getMember = server.members.cache.get(dbCheck.discord) ?? await server.members.fetch(dbCheck.discord).catch(async err => {
-			channels.errors.send(err)
-			return await usersColl.updateOne({ clanMate: dbCheck.clanMate }, { $set: { discActive: false } })
-		})
-		if (getMember.size) return errors.send({ content: `\`${dbCheck.clanMate}\` loaded a collection with discord id: \`${dbCheck.discord === '' ? 'Empty string' : dbCheck.discord}\` and active set to \`${dbCheck.discActive}\`.` })
+			channels.errors.send(err, module);
+			return await usersColl.updateOne({ clanMate: dbCheck.clanMate }, { $set: { discActive: false } });
+		});
+		if (getMember.size) return errors.send({ content: `\`${dbCheck.clanMate}\` loaded a collection with discord id: \`${dbCheck.discord === '' ? 'Empty string' : dbCheck.discord}\` and active set to \`${dbCheck.discActive}\`.` });
 		let role = getMember.roles.cache.filter(r => {
 			const keys = Object.keys(clanRoles);
 			return keys.find(val => r.name.toLowerCase() == val);
 		});
 		if (!role.size) return getMember.roles.add(guestRole);
-		if (role.size > 1) return errors.send(`${getMember} (${getMember.id}) has more than 1 rank role.`);
+		if (role.size > 1) return errors.send({ content: `${getMember} (${getMember.id}) has more than 1 rank role.` });
 		role = role.first();
 		if (role.name !== dbCheck.clanRank) {
 			switch(dbCheck.clanRank) {
