@@ -47,7 +47,7 @@ const removeButtons = async (client, database, { errors }) => {
 		const components = merchDB.merchChannel.components;
 		if (components.length) {
 			try {
-				const errorChannel = client.channels.cache.get(merchDB.merchChannel.deletions.channelID);
+				const errorChannel = client.channels.cache.get(merchDB.merchChannel.deletions.adminChannelID);
 				const removeMessageButtons = components.filter(obj => {
 					if ((Date.now() - obj.time) > oneDay) {
 						return obj;
