@@ -138,7 +138,7 @@ module.exports = {
 			const updateEmbed = new MessageEmbed(calMessage.embeds[0]);
 			updateEmbed.spliceFields(foundIndex, 1);
 			calMessage.edit({ embeds: [ updateEmbed ] });
-			channels.logs.send(`Calendar updated - ${message.displayName} removed event: \`\`\`diff\n- Removed\n${removedItem.join()}\`\`\``);
+			channels.logs.send(`Calendar updated - ${message.member.displayName} removed event: \`\`\`diff\n- Removed\n${removedItem.join()}\`\`\``);
 		}
 		catch (err) {
 			channels.errors.send(err, module);
