@@ -296,13 +296,18 @@ module.exports = {
 			if (position) { await addToCalendar(position);}
 			else { await addToCalendar();}
 
-			const eventChannelId = announcement.split('/')[5];
-			const eventMessageId = announcement.split('/')[6];
+			try {
+				const eventChannelId = announcement.split('/')[5];
+				const eventMessageId = announcement.split('/')[6];
 
-			const eventChannel = client.channels.cache.get(eventChannelId);
-			const eventMessage = await eventChannel.messages.fetch(eventMessageId);
-			await eventMessage.react('📌');
-			await eventMessage.react('🛑');
+				const eventChannel = client.channels.cache.get(eventChannelId);
+				const eventMessage = await eventChannel.messages.fetch(eventMessageId);
+				await eventMessage.react('📌');
+				await eventMessage.react('🛑');
+			}
+			catch(err) {
+				channels.errors.send(err, module);
+			}
 		}
 			break;
 		case 'edit': {
@@ -422,6 +427,7 @@ module.exports = {
 						name: event.name,
 						value: event.value,
 					});
+					calEmbed_to.spliceFields(from, 1);
 				}
 				else {
 					calEmbed_to.spliceFields(to - 1, 0, {
@@ -433,6 +439,25 @@ module.exports = {
 				}
 
 				await move_message.edit({ embeds: [ calEmbed_to ] });
+
+				const item = event.value.split('\n')
+
+				const roleId = item[4].slice(9, -1);
+				const role = interaction.guild.roles.cache.get(roleId);
+				const title = item[0].slice(7);
+				const announcement = item[2].slice(15, -1);
+				const messageId = announcement.split('/')[6] ?? null;
+				const eventTag = role.name.slice(title.length + 2);
+
+				console.log(eventTag, item, title, messageId);
+				await database.findOneAndUpdate({ _id: interaction.guild.id, 'calendarID.month': monthFromDb[0].month }, { $pull: { 'calendarID.$.events': { 'eventTag': eventTag } } });
+
+				await database.findOneAndUpdate({ _id: interaction.guild.id, 'calendarID.month': monthFromDb_to[0].month },
+					{ $push: { 'calendarID.$.events':
+                        { messageId, title, eventTag, roleId },
+					} });
+
+				await database.findOneAndUpdate({ _id: interaction.guild.id, 'events.roleID': roleId }, { $set: { 'events.$.month': monthFromDb_to[0].month } });
 			}
 			else {
 				calEmbed.spliceFields(from - 1, 1);
