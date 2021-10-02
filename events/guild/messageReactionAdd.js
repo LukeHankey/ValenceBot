@@ -54,9 +54,9 @@ module.exports = async (client, reaction, user) => {
 				const messageMatch = data.events.filter(m => m.messageID === message.id);
 
 				if (!messageMatch.length) return;
-				if (reaction.emoji.name === '✅') {
+				if (reaction.emoji.name === '🛑') {
 					if (user.id !== message.author.id) {
-						message.reactions.resolve('✅').users.remove(user.id);
+						message.reactions.resolve('🛑').users.remove(user.id);
 						return;
 					}
 
