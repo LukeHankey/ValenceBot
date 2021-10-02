@@ -35,7 +35,7 @@ const getData = async () => {
 				if (clanUser.clanMate === '') return;
 				clanUser.gameActive = 'undefined';
 				await usersColl.insertOne(clanUser);
-				console.log(`${clanUser.ClanMate} new to the clan.`);
+				console.log(`New to the clan:\n${clanUser}`);
 			}
 			else {
 				// Updates total XP

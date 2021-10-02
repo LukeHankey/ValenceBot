@@ -102,7 +102,7 @@ const nameChanges = async (missingNames) => {
 	}
 	if (nameChange.change.length) {
 		return nameChange.change.forEach(async user => {
-			// console.log(`Updating ${user.clanMate} as they have potentially changed names`);
+			console.log(`Updating ${user.clanMate} as they have potentially changed names`);
 			return await usersColl.updateOne({ clanMate: user.clanMate }, { $set: { potentialNewNames: user.potentialNewNames } });
 		});
 	}
