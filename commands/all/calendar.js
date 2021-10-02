@@ -1,4 +1,4 @@
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed, GuildMember } = require('discord.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { purple_medium } = require('../../colors.json');
 const { randomNum, removeEvents } = require('../../functions.js');
@@ -294,6 +294,14 @@ module.exports = {
 
 			if (position) { await addToCalendar(position);}
 			else { await addToCalendar();}
+
+			const eventChannelId = announcement.split('/')[5];
+			const eventMessageId = announcement.split('/')[6];
+
+			const eventChannel = client.channels.cache.get(eventChannelId);
+			const eventMessage = await eventChannel.messages.fetch(eventMessageId);
+			await eventMessage.react('📌');
+			await eventMessage.react('🛑');
 		}
 			break;
 		case 'edit': {
@@ -371,7 +379,7 @@ module.exports = {
 			// Logging
 			const log = message.embeds[0].fields.splice(position - 1, deleteNum);
 			const logValues = log.map((values) => `${values.name}\n${values.value}\n`);
-			channels.logs.send(`Calendar updated - ${interaction.member.displayName} removed event: \`\`\`diff\n- Removed\n${logValues.join('\n')}\`\`\``);
+			channels.logs.send(`Calendar updated - ${interaction?.member.displayName} removed event: \`\`\`diff\n- Removed\n${logValues.join('\n')}\`\`\``);
 
 			calEmbed.spliceFields(position - 1, deleteNum);
 			await message.edit({ embeds: [ calEmbed ] });
