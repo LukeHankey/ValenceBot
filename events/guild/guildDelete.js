@@ -13,7 +13,7 @@ module.exports = async (client, guild) => {
 + Channel count: ${guild.channels.cache.size}
 + Member count: ${guild.memberCount}${code}`);
 	}
-	catch {
-		console.error;
+	catch (err) {
+		console.error(err);
 	}
 };
