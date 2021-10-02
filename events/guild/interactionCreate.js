@@ -120,7 +120,7 @@ module.exports = async (client, interaction) => {
 			await command.slash(interaction, perms, channels, settings);
 		}
 		catch (error) {
-			console.error(error);
+			channels.errors.send(error, module);
 			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 		}
 	}

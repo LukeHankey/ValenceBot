@@ -184,6 +184,6 @@ module.exports = async (client, message) => {
 		}
 	}
 	catch (err) {
-		console.error(err);
+		channels.errors.send(err, module);
 	}
 };
