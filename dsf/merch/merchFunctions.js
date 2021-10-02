@@ -54,7 +54,7 @@ const removeButtons = async (client, database, { errors }) => {
 					}
 				});
 				return removeMessageButtons.forEach(async o => {
-					const msg = await errorChannel.messages.fetch(o.buttonMessageID);
+					const msg = await errorChannel.messages.fetch(o.buttonMessageID).catch(err => errors.send(err, module));
 					await msg.edit({ components: [] });
 					await database.updateOne({ serverName: 'Deep Sea Fishing' }, {
 						$pull: {
