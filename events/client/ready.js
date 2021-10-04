@@ -40,7 +40,7 @@ module.exports = async client => {
 			},
 			send: function(...args) {
 				const channel = client.channels.cache.get(this.id);
-				return channel.send(this.embed(...args));
+				return channel.send({ embeds: [ this.embed(...args) ] });
 			},
 		},
 		logs: {
