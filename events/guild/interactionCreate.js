@@ -165,15 +165,16 @@ module.exports = async (client, interaction) => {
 		if (interaction.channel.id === data.merchChannel.channelID) {
 			interaction.deferReply({ ephemeral: true });
 			try {
-				const dsfServerErrorChannel = await client.channels.cache.get('884076361940078682');
+				const dsfServerErrorChannel = await client.channels.cache.get('784543962174062608');
 				const message = await interaction.channel.messages.cache.get(interaction.targetId);
 				const reaction = await message.react('☠️');
 				const userReactCollection = await reaction.users.fetch();
+				const timestamp = interaction.createdAt.toString().split(' ').slice(0, 5).join(' ');
 				if (userReactCollection.size > 1) {
 					return await interaction.editReply({ content: 'This call is already marked as dead.' });
 				}
 				await interaction.editReply({ content: 'Thank you for marking this call as dead.' });
-				dsfServerErrorChannel.send({ content: ` \`\`\`diff\n\n+ Reaction Added by ${interaction.member.displayName} - Content: ${message.content}\n- User ID: ${interaction.member.id}\`\`\`` });
+				dsfServerErrorChannel.send({ content: `\`\`\`diff\n\n+ Reaction Added by ${interaction.member.displayName} - Content: ${message.content}\n- User ID: ${interaction.member.id}\n- Timestamp: ${timestamp}\`\`\`` });
 			}
 			catch (err) {
 				if (err.code === 50001) {
