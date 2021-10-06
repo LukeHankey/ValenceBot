@@ -205,10 +205,14 @@ module.exports = async client => {
 			vScout.send();
 			const allUsers = await users.find({}).toArray();
 			let index = 0;
-			while (index < allUsers.length) {
+			const interval = setInterval(() => {
 				updateRoles(client, allUsers[index]);
 				index++;
-			}
+
+				if (index === allUsers.length) {
+					clearInterval(interval);
+				}
+			}, 1000);
 		}
 
 		// Monthly reset + 1 day
