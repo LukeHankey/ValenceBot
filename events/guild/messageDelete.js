@@ -10,9 +10,9 @@ module.exports = async (client, message) => {
 
 	const db = getDb();
 	const settingsColl = db.collection('Settings');
-	const fullDB = await settingsColl.findOne({ _id: message.channel.guild.id, merchChannel: { $exists: true } }, { projection: { merchChannel: { messages: 1, channelID: 1 } } });
+	const fullDB = await settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } }, { projection: { merchChannel: { messages: 1, channelID: 1 } } });
 	if (!fullDB) return;
-	const merchChannelID = message.channel.guild.channels.cache.get(fullDB.merchChannel.channelID);
+	const merchChannelID = message.guild.channels.cache.get(fullDB.merchChannel.channelID);
 
 	const botServerChannel = await client.channels.cache.get('784543962174062608');
 	const dsfServerChannel = await client.channels.cache.get('884076361940078682');
@@ -20,8 +20,8 @@ module.exports = async (client, message) => {
 	const sendAndUpdate = async (webhook, embed, data) => {
 		const sentChannel = await webhook.send({ embeds: [ embed ] });
 		const { userID } = data;
-		if (sentChannel.guild.id === message.channel.guild.id) {
-			await settingsColl.updateOne({ _id: message.channel.guild.id }, {
+		if (sentChannel.guild.id === message.guild.id) {
+			await settingsColl.updateOne({ _id: message.guild.id }, {
 				$pull: { 'merchChannel.messages': { messageID: data.messageID } },
 				$addToSet: { 'merchChannel.deletions.messages': { messageID: sentChannel.id, authorID: userID } },
 			})

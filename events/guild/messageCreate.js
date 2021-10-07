@@ -114,6 +114,7 @@ module.exports = async (client, message) => {
 			await newBoost(message, boosters);
 
 		}
+		return;
 	}
 
 	if (message.author.bot) return;
