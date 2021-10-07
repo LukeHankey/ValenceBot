@@ -6,7 +6,7 @@ const { red_dark } = require('../../colors.json');
 module.exports = async (client, interaction) => {
 	const db = getDb();
 	const settings = db.collection('Settings');
-	const data = await settings.findOne({ _id: interaction.guildId }, { projection: { merchChannel: { components: 1, channelID: 1 } } });
+	const data = await settings.findOne({ _id: interaction.guildId }, { projection: { merchChannel: { components: 1, channelID: 1, otherChannelID: 1 } } });
 	const { channels: { errors, logs } } = await settings.findOne({ _id: 'Globals' }, { projection: { channels: { errors: 1, logs: 1 } } });
 
 	const channels = {
@@ -162,7 +162,7 @@ module.exports = async (client, interaction) => {
 
 	}
 	else if (interaction.isContextMenu()) {
-		if (interaction.channel.id === data.merchChannel.channelID) {
+		if ([data.merchChannel.channelID, data.merchChannel.otherChannelID].includes(interaction.channel.id)) {
 			interaction.deferReply({ ephemeral: true });
 			try {
 				const dsfServerErrorChannel = await client.channels.cache.get('884076361940078682');
