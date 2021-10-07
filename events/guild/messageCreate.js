@@ -100,8 +100,7 @@ module.exports = async (client, message) => {
 			break;
 		case merchCalls:
 		case otherCalls:
-			await dsf(client, message, channels);
-			break;
+			return await dsf(client, message, channels);
 		case suggestions: {
 			const up_arrow = message.guild.emojis.cache.get('872175822725857280');
 			const down_arrow = message.guild.emojis.cache.get('872175855223337060');
@@ -114,7 +113,6 @@ module.exports = async (client, message) => {
 			await newBoost(message, boosters);
 
 		}
-		return;
 	}
 
 	if (message.author.bot) return;
