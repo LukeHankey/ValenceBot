@@ -1,6 +1,6 @@
 const getDb = require('../../../mongodb').getDb;
 
-const otherCalls = async (message, updateDB, { errors }) => {
+const addOtherCount = async (message, updateDB, { errors }) => {
 	// Adds count for other events channel
 	try {
 		const db = getDb();
@@ -48,6 +48,34 @@ const otherCalls = async (message, updateDB, { errors }) => {
 				},
 			});
 		}
+
+		// Dupe call logging
+		let mes = await message.channel.messages.fetch({ limit: 10 });
+		mes = mes.filter(m => {
+			if (m.reactions.cache.has('☠️')) return;
+			else return mes;
+		});
+		const log = [...mes.values()];
+		for (const msgs in log) {
+			const authorName = log[msgs].member?.displayName;
+			const userId = log[msgs].author.id;
+			if (authorName === null) return;
+			await updateDB.findOneAndUpdate({ _id: message.channel.guild.id },
+				{
+					$addToSet: {
+						'merchChannel.otherMessages': {
+							$each: [{
+								messageID: log[msgs].id,
+								content: log[msgs].content,
+								time: log[msgs].createdTimestamp,
+								author: authorName,
+								userID: userId,
+							}],
+						},
+					},
+				},
+			);
+		}
 	}
 	catch (e) {
 		errors.send(e, module);
@@ -55,5 +83,5 @@ const otherCalls = async (message, updateDB, { errors }) => {
 };
 
 module.exports = {
-	otherCalls,
+	addOtherCount,
 };
