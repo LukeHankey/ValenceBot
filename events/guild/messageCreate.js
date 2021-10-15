@@ -74,7 +74,7 @@ module.exports = async (client, message) => {
 	if (message.guild.id === '420803245758480405' || message.guild.id === '668330890790699079') {
 		const { merchChannel: { channelID, otherChannelID }, channels: { adminChannel } } = await settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } }, { projection: { 'merchChannel.channelID': 1, 'merchChannel.otherChannelID': 1, channels: 1 } });
 
-		const scamDetect = /(glft|steamcom|dlsco|dlisco|\/gif)\w+/gi;
+		const scamDetect = /(glft|steamcom|dlsco|dlisco|disour|cord-gi|\/gif)\w+/gi;
 		if (scamDetect.test(message.content)) {
 			const bannedMember = message.member;
 			// Check for permissions
@@ -103,14 +103,14 @@ module.exports = async (client, message) => {
 			return await dsf(client, message, channels);
 		case suggestions: {
 			const up_arrow = message.guild.emojis.cache.get('872175822725857280');
-			const down_arrow = message.guild.emojis.cache.get('872175855223337060');
+			const down_arrow = message.guild.emojis.cache.get('87217585522333npm install7060');
 			await message.react(up_arrow);
 			await message.react(down_arrow);
 			await message.startThread({ name: `Suggestion from ${message.member.nickname ?? message.author.username}`, autoArchiveDuration: 4320 });
 		}
 			break;
 		case boosters:
-			await newBoost(message, boosters);
+			// await newBoost(message, boosters);
 
 		}
 	}
