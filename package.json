@@ -16,7 +16,7 @@
     "node": "16.6.1"
   },
   "dependencies": {
-    "@discordjs/builders": "^0.6.0",
+    "@discordjs/builders": "^0.7.0",
     "@discordjs/rest": "^0.1.0-canary.0",
     "assert": "^2.0.0",
     "concurrently": "^6.2.0",
