@@ -4,9 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node slashCommands.js&&node index.js",
-    "devSlash": "set NODE_ENV=DEV&&node index.js",
-    "slash-deploy": "node slashCommands.js",
+    "start": "&node index.js",
+    "slash": "node slashCommands.js",
     "dev": "set NODE_ENV=DEV&&node index.js",
     "devTasks": "concurrently  \"set NODE_ENV=DEV&&node index.js\" \"node ./scheduler/clan.js\""
   },
