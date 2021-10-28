@@ -24,6 +24,7 @@ module.exports = {
 					option
 						.setName('channel')
 						.setDescription('The channel you want to send a message to.')
+						.addChannelType(0)
 						.setRequired(true),
 				)
 				.addStringOption((option) =>
