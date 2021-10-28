@@ -173,6 +173,7 @@ module.exports = async client => {
 
 	// If node cycling:
 	(async function() {
+		if (process.env.NODE_ENV === 'DEV') return;
 		const { merchChannel: { channelID } } = await settings.findOne({ _id: '420803245758480405' }, { projection: { merchChannel: { channelID: 1 } } });
 		const merchantChannel = client.channels.cache.get(channelID);
 		let message = await merchantChannel.messages.fetch({ limit: 1 });
