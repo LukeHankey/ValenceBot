@@ -178,7 +178,7 @@ module.exports = {
 					}
 					else { return message.channel.send({ content: 'Alt account must be set as either `true` or `false`.' });}
 				default: {
-					return message.channel.send({ content: 'Parameters that are able to change are the Discord ID, Discord active status and Alt account status. The parameter names are: `discord`/`Discord` | `active`/`discActive` | `alt`' });
+					return message.channel.send({ content: 'Parameters that are able to change are the Discord ID, Discord active status and Alt account status. The parameter names are: `id` | `discord`/`discActive` | `alt`' });
 				}
 				}
 			}
