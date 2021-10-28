@@ -13,4 +13,5 @@ process.on('unhandledRejection', (reason, p) => {
 
 connection(err => { if (err) console.log(err);});
 
-client.login(process.env.BOT_TOKEN);
+
+client.login(process.env.NODE_ENV === 'DEV' ? process.env.DEVELOPMENT_BOT : process.env.BOT_TOKEN);
