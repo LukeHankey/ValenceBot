@@ -124,6 +124,11 @@ module.exports = async (client, interaction) => {
 			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 		}
 	}
+	else if (interaction.isAutocomplete()) {
+		const choices = [...client.commands.values()].filter(command => { if (command.slash && (command.guildSpecific.includes(interaction.guild.id) || command.guildSpecific === 'all')) return command.slash; }).map(slash => ({ name: slash.name, value: slash.name }));
+
+		interaction.respond(choices);
+	}
 	else if (interaction.isSelectMenu()) {
 		const serverName = interaction.message.content.split('\n')[0];
 		const dmData = await settings.findOne({ serverName }, { projection: { merchChannel: { components: 1, deletions: 1 } } });

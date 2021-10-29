@@ -9,53 +9,65 @@ module.exports = {
 	usage: [''],
 	guildSpecific: 'all',
 	permissionLevel: 'Admin',
-	data: new SlashCommandBuilder()
-		.setName('permissions')
-		.setDescription('Assigns a role or user permissions to use a command.')
-		.addSubcommand(subcommand =>
-			subcommand
-				.setName('set')
-				.setDescription('Add or remove permissions for a user or role to a slash command.')
-				.addStringOption(option =>
-					option
-						.setName('command')
-						.setDescription('The name of the command to add permissions to.')
-						.setRequired(true),
-				)
-				.addMentionableOption(option =>
-					option
-						.setName('mention')
-						.setDescription('The role or user to add to the permissions.')
-						.setRequired(true),
-				)
-				.addStringOption(option =>
-					option
-						.setName('type')
-						.setDescription('The type of setting.')
-						.addChoices([
-							['Add', 'Add'],
-							['Remove', 'Remove'],
-						])
-						.setRequired(true),
-				)
-				.addBooleanOption(option =>
-					option
-						.setName('value')
-						.setDescription('Allow or deny the role/user permission to use the command.')
-						.setRequired(true),
-				),
-		)
-		.addSubcommand(subcommand =>
-			subcommand
-				.setName('for')
-				.setDescription('Get current permissions for a specific command.')
-				.addStringOption(option =>
-					option
-						.setName('command')
-						.setDescription('The name of the command to add permissions to.')
-						.setRequired(true),
-				),
-		),
+	data: {
+		name: 'permissions',
+		description: 'Assigns a role or user permissions to use a command.',
+		options: [
+			{
+				type: 1,
+				name: 'set',
+				description: 'Add or remove permissions for a user or role to a slash command.',
+				options: [
+					{
+						type: 3,
+						name: 'command',
+						description: 'The name of the command to add permissions to.',
+						required: true,
+						autocomplete: true,
+					},
+					{
+						type: 9,
+						name: 'mention',
+						description: 'The role or user to add to the permissions.',
+						required: true,
+					},
+					{
+						type: 3,
+						name: 'type',
+						description: 'The type of setting.',
+						required: true,
+						choices: [{
+							name: 'Add',
+							value: 'Add',
+						},
+						{
+							name: 'Remove',
+							value: 'Remove',
+						}],
+					},
+					{
+						type: 5,
+						name: 'value',
+						description: 'Allow or deny the role/user permission to use the command.',
+						required: true,
+					},
+				],
+			},
+			{
+				type: 1,
+				name: 'for',
+				description: 'Get current permissions for a specific command.',
+				options: [{
+					type: 3,
+					name: 'command',
+					description: 'The name of the command to add permissions to.',
+					required: true,
+					autocomplete: true,
+				}],
+			},
+		],
+		default_permission: undefined,
+	},
 	slash: async (interaction, perms, channels) => {
 		if (!perms.admin) return interaction.reply(perms.errorA);
 		const subType = interaction.options.getSubcommand();
