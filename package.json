@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "&node index.js",
-    "slash": "node slashCommands.js",
+    "slash": "set NODE_ENV=DEV&&node slashCommands.js",
     "dev": "set NODE_ENV=DEV&&node index.js",
     "devTasks": "concurrently  \"set NODE_ENV=DEV&&node index.js\" \"node ./scheduler/clan.js\""
   },
@@ -15,12 +15,12 @@
     "node": "16.6.1"
   },
   "dependencies": {
-    "@discordjs/builders": "^0.7.0",
+    "@discordjs/builders": "^0.8.1",
     "@discordjs/rest": "^0.1.0-canary.0",
     "assert": "^2.0.0",
     "concurrently": "^6.2.0",
     "discord-api-types": "^0.22.0",
-    "discord.js": "^13.2.0",
+    "discord.js": "^13.3.0",
     "dotenv": "^8.2.0",
     "googleapis": "^64.0.0",
     "mongodb": "^3.6.4",
