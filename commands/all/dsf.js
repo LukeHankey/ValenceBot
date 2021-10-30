@@ -47,7 +47,7 @@ export default {
 				} catch (e) {
 					if (e.code === 50035) {
 						return message.channel.send({ content: 'Too many messages stored. Use the clear command.' })
-					} else { channels.errors.send(e, module) }
+					} else { channels.errors.send(e) }
 				}
 			}
 				break
@@ -101,7 +101,7 @@ export default {
 									'merchChannel.spamProtection': { messageID: messageID }
 								}
 							})
-						} else { channels.errors.send(e, module) }
+						} else { channels.errors.send(e) }
 					}
 				})
 			}
@@ -165,7 +165,7 @@ export default {
 						})
 					})
 					.catch(err => {
-						channels.errors.send(err, module)
+						channels.errors.send(err)
 					})
 			}
 			}

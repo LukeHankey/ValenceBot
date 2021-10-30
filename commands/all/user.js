@@ -130,7 +130,7 @@ export default {
 						}
 					})
 				})
-				.catch(err => channels.errors.send(err, module))
+				.catch(err => channels.errors.send(err))
 		} else {
 			if (!args.length) return
 			// Find by rs name

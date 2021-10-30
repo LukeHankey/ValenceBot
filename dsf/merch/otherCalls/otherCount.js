@@ -76,7 +76,7 @@ const addOtherCount = async (message, updateDB, { errors }) => {
 			)
 		}
 	} catch (e) {
-		errors.send(e, module)
+		errors.send(e)
 	}
 }
 

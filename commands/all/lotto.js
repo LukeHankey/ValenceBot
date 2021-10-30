@@ -318,12 +318,12 @@ export default {
 									}
 								})
 							})
-							.catch(err => channels.errors.send(err, module))
+							.catch(err => channels.errors.send(err))
 					}
 				}
 			}
 		} catch (err) {
-			channels.errors.send(err, module)
+			channels.errors.send(err)
 		}
 	}
 }

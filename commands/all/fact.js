@@ -22,7 +22,7 @@ export default {
 		const settings = db.collection('Settings')
 		const { prefix } = await settings.findOne({ _id: message.channel.guild.id }, { projection: { prefix: 1 } })
 
-		const count = await vFactsColl.stats().then(r => r.count).catch(err => channels.errors.send(err, module))
+		const count = await vFactsColl.stats().then(r => r.count).catch(err => channels.errors.send(err))
 		const random = Math.floor((Math.random() * count) + 1)
 		const fact = args.slice(1).join(' ')
 		const code = '```'
@@ -61,7 +61,7 @@ export default {
 								message.channel.send({ content: `Fact #${r.number} has been deleted from the list!\n${code}${r.number}. ${r.Message}${code}` })
 								channels.logs.send(`<@${message.author.id}> removed a Fact: ${code}#${r.number}. ${r.Message}${code}`)
 							})
-							.catch(err => channels.errors.send(err, module))
+							.catch(err => channels.errors.send(err))
 						vFactsColl.deleteOne({ number: Number(args[1]) })
 					} else {
 						message.channel.send({ content: `Invalid Fact ID! The ID should be between 1 & ${count}.` })
@@ -85,7 +85,7 @@ export default {
 									channels.logs.send(`<@${message.author.id}> edited Fact #${rs.number}: ${code}diff\n- ${r.value.Message}\n+ ${rs.Message}${code}`)
 								})
 						})
-						.catch(err => channels.errors.send(err, module))
+						.catch(err => channels.errors.send(err))
 				} else if (args[1] === isNaN) {
 					message.channel.send({ content: `"${args[1]}" is not a valid number!` })
 				}
@@ -112,7 +112,7 @@ export default {
 						const sentFact = await message.channel.send({ embeds: [factEmbed(r.Message)] })
 						channels.logs.send(`<@${message.author.id}> used the Fact command in <#${message.channel.id}>. https://discordapp.com/channels/${message.channel.guild.id}/${message.channel.id}/${sentFact.id} ${code}#${r.number}. ${r.Message}${code}`)
 					})
-					.catch(err => channels.errors.send(err, module))
+					.catch(err => channels.errors.send(err))
 			} else {
 				message.channel.send(perms.errorA)
 			}

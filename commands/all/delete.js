@@ -27,7 +27,7 @@ export default {
 			return interaction.reply({ content: `${int} ${int === 1 ? 'message has' : 'messages have'} been deleted`, ephemeral: true })
 		} catch (err) {
 			interaction.channel.send({ content: 'There was an error trying to delete messages in this channel since they are older than 2 weeks.', ephemeral: true })
-			channels.errors.send(err, module)
+			channels.errors.send(err)
 		}
 	}
 }

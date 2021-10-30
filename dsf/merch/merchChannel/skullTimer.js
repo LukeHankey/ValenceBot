@@ -28,7 +28,7 @@ const skullTimer = (message, updateDB, channels) => {
 							} else { }
 						})
 						.catch((e) => {
-							channels.errors.send(e, module)
+							channels.errors.send(e)
 							return timer.stop()
 						})
 				}
@@ -36,7 +36,7 @@ const skullTimer = (message, updateDB, channels) => {
 				if (e.code === 10008) {
 					const errorMessageID = e.path.split('/')[4]
 					return await updateDB.updateOne({ _id: message.channel.guild.id }, { $pull: { 'merchChannel.messages': { messageID: errorMessageID } } })
-				} else { return channels.errors.send(e, module) }
+				} else { return channels.errors.send(e) }
 			}
 		}
 

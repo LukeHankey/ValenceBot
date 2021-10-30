@@ -25,7 +25,7 @@ export default {
 			await m.react('❓')
 		})
 			.catch(err => {
-				channels.errors.send(err, module)
+				channels.errors.send(err)
 			})
 	}
 }

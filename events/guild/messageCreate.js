@@ -21,8 +21,9 @@ export default async (client, message) => {
 		},
 		errors: {
 			id: errors,
-			embed: function (err, module) {
-				const fileName = module.id.split('\\').pop()
+			embed: function (err) {
+				const filePath = import.meta.url.split('/')
+				const fileName = filePath[filePath.length -1]
 				const embed = new MessageEmbed()
 					.setTitle(`An error occured in ${fileName}`)
 					.setColor(red_dark)
@@ -175,6 +176,6 @@ export default async (client, message) => {
 			if (commandName !== command) return
 		}
 	} catch (err) {
-		channels.errors.send(err, module)
+		channels.errors.send(err)
 	}
 }

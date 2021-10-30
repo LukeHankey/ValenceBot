@@ -190,7 +190,7 @@ export default {
 				const perms = await interaction.guild.commands.permissions.fetch({ command: gcmd.first().id })
 				return interaction.reply({ embeds: [displayPerms(perms)], ephemeral: true })
 			} catch (err) {
-				channels.errors.send(err, module)
+				channels.errors.send(err)
 				interaction.reply({ content: `There was an error. ${commandName} either has no permissions set or another error occured.`, ephemeral: true })
 			}
 		}

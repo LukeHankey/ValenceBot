@@ -137,7 +137,7 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 			)
 		}
 	} catch (err) {
-		errors.send(err, module)
+		errors.send(err)
 	}
 }
 

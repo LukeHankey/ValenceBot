@@ -1,11 +1,12 @@
 /* eslint-disable no-inline-comments */
 import { REST } from '@discordjs/rest'
-const { Routes } = require('discord-api-types/v9')
-const fs = require('fs')
-require('dotenv').config()
+import { Routes } from 'discord-api-types/v9'
+import { readdirSync } from 'fs'
+import dotenv from 'dotenv'
+dotenv.config()
 
 const commands = []
-const commandFiles = fs.readdirSync('./commands/all').filter(file => file.endsWith('.js'))
+const commandFiles = readdirSync('./commands/all').filter(file => file.endsWith('.js'))
 
 // Place your client and guild ids here
 // const clientId = '668330399033851924';
@@ -18,11 +19,11 @@ const guildId = '668330890790699079' // Test
 
 // Comment out to remove all guild-specific commands
 for (const file of commandFiles) {
-	const command = require(`./commands/all/${file}`)
-	if (!command.data) continue
+	const command = await import(`./commands/all/${file}`)
+	if (!command.default.data) continue
 	// if (['nick', 'events', 'calendar'].includes(command.name)) continue;
-	if (!['nick'].includes(command.name)) continue
-	commands.push(command.data)
+	if (!['permissions', 'nick'].includes(command.default.name)) continue
+	commands.push(command.default.data)
 }
 console.log(3, commands)
 

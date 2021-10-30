@@ -13,7 +13,7 @@ const otherTimer = (message, updateDB, { errors }) => {
 				if (e.code === 10008) {
 					const errorMessageID = e.path.split('/')[4]
 					return await updateDB.updateOne({ _id: message.channel.guild.id }, { $pull: { 'merchChannel.otherMessages': { messageID: errorMessageID } } })
-				} else { return errors.send(e, module) }
+				} else { return errors.send(e) }
 			}
 		}
 	})

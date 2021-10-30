@@ -163,7 +163,7 @@ export default {
 				}
 			}
 		} catch (err) {
-			channels.errors.send(err, module)
+			channels.errors.send(err)
 		}
 	}
 }

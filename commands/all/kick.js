@@ -51,7 +51,7 @@ export default {
 					if (e.code === 10013) {
 						return message.channel.send({ content: `There is no member in this server with ID: ${memberToKick}.` })
 					} else {
-						channels.errors.send(e, module)
+						channels.errors.send(e)
 					}
 				}
 			}

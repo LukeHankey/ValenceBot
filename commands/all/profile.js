@@ -131,7 +131,7 @@ export default {
 				try {
 					userID = message.guild.members.cache.get(args[0]) ?? await message.channel.guild.members.fetch(args[0])
 				} catch (err) {
-					channels.errors.send(err, module)
+					channels.errors.send(err)
 				}
 			} else {
 				roleMention = message.channel.guild.roles.cache.has(args[0].slice(3, 21))
@@ -168,7 +168,7 @@ export default {
 						await paginateFollowUP(msg, message, page, embeds, client)
 					})
 					.catch(err => {
-						channels.errors.send(err, module)
+						channels.errors.send(err)
 					})
 			} else if (args[0] === 'active') {
 				if (memberRoles < botRole.position) return
@@ -188,7 +188,7 @@ export default {
 						await paginateFollowUP(msg, message, page, embeds, client)
 					})
 					.catch(err => {
-						channels.errors.send(err, module)
+						channels.errors.send(err)
 					})
 			} else if (args[0] === 'inactive') {
 				if (memberRoles < botRole.position) return
@@ -208,7 +208,7 @@ export default {
 						await paginateFollowUP(msg, message, page, embeds, client)
 					})
 					.catch(err => {
-						channels.errors.send(err, module)
+						channels.errors.send(err)
 					})
 			} else {
 				message.channel.send({ content: `Unable to find \`${args[0]}\` as a member ID/mention or role mention.` })

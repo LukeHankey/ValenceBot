@@ -126,7 +126,7 @@ export default {
 						})
 					})
 					.catch(err => {
-						channels.errors.send(err, module)
+						channels.errors.send(err)
 					})
 			} else if (array.some(x => attachment[0].includes(x))) {
 				message.react('✅')
@@ -140,7 +140,7 @@ export default {
 						})
 					})
 					.catch(err => {
-						channels.errors.send(err, module)
+						channels.errors.send(err)
 					})
 			} else if (attachment[0].includes('discord.com')) { // Discord message link
 				const split = attachment[0].split('/')
@@ -172,7 +172,7 @@ export default {
 							return message.channel.send({ content: 'I am unable to find that message. Maybe it has been deleted?' })
 						}
 					} else {
-						channels.errors.send(e, module)
+						channels.errors.send(e)
 					}
 				}
 			} else {

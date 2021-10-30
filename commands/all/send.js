@@ -87,7 +87,7 @@ export default {
 							await msg.edit({ content: messageContent.join(' ') })
 							return message.react('✅')
 						} catch (err) {
-							channels.errors.send(err, module)
+							channels.errors.send(err)
 						}
 					} else {
 						return message.channel.send({ content: 'You are not able to edit a message in another server.' })
@@ -102,7 +102,7 @@ export default {
 							await msg.edit({ content: messageContent.join(' ') })
 							return message.react('✅')
 						} catch (err) {
-							channels.errors.send(err, module)
+							channels.errors.send(err)
 						}
 					}
 				}
@@ -121,7 +121,7 @@ export default {
 								if (err.code === 50013) {
 									return message.channel.send({ content: `I am missing some permissions to post in <#${checkAndGetID}>.` })
 								} else {
-									return channels.errors.send(err, module)
+									return channels.errors.send(err)
 								}
 							})
 					})
@@ -133,7 +133,7 @@ export default {
 								if (err.code === 50013) {
 									return message.channel.send({ content: `I am missing some permissions to post in <#${checkAndGetID}>.` })
 								} else {
-									return channels.errors.send(err, module)
+									return channels.errors.send(err)
 								}
 							})
 					})

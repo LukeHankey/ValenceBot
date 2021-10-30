@@ -371,7 +371,7 @@ export default {
 												});
 											})
 											.catch((err) => {
-												channels.errors.send(err, module);
+												channels.errors.send(err);
 											});
 										message.delete();
 										message.reply({ content: 'Thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!' });

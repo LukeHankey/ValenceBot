@@ -162,7 +162,7 @@ export default {
 				grabIDAndEdit()
 			}
 		} catch (e) {
-			channels.errors.send(e, module)
+			channels.errors.send(e)
 		}
 	}
 }

@@ -12,8 +12,9 @@ export default async (client, interaction) => {
 	const channels = {
 		errors: {
 			id: errors,
-			embed: function (err, module) {
-				const fileName = module.id.split('\\').pop()
+			embed: function (err) {
+				const filePath = import.meta.url.split('/')
+				const fileName = filePath[filePath.length -1]
 				const embed = new MessageEmbed()
 					.setTitle(`An error occured in ${fileName}`)
 					.setColor(red_dark)
@@ -94,7 +95,7 @@ export default async (client, interaction) => {
 			}
 			}
 		} catch (err) {
-			channels.errors.send(err, module)
+			channels.errors.send(err)
 		}
 	} else if (interaction.isCommand()) {
 		const commandDB = await settings.findOne({ _id: interaction.channel.guild.id }, { projection: { prefix: 1, roles: 1 } })
@@ -117,7 +118,7 @@ export default async (client, interaction) => {
 		try {
 			await command.slash(interaction, perms, channels, settings)
 		} catch (error) {
-			channels.errors.send(error, module)
+			channels.errors.send(error)
 			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
 		}
 	} else if (interaction.isAutocomplete()) {
@@ -154,7 +155,7 @@ export default async (client, interaction) => {
 					})
 				}
 			} catch (err) {
-				channels.errors.send(err, module)
+				channels.errors.send(err)
 			}
 		}
 	} else if (interaction.isContextMenu()) {
@@ -176,7 +177,7 @@ export default async (client, interaction) => {
 					// Missing Access
 					return await interaction.editReply({ content: 'I am not able to access this channel.' })
 				}
-				channels.errors.send(err, module)
+				channels.errors.send(err)
 			}
 		} else {
 			interaction.reply({ content: 'You can\'t use that in this channel.', ephemeral: true })

@@ -19,7 +19,7 @@ export default {
 			.catch(e => {
 				if (e.code === 10013) {
 					return message.channel.send({ content: `Error: ${e.message}` })
-				} else { channels.errors.send(e, module) }
+				} else { channels.errors.send(e) }
 			})
 	}
 }

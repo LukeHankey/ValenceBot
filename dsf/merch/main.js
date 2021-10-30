@@ -20,7 +20,7 @@ const dsf = async (client, message, channels) => {
 				})
 				.catch(async err => {
 					const messageID = err.path.split('/')
-					return await message.channel.messages.fetch(messageID[4]).then(x => x.delete()).catch((err) => channels.errors.send(err, module))
+					return await message.channel.messages.fetch(messageID[4]).then(x => x.delete()).catch((err) => channels.errors.send(err))
 				})
 			:	setTimeout(() => message.delete(), 200)
 		await addMerchCount(client, message, settingsColl, channels)

@@ -306,7 +306,7 @@ export default {
 				await eventMessage.react('📌')
 				await eventMessage.react('🛑')
 			} catch (err) {
-				channels.errors.send(err, module)
+				channels.errors.send(err)
 			}
 		}
 			break

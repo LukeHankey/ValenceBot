@@ -29,7 +29,7 @@ export default {
 							channels.logs.send(`<@${message.author.id}> changed the bot Prefix in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${r.value.prefix}\n+ ${args[2]}\`\`\``)
 						})
 						.catch(err => {
-							channels.errors.send(err, module)
+							channels.errors.send(err)
 						})
 					: message.channel.send({ content: 'What do you want to set the prefix to?' })
 				break

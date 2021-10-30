@@ -54,7 +54,7 @@ export default {
 					.addFields(fieldHolder)
 				return interaction.reply({ embeds: [embed] })
 			} catch (err) {
-				channels.errors.send(err, module)
+				channels.errors.send(err)
 			}
 			break
 		case 'end':
@@ -68,7 +68,7 @@ export default {
 					interaction.reply({ content: `There is no event found with ID: \`${tag}\`` })
 				}
 			} catch (err) {
-				channels.errors.send(err, module)
+				channels.errors.send(err)
 			}
 		}
 	},
@@ -91,7 +91,7 @@ export default {
 					message.channel.send({ content: `There is no event found with ID: \`${tag}\`` })
 				}
 			} catch (err) {
-				channels.errors.send(err, module)
+				channels.errors.send(err)
 			}
 		}
 			break
@@ -111,7 +111,7 @@ export default {
 					.addFields(fieldHolder)
 				message.channel.send({ embeds: [embed] })
 			} catch (err) {
-				channels.errors.send(err, module)
+				channels.errors.send(err)
 			}
 		}
 		}
