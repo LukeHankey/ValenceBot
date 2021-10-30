@@ -1,9 +1,9 @@
-const getDb = require('../../mongodb').getDb;
+import { getDb } from '../../mongodb.js'
 
-module.exports = async (client, guild) => {
-	const db = getDb();
-	const collection = db.collection('Settings');
-	const code = '```';
+export default async (client, guild) => {
+	const db = getDb()
+	const collection = db.collection('Settings')
+	const code = '```'
 
 	collection.insertOne(
 		{
@@ -13,18 +13,17 @@ module.exports = async (client, guild) => {
 			roles: {
 				modRole: `${guild.roles.highest}`,
 				adminRole: `${guild.roles.highest}`,
-				defaultAdminRole: `${guild.roles.highest}`,
+				defaultAdminRole: `${guild.roles.highest}`
 			},
 			channels: {
 				adminChannel: null,
 				modChannel: null,
-				eventsChannel: null,
+				eventsChannel: null
 			},
-			citadel_reset_time: { hour: '*', minute: '*', day: '*', scheduled: 'false', reminders: [],
-			},
+			citadel_reset_time: { hour: '*', minute: '*', day: '*', scheduled: 'false', reminders: [] }
 		},
-		{ forceServerObjectId: true },
-	);
+		{ forceServerObjectId: true }
+	)
 
 	client.channels.cache.get('731997087721586698').send(`The bot has been added to **${guild.name}**. The bot is in a total of ${client.guilds.cache.size} servers. 
     \n${code}diff\n
@@ -32,5 +31,5 @@ module.exports = async (client, guild) => {
 + Server ID: ${guild.id}
 + Owner: ${await guild.fetchOwner().nickname ?? guild.fetchOwner().user.username}
 + Channel count: ${guild.channels.cache.size}
-+ Member count: ${guild.memberCount}${code}`);
-};
++ Member count: ${guild.memberCount}${code}`)
+}

@@ -1,10 +1,8 @@
-/* eslint-disable quotes */
-/* eslint-disable no-inline-comments */
-const { cyan, red_dark } = require('../../colors.json');
-const getDb = require('../../mongodb').getDb;
-const { nEmbed, checkNum } = require('../../functions.js');
+import { cyan, redDark } from '../../colors.js'
+import { getDb } from '../../mongodb.js'
+import { nEmbed, checkNum } from '../../functions.js'
 
-module.exports = {
+export default {
 	name: 'settings',
 	description: ['Displays the settings that you can change.', 'Shows the current prefix.', 'Sets the new prefix in the server.', 'Shows the current admin role.', 'Sets the new admin role in the server.', 'Shows the current mod role.', 'Sets the new mod role in the server.', 'Shows the current admin channel.', 'Sets the current admin channel.'],
 	aliases: ['s'],
@@ -12,13 +10,13 @@ module.exports = {
 	guildSpecific: 'all',
 	permissionLevel: 'Admin',
 	run: async (client, message, args, perms, channels) => {
-		if (!perms.admin) return message.channel.send(perms.errorA);
-		const db = getDb();
-		const settings = db.collection('Settings');
-		const { prefix, roles: { modRole, adminRole }, channels: { adminChannel, events, mod } } = await settings.findOne({ _id: message.channel.guild.id }, { projection: { prefix: 1, roles: 1, channels: 1 } });
-		const [...rName] = args.slice(2);
-		const roleName = message.channel.guild.roles.cache.find(role => role.name === rName.join(' '));
-		const channelTag = [];
+		if (!perms.admin) return message.channel.send(perms.errorA)
+		const db = getDb()
+		const settings = db.collection('Settings')
+		const { prefix, roles: { modRole, adminRole }, channels: { adminChannel, events, mod } } = await settings.findOne({ _id: message.channel.guild.id }, { projection: { prefix: 1, roles: 1, channels: 1 } })
+		const [...rName] = args.slice(2)
+		const roleName = message.channel.guild.roles.cache.find(role => role.name === rName.join(' '))
+		const channelTag = []
 
 		switch (args[0]) {
 		case 'prefix':
@@ -27,199 +25,181 @@ module.exports = {
 				args[2]
 					? settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { prefix: args[2] } }, { returnOriginal: true })
 						.then(r => {
-							message.channel.send({ content: `Prefix has been changed from \`${r.value.prefix}\` to \`${args[2]}\`` });
-							channels.logs.send(`<@${message.author.id}> changed the bot Prefix in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${r.value.prefix}\n+ ${args[2]}\`\`\``);
+							message.channel.send({ content: `Prefix has been changed from \`${r.value.prefix}\` to \`${args[2]}\`` })
+							channels.logs.send(`<@${message.author.id}> changed the bot Prefix in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${r.value.prefix}\n+ ${args[2]}\`\`\``)
 						})
 						.catch(err => {
-							channels.errors.send(err, module);
+							channels.errors.send(err)
 						})
-					: message.channel.send({ content: 'What do you want to set the prefix to?' });
-				break;
+					: message.channel.send({ content: 'What do you want to set the prefix to?' })
+				break
 			default:
 				if (!args[1]) {
-					message.channel.send({ content: `Your prefix is set as: \`${prefix}\`` });
+					message.channel.send({ content: `Your prefix is set as: \`${prefix}\`` })
 				}
 			}
-			break;
+			break
 		case 'adminRole':
 			switch (args[1]) {
 			case 'set':
 				if (checkNum(args[2], 1, Infinity) && message.channel.guild.roles.cache.has(args[2]) && message.channel.guild.id !== args[2] && message.channel.guild.roles.cache.get(`${args[2]}`).permissions.has('ADMINISTRATOR')) { // Setting role by ID
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.adminRole': `<@&${args[2]}>` } }, { returnOriginal: true });
-					message.channel.send({ content: `The Admin Role has been changed to: <@&${args[2]}>`, allowedMentions: false });
-					channels.logs.send(`<@${message.author.id}> changed the adminRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.adminRole}\n+ <@&${args[2]}>\`\`\``);
+					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.adminRole': `<@&${args[2]}>` } }, { returnOriginal: true })
+					message.channel.send({ content: `The Admin Role has been changed to: <@&${args[2]}>`, allowedMentions: false })
+					channels.logs.send(`<@${message.author.id}> changed the adminRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.adminRole}\n+ <@&${args[2]}>\`\`\``)
+				} else if (roleName && message.channel.guild.roles.cache.get(roleName.id).permissions.has('ADMINISTRATOR')) { // Setting role by name
+					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.adminRole': `<@&${roleName.id}>` } }, { returnOriginal: true })
+					message.channel.send({ content: `The Admin Role has been changed to: <@&${roleName.id}>`, allowedMentions: false })
+					channels.logs.send(`<@${message.author.id}> changed the adminRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.adminRole}\n+ ${roleName.id}\`\`\``)
+				} else if (message.mentions.roles.first() && message.channel.guild.roles.cache.get(message.mentions.roles.first().id).permissions.has('ADMINISTRATOR')) { // Setting role by mention
+					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.adminRole': args[2] } }, { returnOriginal: true })
+					message.channel.send({ content: `The Admin Role has been changed to: ${args[2]}`, allowedMentions: false })
+					channels.logs.send(`<@${message.author.id}> changed the adminRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.adminRole}\n+ ${args[2]}\`\`\``)
+				} else {
+					message.channel.send({ content: 'What do you want to set the Admin Role to? Acceptable values:' })
+					message.channel.send({ content: '```diff\n+ Role ID\n+ Tagging the role\n+ Role Name\n\nNOTE:\n- If specifying a Role Name, make sure the Role Name is unique!\n- All roles must have the ADMINISTRATOR permission set.```' })
 				}
-				else if (roleName && message.channel.guild.roles.cache.get(roleName.id).permissions.has('ADMINISTRATOR')) { // Setting role by name
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.adminRole': `<@&${roleName.id}>` } }, { returnOriginal: true });
-					message.channel.send({ content: `The Admin Role has been changed to: <@&${roleName.id}>`, allowedMentions: false });
-					channels.logs.send(`<@${message.author.id}> changed the adminRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.adminRole}\n+ ${roleName.id}\`\`\``);
-				}
-				else if (message.mentions.roles.first() && message.channel.guild.roles.cache.get(message.mentions.roles.first().id).permissions.has('ADMINISTRATOR')) { // Setting role by mention
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.adminRole': args[2] } }, { returnOriginal: true });
-					message.channel.send({ content: `The Admin Role has been changed to: ${args[2]}`, allowedMentions: false });
-					channels.logs.send(`<@${message.author.id}> changed the adminRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.adminRole}\n+ ${args[2]}\`\`\``);
-				}
-				else {
-					message.channel.send({ content: 'What do you want to set the Admin Role to? Acceptable values:' });
-					message.channel.send({ content: `\`\`\`diff\n+ Role ID\n+ Tagging the role\n+ Role Name\n\nNOTE:\n- If specifying a Role Name, make sure the Role Name is unique!\n- All roles must have the ADMINISTRATOR permission set.\`\`\`` });
-				}
-				break;
+				break
 			default:
 				if (!args[1]) {
-					message.channel.send({ content: `Your Admin Role is set as: ${adminRole}`, allowedMentions: false });
+					message.channel.send({ content: `Your Admin Role is set as: ${adminRole}`, allowedMentions: false })
 				}
 			}
-			break;
+			break
 		case 'modRole':
 			switch (args[1]) {
 			case 'set':
 				if (checkNum(args[2], 1, Infinity) && message.channel.guild.roles.cache.has(args[2]) && message.channel.guild.id !== args[2] && message.channel.guild.roles.cache.get(`${args[2]}`).permissions.has(['KICK_MEMBERS', 'BAN_MEMBERS'])) { // Setting role by ID
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.modRole': `<@&${args[2]}>` } }, { returnOriginal: true });
-					message.channel.send({ content: `The Mod Role has been changed to: <@&${args[2]}>`, allowedMentions: false });
-					channels.logs.send(`<@${message.author.id}> changed the modRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.modRole}\n+ <@&${args[2]}>\`\`\``);
+					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.modRole': `<@&${args[2]}>` } }, { returnOriginal: true })
+					message.channel.send({ content: `The Mod Role has been changed to: <@&${args[2]}>`, allowedMentions: false })
+					channels.logs.send(`<@${message.author.id}> changed the modRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.modRole}\n+ <@&${args[2]}>\`\`\``)
+				} else if (roleName && message.channel.guild.roles.cache.get(roleName.id).permissions.has(['KICK_MEMBERS', 'BAN_MEMBERS'])) { // Setting role by name
+					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.modRole': `<@&${roleName.id}>` } }, { returnOriginal: true })
+					message.channel.send({ content: `The Mod Role has been changed to: <@&${roleName.id}>`, allowedMentions: false })
+					channels.logs.send(`<@${message.author.id}> changed the modRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.modRole}\n+ ${roleName}\`\`\``)
+				} else if (message.mentions.roles.first() && message.channel.guild.roles.cache.get(message.mentions.roles.first().id).permissions.has(['KICK_MEMBERS', 'BAN_MEMBERS'])) { // Setting role by mention
+					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.modRole': args[2] } }, { returnOriginal: true })
+					message.channel.send({ content: `The Mod Role has been changed to: ${args[2]}`, allowedMentions: false })
+					channels.logs.send(`<@${message.author.id}> changed the modRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.modRole}\n+ ${args[2]}\`\`\``)
+				} else {
+					message.channel.send({ content: 'What do you want to set the Mod Role to? Acceptable values:' })
+					message.channel.send({ content: '```diff\n+ Role ID\n+ Tagging the role\n+ Role Name\n\nNOTE:\n- If specifying a Role Name, make sure the Role Name is unique!\n- All roles must have the KICK_MEMBERS & BAN_MEMBERS permission set.```' })
 				}
-				else if (roleName && message.channel.guild.roles.cache.get(roleName.id).permissions.has(['KICK_MEMBERS', 'BAN_MEMBERS'])) { // Setting role by name
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.modRole': `<@&${roleName.id}>` } }, { returnOriginal: true });
-					message.channel.send({ content: `The Mod Role has been changed to: <@&${roleName.id}>`, allowedMentions: false });
-					channels.logs.send(`<@${message.author.id}> changed the modRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.modRole}\n+ ${roleName}\`\`\``);
-				}
-				else if (message.mentions.roles.first() && message.channel.guild.roles.cache.get(message.mentions.roles.first().id).permissions.has(['KICK_MEMBERS', 'BAN_MEMBERS'])) { // Setting role by mention
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.modRole': args[2] } }, { returnOriginal: true });
-					message.channel.send({ content: `The Mod Role has been changed to: ${args[2]}`, allowedMentions: false });
-					channels.logs.send(`<@${message.author.id}> changed the modRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.modRole}\n+ ${args[2]}\`\`\``);
-				}
-				else {
-					message.channel.send({ content: 'What do you want to set the Mod Role to? Acceptable values:' });
-					message.channel.send({ content: `\`\`\`diff\n+ Role ID\n+ Tagging the role\n+ Role Name\n\nNOTE:\n- If specifying a Role Name, make sure the Role Name is unique!\n- All roles must have the KICK_MEMBERS & BAN_MEMBERS permission set.\`\`\`` });
-				}
-				break;
+				break
 			default:
 				if (!args[1]) {
-					message.channel.send({ content: `Your Mod Role is set as: ${modRole}`, allowedMentions: false });
+					message.channel.send({ content: `Your Mod Role is set as: ${modRole}`, allowedMentions: false })
 				}
 			}
-			break;
+			break
 		case 'adminChannel':
 			switch (args[1]) {
 			case 'set':
 				if (args[2] === undefined) {
-					channelTag.push('false');
-				}
-				else {
-					channelTag.push(args[2].slice(2, 20));
+					channelTag.push('false')
+				} else {
+					channelTag.push(args[2].slice(2, 20))
 				}
 				if (checkNum(args[2], 1, Infinity) && message.channel.guild.channels.cache.has(args[2]) && message.channel.guild.id !== args[2]) { // Check by ID
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.adminChannel': args[2] } }, { returnOriginal: true });
-					message.channel.send({ content: `The Admin Channel has been set to: <#${args[2]}>` });
-					channels.logs.send(`<@${message.author.id}> set the Admin Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.adminChannel}> to <#${args[2]}>`);
+					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.adminChannel': args[2] } }, { returnOriginal: true })
+					message.channel.send({ content: `The Admin Channel has been set to: <#${args[2]}>` })
+					channels.logs.send(`<@${message.author.id}> set the Admin Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.adminChannel}> to <#${args[2]}>`)
+				} else if (checkNum(channelTag[0], 1, Infinity) && message.channel.guild.channels.cache.has(channelTag[0])) { // Check by #Channel
+					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.adminChannel': channelTag[0] } }, { returnOriginal: true })
+					message.channel.send({ content: `The Admin Channel has been set to: <#${channelTag[0]}>` })
+					channels.logs.send(`<@${message.author.id}> set the Admin Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.adminChannel}> to <#${channelTag[0]}>`)
+				} else {
+					message.channel.send({ content: 'What do you want to set the Admin Channel to? Acceptable values:' })
+					message.channel.send({ content: '```diff\n+ Channel ID (18 Digits)\n+ Channel tag (#<Channel name>)```' })
 				}
-				else if (checkNum(channelTag[0], 1, Infinity) && message.channel.guild.channels.cache.has(channelTag[0])) { // Check by #Channel
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.adminChannel': channelTag[0] } }, { returnOriginal: true });
-					message.channel.send({ content: `The Admin Channel has been set to: <#${channelTag[0]}>` });
-					channels.logs.send(`<@${message.author.id}> set the Admin Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.adminChannel}> to <#${channelTag[0]}>`);
-				}
-				else {
-					message.channel.send({ content: 'What do you want to set the Admin Channel to? Acceptable values:' });
-					message.channel.send({ content: `\`\`\`diff\n+ Channel ID (18 Digits)\n+ Channel tag (#<Channel name>)\`\`\`` });
-				}
-				break;
+				break
 			default:
 				if (!args[1]) {
 					adminChannel === null
 						? message.channel.send({ content: 'Your Admin Channel is set as: `Null`' })
-						: message.channel.send({ content: `Your Admin Channel is set as: <#${adminChannel}>` });
-				}
-				else {
-					message.channel.send(nEmbed('Permission Denied', 'You do not have permission to see the Admin Channel!', red_dark));
+						: message.channel.send({ content: `Your Admin Channel is set as: <#${adminChannel}>` })
+				} else {
+					message.channel.send(nEmbed('Permission Denied', 'You do not have permission to see the Admin Channel!', redDark))
 				}
 			}
-			break;
+			break
 		case 'eventsChannel':
 			switch (args[1]) {
 			case 'set':
 				if (args[2] === undefined) {
-					channelTag.push('false');
-				}
-				else {
-					channelTag.push(args[2].slice(2, 20));
+					channelTag.push('false')
+				} else {
+					channelTag.push(args[2].slice(2, 20))
 				}
 				if (checkNum(args[2], 1, Infinity) && message.channel.guild.channels.cache.has(args[2]) && message.channel.guild.id !== args[2]) { // Check by ID
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.events': args[2] } }, { returnOriginal: true });
-					message.channel.send({ content: `The Events Channel has been set to: <#${args[2]}>` });
-					channels.logs.send(`<@${message.author.id}> set the Events Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.events}> to <#${args[2]}>`);
+					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.events': args[2] } }, { returnOriginal: true })
+					message.channel.send({ content: `The Events Channel has been set to: <#${args[2]}>` })
+					channels.logs.send(`<@${message.author.id}> set the Events Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.events}> to <#${args[2]}>`)
+				} else if (checkNum(channelTag[0], 1, Infinity) && message.channel.guild.channels.cache.has(channelTag[0])) { // Check by #Channel
+					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.events': channelTag[0] } }, { returnOriginal: true })
+					message.channel.send({ content: `The Events Channel has been set to: <#${channelTag[0]}>` })
+					channels.logs.send(`<@${message.author.id}> set the Events Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.events}> to <#${channelTag[0]}>`)
+				} else {
+					message.channel.send({ content: 'What do you want to set the Events Channel to? Acceptable values:' })
+					message.channel.send({ content: '```diff\n+ Channel ID (18 Digits)\n+ Channel tag (#<Channel name>)```' })
 				}
-				else if (checkNum(channelTag[0], 1, Infinity) && message.channel.guild.channels.cache.has(channelTag[0])) { // Check by #Channel
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.events': channelTag[0] } }, { returnOriginal: true });
-					message.channel.send({ content: `The Events Channel has been set to: <#${channelTag[0]}>` });
-					channels.logs.send(`<@${message.author.id}> set the Events Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.events}> to <#${channelTag[0]}>`);
-				}
-				else {
-					message.channel.send({ content: 'What do you want to set the Events Channel to? Acceptable values:' });
-					message.channel.send({ content: `\`\`\`diff\n+ Channel ID (18 Digits)\n+ Channel tag (#<Channel name>)\`\`\`` });
-				}
-				break;
+				break
 			default:
 				if (!args[1]) {
 					events === null || events === undefined
 						? message.channel.send({ content: 'Your events Channel is set as: `Null`' })
-						: message.channel.send({ content: `Your events Channel is set as: <#${events}>` });
-				}
-				else {
-					message.channel.send({ embeds: [ nEmbed('Permission Denied', 'You do not have permission to see the Admin Channel!', red_dark) ] });
+						: message.channel.send({ content: `Your events Channel is set as: <#${events}>` })
+				} else {
+					message.channel.send({ embeds: [nEmbed('Permission Denied', 'You do not have permission to see the Admin Channel!', redDark)] })
 				}
 			}
-			break;
+			break
 		case 'modChannel':
 			switch (args[1]) {
 			case 'set':
 				if (args[2] === undefined) {
-					channelTag.push('false');
-				}
-				else {
-					channelTag.push(args[2].slice(2, 20));
+					channelTag.push('false')
+				} else {
+					channelTag.push(args[2].slice(2, 20))
 				}
 				if (checkNum(args[2], 1, Infinity) && message.channel.guild.channels.cache.has(args[2]) && message.channel.guild.id !== args[2]) { // Check by ID
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.mod': args[2] } }, { returnOriginal: true });
-					message.channel.send({ content: `The Mod Channel has been set to: <#${args[2]}>` });
-					channels.logs.send(`<@${message.author.id}> set the Mod Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.mod}> to <#${args[2]}>`);
+					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.mod': args[2] } }, { returnOriginal: true })
+					message.channel.send({ content: `The Mod Channel has been set to: <#${args[2]}>` })
+					channels.logs.send(`<@${message.author.id}> set the Mod Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.mod}> to <#${args[2]}>`)
+				} else if (checkNum(channelTag[0], 1, Infinity) && message.channel.guild.channels.cache.has(channelTag[0])) { // Check by #Channel
+					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.mod': channelTag[0] } }, { returnOriginal: true })
+					message.channel.send({ content: `The Mod Channel has been set to: <#${channelTag[0]}>` })
+					channels.logs.send(`<@${message.author.id}> set the Mod Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.mod}> to <#${channelTag[0]}>`)
+				} else {
+					message.channel.send({ content: 'What do you want to set the Mod Channel to? Acceptable values:' })
+					message.channel.send({ content: '```diff\n+ Channel ID (18 Digits)\n+ Channel tag (#<Channel name>)```' })
 				}
-				else if (checkNum(channelTag[0], 1, Infinity) && message.channel.guild.channels.cache.has(channelTag[0])) { // Check by #Channel
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.mod': channelTag[0] } }, { returnOriginal: true });
-					message.channel.send({ content: `The Mod Channel has been set to: <#${channelTag[0]}>` });
-					channels.logs.send(`<@${message.author.id}> set the Mod Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.mod}> to <#${channelTag[0]}>`);
-				}
-				else {
-					message.channel.send({ content: 'What do you want to set the Mod Channel to? Acceptable values:' });
-					message.channel.send({ content: `\`\`\`diff\n+ Channel ID (18 Digits)\n+ Channel tag (#<Channel name>)\`\`\`` });
-				}
-				break;
+				break
 			default:
 				if (!args[1]) {
 					mod === null || mod === undefined
 						? message.channel.send({ content: 'Your Mod Channel is set as: `Null`' })
-						: message.channel.send({ content: `Your Mod Channel is set as: <#${mod}>` });
-				}
-				else {
-					message.channel.send({ embeds: [ nEmbed('Permission Denied', 'You do not have permission to see the Admin Channel!', red_dark) ] });
+						: message.channel.send({ content: `Your Mod Channel is set as: <#${mod}>` })
+				} else {
+					message.channel.send({ embeds: [nEmbed('Permission Denied', 'You do not have permission to see the Admin Channel!', redDark)] })
 				}
 			}
-			break;
+			break
 		default:
 			if (!args[0]) {
-				message.channel.send({ embeds: [ nEmbed(
-					'**Settings List**',
-					'Here\'s a list of all the settings you can change:',
-					cyan,
-					client.user.displayAvatarURL(),
-				)
-					.addFields(
-						{ name: '**Settings**', value: '`prefix`\n`adminRole`\n`modRole`\n`adminChannel`\n`eventsChannel`\n`modChannel`', inline: false },
-					)],
-				});
-			}
-			else {
-				return;
+				message.channel.send({
+					embeds: [nEmbed(
+						'**Settings List**',
+						'Here\'s a list of all the settings you can change:',
+						cyan,
+						client.user.displayAvatarURL()
+					)
+						.addFields(
+							{ name: '**Settings**', value: '`prefix`\n`adminRole`\n`modRole`\n`adminChannel`\n`eventsChannel`\n`modChannel`', inline: false }
+						)]
+				})
+			} else {
+
 			}
 		}
-	},
-};
+	}
+}

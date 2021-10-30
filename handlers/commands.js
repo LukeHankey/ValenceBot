@@ -1,14 +1,16 @@
-const { readdirSync } = require('fs');
+import { readdirSync } from 'fs'
 
-module.exports = client => {
-	const load = dirs => {
+const commands = client => {
+	const load = async dirs => {
 		const commandFiles = readdirSync(`./commands/${dirs}/`)
-			.filter(d => d.endsWith('.js'));
+			.filter(d => d.endsWith('.js'))
 
 		for (const file of commandFiles) {
-			const command = require(`../commands/${dirs}/${ file }`);
-			client.commands.set(command.name, command);
+			const command = await import(`../commands/${dirs}/${file}`)
+			client.commands.set(command.default.name, command.default)
 		}
 	};
-	['all'].forEach(x => load(x));
-};
+	['all'].forEach(x => load(x))
+}
+
+export default commands
