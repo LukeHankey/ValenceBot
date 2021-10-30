@@ -4,18 +4,19 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "&node index.js",
+    "start": "node index.js",
     "slash": "set NODE_ENV=DEV&&node slashCommands.js",
     "dev": "set NODE_ENV=DEV&&node index.js",
     "devTasks": "concurrently  \"set NODE_ENV=DEV&&node index.js\" \"node ./scheduler/clan.js\""
   },
   "author": "Luke",
   "license": "ISC",
+  "type": "module",
   "engines": {
     "node": "16.6.1"
   },
   "dependencies": {
-    "@discordjs/builders": "^0.8.1",
+    "@discordjs/builders": "^0.7.0",
     "@discordjs/rest": "^0.1.0-canary.0",
     "assert": "^2.0.0",
     "concurrently": "^6.2.0",
@@ -29,8 +30,14 @@
     "pretty-ms": "^7.0.1"
   },
   "devDependencies": {
-    "eslint": "^7.19.0",
-    "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-plugin-import": "^2.22.1"
+    "@babel/cli": "^7.16.0",
+    "@babel/core": "^7.16.0",
+    "@babel/node": "^7.16.0",
+    "@babel/preset-env": "^7.16.0",
+    "eslint": "^7.32.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.1.1"
   }
 }

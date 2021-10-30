@@ -1,11 +1,11 @@
 /* eslint-disable quotes */
 /* eslint-disable no-inline-comments */
-const { MessageEmbed, Formatters } = require('discord.js');
-const { gold, cyan } = require('../../colors.json');
-const getDb = require('../../mongodb').getDb;
-const { checkNum, nextDay, nEmbed, doubleDigits, checkDate } = require('../../functions.js');
-const functions = require('../../functions.js');
-const boundDD = functions.newDates.bind(functions);
+import { MessageEmbed, Formatters } from 'discord.js'
+import { gold, cyan } from '../../colors.js'
+import { getDb } from '../../mongodb.js'
+import { checkNum, nextDay, nEmbed, doubleDigits, checkDate } from '../../functions.js'
+import newDates from '../../functions.js'
+const boundDD = newDates.bind(newDates);
 
 /**
  * 733164313744769024 - Test Server
@@ -13,7 +13,7 @@ const boundDD = functions.newDates.bind(functions);
  * 472448603642920973 - Valence
  */
 
-module.exports = {
+export default {
 	name: 'citadel',
 	description: ['Lists out the citadel commands.', 'Toggles the citadel reset time & reminders on/off.', 'Shows the current Citadel Reset Time.', 'Allows a user to suggest the reset time - Sends info to the current Admin Channel.', 'Sets the new Citadel Reset Time.', 'Lists the current citadel reminders by ID.', 'Adds a new citadel reminder.', 'Adds a citadel reminder which sends the set message at reset +<date/time>.', 'Removes a citadel reminder.', 'Edit an existing citadel reminder by ID, then the field you want to change; then the updated value.'],
 	aliases: ['c', 'cit'],
@@ -267,7 +267,7 @@ module.exports = {
 						channels.logs.send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.channel.guild.name}**\n${Formatters.codeBlock('diff', logContent)}`);
 					}
 					// eslint-disable-next-line no-octal
-					else if (checkDate(args[2], 00, 59) && args[2]) { // Setting by Minute
+					else if (checkDate(args[2], 0o0, 59) && args[2]) { // Setting by Minute
 						const { value } = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'citadel_reset_time.minute': doubleDigits(args[2]) } }, { returnOriginal: true });
 						message.channel.send({ content: `The Citadel Reset Time has been changed to: ${dayCheck[value.citadel_reset_time.day] || value.citadel_reset_time.day} ${doubleDigits(value.citadel_reset_time.hour)}:${doubleDigits(args[2])}` });
 						const logContent = `- ${value.citadel_reset_time.day} ${value.citadel_reset_time.hour}:${value.citadel_reset_time.minute}\n+ ${dayCheck[value.citadel_reset_time.day] || value.citadel_reset_time.day} ${doubleDigits(value.citadel_reset_time.hour)}:${doubleDigits(args[2])}`;
