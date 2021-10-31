@@ -25,6 +25,7 @@ export default {
 
 		let pos = role.map((x, i) => {
 			if (x === undefined) return i
+			else return undefined
 		})
 		pos = pos.filter(item => !isNaN(parseInt(item)))
 		const wrong = pos.map(v => rNameMulti[v])
@@ -35,7 +36,7 @@ export default {
 
 		const botRoleHighest = message.channel.guild.roles.cache.get(highBotRoleID)
 		const botHighest = role.filter(x => {
-			if (x === undefined) return
+			if (x === undefined) return undefined
 			return botRoleHighest.position > x.position
 		})
 
@@ -47,20 +48,20 @@ export default {
 
 		if (args[0] === 'roles') {
 			let allAvailableRoles = []
+			// eslint-disable-next-line array-callback-return
 			message.channel.guild.roles.cache.filter(allRoles => {
 				if (message.guild.id === '472448603642920973') {
 					if (allRoles.position < 36) {
-						allAvailableRoles.push(allRoles.name)
+						return allAvailableRoles.push(allRoles.name)
 					}
-				}
-				// DSF
-				else if (message.guild.id === '420803245758480405') {
+				} else if (message.guild.id === '420803245758480405') {
+					// DSF
 					const reactionRestrict = message.guild.roles.cache.get('881696440747958342')
 					if (allRoles.position < reactionRestrict.position) {
-						allAvailableRoles.push(allRoles.name)
+						return allAvailableRoles.push(allRoles.name)
 					}
 				} else if (allRoles.position < botRoleHighest.position) {
-					allAvailableRoles.push(allRoles.name)
+					return allAvailableRoles.push(allRoles.name)
 				}
 			})
 

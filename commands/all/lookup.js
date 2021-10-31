@@ -31,17 +31,16 @@ export default {
 		val.merchChannel.scoutTracker.filter(mem => {
 			if (mem.userID === args[0]) {
 				const date = (when) => {
-					// eslint-disable-next-line no-shadow
 					let date = new Date(when)
 					date = date.toString().split(' ')
 					return date.slice(0, 5).join(' ')
 				}
-				fields.push({
+				return fields.push({
 					name: '\u200b',
 					value: `**firstTimestamp:** ${mem.firstTimestamp}\n**firstTimestampReadable:** ${date(mem.firstTimestampReadable)}\n**lastTimestamp:** ${mem.lastTimestamp}\n**lastTimestampReadable:** ${date(mem.lastTimestampReadable)}\n**Merch count:** ${mem.count}\n**Other count:** ${mem.otherCount}\n**Active for:** ${ms(mem.lastTimestamp - mem.firstTimestamp)}`,
 					inline: true
 				})
-			}
+			} else return undefined
 		})
 
 		if (member[0]) {

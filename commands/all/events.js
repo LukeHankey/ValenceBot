@@ -60,7 +60,7 @@ export default {
 		case 'end':
 			try {
 				const tag = interaction.options.getString('tag')
-				const checkEventExists = data.events.map(event => { if (event.eventTag === tag) return { value: true, message: event.messageID, role: event.roleID } }).filter(valid => valid)
+				const checkEventExists = data.events.map(event => { if (event.eventTag === tag) { return { value: true, message: event.messageID, role: event.roleID } } else return undefined }).filter(valid => valid)
 				if (checkEventExists.length && checkEventExists[0].value) {
 					await removeEvents(interaction, database, channels, 'events', data, tag)
 					return interaction.reply({ content: 'Event has been removed.', ephemeral: true })
@@ -79,10 +79,10 @@ export default {
 		const data = await settings.findOne({ _id: message.channel.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } })
 
 		switch (args[0]) {
-		case 'end': {
+		case 'end':
 			try {
 				const tag = args[1]
-				const checkEventExists = data.events.map(event => { if (event.eventTag === tag) return { value: true, message: event.messageID, role: event.roleID } }).filter(valid => valid)
+				const checkEventExists = data.events.map(event => { if (event.eventTag === tag) { return { value: true, message: event.messageID, role: event.roleID } } else return undefined }).filter(valid => valid)
 				if (checkEventExists.length && checkEventExists[0].value) {
 					await removeEvents(message, settings, channels, 'events', data, tag)
 					return message.react('✅')
@@ -93,7 +93,6 @@ export default {
 			} catch (err) {
 				channels.errors.send(err)
 			}
-		}
 			break
 		default: {
 			try {

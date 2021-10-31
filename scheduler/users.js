@@ -1,5 +1,5 @@
 import fetch from 'node-fetch'
-import getDb from '../mongodb.js'
+import { getDb } from '../mongodb.js'
 
 const addActive = async () => {
 	const db = await getDb()
@@ -80,7 +80,7 @@ const nameChanges = async (missingNames) => {
 				const xpCheck = potentialNewNames.filter(user => {
 					if (Number(user.totalXP) - 10000000 < Number(potentialChangers.totalXP) && Number(user.totalXP) + 10000000 > Number(potentialChangers.totalXP)) {
 						return user
-					}
+					} else return undefined
 				})
 				potentialChangers.potentialNewNames = xpCheck
 				nameChange.change.push(potentialChangers)

@@ -43,7 +43,7 @@ const vEvents = async (client, message, channels) => {
 				const dateRegex = /^(Date(:)?\s)+((3[0-1]|2\d|1\d|[1-9])(st|nd|rd|th)?)+\s?((-|to)+\s?((3[0-1]|2\d|1\d|[1-9])(st|nd|rd|th)?)+)?(\s)?$/im
 				const timeRegex = /^(Time(:)?\s)+(([1-6]+(\s)?(day(s)?|week(s)?|month(s)?)(\s)?$)?|(([0-1]\d|2[0-3]):([0-5]\d)\s?)?((-|to)+\s?(([0-1]\d|2[0-3]):([0-5]\d))?)?)$/im
 				const link = `https://discord.com/channels/${last.guild.id}/${last.channel.id}/${last.id}`
-				const thisCal = await DB.calendarID.filter(prop => { if ((prop.year === currentYear) && prop.month === currentMonth) return prop })
+				const thisCal = await DB.calendarID.filter(prop => { if ((prop.year === currentYear) && prop.month === currentMonth) { return prop } else return undefined })
 				const m = await calChannel.messages.fetch(thisCal[0].messageID)
 				let dateR, timeR
 

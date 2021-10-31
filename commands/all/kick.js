@@ -59,6 +59,6 @@ export default {
 			if (reason) mentionedMember.kick(reason)
 			else mentionedMember.kick()
 			return message.react('✅')
-		} else { }
+		}
 	}
 }

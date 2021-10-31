@@ -80,14 +80,14 @@ export default {
 			commandArray.push(com.name)
 			if (com.name === commandName) {
 				return com
-			}
+			} else return undefined
 		})
 		globalCommands = globalCommands.filter(com => {
 			commandArray.push(com.name)
 			if (com.name === commandName) {
 				guild = false
 				return com
-			}
+			} else return undefined
 		})
 
 		if (!commandArray.includes(commandName)) return interaction.reply({ content: `There is no command by that name. Try one of: \`${commandArray.join(', ')}\``, ephemeral: true })
@@ -102,7 +102,7 @@ export default {
 			if (guild) guildPerms = await interaction.client.guilds.cache.get(interaction.guild.id)?.commands.fetch(guildCommand.first().permissions.commandId)
 
 			switch (permType) {
-			case 'Add': {
+			case 'Add':
 				if (guild) {
 					await guildPerms.permissions.add({
 						permissions: [
@@ -126,9 +126,8 @@ export default {
 					})
 				}
 				interaction.reply({ content: 'Permissions have been set.', ephemeral: true })
-			}
 				break
-			case 'Remove': {
+			case 'Remove':
 				if (guild && userOrRole === 'ROLE') {
 					await guildPerms.permissions.remove({
 						command: guildCommand.first().permissions.commandId,
@@ -151,7 +150,6 @@ export default {
 					})
 				}
 				interaction.reply({ content: 'Permissions have been set.', ephemeral: true })
-			}
 				break
 			}
 		}
@@ -168,7 +166,7 @@ export default {
 					let prefix = '<@!'
 					if (p.type === 'ROLE') prefix = '<@&'
 
-					permList.push({ name: `Type: ${p.type}`, value: `${prefix}${p.id}${suffix}\nAccess: ${p.permission ? '✅' : '❌'}`, inline: true })
+					return permList.push({ name: `Type: ${p.type}`, value: `${prefix}${p.id}${suffix}\nAccess: ${p.permission ? '✅' : '❌'}`, inline: true })
 				})
 
 				const permsEmbed = new MessageEmbed()

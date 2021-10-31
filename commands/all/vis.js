@@ -42,6 +42,7 @@ export default {
 		if (!interaction.options.getInteger('reset')) {
 			let currentDate = new Date().toUTCString()
 			currentDate = currentDate.split(' ')
+			// eslint-disable-next-line no-unused-vars
 			const [day, month, year, ...rest] = currentDate.slice(1)
 			const savedDate = visTime.toString().split(' ')
 
@@ -105,7 +106,7 @@ export default {
 				if (vis === null) {
 					return message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' })
 				}
-				return message.channel.send({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}>\nSource: [Vis Wax Server](https://discord.gg/wv9Ecs4)`, files: [vis] })
+				return message.channel.send({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}>\nSource: Vis Wax Server | <https://discord.gg/wv9Ecs4>`, files: [vis] })
 			} catch (err) {
 				return message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' })
 			}

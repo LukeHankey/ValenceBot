@@ -58,7 +58,7 @@ export default {
 			}
 			await channel.send(content)
 			await interaction.reply({ content: 'Message successfully sent', ephemeral: true })
-		} else { }
+		}
 	},
 	run: async (client, message, args, perms, channels) => {
 		const myID = '212668377586597888'

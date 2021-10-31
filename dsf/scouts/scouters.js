@@ -8,6 +8,7 @@ const classVars = async (name, serverName, database, client) => {
 	name._guild_name = serverName
 	name._db = await database.map(doc => {
 		if (doc.serverName === name._guild_name) return doc
+		else return undefined
 	}).filter(x => x)[0]
 	return name._client && name._guild_name && name._db
 }

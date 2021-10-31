@@ -81,7 +81,7 @@ export default {
 				let [colNameArgs, rsn] = args.slice(2).join(' ').split('/')
 				colNameArgs = colNameArgs.trim()
 				const tag = args.slice(-1).join('')
-				const colName = dataC.find(val => val.toLowerCase() == colNameArgs.toLowerCase())
+				const colName = dataC.find(val => val.toLowerCase() === colNameArgs.toLowerCase())
 
 				const lottoEmbed = nEmbed('Lotto entry added successfully!', '', greenLight, message.author.displayAvatarURL(), client.user.displayAvatarURL())
 					.addFields(
@@ -173,7 +173,7 @@ export default {
 						message.channel.send(perms.errorM)
 					}
 					break
-				case 'total':
+				case 'total': {
 					const dataTotals = await gsapi.spreadsheets.values.get(optTotal)
 					const arrTotal = dataTotals.data.values
 					const totalArr = []
@@ -192,6 +192,7 @@ export default {
 						totalValues.push(fields)
 					}
 					message.channel.send({ embeds: [totalEmbed.addFields(totalValues).spliceFields(2, 0, { name: '\u200B', value: '\u200B', inline: true })] })
+				}
 					break
 				case 'sheet':
 					if (perms.mod) {
@@ -207,7 +208,7 @@ export default {
 						message.channel.send(perms.errorM)
 					}
 					break
-				default:
+				default: {
 					const username = args.join(' ')
 
 					if (username) {
@@ -320,6 +321,7 @@ export default {
 							})
 							.catch(err => channels.errors.send(err))
 					}
+				}
 				}
 			}
 		} catch (err) {

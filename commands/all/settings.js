@@ -197,8 +197,6 @@ export default {
 							{ name: '**Settings**', value: '`prefix`\n`adminRole`\n`modRole`\n`adminChannel`\n`eventsChannel`\n`modChannel`', inline: false }
 						)]
 				})
-			} else {
-
 			}
 		}
 	}

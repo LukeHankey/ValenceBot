@@ -172,12 +172,10 @@ export default async (client, reaction, user) => {
 							if (err) return message.channel.send({ content: 'Timed out. Try again.' })
 							channels.errors.send(err)
 						}
-					} else { }
+					}
 				}
 			}
-		}
-		// DSF
-		else if (_id === '420803245758480405') {
+		} else if (_id === '420803245758480405') { // DSF
 			const {
 				merchChannel: {
 					channelID,
@@ -208,15 +206,13 @@ export default async (client, reaction, user) => {
 							await m.reactions.removeAll()
 							await removeMessage(message, m, settingsColl)
 							return await m.react('☠️')
-						}
-						// If there is only a skull, remove users and message from DB
-						else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
+						} else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
+							// If there is only a skull, remove users and message from DB
 							await removeMessage(message, m, settingsColl)
 							await m.reactions.removeAll()
 							return await m.react('☠️')
-						}
-						// If there is a single reaction which is not the Skull, then remove that and react with skull. Repeat process over.
-						else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && !m.reactions.cache.has('☠️')) {
+						} else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && !m.reactions.cache.has('☠️')) {
+							// If there is a single reaction which is not the Skull, then remove that and react with skull. Repeat process over.
 							await m.reactions.removeAll()
 							await removeMessage(message, m, settingsColl)
 							return await m.react('☠️')
@@ -255,6 +251,6 @@ export default async (client, reaction, user) => {
 				}
 			}
 			}
-		} else { }
+		}
 	}
 }

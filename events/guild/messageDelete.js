@@ -27,7 +27,7 @@ export default async (client, message) => {
 				.then(() => {
 					sentChannel.react('✅')
 				})
-		} else {}
+		}
 	}
 
 	// Cached messages only show the message object without null //
@@ -84,11 +84,9 @@ export default async (client, message) => {
 			if (getPerms) {
 				console.log(`Removing ${user.user.username} (${checkDB.userID}) from channel overrides.`)
 				return getPerms.delete()
-			} else { }
+			}
 		}
-	}
-	// Someone else deleted message
-	else {
+	} else { // Someone else deleted message
 		// Bot deleting own posts
 		if (target.id === '668330399033851924') return
 
@@ -110,7 +108,7 @@ export default async (client, message) => {
 			if (getPerms) {
 				console.log(`Removing ${user.user.username} (${checkDB.userID}) from channel overrides.`)
 				return getPerms.delete()
-			} else { }
+			}
 		}
 	}
 }

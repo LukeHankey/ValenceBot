@@ -77,6 +77,7 @@ export default {
 			memCollection.forEach(id => {
 				const x = rData.scoutTracker.filter(mem => {
 					if (mem.userID === id) return mem.userID === id
+					else return undefined
 				})
 				newArr.push(x)
 			})
@@ -97,7 +98,7 @@ export default {
 				message.channel.awaitMessages({ filter, max: 1, time: 60000, errors: ['time'] })
 					.then(async col => {
 						col = col.first()
-						if (col.content === 'no') {} else {
+						if (col.content === 'no') { return undefined } else {
 							await settings.findOneAndUpdate({ _id: message.channel.guild.id },
 								{
 									$addToSet: {

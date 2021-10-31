@@ -15,7 +15,7 @@ const alreadyCalled = (message, messages) => {
 		const numFromContent = message.content.replace(/^\D+|\D.*$/g, '')
 		if (numFromDb === numFromContent) {
 			return obj
-		}
+		} else return undefined
 	})
 	// If already called, result.length > 0. Return false to delete the message.
 	if (result.length) { return false } else { return true }
@@ -49,7 +49,7 @@ const removeButtons = async (client, database, { errors }) => {
 				const removeMessageButtons = components.filter(obj => {
 					if ((Date.now() - obj.time) > oneDay) {
 						return obj
-					}
+					} else return undefined
 				})
 				return removeMessageButtons.forEach(async o => {
 					const msg = await errorChannel.messages.fetch(o.buttonMessageID).catch(err => errors.send(err, module))

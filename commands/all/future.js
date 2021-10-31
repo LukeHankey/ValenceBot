@@ -52,6 +52,7 @@ export default {
 					innerArr.splice(2, 0, '\u200B')
 					innerArr.splice(4, 0, '\u200B')
 					innerArr.splice(6, 1)
+					return innerArr
 				})
 				dataArr = splitIntoX(dataArr, 2)
 

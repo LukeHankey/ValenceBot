@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "slash": "set NODE_ENV=DEV&&node slashCommands.js",
+    "lint": "eslint --fix .",
     "dev": "set NODE_ENV=DEV&&node index.js",
     "devTasks": "concurrently  \"set NODE_ENV=DEV&&node index.js\" \"node ./scheduler/clan.js\""
   },

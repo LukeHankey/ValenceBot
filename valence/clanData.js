@@ -40,7 +40,8 @@ const updateRoles = async (client, dbCheck) => {
 		}
 	}
 
-	if (adminRoles.includes(dbCheck.clanRank) || !dbCheck.discActive || dbCheck.alt) { } else {
+	// eslint-disable-next-line no-useless-return
+	if (adminRoles.includes(dbCheck.clanRank) || !dbCheck.discActive || dbCheck.alt) { return } else {
 		// Valence Server
 		const server = client.guilds.cache.get('472448603642920973')
 		const getMember = server.members.cache.get(dbCheck.discord) ?? await server.members.fetch(dbCheck.discord).catch(async err => {
@@ -82,7 +83,7 @@ const updateRoles = async (client, dbCheck) => {
 				console.log('Recruit:', dbCheck.clanMate, role.name, dbCheck.clanRank)
 				break
 			}
-		} else { }
+		}
 	}
 }
 

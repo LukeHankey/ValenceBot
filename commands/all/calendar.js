@@ -354,6 +354,7 @@ export default {
 				default: {
 					const [valueToReplace] = oldValues.filter(val => {
 						if (val.toLowerCase().includes(field)) return val
+						else return undefined
 					})
 
 					console.log(valueToReplace)
@@ -407,11 +408,11 @@ export default {
 			const from = interaction.options.getInteger('from')
 			const to = interaction.options.getInteger('to')
 
-			const month_to = interaction.options.getString('month_to') ?? null
-			let monthFromDb_to
-			if (month_to) {
-				monthFromDb_to = dataFromDb.calendarID.filter(obj => {
-					return obj.month.toLowerCase() === month_to.toLowerCase() && obj.year === currentYear
+			const monthTo = interaction.options.getString('monthTo') ?? null
+			let monthFromDbTo
+			if (monthTo) {
+				monthFromDbTo = dataFromDb.calendarID.filter(obj => {
+					return obj.month.toLowerCase() === monthTo.toLowerCase() && obj.year === currentYear
 				})
 			}
 
@@ -419,17 +420,17 @@ export default {
 			const calEmbed = new MessageEmbed(message.embeds[0])
 			const event = calEmbed.fields[from - 1]
 
-			if (month_to !== null) {
-				const move_message = await interaction.channel.messages.fetch(monthFromDb_to[0].messageID)
-				const calEmbed_to = new MessageEmbed(move_message.embeds[0])
-				if (month_to === month) {
-					calEmbed_to.spliceFields(to - 1, 0, {
+			if (monthTo !== null) {
+				const moveMessage = await interaction.channel.messages.fetch(monthFromDbTo[0].messageID)
+				const calEmbedTo = new MessageEmbed(moveMessage.embeds[0])
+				if (monthTo === month) {
+					calEmbedTo.spliceFields(to - 1, 0, {
 						name: event.name,
 						value: event.value
 					})
-					calEmbed_to.spliceFields(from, 1)
+					calEmbedTo.spliceFields(from, 1)
 				} else {
-					calEmbed_to.spliceFields(to - 1, 0, {
+					calEmbedTo.spliceFields(to - 1, 0, {
 						name: event.name,
 						value: event.value
 					})
@@ -437,7 +438,7 @@ export default {
 					await message.edit({ embeds: [calEmbed] })
 				}
 
-				await move_message.edit({ embeds: [calEmbed_to] })
+				await moveMessage.edit({ embeds: [calEmbedTo] })
 
 				const item = event.value.split('\n')
 
@@ -451,7 +452,7 @@ export default {
 				console.log(eventTag, item, title, messageId)
 				await database.findOneAndUpdate({ _id: interaction.guild.id, 'calendarID.month': monthFromDb[0].month }, { $pull: { 'calendarID.$.events': { eventTag: eventTag } } })
 
-				await database.findOneAndUpdate({ _id: interaction.guild.id, 'calendarID.month': monthFromDb_to[0].month },
+				await database.findOneAndUpdate({ _id: interaction.guild.id, 'calendarID.month': monthFromDbTo[0].month },
 					{
 						$push: {
 							'calendarID.$.events':
@@ -459,7 +460,7 @@ export default {
 						}
 					})
 
-				await database.findOneAndUpdate({ _id: interaction.guild.id, 'events.roleID': roleId }, { $set: { 'events.$.month': monthFromDb_to[0].month } })
+				await database.findOneAndUpdate({ _id: interaction.guild.id, 'events.roleID': roleId }, { $set: { 'events.$.month': monthFromDbTo[0].month } })
 			} else {
 				calEmbed.spliceFields(from - 1, 1)
 				calEmbed.spliceFields(to - 1, 0, {

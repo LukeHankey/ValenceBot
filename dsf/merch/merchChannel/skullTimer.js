@@ -21,11 +21,12 @@ const skullTimer = (message, updateDB, channels) => {
 							if (getPerms) {
 								const moreThanOnce = messages.filter(obj => {
 									if (obj.userID === userID && obj.messageID !== messageID) return obj
+									else return undefined
 								})
 								if (moreThanOnce.length) return
 								console.log(`Removing ${author} (${userID}) from channel overrides.`)
 								return getPerms.delete()
-							} else { }
+							}
 						})
 						.catch((e) => {
 							channels.errors.send(e)
@@ -48,11 +49,11 @@ const skullTimer = (message, updateDB, channels) => {
 		}
 		Object.values(counts).forEach(dupe => {
 			if (dupe > 1) {
-				const message_id = getKeyByValue(counts, dupe)
-				const entry = messages.find(id => id.messageID === message_id)
-				updateDB.updateOne({ _id: message.channel.guild.id }, { $pull: { 'merchChannel.messages': { messageID: message_id } } })
+				const messageId = getKeyByValue(counts, dupe)
+				const entry = messages.find(id => id.messageID === messageId)
+				updateDB.updateOne({ _id: message.channel.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageId } } })
 				return updateDB.updateOne({ _id: message.channel.guild.id }, { $addToSet: { 'merchChannel.messages': entry } })
-			} else {}
+			}
 		})
 	})
 }
