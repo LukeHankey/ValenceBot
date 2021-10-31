@@ -51,7 +51,7 @@ const addOtherCount = async (message, updateDB, { errors }) => {
 		// Dupe call logging
 		let mes = await message.channel.messages.fetch({ limit: 10 })
 		mes = mes.filter(m => {
-			if (m.reactions.cache.has('☠️')) return
+			if (m.reactions.cache.has('☠️')) return undefined
 			else return mes
 		})
 		const log = [...mes.values()]

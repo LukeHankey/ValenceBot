@@ -16,6 +16,7 @@ export default {
 		const { prefix } = await settings.findOne({ _id: message.channel.guild.id }, { projection: { prefix: 1 } })
 
 		if (!args.length) {
+			// eslint-disable-next-line array-callback-return
 			const com = commands.map(command => {
 				if (command.guildSpecific.includes(message.channel.guild.id) || command.guildSpecific === 'all') {
 					switch (perms) {
@@ -26,7 +27,7 @@ export default {
 							if (command.permissionLevel === 'Admin' || command.permissionLevel === 'Mod' || command.permissionLevel === 'Everyone') return `\`${command.name}\``
 						} else if (perms.mod) {
 							if (command.permissionLevel === 'Mod' || command.permissionLevel === 'Everyone') return `\`${command.name}\``
-						} else if (command.permissionLevel === 'Everyone') { return `\`${command.name}\`` } else { }
+						} else if (command.permissionLevel === 'Everyone') { return `\`${command.name}\`` }
 					}
 				}
 			})

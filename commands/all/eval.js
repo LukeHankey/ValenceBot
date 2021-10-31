@@ -19,6 +19,7 @@ export default {
 			})
 		} else {
 			try {
+				// eslint-disable-next-line no-eval
 				let evalCode = eval(args.join(' '))
 				if (typeof evalCode !== 'string') {
 					evalCode = require('util').inspect(evalCode)

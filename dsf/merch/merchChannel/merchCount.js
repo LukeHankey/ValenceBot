@@ -102,7 +102,7 @@ const addMerchCount = async (client, message, updateDB, { errors }) => {
 		// Database logging for merch worlds
 		let mes = await message.channel.messages.fetch({ limit: 10 })
 		mes = mes.filter(m => {
-			if (m.reactions.cache.has('☠️')) return
+			if (m.reactions.cache.has('☠️')) return undefined
 			else return mes
 		})
 		const log = [...mes.values()]

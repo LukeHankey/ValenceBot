@@ -32,7 +32,7 @@ const dsf = async (client, message, channels) => {
 		}
 		await addOtherCount(message, settingsColl, channels)
 		otherTimer(message, settingsColl, channels)
-	} else {}
+	}
 }
 
 export default dsf

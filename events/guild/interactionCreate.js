@@ -63,11 +63,11 @@ export default async (client, interaction) => {
 								}
 							])
 					)
-				const date_time = new Date(thisButton[0].time).toUTCString()
-				const potential_password = thisButton[0].content
-				const server_name = interaction.member.guild.name
+				const dateTime = new Date(thisButton[0].time).toUTCString()
+				const potentialPassowrd = thisButton[0].content
+				const serverName = interaction.member.guild.name
 
-				const passwordDM = `${server_name}\n\nHello.\n\nWe saw you typed into the #merch-calls channel on ${date_time} and the Deep Sea Fishing Admins have flagged this as a potential password which is why you are receiving this DM. That specific channel has all messages logged.\n\nYour message content: ${potential_password}\n\nIf it is a password, then we recommend that you change it ASAP, even though it got deleted straight away. Please respond with one of the selections to let our Admins know if we should also delete that message from our message logs.\n\nDSF Admin Team.`
+				const passwordDM = `${serverName}\n\nHello.\n\nWe saw you typed into the #merch-calls channel on ${dateTime} and the Deep Sea Fishing Admins have flagged this as a potential password which is why you are receiving this DM. That specific channel has all messages logged.\n\nYour message content: ${potentialPassowrd}\n\nIf it is a password, then we recommend that you change it ASAP, even though it got deleted straight away. Please respond with one of the selections to let our Admins know if we should also delete that message from our message logs.\n\nDSF Admin Team.`
 
 				const fetchUser = await interaction.guild.members.fetch(thisButton[0].userID)
 				const sentDM = await fetchUser.send({ content: passwordDM, components: [menu] })
@@ -122,7 +122,7 @@ export default async (client, interaction) => {
 			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
 		}
 	} else if (interaction.isAutocomplete()) {
-		const choices = [...client.commands.values()].filter(command => { if (command.slash && (command.guildSpecific.includes(interaction.guild.id) || command.guildSpecific === 'all')) return command.slash }).map(slash => ({ name: slash.name, value: slash.name }))
+		const choices = [...client.commands.values()].filter(command => { if (command.slash && (command.guildSpecific.includes(interaction.guild.id) || command.guildSpecific === 'all')) { return command.slash } else return undefined }).map(slash => ({ name: slash.name, value: slash.name }))
 
 		interaction.respond(choices)
 	} else if (interaction.isSelectMenu()) {
@@ -192,5 +192,5 @@ export default async (client, interaction) => {
 		// 	},
 		// ];
 		// await contextMenu.permissions.set({ permissions });
-	} else { }
+	}
 }

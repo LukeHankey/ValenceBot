@@ -122,8 +122,8 @@ export default async client => {
 			if (!r[document].citadel_reset_time) return
 			cron.schedule('*/5 * * * *', async () => {
 				const today = new Date()
-				const today_num = today.getUTCDay()
-				const today_str = days[today_num]
+				const todayNum = today.getUTCDay()
+				const todayStr = days[todayNum]
 				// eslint-disable-next-line no-shadow
 				const newDates = function (days, hours, minutes, timer) {
 					const time = msCalc(days, doubleDigits(hours), doubleDigits(minutes)) + timer
@@ -143,14 +143,14 @@ export default async client => {
 							const dateHours = newDate.split(' ')[4].slice(0, 2)
 							const dateMins = newDate.split(' ')[4].slice(3, 5)
 
-							if (dateDays === today_str.substr(0, 3)) {
+							if (dateDays === todayStr.substr(0, 3)) {
 								if (today.getUTCHours() === +dateHours) {
 									if (+dateMins <= today.getUTCMinutes() && today.getUTCMinutes() < (+dateMins + 5)) {
 										client.channels.cache.get(res[document].citadel_reset_time.reminders[remDoc].channel).send(`${res[document].citadel_reset_time.reminders[remDoc].message}`)
 									}
 								}
 							}
-						} else if (res[document].citadel_reset_time.day === today_num || res[document].citadel_reset_time.day === today_str || res[document].citadel_reset_time.day === today_str.substr(0, 3)) {
+						} else if (res[document].citadel_reset_time.day === todayNum || res[document].citadel_reset_time.day === todayStr || res[document].citadel_reset_time.day === todayStr.substr(0, 3)) {
 							if (today.getUTCHours() === res[document].citadel_reset_time.hour) {
 								if (res[document].citadel_reset_time.minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].citadel_reset_time.minute + 5)) {
 									client.channels.cache.get(res[document].citadel_reset_time.reminders[remDoc].channel).send(`${res[document].citadel_reset_time.reminders[remDoc].message}\`\`\`You can also help out with setting the Citadel Reset Time since it changes almost every single week! Use the following command to let your Clan Admins know the next Citadel Reset:\n\n${res[document].prefix}citadel reset info <days> <hours> <minutes> <image (optional)>\n\nExample:\n${res[document].prefix}citadel reset info 6 22 42\`\`\``)

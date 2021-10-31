@@ -42,6 +42,7 @@ export default {
 		if (!interaction.options.getInteger('reset')) {
 			let currentDate = new Date().toUTCString()
 			currentDate = currentDate.split(' ')
+			// eslint-disable-next-line no-unused-vars
 			const [day, month, year, ...rest] = currentDate.slice(1)
 			const savedDate = visTime.toString().split(' ')
 

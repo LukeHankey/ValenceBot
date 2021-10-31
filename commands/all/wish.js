@@ -34,6 +34,7 @@ export default {
 
 			const rangeName = 'TM Coupon'
 
+			// eslint-disable-next-line no-inner-declarations
 			async function googleSheets (gClient) {
 				const gsapi = google.sheets({ version: 'v4', auth: gClient })
 				const opt = { // READ ONLY OPTIONS
@@ -45,11 +46,12 @@ export default {
 				const data = await gsapi.spreadsheets.values.get(opt)
 				let dataArr = data.data.values
 
-				dataArr.flatMap(innerArr => {
+				dataArr = dataArr.flatMap(innerArr => {
 					innerArr[0] = `${innerArr[0]} (${innerArr[4]})`
 					innerArr.splice(2, 0, '\u200B')
 					innerArr.splice(4, 0, '\u200B')
 					innerArr.splice(6, 1)
+					return innerArr
 				})
 				dataArr = splitIntoX(dataArr, 2)
 

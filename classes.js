@@ -1,3 +1,4 @@
+/* eslint-disable no-async-promise-executor */
 import { MessageEmbed } from 'discord.js'
 import { redDark, orange } from './colors.js'
 import { nEmbed } from './functions.js'
@@ -8,16 +9,17 @@ class Permissions {
 		this.name = name
 		this.db = db
 		this.msg = msg
-		this._role = this.msg.guild.roles.cache.find(role => role.id === this.roleID)
+		this._role = this.msg.guild.roles.cache.find(role => role.id === this.roleId)
 		this._position = this.msg.guild.roles.cache.filter(roles => {
 			return roles.rawPosition >= this._role?.rawPosition
 		})
 	}
 
-	get roleID () {
+	// eslint-disable-next-line getter-return
+	get roleId () {
 		if (this.db?.roles[this.name]) {
-		return this.db?.roles[this.name].slice(3, 21)
-		}	
+			return this.db?.roles[this.name].slice(3, 21)
+		}
 	}
 
 	memberRole () { // abovePermModArray
@@ -75,10 +77,6 @@ class Permissions {
 	}
 }
 class ScouterCheck {
-	client
-	db
-	guild
-
 	constructor (roleName, value) {
 		this.month = 1000 * 60 * 60 * 24 * 31
 		this.week = 1000 * 60 * 60 * 24 * 7
@@ -94,7 +92,7 @@ class ScouterCheck {
 		this.db = db
 	}
 
-	set _guild_name (name) {
+	set _guildName (name) {
 		this.guild_name = name
 	}
 
@@ -106,13 +104,13 @@ class ScouterCheck {
 		return this.db
 	}
 
-	get _guild_name () {
+	get _guildName () {
 		return this.guild_name
 	}
 
 	get guildID () {
 		return this._client.guilds.cache.mapValues(x => {
-			if (x.name === this._guild_name) return x.id
+			if (x.name === this._guildName) return x.id
 		})
 	}
 
@@ -130,16 +128,17 @@ class ScouterCheck {
 			scout = this._db.merchChannel.scoutTracker.filter(val => {
 				return this._checkVerifiedScouts(val, this.value ?? 100, this.month)
 			})
+		} else {
+			// If another role
+			return undefined
 		}
-		// eslint-disable-next-line getter-return
-		else { return }
 		return scout
 	}
 
 	get role () {
-		return new Promise(async (res) => {
+		return new Promise(async (resolve) => {
 			const guild = await this.guild
-			return res(guild.roles.cache.find(r => r.name.toLowerCase() === this.roleName.toLowerCase())) // Find the guild and then find the role
+			return resolve(guild.roles.cache.find(r => r.name.toLowerCase() === this.roleName.toLowerCase())) // Find the guild and then find the role
 		})
 	}
 
@@ -159,7 +158,7 @@ class ScouterCheck {
 				if (filter.assigned.length > 0 && filter.assigned.length < 2) {
 					return filter
 				} else if (filter.assigned.length >= 2) {
-
+					return undefined
 				}
 			}
 		}
@@ -196,7 +195,7 @@ class ScouterCheck {
 		const scouts = await this.potentialScouts
 		const role = await this.role
 
-		return new Promise(async (res) => {
+		return new Promise(async (resolve) => {
 			const userID = scouts.map(doc => doc.userID)
 			const memberFetch = await guild.members.fetch({ user: userID })
 			const membersArray = []
@@ -205,7 +204,7 @@ class ScouterCheck {
 					membersArray.push(mem)
 				}
 			})
-			return res(membersArray)
+			return resolve(membersArray)
 		})
 	}
 
@@ -213,7 +212,7 @@ class ScouterCheck {
 		const guild = await this.guild
 		const role = await this.role
 
-		return new Promise(async (res) => {
+		return new Promise(async (resolve) => {
 			const userID = this.scouts.map(doc => doc.userID)
 			const memberFetch = await guild.members.fetch({ user: userID })
 			const membersArray = []
@@ -222,14 +221,14 @@ class ScouterCheck {
 					membersArray.push(mem)
 				}
 			})
-			return res(membersArray)
+			return resolve(membersArray)
 		})
 	}
 
 	async removeInactive () {
 		const db = await this._db
 
-		return new Promise(async (res) => {
+		return new Promise(async (resolve) => {
 			let merch = await db.merchChannel.scoutTracker
 			merch = merch.filter(doc => {
 				const totalCount = (doc.count + (doc.otherCount ?? 0)) < 10
@@ -237,7 +236,7 @@ class ScouterCheck {
 				const timeNoPost = (Date.now() - doc.lastTimestamp) > timeGone
 				return timeNoPost && totalCount
 			})
-			return res(merch)
+			return resolve(merch)
 		})
 	}
 }
@@ -267,6 +266,7 @@ class GoogleSheet {
 			const rangeNames = await full.valueRanges.filter(sheet => {
 				const name = sheet.range.split('!')
 				if (range.toLowerCase() === name[0].toLowerCase()) return sheet
+				else return undefined
 			})
 			if (rangeNames.length) { return rangeNames[0] }
 		}

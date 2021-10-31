@@ -99,10 +99,10 @@ export default async (client, message) => {
 		case otherCalls:
 			return await dsf(client, message, channels)
 		case suggestions: {
-			const up_arrow = message.guild.emojis.cache.get('872175822725857280')
-			const down_arrow = message.guild.emojis.cache.get('872175855223337060')
-			await message.react(up_arrow)
-			await message.react(down_arrow)
+			const upArrow = message.guild.emojis.cache.get('872175822725857280')
+			const downArrow = message.guild.emojis.cache.get('872175855223337060')
+			await message.react(upArrow)
+			await message.react(downArrow)
 			await message.startThread({ name: `Suggestion from ${message.member.nickname ?? message.author.username}`, autoArchiveDuration: 4320 })
 		}
 			break

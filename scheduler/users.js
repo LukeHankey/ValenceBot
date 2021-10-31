@@ -80,7 +80,7 @@ const nameChanges = async (missingNames) => {
 				const xpCheck = potentialNewNames.filter(user => {
 					if (Number(user.totalXP) - 10000000 < Number(potentialChangers.totalXP) && Number(user.totalXP) + 10000000 > Number(potentialChangers.totalXP)) {
 						return user
-					}
+					} else return undefined
 				})
 				potentialChangers.potentialNewNames = xpCheck
 				nameChange.change.push(potentialChangers)

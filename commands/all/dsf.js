@@ -27,7 +27,8 @@ export default {
 		case 'm':
 		case 'messages':
 			switch (args[1]) {
-			default: {
+			// eslint-disable-next-line default-case-last
+			default:
 				try {
 					const { merchChannel: { messages, channelID } } = await settings.findOne({ _id: message.channel.guild.id }, { projection: { 'merchChannel.messages': 1, 'merchChannel.channelID': 1 } })
 					const fields = []
@@ -48,7 +49,6 @@ export default {
 						return message.channel.send({ content: 'Too many messages stored. Use the clear command.' })
 					} else { channels.errors.send(e) }
 				}
-			}
 				break
 			case 'clear':
 				await settings.findOneAndUpdate({ _id: message.channel.guild.id },
@@ -61,7 +61,7 @@ export default {
 				message.react('✅')
 			}
 			break
-		case 'reacts': {
+		case 'reacts':
 			switch (args[1]) {
 			case 'clear': {
 				const { merchChannel: { channelID, spamProtection } } = await settings.findOne({ _id: message.channel.guild.id }, { projection: { 'merchChannel.spamProtection': 1, 'merchChannel.channelID': 1 } })
@@ -77,16 +77,14 @@ export default {
 							await removeMessage(message, m, settings)
 							await message.react('✅')
 							return await m.react('☠️')
-						}
-						// If there is only a skull, remove users and message from DB
-						else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
+						} else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
+							// If there is only a skull, remove users and message from DB
 							await removeMessage(message, m, settings)
 							await m.reactions.removeAll()
 							await message.react('✅')
 							return await m.react('☠️')
-						}
-						// If there is a single reaction which is not the Skull, then remove that and react with skull. Repeat process over.
-						else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && !m.reactions.cache.has('☠️')) {
+						} else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && !m.reactions.cache.has('☠️')) {
+							// If there is a single reaction which is not the Skull, then remove that and react with skull. Repeat process over.
 							await m.reactions.removeAll()
 							await removeMessage(message, m, settings)
 							await message.react('✅')
@@ -168,7 +166,6 @@ export default {
 					})
 			}
 			}
-		}
 			break
 		case 'view': {
 			let scout = new ScouterCheck('Scouter')
@@ -180,6 +177,7 @@ export default {
 				name._guild_name = serverName
 				name._db = await db.map(doc => {
 					if (doc.serverName === name._guild_name) return doc
+					else return undefined
 				}).filter(x => x)[0]
 				return name._client && name._guild_name && name._db
 			}

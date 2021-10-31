@@ -1,3 +1,4 @@
+/* eslint-disable no-template-curly-in-string */
 /* eslint-disable quotes */
 /* eslint-disable no-inline-comments */
 import { MessageEmbed, Formatters } from 'discord.js'
@@ -194,10 +195,11 @@ export default {
 					message.channel.send(perms.errorM)
 				}
 				break
-			default: {
+			default:
 				if (reminders.length === 0) {
 					message.channel.send({ content: 'You have no citadel reminders set.' })
 				} else {
+					// eslint-disable-next-line array-callback-return
 					const citadelReminders = reminders.map(x => {
 						if (x.dayReset === 'reset') {
 							const newDate = boundDD(`${dayCheck.indexOf(x.dayResetPlus) || +x.dayResetPlus}`, +x.hourResetPlus, +x.minResetPlus, resetms)
@@ -213,13 +215,10 @@ export default {
 							}
 						} else if (x.channel.length > 18) {
 							return `**ID:** \`${x.id}\`, Channel: <#${x.channel.slice(2, 20)}>, Date: \`${dayCheck[day] || day} ${doubleDigits(hour)}:${doubleDigits(minute)}\`, Message: ${x.message}\n`
-						} else {
-							return `**ID:** \`${x.id}\`, Channel: <#${x.channel}>, Date: \`${dayCheck[day] || day} ${doubleDigits(hour)}:${doubleDigits(minute)}\`, Message: ${x.message}\n`
-						}
+						} else return `**ID:** \`${x.id}\`, Channel: <#${x.channel}>, Date: \`${dayCheck[day] || day} ${doubleDigits(hour)}:${doubleDigits(minute)}\`, Message: ${x.message}\n`
 					})
 					message.channel.send({ content: `Current Reminders:\n${citadelReminders.join('')}` })
 				}
-			}
 				break
 			}
 			break
@@ -237,9 +236,7 @@ export default {
 						message.channel.send({ content: `The Citadel Reset Time has been changed to: ${dayCheck[value.citadel_reset_time.day] || value.citadel_reset_time.day} ${doubleDigits(args[2])}:${doubleDigits(args[3])}` })
 						const logContent = `- ${value.citadel_reset_time.day} ${value.citadel_reset_time.hour}:${value.citadel_reset_time.minute}\n+ ${dayCheck[value.citadel_reset_time.day] || value.citadel_reset_time.day} ${doubleDigits(args[2])}:${doubleDigits(args[3])}`
 						channels.logs.send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.channel.guild.name}**\n${Formatters.codeBlock('diff', logContent)}`)
-					}
-					// eslint-disable-next-line no-octal
-					else if (checkDate(args[2], 0o0, 59) && args[2]) { // Setting by Minute
+					} else if (checkDate(args[2], 0o0, 59) && args[2]) { // Setting by Minute
 						const { value } = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'citadel_reset_time.minute': doubleDigits(args[2]) } }, { returnOriginal: true })
 						message.channel.send({ content: `The Citadel Reset Time has been changed to: ${dayCheck[value.citadel_reset_time.day] || value.citadel_reset_time.day} ${doubleDigits(value.citadel_reset_time.hour)}:${doubleDigits(args[2])}` })
 						const logContent = `- ${value.citadel_reset_time.day} ${value.citadel_reset_time.hour}:${value.citadel_reset_time.minute}\n+ ${dayCheck[value.citadel_reset_time.day] || value.citadel_reset_time.day} ${doubleDigits(value.citadel_reset_time.hour)}:${doubleDigits(args[2])}`
@@ -283,7 +280,7 @@ export default {
 									const array = ['gif', 'jpeg', 'tiff', 'png', 'webp', 'bmp', 'prnt.sc', 'gyazo.com']
 									if (array.some(x => args[5].includes(x))) {
 										const updatedResetInfo = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { resetInfoCount: 0 } })
-										if (updatedResetInfo.resetInfoCount == 0) {
+										if (updatedResetInfo.resetInfoCount === 0) {
 											const msg = await client.channels.cache.get(channels.adminChannel).send({ embeds: [infoEmbedOne.setImage(`${args[5]}`)] })
 											await msg.react('✅')
 											await msg.react('❌')
@@ -296,7 +293,7 @@ export default {
 
 											collectorT.on('collect', () => {
 												const userRoles = message.member.roles
-												if (userRoles.cache.has(updatedResetInfo.roles.modRole.slice(3, 21)) || userRoles.cache.has(updatedResetInfo.roles.adminRole.slice(3, 21))) {} else {
+												if (userRoles.cache.has(updatedResetInfo.roles.modRole.slice(3, 21)) || userRoles.cache.has(updatedResetInfo.roles.adminRole.slice(3, 21))) { return undefined } else {
 													settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { resetInfoCount: 1, resetInfoTime: message.createdTimestamp } }, { returnOriginal: false })
 												}
 											})
@@ -305,7 +302,7 @@ export default {
 											})
 											message.delete()
 											message.reply('Thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!')
-										} else if (updatedResetInfo.resetInfoCount == 1) {
+										} else if (updatedResetInfo.resetInfoCount === 1) {
 											message.channel.send({ content: 'You can\'t use that command again. Please wait until the next reset!' })
 										}
 									} else {
@@ -313,7 +310,7 @@ export default {
 									}
 								} else {
 									const { value } = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { resetInfoCount: 0 } })
-									if (value.resetInfoCount == 0) {
+									if (value.resetInfoCount === 0) {
 										client.channels.cache.get(value.channels.adminChannel).send({ embeds: [infoEmbedOne] })
 											.then(async m => {
 												await m.react('✅')
@@ -327,7 +324,7 @@ export default {
 
 												collectorT.on('collect', () => {
 													const userRoles = message.member.roles
-													if (userRoles.cache.has(value.roles.modRole.slice(3, 21)) || userRoles.cache.has(value.roles.adminRole.slice(3, 21))) {} else {
+													if (userRoles.cache.has(value.roles.modRole.slice(3, 21)) || userRoles.cache.has(value.roles.adminRole.slice(3, 21))) { return undefined } else {
 														settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { resetInfoCount: 1, resetInfoTime: message.createdTimestamp } }, { returnOriginal: false })
 													}
 												})
@@ -394,7 +391,7 @@ export default {
 				if (command.name === 'citadel') {
 					command.usage.shift()
 					return command.usage
-				}
+				} else return undefined
 			})
 			const com = commandCollection.first().usage.map(use => `\`${use}\``).join('\n')
 

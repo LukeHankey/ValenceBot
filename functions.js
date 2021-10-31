@@ -89,7 +89,7 @@ const randomNum = () => {
 const removeEvents = async (message, settings, channels, module, database, eventTag) => {
 	try {
 		const eventsChannel = message.guild.channels.cache.get(database.channels.events)
-		const [eventMessageCheck] = database.events.filter(event => { if (event.eventTag === eventTag) return event })
+		const [eventMessageCheck] = database.events.filter(event => { if (event.eventTag === eventTag) { return event } else return undefined })
 
 		// Remove from events
 		await settings.updateOne({ _id: message.guild.id }, { $pull: { events: { eventTag } } })
@@ -112,7 +112,7 @@ const removeEvents = async (message, settings, channels, module, database, event
 
 		// Remove the post from the calendar
 		const currentYear = new Date().getFullYear()
-		const [calendarMessage] = database.calendarID.filter(month => { if (month.month === eventMessageCheck.month && month.year === currentYear) return month })
+		const [calendarMessage] = database.calendarID.filter(month => { if (month.month === eventMessageCheck.month && month.year === currentYear) { return month } else return undefined })
 		const calMessage = await calChannel.messages.fetch(calendarMessage.messageID)
 		const fields = calMessage.embeds[0].fields
 
@@ -120,6 +120,7 @@ const removeEvents = async (message, settings, channels, module, database, event
 			const roleItem = field.value.split('\n')[4]
 			const roleId = roleItem.slice(9, 27)
 			if (roleId === eventMessageCheck.roleID) return field
+			else return undefined
 		})
 
 		const removedItem = [fields[foundIndex]].map(obj => `${obj.name}\n${obj.value}`)
@@ -189,7 +190,7 @@ const paginateFollowUP = async (msg, { author }, page, embeds, client) => {
 				page++
 				if (page === embeds.length) --page
 				msg.edit({ embeds: [embeds[page].setFooter(`Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, client.user.displayAvatarURL())] })
-			} else {}
+			}
 		} else if (r.emoji.name === '◀️') {
 			if (page !== 0) {
 				msg.reactions.resolve('◀️').users.remove(u.id)
