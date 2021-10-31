@@ -1,5 +1,5 @@
 import fetch from 'node-fetch'
-import getDb from '../mongodb.js'
+import { getDb } from '../mongodb.js'
 
 const addActive = async () => {
 	const db = await getDb()

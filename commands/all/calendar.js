@@ -169,7 +169,7 @@ export default {
 				)
 				.addStringOption(option =>
 					option
-						.setName('monthTo')
+						.setName('month_to')
 						.setDescription('Choose the month of the calendar you want to move an event to.')
 						.addChoices(monthChoices)
 				)
