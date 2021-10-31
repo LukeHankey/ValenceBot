@@ -22,7 +22,7 @@ for (const file of commandFiles) {
 	const command = await import(`./commands/all/${file}`)
 	if (!command.default.data) continue
 	// if (['nick', 'events', 'calendar'].includes(command.name)) continue;
-	if (!['permissions', 'nick'].includes(command.default.name)) continue
+	if (!['vis'].includes(command.default.name)) continue
 	commands.push(command.default.data)
 }
 console.log(3, commands)

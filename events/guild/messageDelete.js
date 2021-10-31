@@ -1,6 +1,6 @@
 import { getDb } from '../../mongodb.js'
 import { MessageEmbed } from 'discord.js'
-import { red_dark } from '../../colors.js'
+import { redDark } from '../../colors.js'
 
 export default async (client, message) => {
 	if (process.env.NODE_ENV === 'DEV') {
@@ -47,7 +47,7 @@ export default async (client, message) => {
 	const messageDeletion = (document) => {
 		const embed = new MessageEmbed()
 			.setTitle('Message Deleted')
-			.setColor(red_dark)
+			.setColor(redDark)
 			.addField('Message ID:', `${document.messageID}`, true)
 			.addField('Message Content:', `${document.content}`, true)
 			.addField('\u200B', '\u200B', true)

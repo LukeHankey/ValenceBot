@@ -1,4 +1,4 @@
-import { green_light, red_light, cyan } from '../../colors.js'
+import { greenLight, redLight, cyan } from '../../colors.js'
 import { MessageEmbed } from 'discord.js'
 
 export default {
@@ -42,7 +42,7 @@ export default {
 		const embed = new MessageEmbed()
 			.setTitle('Self-Assigned Information')
 			.setTimestamp()
-			.setColor(green_light)
+			.setColor(greenLight)
 			.setFooter(`${client.user.username} created by Luke_#8346`, message.channel.guild.iconURL())
 
 		if (args[0] === 'roles') {
@@ -97,7 +97,7 @@ export default {
 		console.log(added, removed, wrong)
 
 		wrong.length && (!added.length && !removed.length)
-			? message.channel.send({ embeds: [embed.setColor(red_light).addFields(wrongAdd).setDescription('Can\'t find the role name? Use `;sa roles` for a full list of self-assignable role names.')] })
+			? message.channel.send({ embeds: [embed.setColor(redLight).addFields(wrongAdd).setDescription('Can\'t find the role name? Use `;sa roles` for a full list of self-assignable role names.')] })
 			: wrong.length
 				? message.channel.send({ embeds: [embed.addFields(fieldsPlus).setDescription('Can\'t find the role name? Use `;sa roles` for a full list of self-assignable role names.')] })
 				: message.channel.send({ embeds: [embed.addFields(fields)] })

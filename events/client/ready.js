@@ -5,7 +5,7 @@ import { msCalc, doubleDigits, nextDay } from '../../functions.js'
 import { scout, vScout, classVars, addedRoles, removedRoles, removeInactives } from '../../dsf/scouts/scouters.js'
 import { removeButtons } from '../../dsf/merch/merchFunctions.js'
 import { MessageEmbed, Formatters } from 'discord.js'
-import { red_dark } from '../../colors.js'
+import { redDark } from '../../colors.js'
 import cron from 'node-cron'
 import sendFact from '../../valence/dailyFact.js'
 import updateRoles from '../../valence/clanData.js'
@@ -34,7 +34,7 @@ export default async client => {
 				const fileName = module.id.split('\\').pop()
 				const embed = new MessageEmbed()
 					.setTitle(`An error occured in ${fileName}`)
-					.setColor(red_dark)
+					.setColor(redDark)
 					.addField(`${err.message}`, `${Formatters.codeBlock(err.stack)}`)
 				return embed
 			},

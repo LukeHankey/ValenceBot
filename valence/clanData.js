@@ -1,6 +1,6 @@
 import { getDb } from '../mongodb.js'
 import { MessageEmbed } from 'discord.js'
-import { red_dark } from '../colors.js'
+import { redDark } from '../colors.js'
 
 const clanRoles = {
 	recruit: '473234580904607745',
@@ -29,7 +29,7 @@ const updateRoles = async (client, dbCheck) => {
 				const fileName = module.id.split('\\').pop()
 				const embed = new MessageEmbed()
 					.setTitle(`An error occured in ${fileName}`)
-					.setColor(red_dark)
+					.setColor(redDark)
 					.addField(`${err.message}`, `\`\`\`${err.stack}\`\`\``)
 				return embed
 			},

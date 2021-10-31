@@ -1,10 +1,9 @@
 /* eslint-disable no-shadow */
 /* eslint-disable no-useless-escape */
-import { nEmbed, checkNum } from '../../functions.js'
+import { nEmbed, checkNum, removeMessage } from '../../functions.js'
 import { cream, cyan } from '../../colors.js'
 import { getDb } from '../../mongodb.js'
 import { ScouterCheck } from '../../classes.js'
-import { removeMessage } from '../../functions.js'
 
 /**
  * 733164313744769024 - Test Server

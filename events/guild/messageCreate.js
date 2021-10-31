@@ -1,5 +1,5 @@
 import { getDb } from '../../mongodb.js'
-import { red_dark, blue_dark } from '../../colors.js'
+import { redDark, blueDark } from '../../colors.js'
 import { Permissions } from '../../classes.js'
 import { MessageEmbed } from 'discord.js'
 import vEvents from '../../valence/valenceEvents.js'
@@ -23,10 +23,10 @@ export default async (client, message) => {
 			id: errors,
 			embed: function (err) {
 				const filePath = import.meta.url.split('/')
-				const fileName = filePath[filePath.length -1]
+				const fileName = filePath[filePath.length - 1]
 				const embed = new MessageEmbed()
 					.setTitle(`An error occured in ${fileName}`)
-					.setColor(red_dark)
+					.setColor(redDark)
 					.addField(`${err.message}`, `\`\`\`${err.stack}\`\`\``)
 				return embed
 			},
@@ -60,7 +60,7 @@ export default async (client, message) => {
 		const embed = new MessageEmbed()
 			.setTitle('New DM Recieved')
 			.setDescription(`${dmPerson.tag} sent me a DM.`)
-			.setColor(blue_dark)
+			.setColor(blueDark)
 			.addField('User ID', `${dmPerson.id}`, false)
 			.addField('Message contents', `${dmMsg.join('\n')}`)
 			.setTimestamp()

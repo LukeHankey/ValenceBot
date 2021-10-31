@@ -1,7 +1,7 @@
 import { getDb } from '../../mongodb.js'
 import { MessageEmbed, MessageButton, MessageActionRow, MessageSelectMenu } from 'discord.js'
 import { Permissions } from '../../classes.js'
-import { red_dark } from '../../colors.js'
+import { redDark } from '../../colors.js'
 
 export default async (client, interaction) => {
 	const db = getDb()
@@ -14,10 +14,10 @@ export default async (client, interaction) => {
 			id: errors,
 			embed: function (err) {
 				const filePath = import.meta.url.split('/')
-				const fileName = filePath[filePath.length -1]
+				const fileName = filePath[filePath.length - 1]
 				const embed = new MessageEmbed()
 					.setTitle(`An error occured in ${fileName}`)
-					.setColor(red_dark)
+					.setColor(redDark)
 					.addField(`${err.message}`, `\`\`\`${err.stack}\`\`\``)
 				return embed
 			},

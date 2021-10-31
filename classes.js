@@ -1,5 +1,5 @@
 import { MessageEmbed } from 'discord.js'
-import { red_dark, orange } from './colors.js'
+import { redDark, orange } from './colors.js'
 import { nEmbed } from './functions.js'
 import ms from 'pretty-ms'
 
@@ -10,15 +10,14 @@ class Permissions {
 		this.msg = msg
 		this._role = this.msg.guild.roles.cache.find(role => role.id === this.roleID)
 		this._position = this.msg.guild.roles.cache.filter(roles => {
-			if (this._role === undefined) return
-			else return roles.rawPosition >= this._role.rawPosition
+			return roles.rawPosition >= this._role?.rawPosition
 		})
 	}
 
 	get roleID () {
-		// eslint-disable-next-line getter-return
-		if (this.db.roles[this.name] === undefined) return
-		else return this.db.roles[this.name].slice(3, 21)
+		if (this.db?.roles[this.name]) {
+		return this.db?.roles[this.name].slice(3, 21)
+		}	
 	}
 
 	memberRole () { // abovePermModArray
@@ -63,25 +62,26 @@ class Permissions {
 	}
 
 	ownerError () {
-		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', red_dark)
+		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', redDark)
 			.addField('Only the bot owner can:', `<@!${this.owner}>`)
 		return { embeds: [embed] }
 	}
 
 	error () {
-		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', red_dark)
+		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', redDark)
 			.addField('Only the following Roles & Users can:', `${this.higherRoles().length > 0 ? this.higherRoles().join(', ') : '0'}`, true)
 			.addField('\u200b', `<@${this.msg.guild.ownerId}>`, true)
 		return { embeds: [embed] }
 	}
 }
 class ScouterCheck {
+	client
+	db
+	guild
+
 	constructor (roleName, value) {
 		this.month = 1000 * 60 * 60 * 24 * 31
 		this.week = 1000 * 60 * 60 * 24 * 7
-		this.client
-		this.db
-		this.guild_name
 		this.roleName = roleName
 		this.value = value
 	}

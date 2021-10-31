@@ -1,7 +1,7 @@
 import { getDb } from '../../mongodb.js'
 import { MessageEmbed } from 'discord.js'
 import { removeMessage, removeEvents } from '../../functions.js'
-import { red_dark, green_light } from '../../colors.js'
+import { redDark, greenLight } from '../../colors.js'
 import fetch from 'node-fetch'
 
 export default async (client, reaction, user) => {
@@ -21,7 +21,7 @@ export default async (client, reaction, user) => {
 				const fileName = module.id.split('\\').pop()
 				const embed = new MessageEmbed()
 					.setTitle(`An error occured in ${fileName}`)
-					.setColor(red_dark)
+					.setColor(redDark)
 					.addField(`${err.message}`, `\`\`\`${err.stack}\`\`\``)
 				return embed
 			},
@@ -102,7 +102,7 @@ export default async (client, reaction, user) => {
 							const embed = new MessageEmbed()
 								.setTitle(`${userLeft.clanMate} is no longer in Valence`)
 								.setDescription(`${user.username} chose ❌ on name changes. (Not changed names or none match). User has been removed from the database.`)
-								.setColor(red_dark)
+								.setColor(redDark)
 								.addField('Users old profile', `\`\`\`${JSON.stringify(userLeft)}\`\`\``)
 							const channel = client.channels.cache.get(channels.errors.id)
 							channel.send(embed)
@@ -117,7 +117,7 @@ export default async (client, reaction, user) => {
 								const embed = new MessageEmbed()
 									.setTitle(`${userLeft.clanMate} is no longer in Valence`)
 									.setDescription(`${user.username} chose ❌ on name changes. (Not changed names or none match). User has been removed from the database.`)
-									.setColor(red_dark)
+									.setColor(redDark)
 									.addField('Users old profile', `\`\`\`${JSON.stringify(userLeft)}\`\`\``)
 								const channel = client.channels.cache.get(channels.errors.id)
 								channel.send(embed)
@@ -248,7 +248,7 @@ export default async (client, reaction, user) => {
 						}
 					})
 					const newEmbed = new MessageEmbed(message.embeds[0])
-					newEmbed.setColor(green_light).setTitle('Message Deleted - Count Removed')
+					newEmbed.setColor(greenLight).setTitle('Message Deleted - Count Removed')
 					await message.edit({ embeds: [newEmbed] })
 					return message.reactions.removeAll()
 				}
