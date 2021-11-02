@@ -78,6 +78,7 @@ export default async (client, message) => {
 			// Check for permissions
 			const perms = message.guild.me.permissions.has('BAN_MEMBERS')
 			if (perms) {
+				console.log(message.content)
 				await bannedMember.ban({ days: 7, reason: 'Posted a scam link' })
 				const bChannel = message.guild.channels.cache.get('624655664920395786')
 				return await bChannel.send({ content: `Banned: ${bannedMember.displayName} - ${bannedMember.id} -- Posting a scam link.` })
@@ -111,27 +112,22 @@ export default async (client, message) => {
 		}
 	}
 
-	if (message.author.bot) return
+	// Daily Vis Wax
+	if (message.guild.id === '668330890790699079' && message.channel.id === '903432222139355207') {
+		// Change channel ID (dev-bot)
+		console.log(message, message.content)
+		const channel = message.guild.channels.cache.get('732014449182900247')
+		const msg = await channel.messages.fetch('904886479774429204')
+		console.log(msg)
 
-	// Dealing with scams
-	if (message.guild.id === '668330890790699079') {
-		const scamDetect = /(glft|steamcom|dlsco|csord-)\w+/gi
-		if (scamDetect.test(message.content)) {
-			const bannedMember = message.member
-			// Check for permissions
-			const perms = message.guild.me.permissions.has('BAN_MEMBERS')
-			if (perms) {
-				bannedMember.ban({ days: 1, reason: 'Posted a scam link' })
-				const banChannel = '732014449182900247' // Change
-				const channel = message.guild.channels.cache.get(banChannel)
-				await channel.send({ content: `Banned: ${bannedMember.displayName} - ${bannedMember.id} -- Posting a scam link.` })
-			} else {
-				const { channels: { adminChannel } } = await settingsColl.findOne({ _id: message.guild.id }, { projection: { channels: 1 } })
-				const channel = message.guild.channels.cache.get(adminChannel)
-				channel.send({ content: `I am unable to ban ${message.member.displayName} as I do not have the \`BAN_MEMBERS\` permission.` })
-			}
+		if (msg.reference?.guildId === '388042222710554624') {
+			// Then msg is from Vis wax server.
+			const content = msg.content.split('\n')
+			
 		}
 	}
+
+	if (message.author.bot) return
 
 	// Valence Events Channel
 	if (message.channel.guild.id === '472448603642920973' || message.channel.guild.id === '668330890790699079') {

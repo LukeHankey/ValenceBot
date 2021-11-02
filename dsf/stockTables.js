@@ -1,4 +1,4 @@
-const updateStockTables = async (client, settings) => {
+const updateStockTables = async (client, settings, channels) => {
 	const commandCollection = client.commands.filter(cmd => cmd.name === 'wish' || cmd.name === 'future')
 	const commands = commandCollection.first(2)
 	const { merchantWishes: { range }, futureStock } = await settings.findOne({ _id: '420803245758480405' }, { projection: { 'merchantWishes.range': 1, futureStock: 1 } })
@@ -24,9 +24,9 @@ const updateStockTables = async (client, settings) => {
 		}
 	})
 	// Future
-	await commands[0].run(client, 'readyEvent')
+	await commands[0].run(client, 'readyEvent', null, null, channels)
 	// Wish
-	await commands[1].run(client, 'readyEvent')
+	await commands[1].run(client, 'readyEvent', null, null, channels)
 }
 
 export default updateStockTables
