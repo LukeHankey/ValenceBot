@@ -38,7 +38,7 @@ export default {
 	slash: async (interaction, perms, channels) => {
 		const db = getDb()
 		const settings = db.collection('Settings')
-		const { visTime, vis } = await settings.findOne({ _id: 'Globals' }, { projection: { visTime: 1, vis: 1 } })
+		const { visTime, vis, visContent } = await settings.findOne({ _id: 'Globals' }, { projection: { visTime: 1, vis: 1, visContent: 1 } })
 		if (!interaction.options.getInteger('reset')) {
 			let currentDate = new Date().toUTCString()
 			currentDate = currentDate.split(' ')
@@ -50,14 +50,28 @@ export default {
 				interaction.reply({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' })
 				return await settings.updateOne({ _id: 'Globals' }, {
 					$set: {
-						vis: null
+						vis: null,
+						visContent: []
 					}
 				})
 			}
-			if (vis === null) {
+			if (vis === null && visContent.length === 0) {
 				return await interaction.reply({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' })
+			} else if (vis) {
+				return interaction.reply({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}>\nSource: [Vis Wax Server](https://discord.gg/wv9Ecs4)`, files: [vis] })
 			} else {
-				return await interaction.reply({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}>\nSource: [Vis Wax Server](https://discord.gg/wv9Ecs4)`, files: [vis] })
+				const content = visContent.flat()
+				const slotOneIndex = content.findIndex(el => el.match(/slot/i))
+				const newContent = content.slice(slotOneIndex).map(el => {
+					const match = el.match(/<:[\w_]{1,14}:\d{1,18}>/g)
+					if (match) {
+						el = el.trim().slice(match[0].length)
+						return `\t${el}`
+					}
+					return el
+				})
+
+				return await interaction.reply({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}>\nSource: [Vis Wax Server](https://discord.gg/wv9Ecs4)\n${newContent.join('\n')}` })
 			}
 		} else if (interaction.options.getInteger('reset')) {
 			console.log(interaction.options.getInteger('reset'))
@@ -86,7 +100,7 @@ export default {
 			.setThumbnail(message.author.displayAvatarURL())
 			.setColor(cream)
 
-		const { visTime, vis } = await settings.findOne({ _id: 'Globals' }, { projection: { visTime: 1, vis: 1 } })
+		const { visTime, vis, visContent } = await settings.findOne({ _id: 'Globals' }, { projection: { visTime: 1, vis: 1, visContent: 1 } })
 		if (!args.length && !message.attachments.size) {
 			try {
 				let currentDate = new Date().toUTCString()
@@ -99,14 +113,30 @@ export default {
 					message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' })
 					return await settings.updateOne({ _id: 'Globals' }, {
 						$set: {
-							vis: null
+							vis: null,
+							visContent: []
 						}
 					})
 				}
-				if (vis === null) {
+
+				if (vis === null && visContent.length === 0) {
 					return message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' })
+				} else if (vis) {
+					return message.channel.send({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}>\nSource: Vis Wax Server | <https://discord.gg/wv9Ecs4>`, files: [vis] })
+				} else {
+					const content = visContent.flat()
+					const slotOneIndex = content.findIndex(el => el.match(/slot/i))
+					const newContent = content.slice(slotOneIndex).map(el => {
+						const match = el.match(/<:[\w_]{1,14}:\d{1,18}>/g)
+						if (match) {
+							el = el.trim().slice(match[0].length)
+							return `\t${el}`
+						}
+						return el
+					})
+
+					return await message.channel.send({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}>\nSource: Vis Wax Server | <https://discord.gg/wv9Ecs4>\n${newContent.join('\n')}` })
 				}
-				return message.channel.send({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}>\nSource: Vis Wax Server | <https://discord.gg/wv9Ecs4>`, files: [vis] })
 			} catch (err) {
 				return message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' })
 			}

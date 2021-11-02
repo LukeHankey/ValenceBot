@@ -5,12 +5,11 @@ const vScout = new ScouterCheck('Verified Scouter')
 
 const classVars = async (name, serverName, database, client) => {
 	name._client = client
-	name._guild_name = serverName
+	name._guildName = serverName
+	// eslint-disable-next-line array-callback-return
 	name._db = await database.map(doc => {
-		if (doc.serverName === name._guild_name) return doc
-		else return undefined
+		if (doc.serverName === name._guildName) return doc
 	}).filter(x => x)[0]
-	return name._client && name._guild_name && name._db
 }
 
 const addedRoles = async (name, settings) => {

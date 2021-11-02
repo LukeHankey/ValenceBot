@@ -1,7 +1,7 @@
 /* eslint-disable no-inner-declarations */
 /* eslint-disable no-inline-comments */
 import { cream, aqua } from '../../colors.js'
-import gsheet from '../../gsheets.js'
+import { googleClient } from '../../gsheets.js'
 import { google } from 'googleapis'
 import { nEmbed } from '../../functions.js'
 import { MessageEmbed } from 'discord.js'
@@ -29,9 +29,9 @@ export default {
 		}
 
 		try {
-			gsheet.googleClient.authorize(err => {
+			googleClient.authorize(err => {
 				if (err) console.error(err)
-				googleSheets(gsheet.googleClient)
+				googleSheets(googleClient)
 			})
 
 			const rangeName = 'TM Coupon'

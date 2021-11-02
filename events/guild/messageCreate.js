@@ -113,17 +113,15 @@ export default async (client, message) => {
 	}
 
 	// Daily Vis Wax
-	if (message.guild.id === '668330890790699079' && message.channel.id === '903432222139355207') {
-		// Change channel ID (dev-bot)
-		console.log(message, message.content)
-		const channel = message.guild.channels.cache.get('732014449182900247')
-		const msg = await channel.messages.fetch('904886479774429204')
-		console.log(msg)
-
-		if (msg.reference?.guildId === '388042222710554624') {
+	if (message.guild.id === '668330890790699079' && message.channel.id === '732014449182900247') {
+		if (message.reference?.guildId === '38804222271055w4624') {
 			// Then msg is from Vis wax server.
-			const content = msg.content.split('\n')
-			
+			const contentArr = message.content.split('\n')
+			await settingsColl.updateOne({ _id: 'Globals' }, {
+				$set: {
+					visContent: contentArr
+				}
+			})
 		}
 	}
 
