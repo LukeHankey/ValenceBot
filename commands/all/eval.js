@@ -1,3 +1,4 @@
+import { inspect } from 'util'
 import { Util, Formatters } from 'discord.js'
 /**
  * 668330890790699079 - Valence Bot Server
@@ -22,7 +23,7 @@ export default {
 				// eslint-disable-next-line no-eval
 				let evalCode = eval(args.join(' '))
 				if (typeof evalCode !== 'string') {
-					evalCode = require('util').inspect(evalCode)
+					evalCode = inspect(evalCode)
 				}
 				const split = Util.splitMessage(evalCode)
 				return split.forEach(content => message.channel.send({ content: Formatters.codeBlock(content) }))
