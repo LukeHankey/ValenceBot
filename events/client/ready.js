@@ -30,12 +30,13 @@ export default async client => {
 	const channels = {
 		errors: {
 			id: errors,
-			embed: function (err, module) {
-				const fileName = module.id.split('\\').pop()
+			embed: function (err) {
+				const filePath = import.meta.url.split('/')
+				const fileName = filePath[filePath.length - 1]
 				const embed = new MessageEmbed()
 					.setTitle(`An error occured in ${fileName}`)
 					.setColor(redDark)
-					.addField(`${err.message}`, `${Formatters.codeBlock(err.stack)}`)
+					.addField(`${err.message}`, `\`\`\`${err.stack}\`\`\``)
 				return embed
 			},
 			send: function (...args) {
@@ -199,7 +200,7 @@ export default async client => {
 
 		// Daily Reset
 		if (new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
-			updateStockTables(client, settings)
+			updateStockTables(client, settings, channels)
 		}
 
 		// Weekly reset
