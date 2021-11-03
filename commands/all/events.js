@@ -13,7 +13,7 @@ export default {
 	description: ['List the current events.', 'Ends an event and removes the role.'],
 	aliases: ['e', 'event'],
 	usage: ['', 'end [ID]'],
-	guildSpecific: 'all',
+	guildSpecific: ['472448603642920973'],
 	permissionLevel: 'Mod',
 	data: new SlashCommandBuilder()
 		.setName('events')

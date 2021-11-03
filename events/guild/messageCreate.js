@@ -45,7 +45,8 @@ export default async (client, message) => {
 	}
 
 	// Handling DMs
-	if (message.guild === null) {
+	if (message.guild === null || message.channel.type === 'DM') {
+		if (message.partial) await message.fetch()
 		const dm = message.channel
 		let dmMessages = await dm.messages.fetch({ limit: 1 })
 		const dmPerson = dm.recipient // User object
@@ -113,14 +114,8 @@ export default async (client, message) => {
 	}
 
 	// Daily Vis Wax
-	if (message.guild.id === '668330890790699079' && message.channel.id === '903432222139355207') {
-		// Change channel ID (dev-bot)
-		console.log(message, message.content)
-		const channel = message.guild.channels.cache.get('732014449182900247')
-		const msg = await channel.messages.fetch('904886479774429204')
-		console.log(msg)
-
-		if (msg.reference?.guildId === '388042222710554624') {
+	if (message.guild.id === '668330890790699079' && message.channel.id === '732014449182900247') {
+		if (message.reference?.guildId === '388042222710554624') {
 			// Then msg is from Vis wax server.
 			const content = msg.content.split('\n')
 			
