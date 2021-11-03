@@ -41,7 +41,8 @@ const clanCheck = async (users) => {
 	const usersColl = db.collection('Users')
 	try {
 		let metricsProfile = await fetch(`https://secure.runescape.com/m=website-data/playerDetails.ws?names=%5B%22${users}%22%5D&callback=jQuery000000000000000_0000000000&_=0`).then(response => response.text())
-		metricsProfile = JSON.parse(metricsProfile.slice(34, -4))
+		console.log(users, metricsProfile)
+		metricsProfile = JSON.parse(metricsProfile.slice(34, -3))
 
 		if (metricsProfile.clan && metricsProfile.clan !== 'Valence') {
 			console.log(metricsProfile.name, 'has left Valence for', metricsProfile.clan)
