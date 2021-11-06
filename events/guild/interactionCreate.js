@@ -116,7 +116,12 @@ export default async (client, interaction) => {
 		}
 
 		try {
-			await command.slash(interaction, perms, channels, settings)
+			const merchGuilds = ['420803245758480405', '668330890790699079']
+			if (merchGuilds.includes(interaction.guildId) && [data.merchChannel.channelID, data.merchChannel.otherChannelID].includes(interaction.channel.id)) {
+				return interaction.reply({ content: 'Please use the bot commands channel.', ephemeral: true })
+			} else {
+				await command.slash(interaction, perms, channels, settings)
+			}
 		} catch (error) {
 			channels.errors.send(error)
 			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
