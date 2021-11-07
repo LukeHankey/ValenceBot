@@ -108,7 +108,7 @@ const removeEvents = async (message, settings, channels, module, database, event
 			await eventMessage.reactions.removeAll()
 		}
 
-		if (module.exports.name === 'calendar') return
+		if (module === 'calendar') return
 
 		// Remove the post from the calendar
 		const currentYear = new Date().getFullYear()
@@ -129,7 +129,7 @@ const removeEvents = async (message, settings, channels, module, database, event
 		calMessage.edit({ embeds: [updateEmbed] })
 		return channels.logs.send(`Calendar updated - ${message.member.displayName} removed event: \`\`\`diff\n- Removed\n${removedItem.join()}\`\`\``)
 	} catch (err) {
-		return channels.errors.send(err, module)
+		return channels.errors.send(err)
 	}
 }
 const csvJSON = (csv) => {

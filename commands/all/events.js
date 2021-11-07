@@ -62,7 +62,7 @@ export default {
 				const tag = interaction.options.getString('tag')
 				const checkEventExists = data.events.map(event => { if (event.eventTag === tag) { return { value: true, message: event.messageID, role: event.roleID } } else return undefined }).filter(valid => valid)
 				if (checkEventExists.length && checkEventExists[0].value) {
-					await removeEvents(interaction, database, channels, module, data, tag)
+					await removeEvents(interaction, database, channels, 'events', data, tag)
 					return interaction.reply({ content: 'Event has been removed.', ephemeral: true })
 				} else {
 					interaction.reply({ content: `There is no event found with ID: \`${tag}\`` })
@@ -84,7 +84,7 @@ export default {
 				const tag = args[1]
 				const checkEventExists = data.events.map(event => { if (event.eventTag === tag) { return { value: true, message: event.messageID, role: event.roleID } } else return undefined }).filter(valid => valid)
 				if (checkEventExists.length && checkEventExists[0].value) {
-					await removeEvents(message, settings, channels, module, data, tag)
+					await removeEvents(message, settings, channels, 'events', data, tag)
 					return message.react('✅')
 				} else {
 					message.react('❌')

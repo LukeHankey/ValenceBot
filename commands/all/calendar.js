@@ -400,7 +400,7 @@ export default {
 				const role = message.guild.roles.cache.get(roleId) ?? await message.guild.roles.fetch(roleId)
 				const eventTag = role.name.slice(title.length + 2)
 
-				await removeEvents(interaction, database, channels, module, dataFromDb, eventTag)
+				await removeEvents(interaction, database, channels, 'calendar', dataFromDb, eventTag)
 			}
 		}
 			break

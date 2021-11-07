@@ -17,8 +17,9 @@ export default async (client, reaction, user) => {
 	const channels = {
 		errors: {
 			id: errors,
-			embed: function (err, module) {
-				const fileName = module.id.split('\\').pop()
+			embed: function (err) {
+				const filePath = import.meta.url.split('/')
+				const fileName = filePath[filePath.length - 1]
 				const embed = new MessageEmbed()
 					.setTitle(`An error occured in ${fileName}`)
 					.setColor(redDark)
@@ -38,7 +39,7 @@ export default async (client, reaction, user) => {
 			}
 		}
 	}
-	if (message.partial) await message.fetch().catch(err => channels.errors.send(err, module))
+	if (message.partial) await message.fetch().catch(err => channels.errors.send(err))
 	switch (message.channel.guild.id) {
 	case _id:
 		// Valence
@@ -60,7 +61,7 @@ export default async (client, reaction, user) => {
 
 					const [event] = data.events.filter(e => e.messageID === message.id)
 
-					await removeEvents(message, settingsColl, channels, module, data, event.eventTag)
+					await removeEvents(message, settingsColl, channels, 'messageReactionAdd', data, event.eventTag)
 				} else if (reaction.emoji.name === '📌') {
 					const userFetch = await message.channel.guild.members.fetch(user.id)
 					const eventFound = data.events.find(e => e.messageID === message.id)
@@ -169,7 +170,7 @@ export default async (client, reaction, user) => {
 							return message.reactions.removeAll()
 						} catch (err) {
 							if (err) return message.channel.send({ content: 'Timed out. Try again.' })
-							channels.errors.send(err, module)
+							channels.errors.send(err)
 						}
 					}
 				}
@@ -224,7 +225,7 @@ export default async (client, reaction, user) => {
 									'merchChannel.spamProtection': { messageID: messageID }
 								}
 							})
-						} else { return channels.errors.send(e, module) }
+						} else { return channels.errors.send(e) }
 					}
 				})
 			}
