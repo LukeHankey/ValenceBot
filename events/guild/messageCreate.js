@@ -121,6 +121,7 @@ export default async (client, message) => {
 			const contentArr = message.content.split('\n')
 			await settingsColl.updateOne({ _id: 'Globals' }, {
 				$set: {
+					vis: null,
 					visContent: contentArr,
 					visTime: message.createdAt
 				}
