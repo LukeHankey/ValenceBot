@@ -47,6 +47,7 @@ const getData = async () => {
 		allUsers = allUsers.map(user => user.clanMate)
 		const newDataNames = newData.map(user => user.Clanmate)
 		const missingNames = allUsers.filter(name => !newDataNames.includes(name))
+		console.log('Missing names: ', missingNames)
 		await nameChanges(missingNames)
 	})
 		.catch(error => console.error(error))

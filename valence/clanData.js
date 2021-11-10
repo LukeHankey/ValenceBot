@@ -1,7 +1,3 @@
-import { getDb } from '../mongodb.js'
-import { MessageEmbed } from 'discord.js'
-import { redDark } from '../colors.js'
-
 const clanRoles = {
 	recruit: '473234580904607745',
 	corporal: '473234334342578198',
@@ -18,27 +14,7 @@ const setRoles = async (member, newRole, oldRole) => {
 }
 
 const updateRoles = async (client, dbCheck, server) => {
-	const db = getDb()
-	const usersColl = await db.collection('Users')
 	const errors = client.channels.cache.get('860930368994803732')
-
-	const channels = {
-		errors: {
-			id: errors.id,
-			embed: function (err, module) {
-				const fileName = module.id.split('\\').pop()
-				const embed = new MessageEmbed()
-					.setTitle(`An error occured in ${fileName}`)
-					.setColor(redDark)
-					.addField(`${err.message}`, `\`\`\`${err.stack}\`\`\``)
-				return embed
-			},
-			send: function (...args) {
-				const channel = client.channels.cache.get(this.id)
-				return channel.send({ embeds: [this.embed(...args)] })
-			}
-		}
-	}
 
 	// eslint-disable-next-line no-useless-return
 	if (adminRoles.includes(dbCheck.clanRank) || !dbCheck.discActive || dbCheck.alt) { return } else {
