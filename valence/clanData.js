@@ -17,7 +17,7 @@ const setRoles = async (member, newRole, oldRole) => {
 	await member.roles.remove(oldRole.id)
 }
 
-const updateRoles = async (client, dbCheck) => {
+const updateRoles = async (client, dbCheck, server) => {
 	const db = getDb()
 	const usersColl = await db.collection('Users')
 	const errors = client.channels.cache.get('860930368994803732')
@@ -44,12 +44,9 @@ const updateRoles = async (client, dbCheck) => {
 	// eslint-disable-next-line no-useless-return
 	if (adminRoles.includes(dbCheck.clanRank) || !dbCheck.discActive || dbCheck.alt) { return } else {
 		// Valence Server
-		const server = client.guilds.cache.get('472448603642920973')
-		const getMember = server.members.cache.get(dbCheck.discord) ?? await server.members.fetch(dbCheck.discord).catch(async err => {
-			channels.errors.send(err)
-			return await usersColl.updateOne({ clanMate: dbCheck.clanMate }, { $set: { discActive: false } })
-		})
+		const getMember = server.members.cache.get(dbCheck.discord)
 		if (getMember.size) return errors.send({ content: `\`${dbCheck.clanMate}\` loaded a collection with discord id: \`${dbCheck.discord === '' ? 'Empty string' : dbCheck.discord}\` and active set to \`${dbCheck.discActive}\`.` })
+		if (!getMember) return errors.send({ content: `${dbCheck.clanMate} return undefined.` })
 		let role = getMember.roles.cache.filter(r => {
 			const keys = Object.keys(clanRoles)
 			return keys.find(val => r.name.toLowerCase() === val)
