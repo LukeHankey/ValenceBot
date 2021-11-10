@@ -1,5 +1,8 @@
 import fetch from 'node-fetch'
 import { getDb } from '../mongodb.js'
+import { promisify } from 'util'
+
+const wait = promisify(setTimeout)
 
 const addActive = async () => {
 	const db = await getDb()
@@ -41,8 +44,7 @@ const clanCheck = async (users) => {
 	const usersColl = db.collection('Users')
 	try {
 		let metricsProfile = await fetch(`https://secure.runescape.com/m=website-data/playerDetails.ws?names=%5B%22${users}%22%5D&callback=jQuery000000000000000_0000000000&_=0`).then(response => response.text())
-		console.log(users, metricsProfile)
-		metricsProfile = JSON.parse(metricsProfile.slice(34, -3))
+		metricsProfile = JSON.parse(metricsProfile.slice(34, -4))
 
 		if (metricsProfile.clan && metricsProfile.clan !== 'Valence') {
 			console.log(metricsProfile.name, 'has left Valence for', metricsProfile.clan)
@@ -72,22 +74,18 @@ const nameChanges = async (missingNames) => {
 	for (const names of missingNames) {
 		const potentialChangers = await usersColl.findOne({ clanMate: names })
 		const potentialNewNames = await usersColl.find({ clanRank: potentialChangers.clanRank, kills: potentialChangers.kills, gameActive: 'undefined' }).toArray()
-		let counter = 0
-		const interval = setInterval(async () => {
-			if (missingNames.length === counter) return clearInterval(interval)
-			const check = await clanCheck(names)
+		const check = await clanCheck(names)
+		await wait(1000)
 
-			if (check) {
-				const xpCheck = potentialNewNames.filter(user => {
-					if (Number(user.totalXP) - 10000000 < Number(potentialChangers.totalXP) && Number(user.totalXP) + 10000000 > Number(potentialChangers.totalXP)) {
-						return user
-					} else return undefined
-				})
-				potentialChangers.potentialNewNames = xpCheck
-				nameChange.change.push(potentialChangers)
-			}
-			counter++
-		}, 1000)
+		if (check) {
+			const xpCheck = potentialNewNames.filter(user => {
+				if (Number(user.totalXP) - 10000000 < Number(potentialChangers.totalXP) && Number(user.totalXP) + 10000000 > Number(potentialChangers.totalXP)) {
+					return user
+				} else return undefined
+			})
+			potentialChangers.potentialNewNames = xpCheck
+			nameChange.change.push(potentialChangers)
+		}
 	}
 
 	if (nameChange.change.length) {
