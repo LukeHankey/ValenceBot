@@ -208,13 +208,18 @@ export default async client => {
 			scout.send()
 			vScout.send()
 			const allUsers = await users.find({}).toArray()
+			// Flood the cache to make only 1 API request
+			const server = client.guilds.cache.get('472448603642920973')
+			await server.members.fetch()
+
 			let index = 0
 			const interval = setInterval(() => {
-				updateRoles(client, allUsers[index])
+				updateRoles(client, allUsers[index], server)
 				index++
 
 				if (index === allUsers.length) {
 					clearInterval(interval)
+					server.members.cache.clear()
 				}
 			}, 1000)
 		}
