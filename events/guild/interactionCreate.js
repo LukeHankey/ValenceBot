@@ -170,38 +170,36 @@ export default async (client, interaction) => {
 			}
 		}
 	} else if (interaction.isContextMenu()) {
-		if ([data.merchChannel.channelID, data.merchChannel.otherChannelID].includes(interaction.channel.id)) {
-			interaction.deferReply({ ephemeral: true })
-			try {
-				const dsfServerErrorChannel = await client.channels.cache.get('884076361940078682')
-				const message = await interaction.channel.messages.cache.get(interaction.targetId)
-				const reaction = await message.react('☠️')
-				const userReactCollection = await reaction.users.fetch()
-				const timestamp = interaction.createdAt.toString().split(' ').slice(0, 5).join(' ')
-				if (userReactCollection.size > 1) {
-					return await interaction.editReply({ content: 'This call is already marked as dead.' })
+		switch (interaction.commandName) {
+		case 'Mark event as dead.':
+			if ([data.merchChannel.channelID, data.merchChannel.otherChannelID].includes(interaction.channel.id)) {
+				interaction.deferReply({ ephemeral: true })
+				try {
+					const dsfServerErrorChannel = await client.channels.cache.get('884076361940078682')
+					const message = interaction.channel.messages.cache.get(interaction.targetId)
+					const reaction = await message.react('☠️')
+					const userReactCollection = await reaction.users.fetch()
+					const timestamp = interaction.createdAt.toString().split(' ').slice(0, 5).join(' ')
+					if (userReactCollection.size > 1) {
+						return await interaction.editReply({ content: 'This call is already marked as dead.' })
+					}
+					await interaction.editReply({ content: 'Thank you for marking this call as dead.' })
+					dsfServerErrorChannel.send({ content: `\`\`\`diff\n\n+ Reaction Added by ${interaction.member.displayName} - Content: ${message.content}\n- User ID: ${interaction.member.id}\n- Timestamp: ${timestamp}\`\`\`` })
+				} catch (err) {
+					if (err.code === 50001) {
+						// Missing Access
+						return await interaction.editReply({ content: 'I am not able to access this channel.' })
+					}
+					channels.errors.send(err)
 				}
-				await interaction.editReply({ content: 'Thank you for marking this call as dead.' })
-				dsfServerErrorChannel.send({ content: `\`\`\`diff\n\n+ Reaction Added by ${interaction.member.displayName} - Content: ${message.content}\n- User ID: ${interaction.member.id}\n- Timestamp: ${timestamp}\`\`\`` })
-			} catch (err) {
-				if (err.code === 50001) {
-					// Missing Access
-					return await interaction.editReply({ content: 'I am not able to access this channel.' })
-				}
-				channels.errors.send(err)
+			} else {
+				interaction.reply({ content: 'You can\'t use that in this channel.', ephemeral: true })
 			}
-		} else {
-			interaction.reply({ content: 'You can\'t use that in this channel.', ephemeral: true })
+			break
+		case 'Affiliate Events': {
+			const role = interaction.guild.roles.cache.find(role => role.name === 'Affiliate Events')
+			await interaction.reply({ content: `<@&${role.id}>`, allowedMentions: { parse: ['roles'] } })
 		}
-
-		// const contextMenu = await interaction.guild?.commands.fetch(interaction.commandId);
-		// const permissions = [
-		// 	{
-		// 		id: '881696440747958342',
-		// 		type: 'ROLE',
-		// 		permission: false,
-		// 	},
-		// ];
-		// await contextMenu.permissions.set({ permissions });
+		}
 	}
 }
