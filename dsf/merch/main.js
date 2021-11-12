@@ -26,7 +26,6 @@ const dsf = async (client, message, channels) => {
 		await addMerchCount(client, message, settingsColl, channels)
 		skullTimer(message, settingsColl, channels)
 	} else if (message.channel.id === otherChannelID) {
-		console.log(!otherCalls.test(message.content), !arrIncludesString(disallowedWords, message.content), !alreadyCalled(message, otherMessages))
 		if (!otherCalls.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, otherMessages)) {
 			return message.delete()
 		}
