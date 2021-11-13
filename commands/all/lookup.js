@@ -35,9 +35,10 @@ export default {
 					date = date.toString().split(' ')
 					return date.slice(0, 5).join(' ')
 				}
+
 				return fields.push({
 					name: '\u200b',
-					value: `**firstTimestamp:** ${mem.firstTimestamp}\n**firstTimestampReadable:** ${date(mem.firstTimestampReadable)}\n**lastTimestamp:** ${mem.lastTimestamp}\n**lastTimestampReadable:** ${date(mem.lastTimestampReadable)}\n**Merch count:** ${mem.count}\n**Other count:** ${mem.otherCount}\n**Active for:** ${ms(mem.lastTimestamp - mem.firstTimestamp)}\n**Active:** ${ms(mem.active ? 'True' : 'False')}`,
+					value: `**firstTimestamp:** ${mem.firstTimestamp}\n**firstTimestampReadable:** ${date(mem.firstTimestampReadable)}\n**lastTimestamp:** ${mem.lastTimestamp}\n**lastTimestampReadable:** ${date(mem.lastTimestampReadable)}\n**Merch count:** ${mem.count}\n**Other count:** ${mem.otherCount}\n**Active for:** ${ms(mem.lastTimestamp - mem.firstTimestamp)}\n**Active:** ${mem.active ? 'True' : 'False'}`,
 					inline: true
 				})
 			} else return undefined
