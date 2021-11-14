@@ -17,7 +17,7 @@ const addedRoles = async (name, settings) => {
 	const members = await name.checkRolesAdded()
 	members.map(async x => {
 		const role = await name.role
-		await settings.updateOne({ serverName: name._guild_name, 'merchChannel.scoutTracker.userID': x.id }, {
+		await db.collection.updateOne({ serverName: name._guildName, 'merchChannel.scoutTracker.userID': x.id }, {
 			$addToSet: {
 				'merchChannel.scoutTracker.$.assigned': role.id
 			}
@@ -28,7 +28,7 @@ const removedRoles = async (name, settings) => {
 	const checkRoles = await name.checkRolesRemoved()
 	checkRoles.map(async x => {
 		const role = await name.role
-		await settings.updateOne({ serverName: name._guild_name, 'merchChannel.scoutTracker.userID': x.id }, {
+		await db.collection.updateOne({ serverName: name._guildName, 'merchChannel.scoutTracker.userID': x.id }, {
 			$pull: {
 				'merchChannel.scoutTracker.$.assigned': role.id
 			}

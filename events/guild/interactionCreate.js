@@ -128,6 +128,7 @@ export default async (client, interaction) => {
 		}
 	} else if (interaction.isAutocomplete()) {
 		const focusedValue = interaction.options.getFocused()
+		// eslint-disable-next-line array-callback-return
 		const choices = [...client.commands.values()].filter(command => {
 			if (command.slash && (command.guildSpecific.includes(interaction.guild.id) || command.guildSpecific === 'all')) {
 				return command
@@ -172,8 +173,8 @@ export default async (client, interaction) => {
 	} else if (interaction.isContextMenu()) {
 		switch (interaction.commandName) {
 		case 'Mark event as dead.':
+			interaction.deferReply({ ephemeral: true })
 			if ([data.merchChannel.channelID, data.merchChannel.otherChannelID].includes(interaction.channel.id)) {
-				interaction.deferReply({ ephemeral: true })
 				try {
 					const dsfServerErrorChannel = await client.channels.cache.get('884076361940078682')
 					const message = interaction.channel.messages.cache.get(interaction.targetId)
@@ -193,12 +194,13 @@ export default async (client, interaction) => {
 					channels.errors.send(err)
 				}
 			} else {
-				interaction.reply({ content: 'You can\'t use that in this channel.', ephemeral: true })
+				interaction.editReply({ content: 'You can\'t use that in this channel.' })
 			}
 			break
 		case 'Affiliate Events': {
 			const role = interaction.guild.roles.cache.find(role => role.name === 'Affiliate Events')
-			await interaction.reply({ content: `<@&${role.id}>`, allowedMentions: { parse: ['roles'] } })
+			const message = await interaction.reply({ content: `<@&${role.id}>`, fetchReply: true, allowedMentions: { roles: [role.id] } })
+			await message.reply({ content: `<@&${role.id}>` })
 		}
 		}
 	}

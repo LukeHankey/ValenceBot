@@ -86,7 +86,8 @@ const compressArray = (original) => {
 const randomNum = () => {
 	return (Math.round(Math.random() * 10000) + 1)
 }
-const removeEvents = async (message, settings, channels, module, database, eventTag) => {
+const removeEvents = async (message, db, module, database, eventTag) => {
+	const channels = await db.channels
 	try {
 		const eventsChannel = message.guild.channels.cache.get(database.channels.events)
 		const [eventMessageCheck] = database.events.filter(event => { if (event.eventTag === eventTag) { return event } else return undefined })

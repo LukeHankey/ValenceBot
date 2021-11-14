@@ -8,6 +8,8 @@ export default async (client, reaction, user) => {
 	const db = getDb()
 	const settingsColl = db.collection('Settings')
 	const message = reaction.message
+	const channels = await db.channels
+	const { _id } = await db.collection.findOne({ _id: message.channel.guild.id })
 
 	if (process.env.NODE_ENV === 'DEV') {
 		if (message.guild.id !== '668330890790699079') return

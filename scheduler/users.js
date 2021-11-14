@@ -11,9 +11,12 @@ const addActive = async () => {
 	let index = 0
 	const interval = setInterval(async () => {
 		try {
-			const metricsProfile = await fetch(`https://apps.runescape.com/runemetrics/profile/profile?user=${users[index].clanMate}&activities=1`).then(response => response.json()).catch(err => console.error(`Unable to fetch RuneMetrics Profile for ${users[index].clanMate}.`, err))
+			const metricsProfile = await fetch(`https://apps.runescape.com/runemetrics/profile/profile?user=${users[index].clanMate}&activities=1`)
+				.then(response => response.json())
+				.catch(err => console.error(`Unable to fetch RuneMetrics Profile for ${users[index].clanMate}.`, err))
+
 			let lastActivityDate
-			if (metricsProfile.error) {
+			if ('error' in metricsProfile) {
 				// console.log(users[index].clanMate, metricsProfile.error);
 				await usersColl.updateOne({ clanMate: users[index].clanMate }, { $set: { profile: metricsProfile.error, gameActive: null } })
 			} else {
@@ -36,7 +39,7 @@ const addActive = async () => {
 		if (index === users.length) {
 			clearInterval(interval)
 		}
-	}, 1000)
+	}, 3000)
 }
 
 const clanCheck = async (users) => {
@@ -72,9 +75,9 @@ const nameChanges = async (missingNames) => {
 	}
 
 	for (const names of missingNames) {
-		const potentialChangers = await usersColl.findOne({ clanMate: names })
-		const potentialNewNames = await usersColl.find({ clanRank: potentialChangers.clanRank, kills: potentialChangers.kills, gameActive: 'undefined' }).toArray()
-		const check = await clanCheck(names)
+		const potentialChangers = await db.collection.findOne({ clanMate: names })
+		const potentialNewNames = await db.collection.find({ clanRank: potentialChangers.clanRank, kills: potentialChangers.kills, gameActive: 'undefined' }).toArray()
+		const check = await clanCheck(names, db)
 		await wait(1000)
 
 		if (check) {
@@ -88,8 +91,8 @@ const nameChanges = async (missingNames) => {
 		}
 	}
 
-	if (nameChange.change.length) {
-		return nameChange.change.forEach(async user => {
+	if (nameChange.length) {
+		return nameChange.forEach(async user => {
 			console.log(`Updating ${user.clanMate} as they have potentially changed names`)
 			return await usersColl.updateOne({ clanMate: user.clanMate }, { $set: { potentialNewNames: user.potentialNewNames } })
 		})
