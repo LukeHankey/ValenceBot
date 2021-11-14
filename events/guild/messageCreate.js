@@ -73,7 +73,7 @@ export default async (client, message) => {
 	if (message.guild.id === '420803245758480405' || message.guild.id === '668330890790699079') {
 		const { merchChannel: { channelID, otherChannelID }, channels: { adminChannel } } = await settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } }, { projection: { 'merchChannel.channelID': 1, 'merchChannel.otherChannelID': 1, channels: 1 } })
 
-		const scamDetect = /(glft|steamcom|dlsco|dlisco|disour|cord-gi|\/gif)\w+/gi
+		const scamDetect = /(glft|steamcom|dlsco|dlisco|disour|cord-gi|corcl-gi|\/gif)\w+/gi
 		if (scamDetect.test(message.content)) {
 			const bannedMember = message.member
 			// Check for permissions
