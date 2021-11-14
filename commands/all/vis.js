@@ -1,6 +1,5 @@
 /* eslint-disable no-inline-comments */
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { getDb } from '../../mongodb.js'
 import { MessageEmbed } from 'discord.js'
 import { cream } from '../../colors.js'
 
@@ -35,10 +34,9 @@ export default {
 	// 		.addChoice('File', 'file_upload')
 	// 		.addChoice('Message Link', 'message_link')
 	// 		.addChoice('Image URL', 'image_url')));
-	slash: async (interaction, perms, channels) => {
-		const db = getDb()
-		const settings = db.collection('Settings')
-		const { visTime, vis } = await settings.findOne({ _id: 'Globals' }, { projection: { visTime: 1, vis: 1 } })
+	slash: async (interaction, perms, db) => {
+		const channels = await db.channels
+		const { visTime, vis, visContent } = await db.collection.findOne({ _id: 'Globals' }, { projection: { visTime: 1, vis: 1, visContent: 1 } })
 		if (!interaction.options.getInteger('reset')) {
 			let currentDate = new Date().toUTCString()
 			currentDate = currentDate.split(' ')
@@ -48,7 +46,7 @@ export default {
 
 			if (year !== savedDate[3] || month !== savedDate[1] || day !== savedDate[2]) {
 				interaction.reply({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' })
-				return await settings.updateOne({ _id: 'Globals' }, {
+				return await db.collection.updateOne({ _id: 'Globals' }, {
 					$set: {
 						vis: null
 					}
@@ -60,12 +58,11 @@ export default {
 				return await interaction.reply({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}>\nSource: [Vis Wax Server](https://discord.gg/wv9Ecs4)`, files: [vis] })
 			}
 		} else if (interaction.options.getInteger('reset')) {
-			console.log(interaction.options.getInteger('reset'))
 			if (!perms.owner) return await interaction.reply(perms.errorO)
 			if (vis === null) {
 				return interaction.reply({ content: 'There currently isn\'t any Vis Wax image uploaded.', ephemeral: true })
 			} else {
-				await settings.updateOne({ _id: 'Globals' }, {
+				await db.collection.updateOne({ _id: 'Globals' }, {
 					$set: {
 						vis: null
 					}
@@ -74,9 +71,8 @@ export default {
 			}
 		}
 	},
-	run: async (client, message, args, perms, channels) => {
-		const db = getDb()
-		const settings = db.collection('Settings')
+	run: async (client, message, args, _, db) => {
+		const channels = await db.channels
 		const [...attachment] = args
 
 		const embed = new MessageEmbed()
@@ -86,7 +82,7 @@ export default {
 			.setThumbnail(message.author.displayAvatarURL())
 			.setColor(cream)
 
-		const { visTime, vis } = await settings.findOne({ _id: 'Globals' }, { projection: { visTime: 1, vis: 1 } })
+		const { visTime, vis, visContent } = await db.collection.findOne({ _id: 'Globals' }, { projection: { visTime: 1, vis: 1, visContent: 1 } })
 		if (!args.length && !message.attachments.size) {
 			try {
 				let currentDate = new Date().toUTCString()
@@ -97,7 +93,7 @@ export default {
 
 				if (year !== savedDate[3] || month !== savedDate[1] || day !== savedDate[2]) {
 					message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' })
-					return await settings.updateOne({ _id: 'Globals' }, {
+					return await db.collection.updateOne({ _id: 'Globals' }, {
 						$set: {
 							vis: null
 						}
@@ -116,30 +112,26 @@ export default {
 				message.react('✅')
 				return channels.vis.send({ embeds: [embed.setImage(message.attachments.first().url)] })
 					.then(async () => {
-						return await settings.updateOne({ _id: 'Globals' }, {
+						return await db.collection.updateOne({ _id: 'Globals' }, {
 							$set: {
 								vis: message.attachments.first().url,
 								visTime: message.createdAt
 							}
 						})
 					})
-					.catch(err => {
-						channels.errors.send(err)
-					})
+					.catch(async err => channels.errors.send(err))
 			} else if (array.some(x => attachment[0].includes(x))) {
 				message.react('✅')
 				return channels.vis.send({ embeds: [embed.setImage(attachment[0])] })
 					.then(async () => {
-						return await settings.updateOne({ _id: 'Globals' }, {
+						return await db.collection.updateOne({ _id: 'Globals' }, {
 							$set: {
 								vis: attachment[0],
 								visTime: message.createdAt
 							}
 						})
 					})
-					.catch(err => {
-						channels.errors.send(err)
-					})
+					.catch(async err => channels.errors.send(err))
 			} else if (attachment[0].includes('discord.com')) { // Discord message link
 				const split = attachment[0].split('/')
 				const [g, c, m] = split.slice(4)
@@ -151,7 +143,7 @@ export default {
 					const newEmbed = embed.setImage(`${messageFetch.attachments.first().attachment}`)
 					channels.vis.send({ embeds: [newEmbed] })
 					message.react('✅')
-					return await settings.updateOne({ _id: 'Globals' }, {
+					return await db.collection.updateOne({ _id: 'Globals' }, {
 						$set: {
 							vis: messageFetch.attachments.first().attachment,
 							visTime: message.createdAt

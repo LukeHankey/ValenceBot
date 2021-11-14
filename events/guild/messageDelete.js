@@ -1,4 +1,4 @@
-import { getDb } from '../../mongodb.js'
+import { MongoCollection } from '../../DataBase.js'
 import { MessageEmbed } from 'discord.js'
 import { redDark } from '../../colors.js'
 
@@ -7,9 +7,8 @@ export default async (client, message) => {
 		if (message.guild.id !== '668330890790699079') return
 	} else if (message.guild.id === '668330890790699079') { return }
 
-	const db = getDb()
-	const settingsColl = db.collection('Settings')
-	const fullDB = await settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } }, { projection: { merchChannel: { messages: 1, channelID: 1 } } })
+	const db = new MongoCollection('Settings')
+	const fullDB = await db.collection.findOne({ _id: message.guild.id, merchChannel: { $exists: true } }, { projection: { merchChannel: { messages: 1, channelID: 1 } } })
 	if (!fullDB) return
 	const merchChannelID = message.guild.channels.cache.get(fullDB.merchChannel.channelID)
 
@@ -20,7 +19,7 @@ export default async (client, message) => {
 		const sentChannel = await webhook.send({ embeds: [embed] })
 		const { userID } = data
 		if (sentChannel.guild.id === message.guild.id) {
-			await settingsColl.updateOne({ _id: message.guild.id }, {
+			await db.collection.updateOne({ _id: message.guild.id }, {
 				$pull: { 'merchChannel.messages': { messageID: data.messageID } },
 				$addToSet: { 'merchChannel.deletions.messages': { messageID: sentChannel.id, authorID: userID } }
 			})

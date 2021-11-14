@@ -1,11 +1,8 @@
-import { getDb } from '../../mongodb.js'
+import { MongoCollection } from '../../DataBase.js'
 
 export default async (client, guild) => {
-	const db = getDb()
-	const collection = db.collection('Settings')
-	const code = '```'
-
-	collection.insertOne(
+	const db = new MongoCollection('Settings')
+	await db.collection.insertOne(
 		{
 			_id: `${guild.id}`,
 			serverName: `${guild.name}`,
@@ -26,10 +23,10 @@ export default async (client, guild) => {
 	)
 
 	client.channels.cache.get('731997087721586698').send(`The bot has been added to **${guild.name}**. The bot is in a total of ${client.guilds.cache.size} servers. 
-    \n${code}diff\n
+    \n\`\`\`diff\n
 + Server name: ${guild.name}
 + Server ID: ${guild.id}
 + Owner: ${await guild.fetchOwner().nickname ?? guild.fetchOwner().user.username}
 + Channel count: ${guild.channels.cache.size}
-+ Member count: ${guild.memberCount}${code}`)
++ Member count: ${guild.memberCount}\`\`\``)
 }

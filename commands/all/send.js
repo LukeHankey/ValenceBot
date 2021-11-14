@@ -60,7 +60,8 @@ export default {
 			await interaction.reply({ content: 'Message successfully sent', ephemeral: true })
 		}
 	},
-	run: async (client, message, args, perms, channels) => {
+	run: async (client, message, args, perms, db) => {
+		const channels = await db.channels
 		const myID = '212668377586597888'
 		const content = args.slice(1).join(' ')
 		if (!perms.admin) return message.channel.send(perms.errorA)
@@ -117,7 +118,7 @@ export default {
 				if (message.channel.guild.channels.cache.has(checkAndGetID(args[0]).id) && content && message.author.id !== myID) { // Has content and channel is in same server
 					split.forEach(text => {
 						client.channels.cache.get(checkAndGetID(args[0]).id).send({ content: text })
-							.catch(err => {
+							.catch(async err => {
 								if (err.code === 50013) {
 									return message.channel.send({ content: `I am missing some permissions to post in <#${checkAndGetID}>.` })
 								} else {
@@ -129,7 +130,7 @@ export default {
 				if (message.author.id === myID && content) {
 					split.forEach(text => {
 						client.channels.cache.get(checkAndGetID(args[0]).id).send({ content: text })
-							.catch(err => {
+							.catch(async err => {
 								if (err.code === 50013) {
 									return message.channel.send({ content: `I am missing some permissions to post in <#${checkAndGetID}>.` })
 								} else {

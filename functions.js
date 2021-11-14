@@ -87,16 +87,15 @@ const randomNum = () => {
 	return (Math.round(Math.random() * 10000) + 1)
 }
 const removeEvents = async (message, db, module, database, eventTag) => {
-	const channels = await db.channels
 	try {
 		const eventsChannel = message.guild.channels.cache.get(database.channels.events)
 		const [eventMessageCheck] = database.events.filter(event => { if (event.eventTag === eventTag) { return event } else return undefined })
 
 		// Remove from events
-		await settings.updateOne({ _id: message.guild.id }, { $pull: { events: { eventTag } } })
+		await db.collection.updateOne({ _id: message.guild.id }, { $pull: { events: { eventTag } } })
 
 		// Remove from calendar
-		await settings.findOneAndUpdate({ _id: message.guild.id, 'calendarID.messageID': eventMessageCheck.calendarID }, { $pull: { 'calendarID.$.events': { eventTag: eventTag } } })
+		await db.collection.findOneAndUpdate({ _id: message.guild.id, 'calendarID.messageID': eventMessageCheck.calendarID }, { $pull: { 'calendarID.$.events': { eventTag: eventTag } } })
 
 		// Remove role from server
 		await message.guild.roles.fetch(eventMessageCheck.roleID).then(r => r.delete())
@@ -128,9 +127,9 @@ const removeEvents = async (message, db, module, database, eventTag) => {
 		const updateEmbed = new MessageEmbed(calMessage.embeds[0])
 		updateEmbed.spliceFields(foundIndex, 1)
 		calMessage.edit({ embeds: [updateEmbed] })
-		return channels.logs.send(`Calendar updated - ${message.member.displayName} removed event: \`\`\`diff\n- Removed\n${removedItem.join()}\`\`\``)
+		return await db.channels.logs.send(`Calendar updated - ${message.member.displayName} removed event: \`\`\`diff\n- Removed\n${removedItem.join()}\`\`\``)
 	} catch (err) {
-		return channels.errors.send(err)
+		return await db.channels.errors.send(err)
 	}
 }
 const csvJSON = (csv) => {

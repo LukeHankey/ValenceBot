@@ -5,7 +5,6 @@ import gsheet from '../../gsheets.js'
 import { google } from 'googleapis'
 import { nEmbed } from '../../functions.js'
 import { MessageEmbed } from 'discord.js'
-import { getDb } from '../../mongodb.js'
 
 export default {
 	name: 'future',
@@ -14,13 +13,12 @@ export default {
 	usage: [''],
 	guildSpecific: ['668330890790699079', '420803245758480405'],
 	permissionLevel: 'Owner',
-	run: async (client, message, args, perms, channels) => {
+	run: async (client, message, args, perms, db) => {
+		const channels = await db.channels
 		if (message !== 'readyEvent') {
 			if (!perms.owner) return message.channel.send(perms.errorO)
 		}
-		const db = getDb()
-		const settings = db.collection('Settings')
-		const { futureStock } = await settings.findOne({ _id: '420803245758480405' })
+		const { futureStock } = await db.collection.findOne({ _id: '420803245758480405' })
 		const splitIntoX = (arr, x) => {
 			arr = arr.flat()
 			return new Array(Math.ceil(arr.length / x))
@@ -107,7 +105,7 @@ export default {
 							.setDescription(editFormat.reverse().join('\n'))
 						await msgToEdit.edit({ content: `${openMessage}\n\n`, embeds: [embed] })
 						const after = await futureChannel.send({ content: '**Links**', embeds: [embed] })
-						await settings.updateOne({ _id: message.channel.guild.id }, {
+						await db.collection.updateOne({ _id: message.channel.guild.id }, {
 							$set: {
 								'futureStock.messages.links.opening': msgToEdit.id,
 								'futureStock.messages.links.after': after.id
@@ -116,7 +114,7 @@ export default {
 					}
 					sendLinks()
 
-					settings.updateOne({ _id: message.channel.guild.id }, {
+					db.collection.updateOne({ _id: message.channel.guild.id }, {
 						$set: {
 							'futureStock.messages.first': firstID.id,
 							'futureStock.messages.second': secondID.id,

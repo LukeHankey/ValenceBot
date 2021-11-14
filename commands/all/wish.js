@@ -3,7 +3,6 @@ import gsheet from '../../gsheets.js'
 import { google } from 'googleapis'
 import { nEmbed } from '../../functions.js'
 import { MessageEmbed } from 'discord.js'
-import { getDb } from '../../mongodb.js'
 
 export default {
 	name: 'wish',
@@ -12,13 +11,12 @@ export default {
 	usage: [''],
 	guildSpecific: ['668330890790699079', '420803245758480405'],
 	permissionLevel: 'Owner',
-	run: async (client, message, args, perms, channels) => {
+	run: async (client, message, args, perms, db) => {
+		const channels = await db.channels
 		if (message !== 'readyEvent') {
 			if (!perms.owner) return message.channel.send(perms.errorO)
 		}
-		const db = getDb()
-		const settings = db.collection('Settings')
-		const { merchantWishes } = await settings.findOne({ _id: '420803245758480405' })
+		const { merchantWishes } = await db.collection.findOne({ _id: '420803245758480405' })
 		const splitIntoX = (arr, x) => {
 			arr = arr.flat()
 			return new Array(Math.ceil(arr.length / x))
@@ -106,7 +104,7 @@ export default {
 							.setDescription(editFormat.reverse().join('\n'))
 						await msgToEdit.edit({ content: `${openMessage}\n\n`, embeds: [embed] })
 						const after = await channelToPush.send({ content: '**Links**', embeds: [embed] })
-						await settings.updateOne({ _id: message.channel.guild.id }, {
+						await db.collection.updateOne({ _id: message.channel.guild.id }, {
 							$set: {
 								'merchantWishes.messages.links.opening': msgToEdit.id,
 								'merchantWishes.messages.links.after': after.id
@@ -115,7 +113,7 @@ export default {
 					}
 					sendLinks()
 
-					settings.updateOne({ _id: message.channel.guild.id }, {
+					db.collection.updateOne({ _id: message.channel.guild.id }, {
 						$set: {
 							'merchantWishes.messages.first': firstID.id,
 							'merchantWishes.messages.second': secondID.id,

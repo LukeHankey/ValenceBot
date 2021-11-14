@@ -9,8 +9,8 @@ const commands = []
 const commandFiles = readdirSync('./commands/all').filter(file => file.endsWith('.js'))
 
 // Place your client and guild ids here
-// const clientId = '668330399033851924';
-const clientIdDev = '869942134873161798'
+const clientId = '668330399033851924';
+// const clientIdDev = '869942134873161798'
 // eslint-disable-next-line no-unused-vars
 // eslint-disable-next-line no-inline-comments
 // const guildId = '420803245758480405'; // DSF
@@ -22,20 +22,27 @@ for (const file of commandFiles) {
 	const command = await import(`./commands/all/${file}`)
 	if (!command.default.data) continue
 	// if (['nick', 'events', 'calendar'].includes(command.name)) continue;
-	if (!['vis'].includes(command.default.name)) continue
-	commands.push(command.default.data)
+	if (!['nick', 'delete', 'permissions'].includes(command.default.name)) continue
+	// commands.push(command.default.data)
 }
 console.log(3, commands)
 
 // Context Menu
 
 // eslint-disable-next-line no-unused-vars
-const menuData = {
-	name: 'Mark event as dead.',
-	type: 3
-}
+const menuData = [
+	{
+		name: 'Mark event as dead.',
+		type: 3
+	},
+	{
+		name: 'Affiliate Events',
+		type: 3,
+		default_permission: false
+	}
+]
 
-// commands.push(menuData);
+commands.push(...menuData);
 
 const rest = new REST({ version: '9' }).setToken(process.env.NODE_ENV === 'DEV' ? process.env.DEVELOPMENT_BOT : process.env.BOT_TOKEN);
 
@@ -46,7 +53,7 @@ const rest = new REST({ version: '9' }).setToken(process.env.NODE_ENV === 'DEV' 
 		// Valence done
 		// Add menu to dsf when its gone
 		const gcoms = await rest.put(
-			Routes.applicationGuildCommands(clientIdDev, guildId),
+			Routes.applicationGuildCommands(clientId, guildId),
 			{ body: commands }
 		)
 		console.log(1, gcoms)

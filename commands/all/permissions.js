@@ -67,7 +67,8 @@ export default {
 		],
 		default_permission: undefined
 	},
-	slash: async (interaction, perms, channels) => {
+	slash: async (interaction, perms, db) => {
+		const channels = await db.channels
 		if (!perms.admin) return interaction.reply(perms.errorA)
 		const subType = interaction.options.getSubcommand()
 		const commandName = interaction.options.getString('command')

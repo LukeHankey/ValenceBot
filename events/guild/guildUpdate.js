@@ -1,23 +1,21 @@
-import { getDb } from '../../mongodb.js'
+import { MongoCollection } from '../../DataBase.js'
 
 export default async (client, oldGuild, newGuild) => {
-	const db = getDb()
-	const collection = db.collection('Settings')
-	const code = '```'
+	const db = new MongoCollection('Settings')
 
-	collection.updateOne({ _id: `${oldGuild.id}` },
+	await db.collection.updateOne({ _id: oldGuild.id },
 		{
-			$set: { serverName: `${newGuild.name}` }
+			$set: { serverName: newGuild.name }
 		},
 		{ upsert: true }
 	)
 
-	collection.findOne({ serverID: `${oldGuild.id}` })
+	await db.collection.findOne({ serverID: oldGuild.id })
 		.then(async () => {
 			if (oldGuild.name !== newGuild.name) {
-				client.channels.cache.get('731997087721586698').send(`The server name has been changed from ${oldGuild.name} to **${newGuild.name}**.\n${code}diff\n
+				client.channels.cache.get('731997087721586698').send(`The server name has been changed from ${oldGuild.name} to **${newGuild.name}**.\n\`\`\`diff\n
 + Server Name: ${newGuild.name}
-+ Server ID: ${oldGuild.id}${code}`)
++ Server ID: ${oldGuild.id}\`\`\``)
 			}
 		})
 }

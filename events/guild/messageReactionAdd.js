@@ -1,55 +1,26 @@
-import { getDb } from '../../mongodb.js'
+import { MongoCollection } from '../../DataBase.js'
 import { MessageEmbed } from 'discord.js'
 import { removeMessage, removeEvents } from '../../functions.js'
 import { redDark, greenLight } from '../../colors.js'
 import fetch from 'node-fetch'
 
+const db = new MongoCollection('Settings')
+const usersDB = new MongoCollection('Users')
+
 export default async (client, reaction, user) => {
-	const db = getDb()
-	const settingsColl = db.collection('Settings')
 	const message = reaction.message
 	const channels = await db.channels
 	const { _id } = await db.collection.findOne({ _id: message.channel.guild.id })
+	console.log(_id)
 
-	if (process.env.NODE_ENV === 'DEV') {
-		if (message.guild.id !== '668330890790699079') return
-	} else if (message.guild.id === '668330890790699079') { return }
-	const { _id } = await settingsColl.findOne({ _id: message.channel.guild.id })
-	const { channels: { errors, logs } } = await settingsColl.findOne({ _id: 'Globals' }, { projection: { channels: { errors: 1, logs: 1 } } })
-	const channels = {
-		errors: {
-			id: errors,
-			embed: function (err) {
-				const filePath = import.meta.url.split('/')
-				const fileName = filePath[filePath.length - 1]
-				const embed = new MessageEmbed()
-					.setTitle(`An error occured in ${fileName}`)
-					.setColor(redDark)
-					.addField(`${err.message}`, `\`\`\`${err.stack}\`\`\``)
-				return embed
-			},
-			send: function (...args) {
-				const channel = client.channels.cache.get(this.id)
-				return channel.send({ embeds: [this.embed(...args)] })
-			}
-		},
-		logs: {
-			id: logs,
-			send: function (content) {
-				const channel = client.channels.cache.get(this.id)
-				return channel.send({ content })
-			}
-		}
-	}
 	if (message.partial) await message.fetch().catch(err => channels.errors.send(err))
-	switch (message.channel.guild.id) {
+	switch (message.guild.id) {
 	case _id:
 		// Valence
 		if (_id === '472448603642920973' | _id === '668330890790699079') {
 			if (user.bot) return
-			const usersDB = db.collection('Users')
-			const data = await settingsColl.findOne({ _id: message.channel.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } })
-			const { nameChange } = await settingsColl.findOne({ _id: message.channel.guild.id }, { projection: { nameChange: 1, _id: 0 } })
+			const data = await db.collection.findOne({ _id: message.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } })
+			const { nameChange } = await db.collection.findOne({ _id: message.guild.id }, { projection: { nameChange: 1, _id: 0 } })
 
 			if (message.channel.id === data.channels.events) {
 				const messageMatch = data.events.filter(m => m.messageID === message.id)
@@ -57,18 +28,17 @@ export default async (client, reaction, user) => {
 				if (!messageMatch.length) return
 				if (reaction.emoji.name === '🛑') {
 					if (user.id !== message.author.id) {
-						message.reactions.resolve('🛑').users.remove(user.id)
-						return
+						return message.reactions.resolve('🛑').users.remove(user.id)
 					}
 
 					const [event] = data.events.filter(e => e.messageID === message.id)
 
-					await removeEvents(message, settingsColl, channels, 'messageReactionAdd', data, event.eventTag)
+					await removeEvents(message, db, 'messageReactionAdd', data, event.eventTag)
 				} else if (reaction.emoji.name === '📌') {
 					const userFetch = await message.channel.guild.members.fetch(user.id)
 					const eventFound = data.events.find(e => e.messageID === message.id)
 					userFetch.roles.add(eventFound.roleID)
-					await settingsColl.findOneAndUpdate({ _id: message.channel.guild.id, 'events.messageID': eventFound.messageID }, { $addToSet: { 'events.$.members': user.id } })
+					await db.collection.findOneAndUpdate({ _id: message.channel.guild.id, 'events.messageID': eventFound.messageID }, { $addToSet: { 'events.$.members': user.id } })
 				}
 			} else if (message.channel.id === data.channels.adminChannel) {
 				const messageMatch = nameChange.find(o => o.messageID === message.id)
@@ -80,8 +50,8 @@ export default async (client, reaction, user) => {
 					let oldData = messageMatch.data.map(o => { return { _id: o._id, clanMate: o.clanMate, clanRank: o.clanRank, totalXP: o.totalXP, kills: o.kills, discord: o.discord, discActive: o.discActive, alt: o.alt, gameActive: o.gameActive } })
 					if (reaction.emoji.name === '✅') {
 						primary = primary.split(' |')[0]
-						const oldProfile = await usersDB.findOne({ clanMate: potentialPreviousName })
-						await usersDB.updateOne({ clanMate: primary }, {
+						const oldProfile = await usersDB.collection.findOne({ clanMate: potentialPreviousName })
+						await usersDB.collection.updateOne({ clanMate: primary }, {
 							$set: {
 								discord: oldProfile.discord,
 								discActive: oldProfile.discActive,
@@ -91,15 +61,15 @@ export default async (client, reaction, user) => {
 							$unset: {
 								potentialNewNames: 1
 							}
-						}).then(() => usersDB.deleteOne({ clanMate: potentialPreviousName }))
+						}).then(async () => await usersDB.collection.deleteOne({ clanMate: potentialPreviousName }))
 
-						settingsColl.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } })
+						db.collection.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } })
 						message.edit({ content: `Action: ✅, by: ${user.username}\n${message.content}\nDon't forget to merge their name: https://rsclanadmin.com/Clan/Manager/Members/245 to update their points.` })
 						return message.reactions.removeAll()
 					} else if (reaction.emoji.name === '❌') {
 						let metricsProfile = await fetch(`https://secure.runescape.com/m=website-data/playerDetails.ws?names=%5B%22${potentialPreviousName}%22%5D&callback=jQuery000000000000000_0000000000&_=0`).then(response => response.text())
 						metricsProfile = JSON.parse(metricsProfile.slice(34, -4))
-						const userLeft = await usersDB.findOne({ $text: { $search: potentialPreviousName, $caseSensitive: false } }, { projection: { _id: 0, potentialNewNames: 0, profile: 0 } })
+						const userLeft = await usersDB.collection.findOne({ $text: { $search: potentialPreviousName, $caseSensitive: false } }, { projection: { _id: 0, potentialNewNames: 0, profile: 0 } })
 
 						if (metricsProfile.clan && metricsProfile.clan !== 'Valence') {
 							const embed = new MessageEmbed()
@@ -109,12 +79,12 @@ export default async (client, reaction, user) => {
 								.addField('Users old profile', `\`\`\`${JSON.stringify(userLeft)}\`\`\``)
 							const channel = client.channels.cache.get(channels.errors.id)
 							channel.send(embed)
-							await usersDB.deleteOne({ clanMate: userLeft.clanMate })
+							await usersDB.collection.deleteOne({ clanMate: userLeft.clanMate })
 						} else {
 							// Checks if the potential previous name is equal to the current name.
 							let metricsProfile = await fetch(`https://secure.runescape.com/m=website-data/playerDetails.ws?names=%5B%22${potentialPreviousName}%22%5D&callback=jQuery000000000000000_0000000000&_=0`).then(response => response.text())
 							metricsProfile = JSON.parse(metricsProfile.slice(34, -4))
-							const userLeft = await usersDB.findOne({ $text: { $search: potentialPreviousName, $caseSensitive: false } }, { projection: { _id: 0, potentialNewNames: 0, profile: 0 } })
+							const userLeft = await usersDB.collection.findOne({ $text: { $search: potentialPreviousName, $caseSensitive: false } }, { projection: { _id: 0, potentialNewNames: 0, profile: 0 } })
 
 							if (metricsProfile.clan && metricsProfile.clan !== 'Valence') {
 								const embed = new MessageEmbed()
@@ -124,17 +94,17 @@ export default async (client, reaction, user) => {
 									.addField('Users old profile', `\`\`\`${JSON.stringify(userLeft)}\`\`\``)
 								const channel = client.channels.cache.get(channels.errors.id)
 								channel.send(embed)
-								await usersDB.deleteOne({ clanMate: userLeft.clanMate })
+								await usersDB.collection.deleteOne({ clanMate: userLeft.clanMate })
 							} else {
 								// Checks if the potential previous name is equal to the current name.
 								// eslint-disable-next-line no-lonely-if
 								if (userLeft.clanMate === potentialPreviousName) {
 									oldData = oldData.find(u => u.clanMate.toLowerCase() === potentialPreviousName.toLowerCase())
-									await usersDB.deleteOne({ clanMate: potentialPreviousName })
-									await usersDB.insertOne(oldData)
+									await usersDB.collection.deleteOne({ clanMate: potentialPreviousName })
+									await usersDB.collection.insertOne(oldData)
 								}
 							}
-							settingsColl.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } })
+							db.collection.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } })
 							message.edit({ content: `Action: ❌, by: ${user.username}\n${message.content}` })
 							return message.reactions.removeAll()
 						}
@@ -158,7 +128,7 @@ export default async (client, reaction, user) => {
 							}
 
 							const info = details(found, messageMatch.data[0])
-							usersDB.updateOne({ clanMate: found[0].clanMate }, {
+							await usersDB.collection.updateOne({ clanMate: found[0].clanMate }, {
 								$set: {
 									discord: info.discord,
 									discActive: info.discActive,
@@ -166,8 +136,8 @@ export default async (client, reaction, user) => {
 									gameActive: info.gameActive
 								}
 							})
-							usersDB.deleteOne({ clanMate: potentialPreviousName })
-							settingsColl.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } })
+							await usersDB.collection.deleteOne({ clanMate: potentialPreviousName })
+							db.collection.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } })
 							message.edit({ content: `Action: 📝, by: ${user.username}\n${message.content}` })
 							return message.reactions.removeAll()
 						} catch (err) {
@@ -184,7 +154,7 @@ export default async (client, reaction, user) => {
 					spamProtection,
 					deletions
 				}
-			} = await settingsColl.findOne({ _id: message.channel.guild.id },
+			} = await db.collection.findOne({ _id: message.channel.guild.id },
 				{
 					projection: {
 						'merchChannel.channelID': 1,
@@ -206,23 +176,23 @@ export default async (client, reaction, user) => {
 						// Remove all reactions if there is > 1 or 0. Then add a skull.
 						if (Date.now() - m.createdTimestamp >= 3600000 && (m.reactions.cache.size > 1 || m.reactions.cache.size === 0)) {
 							await m.reactions.removeAll()
-							await removeMessage(message, m, settingsColl)
+							await removeMessage(message, m, db.collection)
 							return await m.react('☠️')
 						} else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
 							// If there is only a skull, remove users and message from DB
-							await removeMessage(message, m, settingsColl)
+							await removeMessage(message, m, db.collection)
 							await m.reactions.removeAll()
 							return await m.react('☠️')
 						} else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && !m.reactions.cache.has('☠️')) {
 							// If there is a single reaction which is not the Skull, then remove that and react with skull. Repeat process over.
 							await m.reactions.removeAll()
-							await removeMessage(message, m, settingsColl)
+							await removeMessage(message, m, db.collection)
 							return await m.react('☠️')
 						} else { return }
 					} catch (e) {
 						if (e.code === 10008) {
 							const messageID = e.path.split('/')[4]
-							return await settingsColl.updateOne({ _id: message.channel.guild.id }, {
+							return await db.collection.updateOne({ _id: message.channel.guild.id }, {
 								$pull: {
 									'merchChannel.spamProtection': { messageID: messageID }
 								}
@@ -236,12 +206,12 @@ export default async (client, reaction, user) => {
 				if (user.bot || reaction.emoji.name !== '✅') return
 				const item = deletions.messages.find(item => item.messageID === message.id)
 				if (item) {
-					await settingsColl.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': item.authorID }, {
+					await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': item.authorID }, {
 						$inc: {
 							'merchChannel.scoutTracker.$.count': -1
 						}
 					})
-					await settingsColl.updateOne({ _id: message.channel.guild.id }, {
+					await db.collection.updateOne({ _id: message.channel.guild.id }, {
 						$pull: {
 							'merchChannel.deletions.messages': { messageID: item.messageID }
 						}

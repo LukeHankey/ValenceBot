@@ -12,9 +12,10 @@ export default {
 	usage: ['<code>'],
 	guildSpecific: ['668330890790699079'],
 	permissionLevel: 'Owner',
-	run: async (client, message, args, perms, channels) => {
+	run: async (client, message, args, perms, db) => {
+		const channels = await db.channels
 		if (!perms.owner) {
-			return message.channel.send(perms.errorO).then(() => {
+			return message.channel.send(perms.errorO).then(async () => {
 				client.channels.cache.get(channels.logs).send('<@' + message.author.id + '> tried to use eval!')
 				return message.reply({ content: 'you wish...', allowedMentions: { repliedUser: false } })
 			})

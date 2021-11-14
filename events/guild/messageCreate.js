@@ -4,10 +4,9 @@ import { Permissions } from '../../classes.js'
 import { MessageEmbed } from 'discord.js'
 import vEvents from '../../valence/valenceEvents.js'
 import dsf from '../../dsf/merch/main.js'
+const db = new MongoCollection('Settings')
 
 export default async (client, message) => {
-	const channels = await db.channels
-
 	// Handling DMs
 	if (message.guild === null || message.channel.type === 'DM') {
 		if (message.partial) await message.fetch()
@@ -69,7 +68,7 @@ export default async (client, message) => {
 			break
 		case merchCalls:
 		case otherCalls:
-			return await dsf(client, message, await db.channels)
+			return await dsf(client, message, db)
 		case suggestions: {
 			const upArrow = message.guild.emojis.cache.get('872175822725857280')
 			const downArrow = message.guild.emojis.cache.get('872175855223337060')
@@ -137,12 +136,13 @@ export default async (client, message) => {
 
 		try {
 			command.guildSpecific === 'all' || command.guildSpecific.includes(message.channel.guild.id)
-				? command.run(client, message, args, perms, await db.channels)
+				? command.run(client, message, args, perms, db)
 				: message.channel.send({ content: 'You cannot use that command in this server.' })
 		} catch (error) {
 			if (commandName !== command) return
 		}
 	} catch (err) {
+		const channels = await db.channels
 		channels.errors.send(err)
 	}
 }

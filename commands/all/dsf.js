@@ -2,7 +2,6 @@
 /* eslint-disable no-useless-escape */
 import { nEmbed, checkNum, removeMessage } from '../../functions.js'
 import { cream, cyan } from '../../colors.js'
-import { getDb } from '../../mongodb.js'
 import { ScouterCheck } from '../../classes.js'
 
 /**
@@ -18,10 +17,9 @@ export default {
 	usage: ['messages', 'messages clear', 'view scouter/verified <num (optional)>', 'user memberID/@member add <num (optional)> <other/game>', 'user memberID/@member remove <num (optional)> <other/game>', 'reacts', 'reacts clear'],
 	guildSpecific: ['668330890790699079', '420803245758480405'],
 	permissionLevel: 'Admin',
-	run: async (client, message, args, perms, channels) => {
+	run: async (client, message, args, perms, db) => {
 		if (!perms.admin) return message.channel.send(perms.errorA)
-		const db = getDb()
-		const settings = db.collection('Settings')
+		const channels = await db.channels
 
 		switch (args[0]) {
 		case 'm':
@@ -30,7 +28,7 @@ export default {
 			// eslint-disable-next-line default-case-last
 			default:
 				try {
-					const { merchChannel: { messages, channelID } } = await settings.findOne({ _id: message.channel.guild.id }, { projection: { 'merchChannel.messages': 1, 'merchChannel.channelID': 1 } })
+					const { merchChannel: { messages, channelID } } = await db.collection.findOne({ _id: message.channel.guild.id }, { projection: { 'merchChannel.messages': 1, 'merchChannel.channelID': 1 } })
 					const fields = []
 					const embed = nEmbed('List of messages currently stored in the DB',
 						'There shouldn\'t be too many as they get automatically deleted after 10 minutes. If the bot errors out, please clear all of them using \`;dsf messages clear\`.',
@@ -51,7 +49,7 @@ export default {
 				}
 				break
 			case 'clear':
-				await settings.findOneAndUpdate({ _id: message.channel.guild.id },
+				await db.collection.findOneAndUpdate({ _id: message.channel.guild.id },
 					{
 						$pull: {
 							'merchChannel.messages': { time: { $gt: 0 } }
@@ -64,7 +62,7 @@ export default {
 		case 'reacts':
 			switch (args[1]) {
 			case 'clear': {
-				const { merchChannel: { channelID, spamProtection } } = await settings.findOne({ _id: message.channel.guild.id }, { projection: { 'merchChannel.spamProtection': 1, 'merchChannel.channelID': 1 } })
+				const { merchChannel: { channelID, spamProtection } } = await db.collection.findOne({ _id: message.channel.guild.id }, { projection: { 'merchChannel.spamProtection': 1, 'merchChannel.channelID': 1 } })
 				const channel = client.channels.cache.get(channelID)
 
 				spamProtection.forEach(async (msgObj) => {
@@ -74,26 +72,26 @@ export default {
 						// Remove all reactions if there is > 1 or 0. Then add a skull.
 						if (Date.now() - m.createdTimestamp >= 3600000 && (m.reactions.cache.size > 1 || m.reactions.cache.size === 0)) {
 							await m.reactions.removeAll()
-							await removeMessage(message, m, settings)
+							await removeMessage(message, m, db.collection)
 							await message.react('✅')
 							return await m.react('☠️')
 						} else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
 							// If there is only a skull, remove users and message from DB
-							await removeMessage(message, m, settings)
+							await removeMessage(message, m, db.collection)
 							await m.reactions.removeAll()
 							await message.react('✅')
 							return await m.react('☠️')
 						} else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && !m.reactions.cache.has('☠️')) {
 							// If there is a single reaction which is not the Skull, then remove that and react with skull. Repeat process over.
 							await m.reactions.removeAll()
-							await removeMessage(message, m, settings)
+							await removeMessage(message, m, db.collection)
 							await message.react('✅')
 							return await m.react('☠️')
 						} else { return await message.react('❌') }
 					} catch (e) {
 						if (e.code === 10008) {
 							const messageID = e.path.split('/')[4]
-							await settings.updateOne({ _id: message.channel.guild.id }, {
+							await db.collection.updateOne({ _id: message.channel.guild.id }, {
 								$pull: {
 									'merchChannel.spamProtection': { messageID: messageID }
 								}
@@ -104,7 +102,7 @@ export default {
 			}
 				break
 			default: {
-				const { merchChannel: { spamProtection, channelID } } = await settings.findOne({ _id: message.channel.guild.id }, { projection: { 'merchChannel.spamProtection': 1, 'merchChannel.channelID': 1 } })
+				const { merchChannel: { spamProtection, channelID } } = await db.collection.findOne({ _id: message.channel.guild.id }, { projection: { 'merchChannel.spamProtection': 1, 'merchChannel.channelID': 1 } })
 				let page = 0
 				const fields = []
 
@@ -161,7 +159,7 @@ export default {
 							}
 						})
 					})
-					.catch(err => {
+					.catch(async err => {
 						channels.errors.send(err)
 					})
 			}
@@ -181,7 +179,7 @@ export default {
 				}).filter(x => x)[0]
 				return name._client && name._guild_name && name._db
 			}
-			const res = await settings.find({}).toArray()
+			const res = await db.collection.find({}).toArray()
 			await classVars(vScout, message.channel.guild.name, res)
 			await classVars(scout, message.channel.guild.name, res)
 			const num = args[2]
@@ -238,7 +236,7 @@ export default {
 			switch (param) {
 			case 'add':
 				if (!num) {
-					await settings.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+					await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
 						$inc: {
 							'merchChannel.scoutTracker.$.count': 1
 						}
@@ -246,7 +244,7 @@ export default {
 					if (reaction) return message.react('✅')
 					else return message.react('❌')
 				} else if (num === 'other') {
-					await settings.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+					await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
 						$inc: {
 							'merchChannel.scoutTracker.$.otherCount': 1
 						}
@@ -254,7 +252,7 @@ export default {
 					if (reaction) return message.react('✅')
 					else return message.react('❌')
 				} else if (num === 'game') {
-					await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+					await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
 						$inc: {
 							'merchChannel.scoutTracker.$.game': 1
 						}
@@ -267,7 +265,7 @@ export default {
 					} else { num = +num }
 					const other = args.slice(4)
 					if (other[0] === 'other') {
-						await settings.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+						await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
 							$inc: {
 								'merchChannel.scoutTracker.$.otherCount': +num
 							}
@@ -275,7 +273,7 @@ export default {
 						if (reaction) return message.react('✅')
 						else return message.react('❌')
 					} else {
-						await settings.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+						await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
 							$inc: {
 								'merchChannel.scoutTracker.$.count': +num
 							}
@@ -286,7 +284,7 @@ export default {
 				}
 			case 'remove':
 				if (!num) {
-					await settings.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+					await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
 						$inc: {
 							'merchChannel.scoutTracker.$.count': -1
 						}
@@ -294,7 +292,7 @@ export default {
 					if (reaction) return message.react('✅')
 					else return message.react('❌')
 				} else if (num === 'other') {
-					await settings.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+					await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
 						$inc: {
 							'merchChannel.scoutTracker.$.otherCount': -1
 						}
@@ -302,7 +300,7 @@ export default {
 					if (reaction) return message.react('✅')
 					else return message.react('❌')
 				} else if (num === 'game') {
-					await settings.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+					await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
 						$inc: {
 							'merchChannel.scoutTracker.$.game': -1
 						}
@@ -315,7 +313,7 @@ export default {
 					} else { num = +num }
 					const other = args.slice(4)
 					if (other[0] === 'other') {
-						await settings.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+						await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
 							$inc: {
 								'merchChannel.scoutTracker.$.otherCount': -num
 							}
@@ -323,7 +321,7 @@ export default {
 						if (reaction) return message.react('✅')
 						else return message.react('❌')
 					} else {
-						await settings.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+						await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
 							$inc: {
 								'merchChannel.scoutTracker.$.count': -num
 							}
