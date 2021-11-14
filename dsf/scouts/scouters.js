@@ -45,7 +45,7 @@ const removeInactives = async (name, settings, { logs }) => {
 			removed.push(doc.author)
 			allItems.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}).`)
 			await settings.updateOne(
-				{ serverName: name._guildMame },
+				{ serverName: name._guildName },
 				{ $pull: { 'merchChannel.scoutTracker': { userID: doc.userID } } }
 			)
 		} else {
