@@ -128,6 +128,7 @@ export default async (client, interaction) => {
 		}
 	} else if (interaction.isAutocomplete()) {
 		const focusedValue = interaction.options.getFocused()
+		// eslint-disable-next-line array-callback-return
 		const choices = [...client.commands.values()].filter(command => {
 			if (command.slash && (command.guildSpecific.includes(interaction.guild.id) || command.guildSpecific === 'all')) {
 				return command

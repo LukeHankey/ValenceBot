@@ -1,48 +1,12 @@
-import { getDb } from '../../mongodb.js'
-import { redDark, blueDark } from '../../colors.js'
+import { MongoCollection } from '../../DataBase.js'
+import { blueDark } from '../../colors.js'
 import { Permissions } from '../../classes.js'
 import { MessageEmbed } from 'discord.js'
 import vEvents from '../../valence/valenceEvents.js'
 import dsf from '../../dsf/merch/main.js'
 
 export default async (client, message) => {
-	const db = getDb()
-	const settingsColl = await db.collection('Settings')
-	const { channels: { vis, errors, logs } } = await settingsColl.findOne({ _id: 'Globals' }, { projection: { channels: { vis: 1, errors: 1, logs: 1 } } })
-
-	const channels = {
-		vis: {
-			id: vis,
-			// content could be both embed or content
-			send: function (content) {
-				const channel = client.channels.cache.get(this.id)
-				return channel.send(content)
-			}
-		},
-		errors: {
-			id: errors,
-			embed: function (err) {
-				const filePath = import.meta.url.split('/')
-				const fileName = filePath[filePath.length - 1]
-				const embed = new MessageEmbed()
-					.setTitle(`An error occured in ${fileName}`)
-					.setColor(redDark)
-					.addField(`${err.message}`, `\`\`\`${err.stack}\`\`\``)
-				return embed
-			},
-			send: function (...args) {
-				const channel = client.channels.cache.get(this.id)
-				return channel.send({ embeds: [this.embed(...args)] })
-			}
-		},
-		logs: {
-			id: logs,
-			send: function (content) {
-				const channel = client.channels.cache.get(this.id)
-				return channel.send({ content })
-			}
-		}
-	}
+	const db = new MongoCollection('Settings')
 
 	// Handling DMs
 	if (message.guild === null || message.channel.type === 'DM') {
@@ -71,7 +35,7 @@ export default async (client, message) => {
 
 	// Deep Sea Fishing
 	if (message.guild.id === '420803245758480405' || message.guild.id === '668330890790699079') {
-		const { merchChannel: { channelID, otherChannelID }, channels: { adminChannel } } = await settingsColl.findOne({ _id: message.guild.id, merchChannel: { $exists: true } }, { projection: { 'merchChannel.channelID': 1, 'merchChannel.otherChannelID': 1, channels: 1 } })
+		const { merchChannel: { channelID, otherChannelID }, channels: { adminChannel } } = await db.collection.findOne({ _id: message.guild.id, merchChannel: { $exists: true } }, { projection: { 'merchChannel.channelID': 1, 'merchChannel.otherChannelID': 1, channels: 1 } })
 
 		const scamDetect = /(glft|steamcom|dlsco|dlisco|disour|cord-gi|corcl-gi|\/gif)\w+/gi
 		if (scamDetect.test(message.content)) {
@@ -99,7 +63,7 @@ export default async (client, message) => {
 			break
 		case merchCalls:
 		case otherCalls:
-			return await dsf(client, message, channels)
+			return await dsf(client, message, await db.channels)
 		case suggestions: {
 			const upArrow = message.guild.emojis.cache.get('872175822725857280')
 			const downArrow = message.guild.emojis.cache.get('872175855223337060')
@@ -119,7 +83,7 @@ export default async (client, message) => {
 			// Then msg is from Vis wax server.
 			console.log('Vis Wax Combinations: ', message.content)
 			const contentArr = message.content.split('\n')
-			await settingsColl.updateOne({ _id: 'Globals' }, {
+			await db.collection.updateOne({ _id: 'Globals' }, {
 				$set: {
 					vis: null,
 					visContent: contentArr,
@@ -140,11 +104,11 @@ export default async (client, message) => {
 		})
 
 		if (blocked.length > 0) message.delete()
-		await vEvents(client, message, channels)
+		await vEvents(client, message, await db.channels)
 	}
 
 	try {
-		const commandDB = await settingsColl.findOne({ _id: message.channel.guild.id }, { projection: { prefix: 1, roles: 1 } })
+		const commandDB = await db.collection.findOne({ _id: message.channel.guild.id }, { projection: { prefix: 1, roles: 1 } })
 		if (!message.content.startsWith(commandDB.prefix)) return
 
 		const args = message.content.slice(commandDB.prefix.length).split(/ +/g)
@@ -168,12 +132,12 @@ export default async (client, message) => {
 
 		try {
 			command.guildSpecific === 'all' || command.guildSpecific.includes(message.channel.guild.id)
-				? command.run(client, message, args, perms, channels)
+				? command.run(client, message, args, perms, await db.channels)
 				: message.channel.send({ content: 'You cannot use that command in this server.' })
 		} catch (error) {
 			if (commandName !== command) return
 		}
 	} catch (err) {
-		channels.errors.send(err)
+		await db.channels.errors.send(err)
 	}
 }

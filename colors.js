@@ -1,4 +1,3 @@
-
 export const purpleDark = '#6a006a'
 export const purpleMedium = '#a958a5'
 export const purpleLight = '#c481fb'
