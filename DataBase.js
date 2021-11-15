@@ -45,10 +45,27 @@ export class DataBase {
 	}
 
 	async #retry() {
-		console.log('Retrying connection...')
 		await wait(1000)
 		await this.#initialize()
 		await this.collectionNames()
+	}
+
+	/**
+     * @returns {String[]} An array of collection names.
+     */
+	 async collectionNames() {
+		let collectionNames;
+		try {
+			collectionNames = await DataBase.#db.listCollections().toArray()
+			collectionNames = collectionNames.map(c => c.name)
+		}
+		catch (err) {
+			if (err.name === 'TypeError' && err.message.includes('listCollections')) await this.#retry()
+			else console.error(err)
+			collectionNames = await DataBase.#db.listCollections().toArray()
+			collectionNames = collectionNames.map(c => c.name)
+		}
+		return collectionNames
 	}
     
     get collection() {        
@@ -60,36 +77,11 @@ export class MongoCollection extends DataBase {
     /**
      * @param  {string} collectionName The name of the collection.
      */
-    constructor(collectionName) {
-        super()
-        this.collectionName = collectionName;
-        this.#validateCollectionName(collectionName)
-    }
-    /**
-     * @returns {String[]} An array of collection names.
-     */
-	async collectionNames() {
-		let collectionNames;
-		try {
-			console.log(1)
-			collectionNames = await this.db.listCollections().toArray()
-		}
-		catch (err) {
-			console.log(2, 'listCollections' in err)
-			await this._retry()
-			console.log(4)
-			await this.collectionNames()
-			console.log(5)
-			collectionNames = await this.db.listCollections().toArray()
-		}
-		finally {
-			console.log(6)
-			collectionNames = collectionNames.map(c => c.name)
-			console.log('Retry success.')
-		}
-        
-        return collectionNames
-    }
+	constructor(collectionName) {
+		super()
+		this.collectionName = collectionName;
+		this.#validateCollectionName(collectionName)
+	}
     
     /**
      * @param  {string} name The name of the collection.
@@ -97,12 +89,11 @@ export class MongoCollection extends DataBase {
     async #validateCollectionName(name) {
         let collectionNames = await this.collectionNames()
 
-        if (typeof name !== 'string') throw new Error(`${name} must be a string.`)
-
-        if (collectionNames.includes(name)) return true
-        else throw new Error(`${name} is not a valid collection name. Must be one of ${collectionNames.join(', ')}`);
-    }
-    /**
+		if (typeof name !== 'string') throw new Error(`${name} must be a string.`)
+		if (collectionNames.includes(name)) return true
+		else throw new Error(`${name} is not a valid collection name. Must be one of ${collectionNames.join(', ')}`);
+	}
+	/**
      * @returns {Promise<Object>}
      */
 	get channels() {
