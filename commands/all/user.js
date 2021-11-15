@@ -1,7 +1,7 @@
-import { getDb } from '../../mongodb.js'
 import { MessageEmbed } from 'discord.js'
 import { checkNum, renameKeys, nEmbed } from '../../functions.js'
 import { greenLight, redLight } from '../../colors.js'
+import { MongoCollection } from '../../DataBase.js'
 
 export default {
 	name: 'user',
@@ -10,10 +10,9 @@ export default {
 	usage: ['<Discord ID>', '<Rank name>', '<RSN>', '<RSN> set <discord/active/alt> <new value>'],
 	guildSpecific: ['472448603642920973', '668330890790699079'],
 	permissionLevel: 'Mod',
-	run: async (client, message, args, perms, channels) => {
+	run: async (client, message, args, perms, db) => {
 		if (!perms.mod) return message.channel.send(perms.errorM)
-		const db = getDb()
-		const usersColl = db.collection('Users')
+		const usersColl = new MongoCollection('Users')
 		const ranks = ['recruit', 'corporal', 'sergeant', 'lieutenant', 'captain', 'general', 'admin', 'organiser', 'coordinator', 'overseer', 'deputy owner', 'owner']
 
 		const createEmbedForDB = async (user, { inDisc, type }, fields, desc = '') => {
@@ -130,7 +129,7 @@ export default {
 						}
 					})
 				})
-				.catch(err => channels.errors.send(err))
+				.catch(async err => await db.channels.errors.send(err))
 		} else {
 			if (!args.length) return
 			// Find by rs name

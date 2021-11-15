@@ -132,7 +132,7 @@ export default async (client, message) => {
 
 		try {
 			command.guildSpecific === 'all' || command.guildSpecific.includes(message.channel.guild.id)
-				? command.run(client, message, args, perms, await db.channels)
+				? command.run(client, message, args, perms, db)
 				: message.channel.send({ content: 'You cannot use that command in this server.' })
 		} catch (error) {
 			if (commandName !== command) return

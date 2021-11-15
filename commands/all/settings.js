@@ -1,19 +1,16 @@
 import { cyan, redDark } from '../../colors.js'
-import { getDb } from '../../mongodb.js'
 import { nEmbed, checkNum } from '../../functions.js'
 
 export default {
-	name: 'settings',
-	description: ['Displays the settings that you can change.', 'Shows the current prefix.', 'Sets the new prefix in the server.', 'Shows the current admin role.', 'Sets the new admin role in the server.', 'Shows the current mod role.', 'Sets the new mod role in the server.', 'Shows the current admin channel.', 'Sets the current admin channel.'],
+	name: 'db.collection',
+	description: ['Displays the db.collection that you can change.', 'Shows the current prefix.', 'Sets the new prefix in the server.', 'Shows the current admin role.', 'Sets the new admin role in the server.', 'Shows the current mod role.', 'Sets the new mod role in the server.', 'Shows the current admin channel.', 'Sets the current admin channel.'],
 	aliases: ['s'],
 	usage: ['', 'prefix', 'prefix set <new prefix>', 'adminRole', 'adminRole set <new role>', 'modRole', 'modRole set <new role>', 'adminChannel', 'adminChannel set <channel>'],
 	guildSpecific: 'all',
 	permissionLevel: 'Admin',
-	run: async (client, message, args, perms, channels) => {
+	run: async (client, message, args, perms, db) => {
 		if (!perms.admin) return message.channel.send(perms.errorA)
-		const db = getDb()
-		const settings = db.collection('Settings')
-		const { prefix, roles: { modRole, adminRole }, channels: { adminChannel, events, mod } } = await settings.findOne({ _id: message.channel.guild.id }, { projection: { prefix: 1, roles: 1, channels: 1 } })
+		const { prefix, roles: { modRole, adminRole }, channels: { adminChannel, events, mod } } = await db.collection.findOne({ _id: message.channel.guild.id }, { projection: { prefix: 1, roles: 1, channels: 1 } })
 		const [...rName] = args.slice(2)
 		const roleName = message.channel.guild.roles.cache.find(role => role.name === rName.join(' '))
 		const channelTag = []
@@ -23,13 +20,13 @@ export default {
 			switch (args[1]) {
 			case 'set':
 				args[2]
-					? settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { prefix: args[2] } }, { returnOriginal: true })
-						.then(r => {
+					? db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { prefix: args[2] } }, { returnOriginal: true })
+						.then(async r => {
 							message.channel.send({ content: `Prefix has been changed from \`${r.value.prefix}\` to \`${args[2]}\`` })
-							channels.logs.send(`<@${message.author.id}> changed the bot Prefix in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${r.value.prefix}\n+ ${args[2]}\`\`\``)
+							await db.channels.send(`<@${message.author.id}> changed the bot Prefix in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${r.value.prefix}\n+ ${args[2]}\`\`\``)
 						})
-						.catch(err => {
-							channels.errors.send(err)
+						.catch(async err => {
+							await db.channels.errors.send(err)
 						})
 					: message.channel.send({ content: 'What do you want to set the prefix to?' })
 				break
@@ -43,17 +40,17 @@ export default {
 			switch (args[1]) {
 			case 'set':
 				if (checkNum(args[2], 1, Infinity) && message.channel.guild.roles.cache.has(args[2]) && message.channel.guild.id !== args[2] && message.channel.guild.roles.cache.get(`${args[2]}`).permissions.has('ADMINISTRATOR')) { // Setting role by ID
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.adminRole': `<@&${args[2]}>` } }, { returnOriginal: true })
+					const found = await db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.adminRole': `<@&${args[2]}>` } }, { returnOriginal: true })
 					message.channel.send({ content: `The Admin Role has been changed to: <@&${args[2]}>`, allowedMentions: false })
-					channels.logs.send(`<@${message.author.id}> changed the adminRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.adminRole}\n+ <@&${args[2]}>\`\`\``)
+					await db.channels.send(`<@${message.author.id}> changed the adminRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.adminRole}\n+ <@&${args[2]}>\`\`\``)
 				} else if (roleName && message.channel.guild.roles.cache.get(roleName.id).permissions.has('ADMINISTRATOR')) { // Setting role by name
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.adminRole': `<@&${roleName.id}>` } }, { returnOriginal: true })
+					const found = await db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.adminRole': `<@&${roleName.id}>` } }, { returnOriginal: true })
 					message.channel.send({ content: `The Admin Role has been changed to: <@&${roleName.id}>`, allowedMentions: false })
-					channels.logs.send(`<@${message.author.id}> changed the adminRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.adminRole}\n+ ${roleName.id}\`\`\``)
+					await db.channels.send(`<@${message.author.id}> changed the adminRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.adminRole}\n+ ${roleName.id}\`\`\``)
 				} else if (message.mentions.roles.first() && message.channel.guild.roles.cache.get(message.mentions.roles.first().id).permissions.has('ADMINISTRATOR')) { // Setting role by mention
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.adminRole': args[2] } }, { returnOriginal: true })
+					const found = await db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.adminRole': args[2] } }, { returnOriginal: true })
 					message.channel.send({ content: `The Admin Role has been changed to: ${args[2]}`, allowedMentions: false })
-					channels.logs.send(`<@${message.author.id}> changed the adminRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.adminRole}\n+ ${args[2]}\`\`\``)
+					await db.channels.send(`<@${message.author.id}> changed the adminRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.adminRole}\n+ ${args[2]}\`\`\``)
 				} else {
 					message.channel.send({ content: 'What do you want to set the Admin Role to? Acceptable values:' })
 					message.channel.send({ content: '```diff\n+ Role ID\n+ Tagging the role\n+ Role Name\n\nNOTE:\n- If specifying a Role Name, make sure the Role Name is unique!\n- All roles must have the ADMINISTRATOR permission set.```' })
@@ -69,17 +66,17 @@ export default {
 			switch (args[1]) {
 			case 'set':
 				if (checkNum(args[2], 1, Infinity) && message.channel.guild.roles.cache.has(args[2]) && message.channel.guild.id !== args[2] && message.channel.guild.roles.cache.get(`${args[2]}`).permissions.has(['KICK_MEMBERS', 'BAN_MEMBERS'])) { // Setting role by ID
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.modRole': `<@&${args[2]}>` } }, { returnOriginal: true })
+					const found = await db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.modRole': `<@&${args[2]}>` } }, { returnOriginal: true })
 					message.channel.send({ content: `The Mod Role has been changed to: <@&${args[2]}>`, allowedMentions: false })
-					channels.logs.send(`<@${message.author.id}> changed the modRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.modRole}\n+ <@&${args[2]}>\`\`\``)
+					await db.channels.send(`<@${message.author.id}> changed the modRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.modRole}\n+ <@&${args[2]}>\`\`\``)
 				} else if (roleName && message.channel.guild.roles.cache.get(roleName.id).permissions.has(['KICK_MEMBERS', 'BAN_MEMBERS'])) { // Setting role by name
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.modRole': `<@&${roleName.id}>` } }, { returnOriginal: true })
+					const found = await db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.modRole': `<@&${roleName.id}>` } }, { returnOriginal: true })
 					message.channel.send({ content: `The Mod Role has been changed to: <@&${roleName.id}>`, allowedMentions: false })
-					channels.logs.send(`<@${message.author.id}> changed the modRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.modRole}\n+ ${roleName}\`\`\``)
+					await db.channels.send(`<@${message.author.id}> changed the modRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.modRole}\n+ ${roleName}\`\`\``)
 				} else if (message.mentions.roles.first() && message.channel.guild.roles.cache.get(message.mentions.roles.first().id).permissions.has(['KICK_MEMBERS', 'BAN_MEMBERS'])) { // Setting role by mention
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.modRole': args[2] } }, { returnOriginal: true })
+					const found = await db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'roles.modRole': args[2] } }, { returnOriginal: true })
 					message.channel.send({ content: `The Mod Role has been changed to: ${args[2]}`, allowedMentions: false })
-					channels.logs.send(`<@${message.author.id}> changed the modRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.modRole}\n+ ${args[2]}\`\`\``)
+					await db.channels.send(`<@${message.author.id}> changed the modRole in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${found.value.roles.modRole}\n+ ${args[2]}\`\`\``)
 				} else {
 					message.channel.send({ content: 'What do you want to set the Mod Role to? Acceptable values:' })
 					message.channel.send({ content: '```diff\n+ Role ID\n+ Tagging the role\n+ Role Name\n\nNOTE:\n- If specifying a Role Name, make sure the Role Name is unique!\n- All roles must have the KICK_MEMBERS & BAN_MEMBERS permission set.```' })
@@ -100,13 +97,13 @@ export default {
 					channelTag.push(args[2].slice(2, 20))
 				}
 				if (checkNum(args[2], 1, Infinity) && message.channel.guild.channels.cache.has(args[2]) && message.channel.guild.id !== args[2]) { // Check by ID
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.adminChannel': args[2] } }, { returnOriginal: true })
+					const found = await db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.adminChannel': args[2] } }, { returnOriginal: true })
 					message.channel.send({ content: `The Admin Channel has been set to: <#${args[2]}>` })
-					channels.logs.send(`<@${message.author.id}> set the Admin Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.adminChannel}> to <#${args[2]}>`)
+					await db.channels.send(`<@${message.author.id}> set the Admin Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.adminChannel}> to <#${args[2]}>`)
 				} else if (checkNum(channelTag[0], 1, Infinity) && message.channel.guild.channels.cache.has(channelTag[0])) { // Check by #Channel
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.adminChannel': channelTag[0] } }, { returnOriginal: true })
+					const found = await db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.adminChannel': channelTag[0] } }, { returnOriginal: true })
 					message.channel.send({ content: `The Admin Channel has been set to: <#${channelTag[0]}>` })
-					channels.logs.send(`<@${message.author.id}> set the Admin Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.adminChannel}> to <#${channelTag[0]}>`)
+					await db.channels.send(`<@${message.author.id}> set the Admin Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.adminChannel}> to <#${channelTag[0]}>`)
 				} else {
 					message.channel.send({ content: 'What do you want to set the Admin Channel to? Acceptable values:' })
 					message.channel.send({ content: '```diff\n+ Channel ID (18 Digits)\n+ Channel tag (#<Channel name>)```' })
@@ -131,13 +128,13 @@ export default {
 					channelTag.push(args[2].slice(2, 20))
 				}
 				if (checkNum(args[2], 1, Infinity) && message.channel.guild.channels.cache.has(args[2]) && message.channel.guild.id !== args[2]) { // Check by ID
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.events': args[2] } }, { returnOriginal: true })
+					const found = await db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.events': args[2] } }, { returnOriginal: true })
 					message.channel.send({ content: `The Events Channel has been set to: <#${args[2]}>` })
-					channels.logs.send(`<@${message.author.id}> set the Events Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.events}> to <#${args[2]}>`)
+					await db.channels.send(`<@${message.author.id}> set the Events Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.events}> to <#${args[2]}>`)
 				} else if (checkNum(channelTag[0], 1, Infinity) && message.channel.guild.channels.cache.has(channelTag[0])) { // Check by #Channel
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.events': channelTag[0] } }, { returnOriginal: true })
+					const found = await db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.events': channelTag[0] } }, { returnOriginal: true })
 					message.channel.send({ content: `The Events Channel has been set to: <#${channelTag[0]}>` })
-					channels.logs.send(`<@${message.author.id}> set the Events Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.events}> to <#${channelTag[0]}>`)
+					await db.channels.send(`<@${message.author.id}> set the Events Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.events}> to <#${channelTag[0]}>`)
 				} else {
 					message.channel.send({ content: 'What do you want to set the Events Channel to? Acceptable values:' })
 					message.channel.send({ content: '```diff\n+ Channel ID (18 Digits)\n+ Channel tag (#<Channel name>)```' })
@@ -162,13 +159,13 @@ export default {
 					channelTag.push(args[2].slice(2, 20))
 				}
 				if (checkNum(args[2], 1, Infinity) && message.channel.guild.channels.cache.has(args[2]) && message.channel.guild.id !== args[2]) { // Check by ID
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.mod': args[2] } }, { returnOriginal: true })
+					const found = await db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.mod': args[2] } }, { returnOriginal: true })
 					message.channel.send({ content: `The Mod Channel has been set to: <#${args[2]}>` })
-					channels.logs.send(`<@${message.author.id}> set the Mod Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.mod}> to <#${args[2]}>`)
+					await db.channels.send(`<@${message.author.id}> set the Mod Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.mod}> to <#${args[2]}>`)
 				} else if (checkNum(channelTag[0], 1, Infinity) && message.channel.guild.channels.cache.has(channelTag[0])) { // Check by #Channel
-					const found = await settings.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.mod': channelTag[0] } }, { returnOriginal: true })
+					const found = await db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'channels.mod': channelTag[0] } }, { returnOriginal: true })
 					message.channel.send({ content: `The Mod Channel has been set to: <#${channelTag[0]}>` })
-					channels.logs.send(`<@${message.author.id}> set the Mod Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.mod}> to <#${channelTag[0]}>`)
+					await db.channels.send(`<@${message.author.id}> set the Mod Channel in server: **${message.channel.guild.name}** from <#${found.value.channels.mod}> to <#${channelTag[0]}>`)
 				} else {
 					message.channel.send({ content: 'What do you want to set the Mod Channel to? Acceptable values:' })
 					message.channel.send({ content: '```diff\n+ Channel ID (18 Digits)\n+ Channel tag (#<Channel name>)```' })
@@ -189,7 +186,7 @@ export default {
 				message.channel.send({
 					embeds: [nEmbed(
 						'**Settings List**',
-						'Here\'s a list of all the settings you can change:',
+						'Here\'s a list of all the db.collection you can change:',
 						cyan,
 						client.user.displayAvatarURL()
 					)

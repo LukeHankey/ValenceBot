@@ -1,6 +1,5 @@
 import { cyan, aqua } from '../../colors.js'
 import { nEmbed, capitalise } from '../../functions.js'
-import { getDb } from '../../mongodb.js'
 
 export default {
 	name: 'help',
@@ -9,11 +8,9 @@ export default {
 	usage: ['command name'],
 	guildSpecific: 'all',
 	permissionLevel: 'Everyone',
-	run: async (client, message, args, perms) => {
+	run: async (client, message, args, perms, db) => {
 		const { commands } = message.client
-		const db = getDb()
-		const settings = db.collection('Settings')
-		const { prefix } = await settings.findOne({ _id: message.channel.guild.id }, { projection: { prefix: 1 } })
+		const { prefix } = await db.collection.findOne({ _id: message.channel.guild.id }, { projection: { prefix: 1 } })
 
 		if (!args.length) {
 			// eslint-disable-next-line array-callback-return

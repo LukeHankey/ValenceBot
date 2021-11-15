@@ -1,6 +1,5 @@
 /* eslint-disable no-shadow */
 /* eslint-disable no-inline-comments */
-import { getDb } from '../../mongodb.js'
 import { MessageEmbed } from 'discord.js'
 import { aqua } from '../../colors.js'
 import ms from 'pretty-ms'
@@ -13,11 +12,9 @@ export default {
 	usage: ['', '<member ID>', '<@member/@role>', 'all', 'active', 'inactive'],
 	guildSpecific: ['420803245758480405', '668330890790699079'],
 	permissionLevel: 'Everyone',
-	run: async (client, message, args, perms, channels) => {
-		const db = getDb()
-		const settings = db.collection('Settings')
+	run: async (client, message, args, perms, db) => {
 		const memberID = message.member.id
-		const data = await settings.findOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': memberID }, { projection: { 'merchChannel.scoutTracker': 1 } })
+		const data = await db.collection.findOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': memberID }, { projection: { 'merchChannel.scoutTracker': 1 } })
 		const botRole = message.channel.guild.me.roles.cache.find(r => r.managed)
 		const memberRoles = message.member.roles.highest.position
 
@@ -99,7 +96,7 @@ export default {
 					.then(async col => {
 						col = col.first()
 						if (col.content === 'no') { return undefined } else {
-							await settings.findOneAndUpdate({ _id: message.channel.guild.id },
+							await db.collection.findOneAndUpdate({ _id: message.channel.guild.id },
 								{
 									$addToSet: {
 										'merchChannel.scoutTracker': {
@@ -132,7 +129,7 @@ export default {
 				try {
 					userID = message.guild.members.cache.get(args[0]) ?? await message.channel.guild.members.fetch(args[0])
 				} catch (err) {
-					channels.errors.send(err)
+					await db.channels.errors.send(err)
 				}
 			} else {
 				roleMention = message.channel.guild.roles.cache.has(args[0].slice(3, 21))
@@ -153,7 +150,7 @@ export default {
 					? sendUserInfo(userMention.id)
 					: message.channel.send({ content: 'You don\'t have permission to use this command.' })
 			} else if (args[0] === 'all') {
-				const { merchChannel: { scoutTracker } } = await settings.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.scoutTracker': 1 } })
+				const { merchChannel: { scoutTracker } } = await db.collection.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.scoutTracker': 1 } })
 				const items = scoutTracker.sort((a, b) => b.count - a.count)
 				let fields = []
 
@@ -168,12 +165,10 @@ export default {
 					.then(async msg => {
 						await paginateFollowUP(msg, message, page, embeds, client)
 					})
-					.catch(err => {
-						channels.errors.send(err)
-					})
+					.catch(async err => await db.channels.errors.send(err))
 			} else if (args[0] === 'active') {
 				if (memberRoles < botRole.position) return
-				const { merchChannel: { scoutTracker } } = await settings.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.scoutTracker': 1 } })
+				const { merchChannel: { scoutTracker } } = await db.collection.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.scoutTracker': 1 } })
 				const items = scoutTracker.filter(profile => profile.active).sort((a, b) => b.count - a.count)
 				let fields = []
 
@@ -188,12 +183,10 @@ export default {
 					.then(async msg => {
 						await paginateFollowUP(msg, message, page, embeds, client)
 					})
-					.catch(err => {
-						channels.errors.send(err)
-					})
+					.catch(async err => await db.channels.errors.send(err))
 			} else if (args[0] === 'inactive') {
 				if (memberRoles < botRole.position) return
-				const { merchChannel: { scoutTracker } } = await settings.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.scoutTracker': 1 } })
+				const { merchChannel: { scoutTracker } } = await db.collection.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.scoutTracker': 1 } })
 				const items = scoutTracker.filter(profile => !profile.active).sort((a, b) => a.lastTimestamp - b.lastTimestamp)
 				let fields = []
 
@@ -208,9 +201,7 @@ export default {
 					.then(async msg => {
 						await paginateFollowUP(msg, message, page, embeds, client)
 					})
-					.catch(err => {
-						channels.errors.send(err)
-					})
+					.catch(async err => await db.channels.errors.send(err))
 			} else {
 				message.channel.send({ content: `Unable to find \`${args[0]}\` as a member ID/mention or role mention.` })
 			}

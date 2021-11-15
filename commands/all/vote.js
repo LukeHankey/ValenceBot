@@ -8,7 +8,7 @@ export default {
 	usage: ['<question>'],
 	guildSpecific: 'all',
 	permissionLevel: 'Mod',
-	run: async (client, message, args, perms, channels) => {
+	run: async (client, message, args, perms, db) => {
 		if (!perms.mod) return message.channel.send(perms.errorM)
 		const content = args.join(' ')
 
@@ -24,8 +24,6 @@ export default {
 			await m.react('❌')
 			await m.react('❓')
 		})
-			.catch(err => {
-				channels.errors.send(err)
-			})
+			.catch(async err => db.channels.errors.send(err))
 	}
 }

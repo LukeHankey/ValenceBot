@@ -1,5 +1,4 @@
 import { nEmbed } from '../../functions.js'
-import { getDb } from '../../mongodb.js'
 import { gold } from '../../colors.js'
 import ms from 'pretty-ms'
 
@@ -15,13 +14,11 @@ export default {
 	usage: [''],
 	guildSpecific: ['420803245758480405', '668330890790699079'],
 	permissionLevel: 'Admin',
-	run: async (client, message, args, perms) => {
+	run: async (client, message, args, perms, db) => {
 		if (!perms.admin) return message.channel.send(perms.errorA)
 		if (!args[0]) return message.channel.send({ content: 'Please provide a User ID' })
-		const db = getDb()
-		const settingsColl = db.collection('Settings')
 
-		const val = await settingsColl.findOne({ _id: '420803245758480405' })
+		const val = await db.collection.findOne({ _id: '420803245758480405' })
 		const fields = []
 		const dataIndex = val.merchChannel.scoutTracker.findIndex(mem => {
 			return mem.userID === args[0]

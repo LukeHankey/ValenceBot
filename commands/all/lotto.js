@@ -2,7 +2,6 @@ import { googleClient } from '../../gsheets.js'
 import { google } from 'googleapis'
 import { nEmbed } from '../../functions.js'
 import { greenLight, redDark, gold, greenDark, redLight } from '../../colors.js'
-import { getDb } from '../../mongodb.js'
 
 /**
  * 668330890790699079 - Valence Bot Test
@@ -16,10 +15,8 @@ export default {
 	usage: ['', 'total', 'sheet <Google Sheet Name>', '<user>', 'add <amount> <collector> / <clanmate> / double (optional)'],
 	guildSpecific: ['472448603642920973', '668330890790699079'],
 	permissionLevel: 'Everyone',
-	run: async (client, message, args, perms, channels) => {
-		const db = getDb()
-		const settingsColl = db.collection('Settings')
-		const database = await settingsColl.findOne({ _id: message.channel.guild.id })
+	run: async (client, message, args, perms, db) => {
+		const database = await db.collection.findOne({ _id: message.channel.guild.id })
 
 		const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 		const altMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
@@ -198,10 +195,10 @@ export default {
 					if (perms.mod) {
 						const newSheet = args.slice(1).join(' ')
 						if (newSheet) {
-							await settingsColl.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { lottoSheet: newSheet } })
+							await db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { lottoSheet: newSheet } })
 							await message.react('✅')
 						} else {
-							const newName = await settingsColl.findOne({ _id: message.channel.guild.id })
+							const newName = await db.collection.findOne({ _id: message.channel.guild.id })
 							return message.channel.send({ content: `The current Lotto Sheet name is : \`${newName.lottoSheet}\`` })
 						}
 					} else {
@@ -319,13 +316,13 @@ export default {
 									}
 								})
 							})
-							.catch(err => channels.errors.send(err))
+							.catch(async err => await db.channels.errors.send(err))
 					}
 				}
 				}
 			}
 		} catch (err) {
-			channels.errors.send(err)
+			await db.channels.errors.send(err)
 		}
 	}
 }

@@ -1,39 +1,10 @@
-import { getDb } from '../../mongodb.js'
-import { MessageEmbed, MessageButton, MessageActionRow, MessageSelectMenu } from 'discord.js'
+import { MongoCollection } from '../../DataBase.js'
+import { MessageButton, MessageActionRow, MessageSelectMenu } from 'discord.js'
 import { Permissions } from '../../classes.js'
-import { redDark } from '../../colors.js'
 
 export default async (client, interaction) => {
-	const db = getDb()
-	const settings = db.collection('Settings')
-	const data = await settings.findOne({ _id: interaction.guildId }, { projection: { merchChannel: { components: 1, channelID: 1, otherChannelID: 1 } } })
-	const { channels: { errors, logs } } = await settings.findOne({ _id: 'Globals' }, { projection: { channels: { errors: 1, logs: 1 } } })
-
-	const channels = {
-		errors: {
-			id: errors,
-			embed: function (err) {
-				const filePath = import.meta.url.split('/')
-				const fileName = filePath[filePath.length - 1]
-				const embed = new MessageEmbed()
-					.setTitle(`An error occured in ${fileName}`)
-					.setColor(redDark)
-					.addField(`${err.message}`, `\`\`\`${err.stack}\`\`\``)
-				return embed
-			},
-			send: function (...args) {
-				const channel = client.channels.cache.get(this.id)
-				return channel.send({ embeds: [this.embed(...args)] })
-			}
-		},
-		logs: {
-			id: logs,
-			send: function (content) {
-				const channel = client.channels.cache.get(this.id)
-				return channel.send({ content })
-			}
-		}
-	}
+	const db = new MongoCollection('Settings')
+	const data = await db.collection.findOne({ _id: interaction.guildId }, { projection: { merchChannel: { components: 1, channelID: 1, otherChannelID: 1 } } })
 
 	if (interaction.isButton()) {
 		const userMessageId = interaction.message.content.split(' ')[3]
@@ -75,7 +46,7 @@ export default async (client, interaction) => {
 					.addComponents(new MessageButton(interaction.message.components[0].components[0]).setEmoji('📩').setLabel('DM sent...').setDisabled())
 				await interaction.update({ components: [row] })
 				console.log(`Action: Password Button\nBy: ${interaction.user.username}\nUser: ${fetchUser.user.username}`)
-				await settings.updateOne({ _id: interaction.guildId, 'merchChannel.components.messageID': userMessageId }, {
+				await db.collection.updateOne({ _id: interaction.guildId, 'merchChannel.components.messageID': userMessageId }, {
 					$set: {
 						'merchChannel.components.$.selectID': selectID,
 						'merchChannel.components.$.selectMessageID': sentDM.id
@@ -87,7 +58,7 @@ export default async (client, interaction) => {
 				const content = interaction.message.content.split('\n')
 				await interaction.update({ components: [] })
 				console.log(`Action: Clear Button\nBy: ${interaction.user.username}\nContent: ${content.slice(3).join(' ')}`)
-				await settings.updateOne({ _id: interaction.guildId }, {
+				await db.collection.updateOne({ _id: interaction.guildId }, {
 					$pull: {
 						'merchChannel.components': thisButton[0]
 					}
@@ -95,10 +66,10 @@ export default async (client, interaction) => {
 			}
 			}
 		} catch (err) {
-			channels.errors.send(err)
+			await db.channels.errors.send(err)
 		}
 	} else if (interaction.isCommand()) {
-		const commandDB = await settings.findOne({ _id: interaction.channel.guild.id }, { projection: { prefix: 1, roles: 1 } })
+		const commandDB = await db.collection.findOne({ _id: interaction.channel.guild.id }, { projection: { prefix: 1, roles: 1 } })
 		const command = client.commands.get(interaction.commandName)
 		if (!command) return
 
@@ -120,10 +91,10 @@ export default async (client, interaction) => {
 			if (merchGuilds.includes(interaction.guildId) && [data.merchChannel.channelID, data.merchChannel.otherChannelID].includes(interaction.channel.id)) {
 				return interaction.reply({ content: 'Please use the bot commands channel.', ephemeral: true })
 			} else {
-				await command.slash(interaction, perms, channels, settings)
+				await command.slash(interaction, perms, db)
 			}
 		} catch (error) {
-			channels.errors.send(error)
+			await db.channels.errors.send(error)
 			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
 		}
 	} else if (interaction.isAutocomplete()) {
@@ -139,7 +110,7 @@ export default async (client, interaction) => {
 		interaction.respond(filtered)
 	} else if (interaction.isSelectMenu()) {
 		const serverName = interaction.message.content.split('\n')[0]
-		const dmData = await settings.findOne({ serverName }, { projection: { merchChannel: { components: 1, deletions: 1 } } })
+		const dmData = await db.collection.findOne({ serverName }, { projection: { merchChannel: { components: 1, deletions: 1 } } })
 		const thisSelection = dmData.merchChannel.components.filter(b => {
 			return b.selectMessageID === interaction.message.id
 		})
@@ -152,7 +123,7 @@ export default async (client, interaction) => {
 					await interaction.followUp({ content: 'Thank you for responding, the log has been automatically removed.' })
 					await buttonMessage.delete()
 					errorChannel.send({ content: `A password was confirmed by <@!${thisSelection[0].userID}> and the message has been deleted.` })
-					await settings.updateOne({ serverName: 'Deep Sea Fishing' }, {
+					await db.collection.updateOne({ serverName: 'Deep Sea Fishing' }, {
 						$pull: {
 							'merchChannel.components': thisSelection[0]
 						}
@@ -160,14 +131,14 @@ export default async (client, interaction) => {
 				} else {
 					interaction.followUp({ content: 'Thank you for responding.' })
 					buttonMessage.edit({ components: [] })
-					await settings.updateOne({ serverName: 'Deep Sea Fishing' }, {
+					await db.collection.updateOne({ serverName: 'Deep Sea Fishing' }, {
 						$pull: {
 							'merchChannel.components': thisSelection[0]
 						}
 					})
 				}
 			} catch (err) {
-				channels.errors.send(err)
+				await db.channels.errors.send(err)
 			}
 		}
 	} else if (interaction.isContextMenu()) {
@@ -191,7 +162,7 @@ export default async (client, interaction) => {
 						// Missing Access
 						return await interaction.editReply({ content: 'I am not able to access this channel.' })
 					}
-					channels.errors.send(err)
+					await db.channels.errors.send(err)
 				}
 			} else {
 				interaction.reply({ content: 'You can\'t use that in this channel.', ephemeral: true })

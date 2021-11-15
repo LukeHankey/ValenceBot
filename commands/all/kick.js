@@ -8,7 +8,7 @@ export default {
 	usage: ['ID/@mention'],
 	guildSpecific: 'all',
 	permissionLevel: 'Mod',
-	run: async (client, message, args, perms, channels) => {
+	run: async (client, message, args, perms, db) => {
 		if (!perms.mod) return message.channel.send(perms.errorM)
 
 		const memberToKick = args[0]
@@ -51,7 +51,7 @@ export default {
 					if (e.code === 10013) {
 						return message.channel.send({ content: `There is no member in this server with ID: ${memberToKick}.` })
 					} else {
-						channels.errors.send(e)
+						await db.channels.errors.send(e)
 					}
 				}
 			}

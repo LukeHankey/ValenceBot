@@ -29,6 +29,12 @@ export class DataBase {
 		}
 	}
 
+	async _retry() {
+		console.log(3)
+		await wait(3000)
+		return await DataBase.#initialize()
+	}
+
 	get db() {
 		return DataBase.#db
 	}
@@ -53,13 +59,19 @@ export class MongoCollection extends DataBase {
 	async collectionNames() {
 		let collectionNames;
 		try {
+			console.log(1)
 			collectionNames = await this.db.listCollections().toArray()
 		}
 		catch (err) {
-			await wait(3000)
+			console.log(2, 'listCollections' in err)
+			await this._retry()
+			console.log(4)
+			await this.collectionNames()
+			console.log(5)
 			collectionNames = await this.db.listCollections().toArray()
 		}
 		finally {
+			console.log(6)
 			collectionNames = collectionNames.map(c => c.name)
 		}
         
