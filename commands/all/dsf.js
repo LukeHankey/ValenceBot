@@ -19,6 +19,7 @@ export default {
 	permissionLevel: 'Admin',
 	run: async (client, message, args, perms, db) => {
 		if (!perms.admin) return message.channel.send(perms.errorA)
+		const channels = await db.channels
 
 		switch (args[0]) {
 		case 'm':
@@ -44,7 +45,7 @@ export default {
 				} catch (e) {
 					if (e.code === 50035) {
 						return message.channel.send({ content: 'Too many messages stored. Use the clear command.' })
-					} else { await db.channels.errors.send(e) }
+					} else { channels.errors.send(e) }
 				}
 				break
 			case 'clear':
@@ -95,7 +96,7 @@ export default {
 									'merchChannel.spamProtection': { messageID: messageID }
 								}
 							})
-						} else { await db.channels.errors.send(e) }
+						} else { channels.errors.send(e) }
 					}
 				})
 			}
@@ -159,7 +160,7 @@ export default {
 						})
 					})
 					.catch(async err => {
-						await db.channels.errors.send(err)
+						channels.errors.send(err)
 					})
 			}
 			}

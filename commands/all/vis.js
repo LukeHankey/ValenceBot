@@ -35,6 +35,7 @@ export default {
 	// 		.addChoice('Message Link', 'message_link')
 	// 		.addChoice('Image URL', 'image_url')));
 	slash: async (interaction, perms, db) => {
+		const channels = await db.channels
 		const { visTime, vis, visContent } = await db.collection.findOne({ _id: 'Globals' }, { projection: { visTime: 1, vis: 1, visContent: 1 } })
 		if (!interaction.options.getInteger('reset')) {
 			let currentDate = new Date().toUTCString()
@@ -71,7 +72,6 @@ export default {
 				return await interaction.reply({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}>\nSource: [Vis Wax Server](https://discord.gg/wv9Ecs4)\n${newContent.join('\n')}` })
 			}
 		} else if (interaction.options.getInteger('reset')) {
-			console.log(interaction.options.getInteger('reset'))
 			if (!perms.owner) return await interaction.reply(perms.errorO)
 			if (vis === null) {
 				return interaction.reply({ content: 'There currently isn\'t any Vis Wax image uploaded.', ephemeral: true })
@@ -81,11 +81,12 @@ export default {
 						vis: null
 					}
 				})
-				return await db.channels.vis.send(`${interaction.member.user.tag} reset the Vis command in **${interaction.channel.guild.name}.**`)
+				return channels.vis.send(`${interaction.member.user.tag} reset the Vis command in **${interaction.channel.guild.name}.**`)
 			}
 		}
 	},
-	run: async (client, message, args, perms, db) => {
+	run: async (client, message, args, _, db) => {
+		const channels = await db.channels
 		const [...attachment] = args
 
 		const embed = new MessageEmbed()
@@ -139,7 +140,7 @@ export default {
 			const array = ['gif', 'jpeg', 'tiff', 'png', 'webp', 'bmp', 'prnt.sc', 'gyazo.com']
 			if (message.attachments.size) {
 				message.react('✅')
-				return await db.channels.vis.send({ embeds: [embed.setImage(message.attachments.first().url)] })
+				return channels.vis.send({ embeds: [embed.setImage(message.attachments.first().url)] })
 					.then(async () => {
 						return await db.collection.updateOne({ _id: 'Globals' }, {
 							$set: {
@@ -148,10 +149,10 @@ export default {
 							}
 						})
 					})
-					.catch(async err => await db.channels.errors.send(err))
+					.catch(async err => channels.errors.send(err))
 			} else if (array.some(x => attachment[0].includes(x))) {
 				message.react('✅')
-				return await db.channels.vis.send({ embeds: [embed.setImage(attachment[0])] })
+				return channels.vis.send({ embeds: [embed.setImage(attachment[0])] })
 					.then(async () => {
 						return await db.collection.updateOne({ _id: 'Globals' }, {
 							$set: {
@@ -160,7 +161,7 @@ export default {
 							}
 						})
 					})
-					.catch(async err => await db.channels.errors.send(err))
+					.catch(async err => channels.errors.send(err))
 			} else if (attachment[0].includes('discord.com')) { // Discord message link
 				const split = attachment[0].split('/')
 				const [g, c, m] = split.slice(4)
@@ -170,7 +171,7 @@ export default {
 					const channelFetch = await guildFetch.channels.cache.get(c)
 					const messageFetch = await channelFetch.messages.fetch(m)
 					const newEmbed = embed.setImage(`${messageFetch.attachments.first().attachment}`)
-					await db.channels.vis.send({ embeds: [newEmbed] })
+					channels.vis.send({ embeds: [newEmbed] })
 					message.react('✅')
 					return await db.collection.updateOne({ _id: 'Globals' }, {
 						$set: {
@@ -191,7 +192,7 @@ export default {
 							return message.channel.send({ content: 'I am unable to find that message. Maybe it has been deleted?' })
 						}
 					} else {
-						await db.channels.errors.send(e)
+						channels.errors.send(e)
 					}
 				}
 			} else {

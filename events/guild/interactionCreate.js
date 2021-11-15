@@ -4,6 +4,7 @@ import { Permissions } from '../../classes.js'
 
 export default async (client, interaction) => {
 	const db = new MongoCollection('Settings')
+	const channels = await db.channels
 	const data = await db.collection.findOne({ _id: interaction.guildId }, { projection: { merchChannel: { components: 1, channelID: 1, otherChannelID: 1 } } })
 
 	if (interaction.isButton()) {
@@ -66,7 +67,7 @@ export default async (client, interaction) => {
 			}
 			}
 		} catch (err) {
-			await db.channels.errors.send(err)
+			channels.errors.send(err)
 		}
 	} else if (interaction.isCommand()) {
 		const commandDB = await db.collection.findOne({ _id: interaction.channel.guild.id }, { projection: { prefix: 1, roles: 1 } })
@@ -94,7 +95,7 @@ export default async (client, interaction) => {
 				await command.slash(interaction, perms, db)
 			}
 		} catch (error) {
-			await db.channels.errors.send(error)
+			channels.errors.send(error)
 			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
 		}
 	} else if (interaction.isAutocomplete()) {
@@ -138,7 +139,7 @@ export default async (client, interaction) => {
 					})
 				}
 			} catch (err) {
-				await db.channels.errors.send(err)
+				channels.errors.send(err)
 			}
 		}
 	} else if (interaction.isContextMenu()) {
@@ -162,7 +163,7 @@ export default async (client, interaction) => {
 						// Missing Access
 						return await interaction.editReply({ content: 'I am not able to access this channel.' })
 					}
-					await db.channels.errors.send(err)
+					channels.errors.send(err)
 				}
 			} else {
 				interaction.reply({ content: 'You can\'t use that in this channel.', ephemeral: true })

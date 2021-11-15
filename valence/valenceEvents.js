@@ -1,11 +1,10 @@
-import { getDb } from '../mongodb.js'
+import { MongoCollection } from '../DataBase.js'
 import { MessageEmbed } from 'discord.js'
 import { randomNum } from '../functions.js'
 
 const vEvents = async (client, message, channels) => {
-	const db = getDb()
-	const settingsColl = db.collection('Settings')
-	const DB = await settingsColl.findOne({ _id: message.channel.guild.id, 'channels.events': { $exists: true } }, { projection: { channels: 1, calendarID: 1 } })
+	const db = new MongoCollection('Settings')
+	const DB = await db.collection.findOne({ _id: message.channel.guild.id, 'channels.events': { $exists: true } }, { projection: { channels: 1, calendarID: 1 } })
 
 	// eslint-disable-next-line no-useless-escape
 	if (!DB) return
@@ -80,7 +79,7 @@ const vEvents = async (client, message, channels) => {
 					addToCal(dateR, timeR)
 				}
 
-				await settingsColl.updateOne({ _id: message.guild.id },
+				await db.collection.updateOne({ _id: message.guild.id },
 					{
 						$push: {
 							events:
@@ -88,7 +87,7 @@ const vEvents = async (client, message, channels) => {
 						}
 					})
 
-				await settingsColl.findOneAndUpdate({ _id: message.guild.id, 'calendarID.messageID': m.id },
+				await db.collection.findOneAndUpdate({ _id: message.guild.id, 'calendarID.messageID': m.id },
 					{
 						$push: {
 							'calendarID.$.events':

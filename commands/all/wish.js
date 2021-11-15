@@ -12,6 +12,7 @@ export default {
 	guildSpecific: ['668330890790699079', '420803245758480405'],
 	permissionLevel: 'Owner',
 	run: async (client, message, args, perms, db) => {
+		const channels = await db.channels
 		if (message !== 'readyEvent') {
 			if (!perms.owner) return message.channel.send(perms.errorO)
 		}
@@ -161,7 +162,7 @@ export default {
 				grabIDAndEdit()
 			}
 		} catch (e) {
-			await db.channels.errors.send(e)
+			channels.errors.send(e)
 		}
 	}
 }

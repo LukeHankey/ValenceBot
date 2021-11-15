@@ -35,6 +35,7 @@ export default {
 				)
 		),
 	slash: async (interaction, perms, db) => {
+		const channels = await db.channels
 		const data = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } })
 		switch (interaction.options.getSubcommand()) {
 		case 'list':
@@ -53,7 +54,7 @@ export default {
 					.addFields(fieldHolder)
 				return interaction.reply({ embeds: [embed] })
 			} catch (err) {
-				await db.channels.errors.send(err)
+				channels.errors.send(err)
 			}
 			break
 		case 'end':
@@ -61,17 +62,18 @@ export default {
 				const tag = interaction.options.getString('tag')
 				const checkEventExists = data.events.map(event => { if (event.eventTag === tag) { return { value: true, message: event.messageID, role: event.roleID } } else return undefined }).filter(valid => valid)
 				if (checkEventExists.length && checkEventExists[0].value) {
-					await removeEvents(interaction, db.collection, await db.channels, 'events', data, tag)
+					await removeEvents(interaction, db, 'events', data, tag)
 					return interaction.reply({ content: 'Event has been removed.', ephemeral: true })
 				} else {
 					interaction.reply({ content: `There is no event found with ID: \`${tag}\`` })
 				}
 			} catch (err) {
-				await db.channels.errors.send(err)
+				channels.errors.send(err)
 			}
 		}
 	},
 	run: async (client, message, args, perms, db) => {
+		const channels = await db.channels
 		if (!perms.mod) return message.channel.send(perms.errorM)
 		const data = await db.collection.findOne({ _id: message.channel.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } })
 
@@ -81,14 +83,14 @@ export default {
 				const tag = args[1]
 				const checkEventExists = data.events.map(event => { if (event.eventTag === tag) { return { value: true, message: event.messageID, role: event.roleID } } else return undefined }).filter(valid => valid)
 				if (checkEventExists.length && checkEventExists[0].value) {
-					await removeEvents(message, db.collection, await db.channels, 'events', data, tag)
+					await removeEvents(message, db, 'events', data, tag)
 					return message.react('✅')
 				} else {
 					message.react('❌')
 					message.channel.send({ content: `There is no event found with ID: \`${tag}\`` })
 				}
 			} catch (err) {
-				await db.channels.errors.send(err)
+				channels.errors.send(err)
 			}
 			break
 		default: {
@@ -107,7 +109,7 @@ export default {
 					.addFields(fieldHolder)
 				message.channel.send({ embeds: [embed] })
 			} catch (err) {
-				await db.channels.errors.send(err)
+				channels.errors.send(err)
 			}
 		}
 		}

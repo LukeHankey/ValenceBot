@@ -17,6 +17,7 @@ export default {
 	permissionLevel: 'Everyone',
 	run: async (client, message, args, perms, db) => {
 		const database = await db.collection.findOne({ _id: message.channel.guild.id })
+		const channels = await db.channels
 
 		const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 		const altMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
@@ -316,13 +317,13 @@ export default {
 									}
 								})
 							})
-							.catch(async err => await db.channels.errors.send(err))
+							.catch(async err => channels.errors.send(err))
 					}
 				}
 				}
 			}
 		} catch (err) {
-			await db.channels.errors.send(err)
+			channels.errors.send(err)
 		}
 	}
 }

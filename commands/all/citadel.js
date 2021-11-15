@@ -23,6 +23,7 @@ export default {
 	run: async (client, message, args, perms, db) => {
 		const { prefix, channels: { adminChannel }, citadel_reset_time: { day, hour, minute, reminders } } = await db.collection.findOne({ _id: message.channel.guild.id }, { projection: { citadel_reset_time: { day: 1, hour: 1, minute: 1, reminders: 1, scheduled: 1 }, prefix: 1, channels: 1 } })
 		const channelTagCit = []
+		const dbChannels = await db.channels
 
 		if (args[2] === undefined) {
 			channelTagCit.push('false')
@@ -73,7 +74,7 @@ export default {
 											$push: { 'citadel_reset_time.reminders': { $each: [{ id: message.id, channel: args[2], dayReset: args[3], dayResetPlus: dateDay.slice(0, dateDay.indexOf('d')), hourResetPlus: dateHour.slice(0, dateHour.indexOf('h')), minResetPlus: dateMin.slice(1, dateMin.length - 1), message: messageContentCitR }] } }
 										})
 										message.channel.send({ content: `A citadel reminder has been added to <#${args[2]}>. The reminder will be sent on \`${dateDays} ${dateHours}:${dateMins}\`` })
-										await db.channels.logs.send(`<@${message.author.id}> added a custom Citadel Reminder in server: **${message.channel.guild.name}** - <#${args[2]}>\n ${Formatters.codeBlock('diff', messageContentCitR)}\`\`\``)
+										dbChannels.logs.send(`<@${message.author.id}> added a custom Citadel Reminder in server: **${message.channel.guild.name}** - <#${args[2]}>\n ${Formatters.codeBlock('diff', messageContentCitR)}\`\`\``)
 									} else {
 										message.channel.send({ content: `You're missing the message content that you want to send to <#${args[2]}>.` })
 									}
@@ -86,7 +87,7 @@ export default {
 								$push: { 'citadel_reset_time.reminders': { $each: [{ id: message.id, channel: args[2], message: messageContentCit }] } }
 							})
 							message.channel.send({ content: `A citadel reminder has been added to <#${args[2]}>. **NOTE:** This reminder is to let clan members know the citadel has been reset.` })
-							await db.channels.logs.send(`<@${message.author.id}> added a Citadel Reminder in server: **${message.channel.guild.name}** - <#${args[2]}>\n${Formatters.codeBlock('diff', '+ ' + messageContentCit)}`)
+							dbChannels.logs.send(`<@${message.author.id}> added a Citadel Reminder in server: **${message.channel.guild.name}** - <#${args[2]}>\n${Formatters.codeBlock('diff', '+ ' + messageContentCit)}`)
 						}
 					} else if (checkNum(channelTagCit[0], 1, Infinity) && message.channel.guild.channels.cache.has(channelTagCit[0])) {
 						if (args[3] === 'reset') {
@@ -113,7 +114,7 @@ export default {
 											$push: { 'citadel_reset_time.reminders': { $each: [{ id: message.id, channel: channelTagCit[0], dayReset: args[3], dayResetPlus: dateDay.slice(0, dateDay.indexOf('d')), hourResetPlus: dateHour.slice(0, dateHour.indexOf('h')), minResetPlus: dateMin.slice(1, dateMin.length - 1), message: messageContentCitR }] } }
 										})
 										message.channel.send({ content: `A citadel reminder has been added to <#${channelTagCit[0]}>. The reminder will be sent on \`${dateDays} ${dateHours}:${dateMins}\`` })
-										await db.channels.logs.send(`<@${message.author.id}> added a custom Citadel Reminder in server: **${message.channel.guild.name}** - <#${channelTagCit[0]}>\n${Formatters.codeBlock('diff', '+ ' + messageContentCit)}`)
+										dbChannels.logs.send(`<@${message.author.id}> added a custom Citadel Reminder in server: **${message.channel.guild.name}** - <#${channelTagCit[0]}>\n${Formatters.codeBlock('diff', '+ ' + messageContentCit)}`)
 									} else {
 										message.channel.send({ content: `You're missing the message content that you want to send to <#${args[2]}>.` })
 									}
@@ -126,7 +127,7 @@ export default {
 								$push: { 'citadel_reset_time.reminders': { $each: [{ id: message.id, channel: channelTagCit[0], message: messageContentCit }] } }
 							})
 							message.channel.send({ content: `A citadel reminder has been added to <#${channelTagCit[0]}>. **NOTE:** This reminder is to let clan members know the citadel has been reset.` })
-							await db.channels.logs.send(`<@${message.author.id}> added a Citadel Reminder in server: **${message.channel.guild.name}** - <#${channelTagCit[0]}>\n\`\`\`diff\n+ ${messageContentCit}\`\`\``)
+							dbChannels.logs.send(`<@${message.author.id}> added a Citadel Reminder in server: **${message.channel.guild.name}** - <#${channelTagCit[0]}>\n\`\`\`diff\n+ ${messageContentCit}\`\`\``)
 						}
 					} else {
 						message.channel.send({ content: 'What do you want to set the Citadel Reminders as? Acceptable values:' })
@@ -142,7 +143,7 @@ export default {
 					reminders.forEach(x => { idCheck.push(x.id) })
 					if (checkNum(args[2], 1, Infinity) && idCheck.includes(args[2])) {
 						message.channel.send({ content: `Reminder \`${args[2]}\` has been deleted.` })
-						await db.channels.logs.send(`<@${message.author.id}> removed a Reminder: \`${args[2]}\``)
+						dbChannels.logs.send(`<@${message.author.id}> removed a Reminder: \`${args[2]}\``)
 						db.collection.updateOne({ _id: message.channel.guild.id }, { $pull: { 'citadel_reset_time.reminders': { id: args[2] } } })
 					} else if (!args[1]) {
 						message.channel.send({ content: 'You must provide an ID to remove.' })
@@ -166,11 +167,11 @@ export default {
 							} else if (args[4].length > 18) {
 								db.collection.findOneAndUpdate({ _id: message.channel.guild.id, 'citadel_reset_time.reminders.id': args[2] }, { $set: { 'citadel_reset_time.reminders.$.channel': args[4] } })
 								message.channel.send({ content: `Reminder \`${args[2]}\` has had the channel changed to <#${args[4].slice(2, 20)}>` })
-								await db.channels.logs.send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``)
+								dbChannels.logs.send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``)
 							} else {
 								db.collection.findOneAndUpdate({ _id: message.channel.guild.id, 'citadel_reset_time.reminders.id': args[2] }, { $set: { 'citadel_reset_time.reminders.$.channel': args[4] } })
 								message.channel.send({ content: `Reminder \`${args[2]}\` has had the channel changed to <#${args[4]}>` })
-								await db.channels.logs.send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``)
+								dbChannels.logs.send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``)
 							}
 						} else if (param === 'message') {
 							if (!editMessage) {
@@ -178,7 +179,7 @@ export default {
 							} else {
 								db.collection.findOneAndUpdate({ _id: message.channel.guild.id, 'citadel_reset_time.reminders.id': args[2] }, { $set: { 'citadel_reset_time.reminders.$.message': editMessage } })
 								message.channel.send({ content: `Reminder \`${args[2]}\` has had the message changed to \`${editMessage}\`` })
-								await db.channels.logs.send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``)
+								dbChannels.logs.send(`<@${message.author.id}> edited a Citadel Reminder: \`${args[2]}\``)
 							}
 						} else {
 							message.channel.send({ content: 'You must provide a parameter to edit. You can edit either the `Channel` or the `Message`.' })
@@ -227,17 +228,17 @@ export default {
 						const { value } = await db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'citadel_reset_time.day': dayCheck[args[2]] || args[2], 'citadel_reset_time.hour': doubleDigits(args[3]), 'citadel_reset_time.minute': doubleDigits(args[4]) } }, { returnOriginal: true })
 						message.channel.send({ content: `The Citadel Reset Time has been changed to: ${dayCheck[args[2]] || args[2]} ${doubleDigits(args[3])}:${doubleDigits(args[4])}` })
 						const logContent = `- ${value.citadel_reset_time.day} ${value.citadel_reset_time.hour}:${value.citadel_reset_time.minute}\n+ ${dayCheck[args[2]] || args[2]} ${doubleDigits(args[3])}:${doubleDigits(args[4])}`
-						await db.channels.logs.send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.channel.guild.name}**\n${Formatters.codeBlock('diff', logContent)}`)
+						dbChannels.logs.send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.channel.guild.name}**\n${Formatters.codeBlock('diff', logContent)}`)
 					} else if (checkDate(args[2], 0, 23) && checkDate(args[3], 0, 59) && args[2] && args[3]) { // Setting by Hour / Minute
 						const { value } = await db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'citadel_reset_time.hour': doubleDigits(args[2]), 'citadel_reset_time.minute': doubleDigits(args[3]) } }, { returnOriginal: true })
 						message.channel.send({ content: `The Citadel Reset Time has been changed to: ${dayCheck[value.citadel_reset_time.day] || value.citadel_reset_time.day} ${doubleDigits(args[2])}:${doubleDigits(args[3])}` })
 						const logContent = `- ${value.citadel_reset_time.day} ${value.citadel_reset_time.hour}:${value.citadel_reset_time.minute}\n+ ${dayCheck[value.citadel_reset_time.day] || value.citadel_reset_time.day} ${doubleDigits(args[2])}:${doubleDigits(args[3])}`
-						await db.channels.logs.send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.channel.guild.name}**\n${Formatters.codeBlock('diff', logContent)}`)
+						dbChannels.logs.send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.channel.guild.name}**\n${Formatters.codeBlock('diff', logContent)}`)
 					} else if (checkDate(args[2], 0o0, 59) && args[2]) { // Setting by Minute
 						const { value } = await db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'citadel_reset_time.minute': doubleDigits(args[2]) } }, { returnOriginal: true })
 						message.channel.send({ content: `The Citadel Reset Time has been changed to: ${dayCheck[value.citadel_reset_time.day] || value.citadel_reset_time.day} ${doubleDigits(value.citadel_reset_time.hour)}:${doubleDigits(args[2])}` })
 						const logContent = `- ${value.citadel_reset_time.day} ${value.citadel_reset_time.hour}:${value.citadel_reset_time.minute}\n+ ${dayCheck[value.citadel_reset_time.day] || value.citadel_reset_time.day} ${doubleDigits(value.citadel_reset_time.hour)}:${doubleDigits(args[2])}`
-						await db.channels.logs.send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.channel.guild.name}**\n${Formatters.codeBlock('diff', logContent)}`)
+						dbChannels.logs.send(`<@${message.author.id}> changed the Citadel Reset Time in server: **${message.channel.guild.name}**\n${Formatters.codeBlock('diff', logContent)}`)
 					} else {
 						message.channel.send({ content: 'What do you want to set the Citadel Reset Time to? Acceptable values:' })
 						message.channel.send({ content: `${Formatters.codeBlock('diff', '+ DD HH MM (Sat 14 02)\n+ HH MM (14 02)\n+ MM (02)\n \n\nNOTE:\n- The Reset Time must be the same as Game Time.\n- If specifying a Day, you can use shorthand (Mon), full names (Monday) or numbers (1)!\n- Monday/Mon/1 | Tuesday/Tue/2 | Wednesday/Wed/3 | Thursday/Thu/4 | Friday/Fri/5 | Saturday/Sat/6 | Sunday/Sun/0')}` })
@@ -278,7 +279,7 @@ export default {
 									if (array.some(x => args[5].includes(x))) {
 										const updatedResetInfo = await db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { resetInfoCount: 0 } })
 										if (updatedResetInfo.resetInfoCount === 0) {
-											const msg = await client.channels.cache.get(await db.channels.adminChannel).send({ embeds: [infoEmbedOne.setImage(`${args[5]}`)] })
+											const msg = await client.channels.cache.get(await adminChannel).send({ embeds: [infoEmbedOne.setImage(`${args[5]}`)] })
 											await msg.react('✅')
 											await msg.react('❌')
 
@@ -330,7 +331,7 @@ export default {
 												})
 											})
 											.catch(async (err) => {
-												await db.channels.errors.send(err)
+												dbChannels.errors.send(err)
 											})
 										message.delete()
 										message.reply({ content: 'Thank you for helping to suggest the Citadel Reset Time. Your response has been recorded!' })
@@ -367,7 +368,7 @@ export default {
 				} else {
 					const { value } = await db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'citadel_reset_time.scheduled': true } }, { returnOriginal: true })
 					message.channel.send({ content: 'The Citadel Reset Time notifications have been toggled on!' })
-					await db.channels.logs.send(`<@${message.author.id}> toggled the Citadel Reset Time to on in server: **${message.channel.guild.name}**\n${Formatters.codeBlock('diff', value.citadel_reset_time.schedul + '\n+ true')}`)
+					dbChannels.logs.send(`<@${message.author.id}> toggled the Citadel Reset Time to on in server: **${message.channel.guild.name}**\n${Formatters.codeBlock('diff', value.citadel_reset_time.schedul + '\n+ true')}`)
 				}
 			} else {
 				message.channel.send(perms.errorA)
@@ -377,7 +378,7 @@ export default {
 			if (perms.admin) {
 				const { value } = await db.collection.findOneAndUpdate({ _id: message.channel.guild.id }, { $set: { 'citadel_reset_time.scheduled': false } }, { returnOriginal: true })
 				message.channel.send({ content: 'The Citadel Reset Time notifications have been toggled off!' })
-				await db.channels.logs.send(`<@${message.author.id}> toggled the Citadel Reset Time to on in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${value.citadel_reset_time.scheduled}\n+ false\`\`\``)
+				dbChannels.logs.send(`<@${message.author.id}> toggled the Citadel Reset Time to on in server: **${message.channel.guild.name}**\n\`\`\`diff\n- ${value.citadel_reset_time.scheduled}\n+ false\`\`\``)
 			} else {
 				message.channel.send(perms.errorA)
 			}

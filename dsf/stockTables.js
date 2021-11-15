@@ -1,7 +1,7 @@
-const updateStockTables = async (client, settings, channels) => {
+const updateStockTables = async (client, db) => {
 	const commandCollection = client.commands.filter(cmd => cmd.name === 'wish' || cmd.name === 'future')
 	const commands = commandCollection.first(2)
-	const { merchantWishes: { range }, futureStock } = await settings.findOne({ _id: '420803245758480405' }, { projection: { 'merchantWishes.range': 1, futureStock: 1 } })
+	const { merchantWishes: { range }, futureStock } = await db.collection.findOne({ _id: '420803245758480405' }, { projection: { 'merchantWishes.range': 1, futureStock: 1 } })
 
 	const increaseRange = (oldRange) => {
 		const split = oldRange.split(':')
@@ -13,20 +13,20 @@ const updateStockTables = async (client, settings, channels) => {
 	}
 
 	console.log('Running reset tasks.', `old wish range: ${range}`, `new wish range: ${increaseRange(range)}`, `old future range: ${futureStock.range}`, `new future range: ${increaseRange(futureStock.range)}`)
-	await settings.updateOne({ _id: '420803245758480405' }, {
+	await db.collection.updateOne({ _id: '420803245758480405' }, {
 		$set: {
 			'merchantWishes.range': increaseRange(range)
 		}
 	})
-	await settings.updateOne({ _id: '420803245758480405' }, {
+	await db.collection.updateOne({ _id: '420803245758480405' }, {
 		$set: {
 			'futureStock.range': increaseRange(futureStock.range)
 		}
 	})
 	// Future
-	await commands[0].run(client, 'readyEvent', null, null, channels)
+	await commands[0].run(client, 'readyEvent', null, null, db)
 	// Wish
-	await commands[1].run(client, 'readyEvent', null, null, channels)
+	await commands[1].run(client, 'readyEvent', null, null, db)
 }
 
 export default updateStockTables

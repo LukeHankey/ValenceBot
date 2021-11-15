@@ -37,9 +37,10 @@ const updateButtonData = async (updateDB, message, userN, button) => {
 	})
 }
 
-const removeButtons = async (client, database, { errors }) => {
+const removeButtons = async (client, db) => {
+	const channels = await db.channels
 	try {
-		let merchDB = await database.find({ merchChannel: { $exists: true } }).toArray();
+		let merchDB = await db.collection.find({ merchChannel: { $exists: true } }).toArray();
 		[merchDB] = merchDB.filter(db => db.serverName === 'Deep Sea Fishing')
 		const oneDay = 8.64e+7
 		const components = merchDB.merchChannel.components
@@ -52,20 +53,20 @@ const removeButtons = async (client, database, { errors }) => {
 					} else return undefined
 				})
 				return removeMessageButtons.forEach(async o => {
-					const msg = await errorChannel.messages.fetch(o.buttonMessageID).catch(err => errors.send(err, module))
+					const msg = await errorChannel.messages.fetch(o.buttonMessageID).catch(async err => channels.send(err, module))
 					await msg.edit({ components: [] })
-					await database.updateOne({ serverName: 'Deep Sea Fishing' }, {
+					await db.collection.updateOne({ serverName: 'Deep Sea Fishing' }, {
 						$pull: {
 							'merchChannel.components': { buttonMessageID: o.buttonMessageID }
 						}
 					})
 				})
 			} catch (err) {
-				errors.send(err, module)
+				channels.send(err, module)
 			}
 		} else { return }
 	} catch (err) {
-		errors.send(err, module)
+		channels.send(err, module)
 	}
 }
 

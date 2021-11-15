@@ -11,6 +11,7 @@ export default {
 	guildSpecific: ['472448603642920973', '668330890790699079'],
 	permissionLevel: 'Mod',
 	run: async (client, message, args, perms, db) => {
+		const channels = await db.channels
 		if (!perms.mod) return message.channel.send(perms.errorM)
 		const usersColl = new MongoCollection('Users')
 		const ranks = ['recruit', 'corporal', 'sergeant', 'lieutenant', 'captain', 'general', 'admin', 'organiser', 'coordinator', 'overseer', 'deputy owner', 'owner']
@@ -129,7 +130,7 @@ export default {
 						}
 					})
 				})
-				.catch(async err => await db.channels.errors.send(err))
+				.catch(async err => channels.errors.send(err))
 		} else {
 			if (!args.length) return
 			// Find by rs name

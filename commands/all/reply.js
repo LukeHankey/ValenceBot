@@ -6,6 +6,7 @@ export default {
 	guildSpecific: '668330890790699079',
 	permissionLevel: 'Owner',
 	run: async (client, message, args, perms, db) => {
+		const channels = await db.channels
 		if (!perms.owner) return message.channel.send(perms.errorO)
 		const [userID, ...content] = args
 
@@ -19,7 +20,7 @@ export default {
 			.catch(async e => {
 				if (e.code === 10013) {
 					return message.channel.send({ content: `Error: ${e.message}` })
-				} else { await db.channels.errors.send(e) }
+				} else { channels.errors.send(e) }
 			})
 	}
 }

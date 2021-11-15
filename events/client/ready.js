@@ -1,59 +1,32 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-octal */
-import { getDb } from '../../mongodb.js'
+import { MongoCollection } from '../../DataBase.js'
 import { msCalc, doubleDigits, nextDay } from '../../functions.js'
 import { scout, vScout, classVars, addedRoles, removedRoles, removeInactives } from '../../dsf/scouts/scouters.js'
 import { removeButtons } from '../../dsf/merch/merchFunctions.js'
-import { MessageEmbed, Formatters } from 'discord.js'
-import { redDark } from '../../colors.js'
-import cron from 'node-cron'
+import { Formatters } from 'discord.js'
 import sendFact from '../../valence/dailyFact.js'
 import updateRoles from '../../valence/clanData.js'
 import skullTimer from '../../dsf/merch/merchChannel/skullTimer.js'
 import updateStockTables from '../../dsf/stockTables.js'
+import cron from 'node-cron'
 import os from 'os'
+
+const db = new MongoCollection('Settings')
+const users = new MongoCollection('Users')
 
 export default async client => {
 	console.log('Ready!')
+	const channels = await db.channels
 
 	client.user.setPresence({
 		status: 'idle',
 		activities: [{ type: 'LISTENING', name: 'DMs for queries regarding the bot.' }]
 	})
 
-	const db = await getDb()
-	const settings = db.collection('Settings')
-	const users = db.collection('Users')
-	const { channels: { errors, logs } } = await settings.findOne({ _id: 'Globals' }, { projection: { channels: { errors: 1, logs: 1 } } })
 	const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
-	const channels = {
-		errors: {
-			id: errors,
-			embed: function (err) {
-				const filePath = import.meta.url.split('/')
-				const fileName = filePath[filePath.length - 1]
-				const embed = new MessageEmbed()
-					.setTitle(`An error occured in ${fileName}`)
-					.setColor(redDark)
-					.addField(`${err.message}`, `\`\`\`${err.stack}\`\`\``)
-				return embed
-			},
-			send: function (...args) {
-				const channel = client.channels.cache.get(this.id)
-				return channel.send({ embeds: [this.embed(...args)] })
-			}
-		},
-		logs: {
-			id: logs,
-			send: function (content) {
-				const channel = client.channels.cache.get(this.id)
-				return channel.send({ content })
-			}
-		}
-	}
-
-	setInterval(() => {
+	setInterval(async () => {
 		const formatMemoryUsage = (data) => `${Math.round(data / 1024 / 1024 * 100) / 100} MB`
 
 		const memoryData = process.memoryUsage()
@@ -96,14 +69,14 @@ export default async client => {
 	}
 
 	const postData = async (data) => {
-		const valenceChannels = await settings.findOne({ _id: '472448603642920973' }, { projection: { channels: 1 } })
+		const valenceChannels = await db.collection.findOne({ _id: '472448603642920973' }, { projection: { channels: 1 } })
 		const valenceAdminChannel = client.channels.cache.get(valenceChannels.channels.adminChannel)
 		const messageSend = await valenceAdminChannel.send(`${Formatters.codeBlock(formatTemplate(data))}`)
 		await messageSend.react('✅')
 		await messageSend.react('❌')
 		await messageSend.react('📝')
 
-		await settings.updateOne({ _id: messageSend.guild.id }, {
+		await db.collection.updateOne({ _id: messageSend.guild.id }, {
 			$addToSet: {
 				nameChange: {
 					messageID: messageSend.id,
@@ -118,7 +91,7 @@ export default async client => {
 	})
 
 	// Citadel Server Reminders //
-	await settings.find({}).toArray().then(r => {
+	await db.collection.find({}).toArray().then(r => {
 		for (const document in r) {
 			if (!r[document].citadel_reset_time) return
 			cron.schedule('*/5 * * * *', async () => {
@@ -130,7 +103,7 @@ export default async client => {
 					const time = msCalc(days, doubleDigits(hours), doubleDigits(minutes)) + timer
 					return new Date(time).toUTCString()
 				}
-				await settings.find({}).toArray().then(res => {
+				await db.collection.find({}).toArray().then(res => {
 					const dayNum = days.indexOf(res[document].citadel_reset_time.day)
 					const resetString = nextDay(dayNum).toUTCString().split(' ')
 					resetString.splice(4, 1, `${res[document].citadel_reset_time.hour}:${res[document].citadel_reset_time.minute}:00`)
@@ -165,7 +138,7 @@ export default async client => {
 		}
 	})
 
-	const stream = users.watch({ fullDocument: 'updateLookup' })
+	const stream = users.collection.watch({ fullDocument: 'updateLookup' })
 	stream.on('change', next => {
 		if (next.updateDescription) {
 			const updated = next.updateDescription.updatedFields
@@ -178,29 +151,29 @@ export default async client => {
 	// If node cycling:
 	(async function () {
 		if (process.env.NODE_ENV === 'DEV') return
-		const { merchChannel: { channelID } } = await settings.findOne({ _id: '420803245758480405' }, { projection: { merchChannel: { channelID: 1 } } })
+		const { merchChannel: { channelID } } = await db.collection.findOne({ _id: '420803245758480405' }, { projection: { merchChannel: { channelID: 1 } } })
 		const merchantChannel = client.channels.cache.get(channelID)
 		let message = await merchantChannel.messages.fetch({ limit: 1 })
 		message = message.first()
-		skullTimer(message, settings, channels)
+		skullTimer(message, db)
 	})()
 
 	// DSF Activity Posts //
 	cron.schedule('0 */6 * * *', async () => {
-		const res = await settings.find({}).toArray()
+		const res = await db.collection.find({}).toArray()
 		await classVars(scout, 'Deep Sea Fishing', res, client)
 		await classVars(vScout, 'Deep Sea Fishing', res, client);
 
 		[scout, vScout].forEach(role => {
-			addedRoles(role, settings)
-			removedRoles(role, settings)
+			addedRoles(role, db)
+			removedRoles(role, db)
 		})
-		removeInactives(scout, settings, channels)
-		await removeButtons(client, settings, channels)
+		removeInactives(scout, db)
+		await removeButtons(client, db)
 
 		// Daily Reset
 		if (new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
-			updateStockTables(client, settings, channels)
+			updateStockTables(client, db)
 		}
 
 		// Weekly reset
@@ -227,15 +200,15 @@ export default async client => {
 		// Monthly reset + 1 day
 		if (new Date().getDate() === 2 && (new Date().getHours() === 0o1 || new Date().getHours() === 0o0) && new Date().getMinutes() === 0o0) {
 			console.log(new Date().getDate(), 'Setting lottoSheet to Null')
-			await settings.updateMany({ gSheet: { $exists: true } }, { $set: { lottoSheet: null } })
+			await db.collection.updateMany({ gSheet: { $exists: true } }, { $set: { lottoSheet: null } })
 		}
 
 		// Reset Info Count back to 0 to allow use of command
-		await settings.find({}).toArray().then(r => {
+		await db.collection.find({}).toArray().then(r => {
 			r = r.filter(doc => doc.resetInfoCount >= 0)
 			for (const doc in r) {
 				if (r[doc].resetInfoCount === 1 && r[doc].resetInfoTime < r[doc].resetInfoTime + 86400000) {
-					return settings.updateOne({ serverName: r[doc].serverName }, {
+					return db.collection.updateOne({ serverName: r[doc].serverName }, {
 						$set: {
 							resetInfoCount: 0
 						}

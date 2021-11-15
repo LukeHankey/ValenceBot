@@ -183,6 +183,7 @@ export default {
 		const currentYear = new Date().getFullYear()
 		const currentMonth = months[monthIndex]
 		const calChannel = interaction.guild.channels.cache.find((ch) => ch.name === 'calendar')
+		const channels = await db.channels
 
 		const dataFromDb = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } })
 
@@ -226,7 +227,7 @@ export default {
 					})
 			}
 
-			await db.channels.logs.send(`<@${interaction.user.id}> created a new Calendar embed.`)
+			channels.logs.send(`<@${interaction.user.id}> created a new Calendar embed.`)
 
 			if (monthOption) {
 				await createCalendar(monthOption)
@@ -292,7 +293,7 @@ export default {
 						}
 					})
 
-				return await db.channels.logs.send(`Calendar updated - ${interaction.member.displayName} added an event.\n\n/${interaction.commandName} ${interaction.options._subcommand} date: ${date} title: ${title} time: ${time} announcement ${announcement} member: ${member} position: ${position} month ${month}`)
+				return channels.logs.send(`Calendar updated - ${interaction.member.displayName} added an event.\n\n/${interaction.commandName} ${interaction.options._subcommand} date: ${date} title: ${title} time: ${time} announcement ${announcement} member: ${member} position: ${position} month ${month}`)
 			}
 
 			if (position) { await addToCalendar(position) } else { await addToCalendar() }
@@ -306,7 +307,7 @@ export default {
 				await eventMessage.react('📌')
 				await eventMessage.react('🛑')
 			} catch (err) {
-				await db.channels.errors.send(err)
+				channels.errors.send(err)
 			}
 		}
 			break
@@ -370,7 +371,7 @@ export default {
 				}
 
 				await interaction.reply({ content: 'The calendar has been edited.', ephemeral: true })
-				await db.channels.logs.send(`Calendar updated - ${interaction.member.displayName} edited an event.\n\n/${interaction.commandName} ${interaction.options._subcommand} position: ${position} field: ${field} value: ${value} month ${month}`)
+				channels.logs.send(`Calendar updated - ${interaction.member.displayName} edited an event.\n\n/${interaction.commandName} ${interaction.options._subcommand} position: ${position} field: ${field} value: ${value} month ${month}`)
 			})()
 		}
 			break
@@ -386,7 +387,7 @@ export default {
 			// Logging
 			const log = message.embeds[0].fields.splice(position - 1, deleteNum)
 			const logValues = log.map((values) => `${values.name}\n${values.value}\n`)
-			await db.channels.logs.send(`Calendar updated - ${interaction?.member.displayName} removed event: \`\`\`diff\n- Removed\n${logValues.join('\n')}\`\`\``)
+			channels.logs.send(`Calendar updated - ${interaction?.member.displayName} removed event: \`\`\`diff\n- Removed\n${logValues.join('\n')}\`\`\``)
 
 			calEmbed.spliceFields(position - 1, deleteNum)
 			await message.edit({ embeds: [calEmbed] })
@@ -400,7 +401,7 @@ export default {
 				const role = message.guild.roles.cache.get(roleId) ?? await message.guild.roles.fetch(roleId)
 				const eventTag = role.name.slice(title.length + 2)
 
-				await removeEvents(interaction, db.collection, await db.channels, 'calendar', dataFromDb, eventTag)
+				await removeEvents(interaction, db, 'calendar', dataFromDb, eventTag)
 			}
 		}
 			break

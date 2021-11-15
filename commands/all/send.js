@@ -61,6 +61,7 @@ export default {
 		}
 	},
 	run: async (client, message, args, perms, db) => {
+		const channels = await db.channels
 		const myID = '212668377586597888'
 		const content = args.slice(1).join(' ')
 		if (!perms.admin) return message.channel.send(perms.errorA)
@@ -87,7 +88,7 @@ export default {
 							await msg.edit({ content: messageContent.join(' ') })
 							return message.react('✅')
 						} catch (err) {
-							await db.channels.errors.send(err)
+							channels.errors.send(err)
 						}
 					} else {
 						return message.channel.send({ content: 'You are not able to edit a message in another server.' })
@@ -102,7 +103,7 @@ export default {
 							await msg.edit({ content: messageContent.join(' ') })
 							return message.react('✅')
 						} catch (err) {
-							await db.channels.errors.send(err)
+							channels.errors.send(err)
 						}
 					}
 				}
@@ -121,7 +122,7 @@ export default {
 								if (err.code === 50013) {
 									return message.channel.send({ content: `I am missing some permissions to post in <#${checkAndGetID}>.` })
 								} else {
-									return await db.channels.errors.send(err)
+									return channels.errors.send(err)
 								}
 							})
 					})
@@ -133,13 +134,13 @@ export default {
 								if (err.code === 50013) {
 									return message.channel.send({ content: `I am missing some permissions to post in <#${checkAndGetID}>.` })
 								} else {
-									return await db.channels.errors.send(err)
+									return channels.errors.send(err)
 								}
 							})
 					})
 				} else if (message.author.id !== myID && content && !message.channel.guild.channels.cache.has(checkAndGetID(args[0]).id)) { // Checks for non-owner, message content and if ID is not in same server
 					message.channel.send({ content: 'You are not able to send a message to a channel in another server.' })
-					await db.channels.logs.send({ content: `<@${message.author.id}> tried to send a message to another Server, from Channel: <#${message.channel.id}> to <#${args[0]}>: \`\`\`Server Name: ${message.channel.guild.name}\nServer ID:${message.channel.guild.id}\nMessage content: ${content}\`\`\`` })
+					channels.logs.send({ content: `<@${message.author.id}> tried to send a message to another Server, from Channel: <#${message.channel.id}> to <#${args[0]}>: \`\`\`Server Name: ${message.channel.guild.name}\nServer ID:${message.channel.guild.id}\nMessage content: ${content}\`\`\`` })
 				}
 			} else { // No valid ID
 				return message.channel.send({ content: 'You must provide a valid channel ID.' })

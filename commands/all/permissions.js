@@ -68,6 +68,7 @@ export default {
 		default_permission: undefined
 	},
 	slash: async (interaction, perms, db) => {
+		const channels = await db.channels
 		if (!perms.admin) return interaction.reply(perms.errorA)
 		const subType = interaction.options.getSubcommand()
 		const commandName = interaction.options.getString('command')
@@ -188,7 +189,7 @@ export default {
 				const perms = await interaction.guild.commands.permissions.fetch({ command: gcmd.first().id })
 				return interaction.reply({ embeds: [displayPerms(perms)], ephemeral: true })
 			} catch (err) {
-				await db.channels.errors.send(err)
+				channels.errors.send(err)
 				interaction.reply({ content: `There was an error. ${commandName} either has no permissions set or another error occured.`, ephemeral: true })
 			}
 		}

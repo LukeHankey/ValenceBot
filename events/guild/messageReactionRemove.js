@@ -1,12 +1,11 @@
-import { getDb } from '../../mongodb.js'
+import { MongoCollection } from '../../DataBase.js'
+const db = new MongoCollection('Settings')
 
 export default async (client, reaction, user) => {
-	const db = getDb()
-	const settingsColl = db.collection('Settings')
 	const message = reaction.message
 
 	if (message.partial) await message.fetch()
-	const database = await settingsColl.findOne({ _id: `${message.channel.guild.id}` })
+	const database = await db.collection.findOne({ _id: `${message.channel.guild.id}` })
 	if (database.events === undefined) return
 	const data = database.events.filter(m => m.messageID === message.id)
 
@@ -14,6 +13,6 @@ export default async (client, reaction, user) => {
 	if (reaction.emoji.name === '📌') {
 		const userFetch = await message.channel.guild.members.fetch(user.id)
 		userFetch.roles.remove(data[0].roleID)
-		await settingsColl.findOneAndUpdate({ _id: message.channel.guild.id, 'events.messageID': data[0].messageID }, { $pull: { 'events.$.members': user.id } })
+		await db.collection.findOneAndUpdate({ _id: message.channel.guild.id, 'events.messageID': data[0].messageID }, { $pull: { 'events.$.members': user.id } })
 	}
 }

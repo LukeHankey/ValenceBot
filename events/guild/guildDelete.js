@@ -1,18 +1,17 @@
-import { getDb } from '../../mongodb.js'
+import { MongoCollection } from '../../DataBase.js'
 
 export default async (client, guild) => {
-	const db = getDb()
-	const collection = db.collection('Settings')
-	const code = '```'
+	const db = new MongoCollection('Settings')
+	const channels = await db.channels
 	try {
-		collection.deleteOne({ _id: `${guild.id}` })
-		client.channels.cache.get('731997087721586698').send(`The bot has left **${guild.name}**. The bot is in a total of ${client.guilds.cache.size} servers.
-    \n${code}diff\n+ Server name: ${guild.name}
+		await db.collection.deleteOne({ _id: `${guild.id}` })
+		channels.logs.send(`The bot has left **${guild.name}**. The bot is in a total of ${client.guilds.cache.size} servers.
+    \n\`\`\`diff\n+ Server name: ${guild.name}
 + Server ID: ${guild.id}
 + Owner: ${await guild.fetchOwner().nickname}
 + Channel count: ${guild.channels.cache.size}
-+ Member count: ${guild.memberCount}${code}`)
++ Member count: ${guild.memberCount}\`\`\``)
 	} catch (err) {
-		console.error(err)
+		channels.errors.send(err)
 	}
 }
