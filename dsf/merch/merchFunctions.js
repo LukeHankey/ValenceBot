@@ -21,8 +21,8 @@ const alreadyCalled = (message, messages) => {
 	if (result.length) { return false } else { return true }
 }
 
-const updateButtonData = async (updateDB, message, userN, button) => {
-	return await updateDB.updateOne({ _id: message.guild.id }, {
+const updateButtonData = async (db, message, userN, button) => {
+	return await db.collection.updateOne({ _id: message.guild.id }, {
 		$addToSet: {
 			'merchChannel.components': {
 				messageID: message.id,
@@ -50,7 +50,7 @@ const removeButtons = async (client, db) => {
 				const removeMessageButtons = components.filter(obj => {
 					if ((Date.now() - obj.time) > oneDay) {
 						return obj
-					} else return undefined
+					} else return
 				})
 				return removeMessageButtons.forEach(async o => {
 					const msg = await errorChannel.messages.fetch(o.buttonMessageID).catch(async err => channels.send(err, module))

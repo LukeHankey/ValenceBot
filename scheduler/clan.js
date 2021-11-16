@@ -32,7 +32,7 @@ export const getData = async (db) => {
 				if (clanUser.clanMate === '') return
 				clanUser.gameActive = 'undefined'
 				await db.collection.insertOne(clanUser)
-				console.log(`New to the clan:\n${clanUser}`)
+				console.log(`New to the clan:\n${clanUser.clanMate}`)
 			} else {
 				// Updates total XP
 				await db.collection.updateOne({ clanMate: clanUser.clanMate }, { $set: { clanRank: clanUser.clanRank, totalXP: clanUser.totalXP, kills: clanUser.kills } })

@@ -1,6 +1,7 @@
 import client from './index.js'
 import { redDark } from './colors.js'
 import { promisify } from 'util'
+import { MessageEmbed } from 'discord.js'
 import pkg from 'mongodb'
 const wait = promisify(setTimeout)
 const { MongoClient } = pkg
@@ -15,18 +16,16 @@ export class DataBase {
 	static #name = 'Members'
 
 	constructor() {
-		this.#initialize();
+		if (!DataBase.#db) this.#initialize()
 	}
 
 	async #initialize() {
 		try {
-			if (!DataBase.#db) {
-				// 1 Connection per event
-				const mongo = new MongoClient(process.env.DB_URI, DataBase.#options)
-				await mongo.connect()
-				DataBase.#db = mongo.db(DataBase.#name)
-				console.log('Database connected.')
-			} else return
+			// 1 Connection per event
+			const mongo = new MongoClient(process.env.DB_URI, DataBase.#options)
+			await mongo.connect()
+			DataBase.#db = mongo.db(DataBase.#name)
+			console.log('Database connected.')
 		}
 		catch (error) {
 			console.log(error)
@@ -35,7 +34,6 @@ export class DataBase {
 
 	async #retry() {
 		console.log('Retrying connection...')
-		await wait(1000)
 		await this.#initialize()
 		await this.collectionNames()
 	}
@@ -46,6 +44,8 @@ export class DataBase {
 	 async collectionNames() {
 		let collectionNames;
 		try {
+			// Attempt to wait 5 seconds to connect database before any retries
+			if (!DataBase.#db) await wait(5000)
 			collectionNames = await DataBase.#db.listCollections().toArray()
 			collectionNames = collectionNames.map(c => c.name)
 		}

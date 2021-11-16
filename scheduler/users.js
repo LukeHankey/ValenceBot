@@ -8,9 +8,12 @@ export const addActive = async (db) => {
 	let index = 0
 	const interval = setInterval(async () => {
 		try {
-			const metricsProfile = await fetch(`https://apps.runescape.com/runemetrics/profile/profile?user=${users[index].clanMate}&activities=1`).then(response => response.json()).catch(err => console.error(`Unable to fetch RuneMetrics Profile for ${users[index].clanMate}.`, err))
+			const metricsProfile = await fetch(`https://apps.runescape.com/runemetrics/profile/profile?user=${users[index].clanMate}&activities=1`)
+				.then(response => response.json())
+				.catch(err => console.error(`Unable to fetch RuneMetrics Profile for ${users[index].clanMate}.`, err))
+
 			let lastActivityDate
-			if (metricsProfile.error) {
+			if ('error' in metricsProfile) {
 				// console.log(users[index].clanMate, metricsProfile.error);
 				await db.collection.updateOne({ clanMate: users[index].clanMate }, { $set: { profile: metricsProfile.error, gameActive: null } })
 			} else {
@@ -33,7 +36,7 @@ export const addActive = async (db) => {
 		if (index === users.length) {
 			clearInterval(interval)
 		}
-	}, 1000)
+	}, 3000)
 }
 
 const clanCheck = async (users, db) => {
@@ -64,7 +67,7 @@ export const nameChanges = async (missingNames, db) => {
 	for (const names of missingNames) {
 		const potentialChangers = await db.collection.findOne({ clanMate: names })
 		const potentialNewNames = await db.collection.find({ clanRank: potentialChangers.clanRank, kills: potentialChangers.kills, gameActive: 'undefined' }).toArray()
-		const check = await clanCheck(names)
+		const check = await clanCheck(names, db)
 		await wait(1000)
 
 		if (check) {
@@ -79,8 +82,8 @@ export const nameChanges = async (missingNames, db) => {
 		}
 	}
 
-	if (nameChange.change.length) {
-		return nameChange.change.forEach(async user => {
+	if (nameChange.length) {
+		return nameChange.forEach(async user => {
 			console.log(`Updating ${user.clanMate} as they have potentially changed names`)
 			return await db.collection.updateOne({ clanMate: user.clanMate }, { $set: { potentialNewNames: user.potentialNewNames } })
 		})

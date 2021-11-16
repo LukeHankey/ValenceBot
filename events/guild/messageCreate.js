@@ -7,6 +7,8 @@ import dsf from '../../dsf/merch/main.js'
 const db = new MongoCollection('Settings')
 
 export default async (client, message) => {
+	const channels = await db.channels
+
 	// Handling DMs
 	if (message.guild === null || message.channel.type === 'DM') {
 		if (message.partial) await message.fetch()
@@ -36,19 +38,23 @@ export default async (client, message) => {
 	if (message.guild.id === '420803245758480405' || message.guild.id === '668330890790699079') {
 		const { merchChannel: { channelID, otherChannelID }, channels: { adminChannel } } = await db.collection.findOne({ _id: message.guild.id, merchChannel: { $exists: true } }, { projection: { 'merchChannel.channelID': 1, 'merchChannel.otherChannelID': 1, channels: 1 } })
 
-		const scamDetect = /(glft|steamcom|dlsco|dlisco|disour|cord-gi|corcl-gi|\/gif)\w+/gi
+		const scamDetect = /(glft|steamcom|dlsco|dlisco|disour|cord-gi|corcl-gi|\/gift)\w+/gi
 		if (scamDetect.test(message.content)) {
 			const bannedMember = message.member
 			// Check for permissions
-			const perms = message.guild.me.permissions.has('BAN_MEMBERS')
-			if (perms) {
-				console.log(message.content)
-				await bannedMember.ban({ days: 7, reason: 'Posted a scam link' })
-				const bChannel = message.guild.channels.cache.get('624655664920395786')
-				return await bChannel.send({ content: `Banned: ${bannedMember.displayName} - ${bannedMember.id} -- Posting a scam link.` })
-			} else {
-				const aChannel = message.guild.channels.cache.get(adminChannel)
-				return aChannel.send({ content: `I am unable to ban ${message.member.displayName} as I do not have the \`BAN_MEMBERS\` permission.` })
+			try {
+				const perms = message.guild.me.permissions.has('BAN_MEMBERS')
+				if (perms) {
+					console.log(message.content)
+					await bannedMember.ban({ days: 7, reason: 'Bang bang I gotcha, I gotcha in my scope' })
+					const bChannel = message.guild.channels.cache.get('624655664920395786')
+					return await bChannel.send({ content: `Banned: ${bannedMember.displayName} - ${bannedMember.id} -- Posting a scam link. Bang bang I gotcha, I gotcha in my scope.` })
+				} else {
+					const aChannel = message.guild.channels.cache.get(adminChannel)
+					return aChannel.send({ content: `I am unable to ban ${message.member.displayName} as I do not have the \`BAN_MEMBERS\` permission.` })
+				}
+			} catch (err) {
+				channels.logs.send(`Unable to ban ${bannedMember} because they have higher permissions.`)
 			}
 		}
 
@@ -137,7 +143,6 @@ export default async (client, message) => {
 			if (commandName !== command) return
 		}
 	} catch (err) {
-		const channels = await db.channels
 		channels.errors.send(err)
 	}
 }

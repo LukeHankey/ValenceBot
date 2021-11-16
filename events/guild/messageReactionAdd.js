@@ -11,7 +11,6 @@ export default async (client, reaction, user) => {
 	const message = reaction.message
 	const channels = await db.channels
 	const { _id } = await db.collection.findOne({ _id: message.channel.guild.id })
-	console.log(_id)
 
 	if (message.partial) await message.fetch().catch(err => channels.errors.send(err))
 	switch (message.guild.id) {

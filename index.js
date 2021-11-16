@@ -23,7 +23,8 @@ const _ = new DataBase(client)
 const db = new MongoCollection('Users')
 
 // Daily at 5am
-cron.schedule('0 5 * * * *', async () => {
+cron.schedule('0 5 * * *', async () => {
+	console.log('running')
 	await addActive(db)
 })
 

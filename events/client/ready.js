@@ -180,7 +180,7 @@ export default async client => {
 		if (new Date().getDay() === 3 && new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
 			scout.send()
 			vScout.send()
-			const allUsers = await users.find({}).toArray()
+			const allUsers = await users.collection.find({}).toArray()
 			// Flood the cache to make only 1 API request
 			const server = client.guilds.cache.get('472448603642920973')
 			await server.members.fetch()

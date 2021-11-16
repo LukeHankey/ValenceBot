@@ -145,8 +145,8 @@ export default async (client, interaction) => {
 	} else if (interaction.isContextMenu()) {
 		switch (interaction.commandName) {
 		case 'Mark event as dead.':
+			interaction.deferReply({ ephemeral: true })
 			if ([data.merchChannel.channelID, data.merchChannel.otherChannelID].includes(interaction.channel.id)) {
-				interaction.deferReply({ ephemeral: true })
 				try {
 					const dsfServerErrorChannel = await client.channels.cache.get('884076361940078682')
 					const message = interaction.channel.messages.cache.get(interaction.targetId)
@@ -166,7 +166,7 @@ export default async (client, interaction) => {
 					channels.errors.send(err)
 				}
 			} else {
-				interaction.reply({ content: 'You can\'t use that in this channel.', ephemeral: true })
+				interaction.editReply({ content: 'You can\'t use that in this channel.' })
 			}
 			break
 		case 'Affiliate Events': {
