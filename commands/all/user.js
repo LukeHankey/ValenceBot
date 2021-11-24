@@ -54,7 +54,7 @@ export default {
 		if (args.length === 1 && checkNum(args[0], 1, Infinity)) {
 			// Discord ID
 			const userInDiscord = await message.guild.members.fetch(args[0])
-			let findUser = await usersColl.findOne({ discord: args[0] }, { projection: { _id: 0, kills: 0 } })
+			let findUser = await usersColl.collection.findOne({ discord: args[0] }, { projection: { _id: 0, kills: 0 } })
 			if (findUser) {
 				findUser = renameKeys({ clanMate: 'RSN', clanRank: 'Rank', totalXP: 'Total XP', discord: 'ID', discActive: 'Discord', alt: 'Alt Account', gameActive: 'Game' }, findUser)
 				delete findUser.lastUpdated
@@ -77,7 +77,7 @@ export default {
 		} else if (args.length >= 1 && ranks.includes(args[0].toLowerCase())) {
 			// Find by rank
 			const rankArg = args[0].toLowerCase()
-			const findGroup = usersColl.find({ $text: { $search: rankArg, $caseSensitive: false } }).project({ _id: 0, kills: 0, totalXP: 0 })
+			const findGroup = await usersColl.collection.find({ $text: { $search: rankArg, $caseSensitive: false } }).project({ _id: 0, kills: 0, totalXP: 0 })
 			for await (const doc of findGroup) {
 				result.push({ name: doc.clanMate, value: `ID: ${doc.discord}\nActive: ${doc.discActive}\nAlt: ${doc.alt}`, inline: true })
 			}
@@ -147,21 +147,21 @@ export default {
 					if (string === 'true') return true
 					else return false
 				}
-				const { clanMate } = await usersColl.findOne({ $text: { $search: fullRSN, $caseSensitive: false } }, { projection: { _id: 0, clanMate: 1 } })
+				const { clanMate } = await usersColl.collection.findOne({ $text: { $search: fullRSN, $caseSensitive: false } }, { projection: { _id: 0, clanMate: 1 } })
 
 				switch (param) {
 				case 'id':
-					await usersColl.updateOne({ clanMate }, { $set: { discord: other.join(' '), discActive: true } })
+					await usersColl.collection.updateOne({ clanMate }, { $set: { discord: other.join(' '), discActive: true } })
 					return await message.react('✅')
 				case 'discord':
 				case 'discActive':
 					if (other.join(' ') === 'true' || other.join(' ') === 'false') {
-						await usersColl.updateOne({ clanMate }, { $set: { discActive: booleanConvert(other.join(' ')) } })
+						await usersColl.collection.updateOne({ clanMate }, { $set: { discActive: booleanConvert(other.join(' ')) } })
 						return await message.react('✅')
 					} else { return message.channel.send('Active state must be set as either `true` or `false`.') }
 				case 'alt':
 					if (other.join(' ') === 'true' || other.join(' ') === 'false') {
-						await usersColl.updateOne({ clanMate }, { $set: { alt: booleanConvert(other.join(' ')) } })
+						await usersColl.collection.updateOne({ clanMate }, { $set: { alt: booleanConvert(other.join(' ')) } })
 						return await message.react('✅')
 					} else { return message.channel.send({ content: 'Alt account must be set as either `true` or `false`.' }) }
 				default: {
@@ -171,7 +171,7 @@ export default {
 			}
 			[...rsName] = args
 
-			let findUser = await usersColl.findOne({ $text: { $search: rsName.join(' '), $caseSensitive: false } }, { projection: { _id: 0, kills: 0 } })
+			let findUser = await usersColl.collection.findOne({ $text: { $search: rsName.join(' '), $caseSensitive: false } }, { projection: { _id: 0, kills: 0 } })
 			if (findUser) {
 				findUser = renameKeys({ clanMate: 'RSN', clanRank: 'Rank', totalXP: 'Total XP', discord: 'ID', discActive: 'Discord', alt: 'Alt Account', gameActive: 'Game' }, findUser)
 				delete findUser.lastUpdated

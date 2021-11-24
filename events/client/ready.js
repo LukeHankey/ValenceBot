@@ -187,7 +187,7 @@ export default async client => {
 
 			let index = 0
 			const interval = setInterval(() => {
-				updateRoles(client, allUsers[index], server)
+				updateRoles(client, allUsers[index], server, channels, users)
 				index++
 
 				if (index === allUsers.length) {
