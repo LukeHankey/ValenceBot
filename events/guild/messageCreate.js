@@ -76,7 +76,7 @@ export default async (client, message) => {
 			const downArrow = message.guild.emojis.cache.get('872175855223337060')
 			await message.react(upArrow)
 			await message.react(downArrow)
-			await message.startThread({ name: `Suggestion from ${message.member.nickname ?? message.author.username}`, autoArchiveDuration: 4320 })
+			await message.startThread({ name: `Suggestion from ${message.member.nickname ?? message.author.username}`, autoArchiveDuration: 'MAX' })
 		}
 			break
 		case boosters:
