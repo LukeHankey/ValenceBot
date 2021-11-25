@@ -171,7 +171,8 @@ export default async (client, interaction) => {
 			break
 		case 'Affiliate Events': {
 			const role = interaction.guild.roles.cache.find(role => role.name === 'Affiliate Events')
-			await interaction.reply({ content: `<@&${role.id}>`, allowedMentions: { parse: ['roles'] } })
+			const message = await interaction.reply({ content: `<@&${role.id}>`, fetchReply: true, allowedMentions: { roles: [role.id] } })
+			await message.reply({ content: `<@&${role.id}>` })
 		}
 		}
 	}

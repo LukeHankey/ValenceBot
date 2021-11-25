@@ -38,8 +38,10 @@ export default async (client, message) => {
 	if (message.guild.id === '420803245758480405' || message.guild.id === '668330890790699079') {
 		const { merchChannel: { channelID, otherChannelID }, channels: { adminChannel } } = await db.collection.findOne({ _id: message.guild.id, merchChannel: { $exists: true } }, { projection: { 'merchChannel.channelID': 1, 'merchChannel.otherChannelID': 1, channels: 1 } })
 
-		const scamDetect = /(glft|steamcom|dlsco|dlisco|disour|cord-gi|corcl-gi|\/gift)\w+/gi
-		if (scamDetect.test(message.content)) {
+		// eslint-disable-next-line no-useless-escape
+		const scamLinkRegex = /((?!.*discord)(?=.*\b(d\w{5,8}[dcl]){1}[-\./](give|gift|nitro))\b.*)/gi
+		const scamWordMatchRegex = /((.*? )?(discord|nitro|free|@everyone|steam)){3}/gi
+		if (scamLinkRegex.test(message.content) || scamWordMatchRegex.test(message.content)) {
 			const bannedMember = message.member
 			// Check for permissions
 			try {
