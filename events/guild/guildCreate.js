@@ -26,7 +26,7 @@ export default async (client, guild) => {
     \n\`\`\`diff\n
 + Server name: ${guild.name}
 + Server ID: ${guild.id}
-+ Owner: ${await guild.fetchOwner().nickname ?? guild.fetchOwner().user.username}
++ Owner: ${await guild.fetchOwner().nickname ?? await guild.fetchOwner().user.username}
 + Channel count: ${guild.channels.cache.size}
 + Member count: ${guild.memberCount}\`\`\``)
 }
