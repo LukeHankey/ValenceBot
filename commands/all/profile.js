@@ -97,7 +97,7 @@ export default {
 					.then(async col => {
 						col = col.first()
 						if (col.content === 'no') { return undefined } else {
-							await db.collection.findOneAndUpdate({ _id: message.channel.guild.id },
+							await db.collection.findOneAndUpdate({ _id: message.guild.id },
 								{
 									$addToSet: {
 										'merchChannel.scoutTracker': {
