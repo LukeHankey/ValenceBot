@@ -1,5 +1,6 @@
 import { MongoCollection } from '../../DataBase.js'
 import { blueDark } from '../../colors.js'
+import { modAppEmbed, defaultEmbed } from '../../templateEmbeds.js'
 import { Permissions } from '../../classes.js'
 import { MessageEmbed } from 'discord.js'
 import vEvents from '../../valence/valenceEvents.js'
@@ -32,6 +33,23 @@ export default async (client, message) => {
 			.setTimestamp()
 
 		return client.channels.cache.get('788525524782940187').send({ embeds: [embed] })
+	}
+
+	const { messageList } = await db.collection.findOne({ _id: message.guild.id }, { projection: { messageList: 1 } })
+
+	if (messageList && messageList.length) {
+		for (const list of messageList) {
+			const moveToChannel = message.guild.channels.cache.get(list.to)
+			if (message.channel.id === list.from) {
+				try {
+					if (list.template === 'Mod Application') await moveToChannel.send({ embeds: [modAppEmbed(message)] })
+					else await moveToChannel.send({ embeds: [defaultEmbed(message)] })
+					await message.delete()
+				} catch (err) {
+					channels.errors.send(err)
+				}
+			}
+		}
 	}
 
 	// Deep Sea Fishing
