@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason, p) => {
 })
 
 client.login(process.env.NODE_ENV === 'DEV' ? process.env.DEVELOPMENT_BOT : process.env.BOT_TOKEN)
-const _ = new DataBase(client)
+const _ = new DataBase()
 const db = new MongoCollection('Users')
 
 // Daily at 5am
