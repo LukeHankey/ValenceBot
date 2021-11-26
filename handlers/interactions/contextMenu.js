@@ -29,8 +29,11 @@ export const contextMenu = async (interaction, data, db) => {
 		break
 	case 'Affiliate Events': {
 		const role = interaction.guild.roles.cache.find(role => role.name === 'Affiliate Events')
-		const message = await interaction.reply({ content: `<@&${role.id}>`, fetchReply: true, allowedMentions: { roles: [role.id] } })
-		await message.reply({ content: `<@&${role.id}>` })
+		if (interaction.channel.id !== '881320233627967508') { // extra-role-pings
+			return await interaction.reply({ content: 'Please use the <#881320233627967508> channel.', ephemeral: true })
+		}
+		await interaction.reply({ content: 'Delete me.', ephemeral: true })
+		await interaction.channel.send({ content: `<@&${role.id}>` })
 	}
 	}
 }
