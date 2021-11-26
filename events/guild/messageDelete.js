@@ -3,10 +3,6 @@ import { MessageEmbed } from 'discord.js'
 import { redDark } from '../../colors.js'
 
 export default async (client, message) => {
-	if (process.env.NODE_ENV === 'DEV') {
-		if (message.guild.id !== '668330890790699079') return
-	} else if (message.guild.id === '668330890790699079') { return }
-
 	const db = new MongoCollection('Settings')
 	const fullDB = await db.collection.findOne({ _id: message.guild.id, merchChannel: { $exists: true } }, { projection: { merchChannel: { messages: 1, channelID: 1 } } })
 	if (!fullDB) return
