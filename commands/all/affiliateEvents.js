@@ -9,7 +9,6 @@ export default {
 		type: 3
 	},
 	menu: async (interaction) => {
-		console.log(`${interaction.member.displayName} used Affiliate Events command.`)
 		await interaction.deferReply({ ephemeral: true })
 		const role = interaction.guild.roles.cache.find(role => role.name === 'Affiliate Events')
 		if (interaction.channel.id !== '881320233627967508') { // extra-role-pings
