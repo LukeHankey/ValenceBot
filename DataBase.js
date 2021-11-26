@@ -1,4 +1,3 @@
-import client from './index.js'
 import { redDark } from './colors.js'
 import { promisify } from 'util'
 import { MessageEmbed } from 'discord.js'
@@ -89,13 +88,14 @@ export class MongoCollection extends DataBase {
      */
 	get channels() {
 		const getChannelsFromDB = async () => {
+			const client = await import('./index.js')
 			const { channels: { vis, errors, logs } } = await this.collection.findOne({ _id: 'Globals' }, { projection: { channels: { vis: 1, errors: 1, logs: 1 } } })
 			const channels = {
 				vis: {
 					id: vis,
 					// content could be both embed or content
 					send: function (content) {
-						const channel = client.channels.cache.get(this.id)
+						const channel = client.default.channels.cache.get(this.id)
 						return channel.send(content)
 					}
 				},
@@ -111,14 +111,14 @@ export class MongoCollection extends DataBase {
 						return embed
 					},
 					send: function (...args) {
-						const channel = client.channels.cache.get(this.id)
+						const channel = client.default.channels.cache.get(this.id)
 						return channel.send({ embeds: [this.embed(...args)] })
 					}
 				},
 				logs: {
 					id: logs,
 					send: function (content) {
-						const channel = client.channels.cache.get(this.id)
+						const channel = client.default.channels.cache.get(this.id)
 						return channel.send({ content })
 					}
 				}
