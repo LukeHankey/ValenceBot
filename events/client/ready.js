@@ -2,12 +2,9 @@
 /* eslint-disable no-octal */
 import { MongoCollection } from '../../DataBase.js'
 import { msCalc, doubleDigits, nextDay } from '../../functions.js'
-import { scout, vScout, classVars, addedRoles, removedRoles, removeInactives } from '../../dsf/scouts/scouters.js'
 import { Formatters } from 'discord.js'
-import sendFact from '../../valence/dailyFact.js'
-import updateRoles from '../../valence/clanData.js'
-import skullTimer from '../../dsf/merch/merchChannel/skullTimer.js'
-import updateStockTables from '../../dsf/stockTables.js'
+import { skullTimer, otherTimer, updateStockTables, scout, vScout, classVars, addedRoles, removedRoles, removeInactives } from '../../dsf/index.js'
+import { sendFact, updateRoles } from '../../valence/index.js'
 import cron from 'node-cron'
 import os from 'os'
 
@@ -155,6 +152,7 @@ export default async client => {
 		let message = await merchantChannel.messages.fetch({ limit: 1 })
 		message = message.first()
 		skullTimer(message, db)
+		otherTimer(message, db)
 	})()
 
 	// DSF Activity Posts //
