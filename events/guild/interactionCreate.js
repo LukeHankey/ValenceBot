@@ -1,4 +1,7 @@
 import { MongoCollection } from '../../DataBase.js'
+import { Collection } from 'discord.js'
+
+export const cache = new Collection()
 
 export default async (client, interaction) => {
 	const db = new MongoCollection('Settings')
@@ -6,7 +9,7 @@ export default async (client, interaction) => {
 
 	if (interaction.isButton()) {
 		const { buttons } = await import('../../handlers/interactions/buttons.js')
-		await buttons(interaction, db, data)
+		await buttons(interaction, db, data, cache)
 	} else if (interaction.isCommand()) {
 		const { commands } = await import('../../handlers/interactions/commands.js')
 		await commands(interaction, db, data)
@@ -15,7 +18,7 @@ export default async (client, interaction) => {
 		await autoComplete(interaction)
 	} else if (interaction.isSelectMenu()) {
 		const { selectMenu } = await import('../../handlers/interactions/selectMenu.js')
-		await selectMenu(interaction, data, db)
+		await selectMenu(interaction, data, db, cache)
 	} else if (interaction.isContextMenu()) {
 		const client = interaction.client
 		const command = client.commands.get(interaction.commandName)
