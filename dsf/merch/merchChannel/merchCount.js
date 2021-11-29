@@ -2,7 +2,7 @@ import { merchRegex } from '../constants.js'
 import { checkMemberRole, arrIncludesString, alreadyCalled } from '../merchFunctions.js'
 import { MessageActionRow, MessageButton } from 'discord.js'
 
-const addMerchCount = async (client, message, db) => {
+export const addMerchCount = async (client, message, db) => {
 	const channels = await db.channels
 	try {
 		const { merchChannel: { scoutTracker, channelID, messages }, disallowedWords } = await db.collection.findOne({ _id: message.channel.guild.id }, { projection: { 'merchChannel.scoutTracker': 1, 'merchChannel.channelID': 1, 'merchChannel.messages': 1, disallowedWords: 1 } })
@@ -144,5 +144,3 @@ const addMerchCount = async (client, message, db) => {
 		channels.errors.send(err)
 	}
 }
-
-export default addMerchCount

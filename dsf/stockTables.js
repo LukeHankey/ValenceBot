@@ -1,4 +1,4 @@
-const updateStockTables = async (client, db) => {
+export const updateStockTables = async (client, db) => {
 	const commandCollection = client.commands.filter(cmd => cmd.name === 'wish' || cmd.name === 'future')
 	const commands = commandCollection.first(2)
 	const { merchantWishes: { range }, futureStock } = await db.collection.findOne({ _id: '420803245758480405' }, { projection: { 'merchantWishes.range': 1, futureStock: 1 } })
@@ -28,5 +28,3 @@ const updateStockTables = async (client, db) => {
 	// Wish
 	await commands[1].run(client, 'readyEvent', null, null, db)
 }
-
-export default updateStockTables
