@@ -21,59 +21,8 @@ const alreadyCalled = (message, messages) => {
 	if (result.length) { return false } else { return true }
 }
 
-const updateButtonData = async (db, message, userN, button) => {
-	return await db.collection.updateOne({ _id: message.guild.id }, {
-		$addToSet: {
-			'merchChannel.components': {
-				messageID: message.id,
-				userID: userN.user.id,
-				time: message.createdTimestamp,
-				content: message.content,
-				primaryID: `primary_${userN.user.id}`,
-				dangerID: `danger_${userN.user.id}`,
-				buttonMessageID: button.id
-			}
-		}
-	})
-}
-
-const removeButtons = async (client, db) => {
-	const channels = await db.channels
-	try {
-		let merchDB = await db.collection.find({ merchChannel: { $exists: true } }).toArray();
-		[merchDB] = merchDB.filter(db => db.serverName === 'Deep Sea Fishing')
-		const oneDay = 8.64e+7
-		const components = merchDB.merchChannel.components
-		if (components.length) {
-			try {
-				const errorChannel = client.channels.cache.get(merchDB.merchChannel.deletions.adminChannelID)
-				const removeMessageButtons = components.filter(obj => {
-					if ((Date.now() - obj.time) > oneDay) {
-						return obj
-					} else return
-				})
-				return removeMessageButtons.forEach(async o => {
-					const msg = await errorChannel.messages.fetch(o.buttonMessageID).catch(async err => channels.send(err, module))
-					await msg.edit({ components: [] })
-					await db.collection.updateOne({ serverName: 'Deep Sea Fishing' }, {
-						$pull: {
-							'merchChannel.components': { buttonMessageID: o.buttonMessageID }
-						}
-					})
-				})
-			} catch (err) {
-				channels.send(err, module)
-			}
-		} else { return }
-	} catch (err) {
-		channels.send(err, module)
-	}
-}
-
 export {
 	checkMemberRole,
 	arrIncludesString,
 	alreadyCalled,
-	updateButtonData,
-	removeButtons
 }
