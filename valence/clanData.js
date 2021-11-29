@@ -13,7 +13,7 @@ const setRoles = async (member, newRole, oldRole) => {
 	await member.roles.remove(oldRole.id)
 }
 
-const updateRoles = async (client, dbCheck, server, channels, users) => {
+export const updateRoles = async (client, dbCheck, server, channels, users) => {
 	const errors = client.channels.cache.get(channels.errors.id)
 	// eslint-disable-next-line no-useless-return
 	if (adminRoles.includes(dbCheck.clanRank) || !dbCheck.discActive || dbCheck.alt) { return } else {
@@ -62,5 +62,3 @@ const updateRoles = async (client, dbCheck, server, channels, users) => {
 		}
 	}
 }
-
-export default updateRoles

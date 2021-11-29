@@ -1,6 +1,6 @@
 import cron from 'node-cron'
 
-const otherTimer = (message, db) => {
+export const otherTimer = (message, db) => {
 // Checking the DB and marking dead calls
 	cron.schedule('*/5 * * * *', async () => {
 		const channels = await db.channels
@@ -19,5 +19,3 @@ const otherTimer = (message, db) => {
 		}
 	})
 }
-
-export default otherTimer

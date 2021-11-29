@@ -3,7 +3,7 @@ import { blueDark } from '../../colors.js'
 import { modAppEmbed, defaultEmbed } from '../../templateEmbeds.js'
 import { Permissions } from '../../classes.js'
 import { MessageEmbed } from 'discord.js'
-import vEvents from '../../valence/valenceEvents.js'
+import { vEvents } from '../../valence/valenceEvents.js'
 import dsf from '../../dsf/merch/main.js'
 const db = new MongoCollection('Settings')
 

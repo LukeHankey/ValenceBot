@@ -24,5 +24,5 @@ const alreadyCalled = (message, messages) => {
 export {
 	checkMemberRole,
 	arrIncludesString,
-	alreadyCalled,
+	alreadyCalled
 }

@@ -12,7 +12,7 @@ const factEmbed = (factMessage) => {
 	return embed
 }
 
-const sendFact = async (client) => {
+export const sendFact = async (client) => {
 	const vFactsColl = new MongoCollection('Facts')
 	const count = await vFactsColl.collection.stats()
 		.then(res => {
@@ -28,5 +28,3 @@ const sendFact = async (client) => {
 		client.channels.cache.get(channel).send({ embeds: [factEmbed(factDB.Message)] })
 	})
 }
-
-export default sendFact
