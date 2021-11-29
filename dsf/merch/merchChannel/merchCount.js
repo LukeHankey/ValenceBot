@@ -1,5 +1,5 @@
 import { merchRegex } from '../constants.js'
-import { checkMemberRole, arrIncludesString, alreadyCalled, updateButtonData } from '../merchFunctions.js'
+import { checkMemberRole, arrIncludesString, alreadyCalled } from '../merchFunctions.js'
 import { MessageActionRow, MessageButton } from 'discord.js'
 
 const addMerchCount = async (client, message, db) => {
@@ -21,12 +21,22 @@ const addMerchCount = async (client, message, db) => {
 		const buttonSelection = new MessageActionRow()
 			.addComponents(
 				new MessageButton()
-					.setCustomId(`primary_${userN.user.id}`)
+					.setCustomId(`DM ${userN.user.username}`)
 					.setLabel(`DM ${userN.user.username}`)
 					.setStyle('PRIMARY')
 					.setEmoji('✉️'),
 				new MessageButton()
-					.setCustomId(`danger_${userN.user.id}`)
+					.setCustomId('Show How To React')
+					.setLabel('Show How To React')
+					.setStyle('SUCCESS')
+					.setEmoji('☠️'),
+				new MessageButton()
+					.setCustomId('Eyes on Merch Calls')
+					.setLabel('Eyes on Merch Calls')
+					.setStyle('SUCCESS')
+					.setEmoji('👀'),
+				new MessageButton()
+					.setCustomId('Clear Buttons')
 					.setLabel('Clear Buttons')
 					.setStyle('DANGER')
 					.setEmoji('❌')
@@ -36,12 +46,10 @@ const addMerchCount = async (client, message, db) => {
 			if (!merchRegex.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, messages)) {
 				console.log(`New & Spam: ${userN.user.username} (${message.content})`, userN.id)
 				if (message.guild.id === '668330890790699079') {
-					const buttonMessageError = await botServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\`\`\``, components: [buttonSelection] })
-					return await updateButtonData(db, message, userN, buttonMessageError)
+					return await botServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\`\`\``, components: [buttonSelection] })
 				}
 				await botServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\`\`\`` })
-				const buttonMessageError = await dsfServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\`\`\``, components: [buttonSelection] })
-				return await updateButtonData(db, message, userN, buttonMessageError)
+				await dsfServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\`\`\``, components: [buttonSelection] })
 			}
 			console.log(`New: ${userN.user.username} (${message.content})`, userN.id)
 			await db.collection.findOneAndUpdate({ _id: message.channel.guild.id },
@@ -72,12 +80,10 @@ const addMerchCount = async (client, message, db) => {
 			if (!merchRegex.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, messages)) {
 				console.log(`Old & Spam: ${userN.user.username} (${message.content})`, userN.user.id)
 				if (message.guild.id === '668330890790699079') {
-					const buttonMessageError = await botServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.user.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\`\`\``, components: [buttonSelection] })
-					return await updateButtonData(db, message, userN, buttonMessageError)
+					return await botServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.user.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\`\`\``, components: [buttonSelection] })
 				}
 				await botServerErrorChannel.send({ content: ` \`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.user.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\`\`\`` })
-				const buttonMessageError = await dsfServerErrorChannel.send({ content: ` \`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.user.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\`\`\``, components: [buttonSelection] })
-				return await updateButtonData(db, message, userN, buttonMessageError)
+				await dsfServerErrorChannel.send({ content: ` \`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.user.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\`\`\``, components: [buttonSelection] })
 			}
 			console.log(`Old: ${userN.user.username} (${message.content})`, findMessage.userID === userN.id, findMessage.userID, userN.id)
 			await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
