@@ -1,4 +1,4 @@
-const addOtherCount = async (message, db) => {
+export const addOtherCount = async (message, db) => {
 	// Adds count for other events channel
 	const channels = await db.channels
 	try {
@@ -76,5 +76,3 @@ const addOtherCount = async (message, db) => {
 		channels.errors.send(e)
 	}
 }
-
-export default addOtherCount

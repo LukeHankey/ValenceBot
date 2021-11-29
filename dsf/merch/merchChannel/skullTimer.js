@@ -1,6 +1,6 @@
 import cron from 'node-cron'
 
-const skullTimer = (message, db) => {
+export const skullTimer = (message, db) => {
 // Checking the DB and marking dead calls
 	const timer = cron.schedule('* * * * *', async () => {
 		const channels = await db.channels
@@ -58,5 +58,3 @@ const skullTimer = (message, db) => {
 		})
 	})
 }
-
-export default skullTimer

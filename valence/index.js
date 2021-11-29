@@ -1,3 +1,3 @@
-export * as updateRoles from './clanData.js'
-export * as vEvents from './valenceEvents.js'
-export * as sendFact from './dailyFact.js'
+export * from './clanData.js'
+export * from './valenceEvents.js'
+export * from './dailyFact.js'

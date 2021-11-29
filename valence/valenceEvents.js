@@ -2,7 +2,7 @@ import { MongoCollection } from '../DataBase.js'
 import { MessageEmbed } from 'discord.js'
 import { randomNum } from '../functions.js'
 
-const vEvents = async (client, message, channels) => {
+export const vEvents = async (client, message, channels) => {
 	const db = new MongoCollection('Settings')
 	const DB = await db.collection.findOne({ _id: message.channel.guild.id, 'channels.events': { $exists: true } }, { projection: { channels: 1, calendarID: 1 } })
 
@@ -107,5 +107,3 @@ const vEvents = async (client, message, channels) => {
 		}
 	}
 }
-
-export default vEvents
