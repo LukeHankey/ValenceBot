@@ -3,7 +3,6 @@
 import { MongoCollection } from '../../DataBase.js'
 import { msCalc, doubleDigits, nextDay } from '../../functions.js'
 import { scout, vScout, classVars, addedRoles, removedRoles, removeInactives } from '../../dsf/scouts/scouters.js'
-import { removeButtons } from '../../dsf/merch/merchFunctions.js'
 import { Formatters } from 'discord.js'
 import sendFact from '../../valence/dailyFact.js'
 import updateRoles from '../../valence/clanData.js'
@@ -169,7 +168,6 @@ export default async client => {
 			removedRoles(role, db)
 		})
 		removeInactives(scout, db)
-		await removeButtons(client, db)
 
 		// Daily Reset
 		if (new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
