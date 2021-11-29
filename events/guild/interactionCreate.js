@@ -17,7 +17,9 @@ export default async (client, interaction) => {
 		const { selectMenu } = await import('../../handlers/interactions/selectMenu.js')
 		await selectMenu(interaction, data, db)
 	} else if (interaction.isContextMenu()) {
-		const { contextMenu } = await import('../../handlers/interactions/contextMenu.js')
-		await contextMenu(interaction, data, db)
+		const client = interaction.client
+		const command = client.commands.get(interaction.commandName)
+
+		await command.menu(interaction, data, db)
 	}
 }
