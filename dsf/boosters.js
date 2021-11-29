@@ -91,6 +91,4 @@ const newBoost = async (message, boostChannel) => {
 	}
 }
 
-module.exports = {
-	newBoost
-}
+export default newBoost
