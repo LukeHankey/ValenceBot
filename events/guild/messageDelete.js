@@ -1,5 +1,5 @@
 import { MongoCollection } from '../../DataBase.js'
-import { MessageEmbed } from 'discord.js'
+import { MessageEmbed, MessageActionRow, MessageButton } from 'discord.js'
 import { redDark } from '../../colors.js'
 
 export default async (client, message) => {
@@ -11,22 +11,26 @@ export default async (client, message) => {
 	const botServerChannel = await client.channels.cache.get('784543962174062608')
 	const dsfServerChannel = await client.channels.cache.get('884076361940078682')
 
+	const buttonSelection = new MessageActionRow()
+		.addComponents(
+			new MessageButton()
+				.setCustomId('Remove Merch Count')
+				.setLabel('Remove Merch Count')
+				.setStyle('SUCCESS')
+				.setEmoji('✅'))
+
 	const sendAndUpdate = async (webhook, embed, data) => {
-		const sentChannel = await webhook.send({ embeds: [embed] })
+		const sentChannel = await webhook.send({ embeds: [embed], components: [buttonSelection] })
 		const { userID } = data
 		if (sentChannel.guild.id === message.guild.id) {
 			await db.collection.updateOne({ _id: message.guild.id }, {
 				$pull: { 'merchChannel.messages': { messageID: data.messageID } },
 				$addToSet: { 'merchChannel.deletions.messages': { messageID: sentChannel.id, authorID: userID } }
 			})
-				.then(() => {
-					sentChannel.react('✅')
-				})
 		}
 	}
 
 	// Cached messages only show the message object without null //
-
 	// No DMs and only in merch channels
 	if (!message.channel.guild || fullDB.merchChannel.channelID !== message.channel.id) return
 	const fetchedLogs = await message.channel.guild.fetchAuditLogs({

@@ -1,4 +1,5 @@
-import { MessageButton, MessageActionRow, MessageSelectMenu } from 'discord.js'
+import { MessageButton, MessageActionRow, MessageSelectMenu, MessageEmbed } from 'discord.js'
+import { greenLight } from '../../colors.js'
 
 export const buttons = async (interaction, db, data, cache) => {
 	const channels = await db.channels
@@ -69,6 +70,26 @@ export const buttons = async (interaction, db, data, cache) => {
 
 			await generalChannel.send({ content: nonsenseMessage })
 			await interaction.update({ components: [] })
+		}
+			break
+		case 'Remove Merch Count': {
+			if (interaction.user.bot) return
+			const item = data.merchChannel.deletions.messages.find(item => item.messageID === interaction.message.id)
+			if (item) {
+				await db.collection.updateOne({ _id: interaction.guild.id, 'merchChannel.scoutTracker.userID': item.authorID }, {
+					$inc: {
+						'merchChannel.scoutTracker.$.count': -1
+					}
+				})
+				await db.collection.updateOne({ _id: interaction.guild.id }, {
+					$pull: {
+						'merchChannel.deletions.messages': { messageID: item.messageID }
+					}
+				})
+				const newEmbed = new MessageEmbed(interaction.message.embeds[0])
+				newEmbed.setColor(greenLight).setTitle('Message Deleted - Count Removed')
+				await interaction.message.edit({ embeds: [newEmbed], components: [] })
+			}
 		}
 		}
 	} catch (err) {
