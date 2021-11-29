@@ -1,7 +1,7 @@
 import { MongoCollection } from '../../DataBase.js'
 import { MessageEmbed } from 'discord.js'
 import { removeMessage, removeEvents } from '../../functions.js'
-import { redDark, greenLight } from '../../colors.js'
+import { redDark } from '../../colors.js'
 import fetch from 'node-fetch'
 
 const db = new MongoCollection('Settings')
@@ -150,16 +150,14 @@ export default async (client, reaction, user) => {
 			const {
 				merchChannel: {
 					channelID,
-					spamProtection,
-					deletions
+					spamProtection
 				}
-			} = await db.collection.findOne({ _id: message.channel.guild.id },
+			} = await db.collection.findOne({ _id: message.guild.id },
 				{
 					projection: {
 						'merchChannel.channelID': 1,
 						'merchChannel.spamProtection': 1,
-						'merchChannel.blocked': 1,
-						'merchChannel.deletions': 1
+						'merchChannel.blocked': 1
 					}
 				})
 
@@ -201,26 +199,6 @@ export default async (client, reaction, user) => {
 				})
 			}
 				break
-			case deletions.channelID: {
-				if (user.bot || reaction.emoji.name !== '✅') return
-				const item = deletions.messages.find(item => item.messageID === message.id)
-				if (item) {
-					await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': item.authorID }, {
-						$inc: {
-							'merchChannel.scoutTracker.$.count': -1
-						}
-					})
-					await db.collection.updateOne({ _id: message.channel.guild.id }, {
-						$pull: {
-							'merchChannel.deletions.messages': { messageID: item.messageID }
-						}
-					})
-					const newEmbed = new MessageEmbed(message.embeds[0])
-					newEmbed.setColor(greenLight).setTitle('Message Deleted - Count Removed')
-					await message.edit({ embeds: [newEmbed] })
-					return message.reactions.removeAll()
-				}
-			}
 			}
 		}
 	}
