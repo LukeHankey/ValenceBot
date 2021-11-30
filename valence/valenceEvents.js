@@ -4,7 +4,7 @@ import { randomNum } from '../functions.js'
 
 export const vEvents = async (client, message, channels) => {
 	const db = new MongoCollection('Settings')
-	const DB = await db.collection.findOne({ _id: message.channel.guild.id, 'channels.events': { $exists: true } }, { projection: { channels: 1, calendarID: 1 } })
+	const DB = await db.collection.findOne({ _id: message.guild.id, 'channels.events': { $exists: true } }, { projection: { channels: 1, calendarID: 1 } })
 
 	// eslint-disable-next-line no-useless-escape
 	if (!DB) return
@@ -34,11 +34,11 @@ export const vEvents = async (client, message, channels) => {
 			if (collectOneReaction.emoji.name === '❌') {
 				return collectOneReaction.message.reactions.removeAll()
 			} else if (collectOneReaction.emoji.name === '✅') {
-				const newRole = await message.channel.guild.roles.create({
+				const newRole = await message.guild.roles.create({
 					name: eventTitle[0].concat(` #${randomNum()}`)
 				})
 
-				const calChannel = message.channel.guild.channels.cache.find((ch) => ch.name === 'calendar')
+				const calChannel = message.guild.channels.cache.find((ch) => ch.name === 'calendar')
 				const dateRegex = /^(Date(:)?\s)+((3[0-1]|2\d|1\d|[1-9])(st|nd|rd|th)?)+\s?((-|to)+\s?((3[0-1]|2\d|1\d|[1-9])(st|nd|rd|th)?)+)?(\s)?$/im
 				const timeRegex = /^(Time(:)?\s)+(([1-6]+(\s)?(day(s)?|week(s)?|month(s)?)(\s)?$)?|(([0-1]\d|2[0-3]):([0-5]\d)\s?)?((-|to)+\s?(([0-1]\d|2[0-3]):([0-5]\d))?)?)$/im
 				const link = `https://discord.com/channels/${last.guild.id}/${last.channel.id}/${last.id}`
@@ -102,7 +102,7 @@ export const vEvents = async (client, message, channels) => {
 		} catch (err) {
 			console.log(err)
 			if (err.code === 50035) {
-				message.channel.guild.channels.cache.get(DB.channels.mod).send({ content: `${message.member} reacted with ✅ but the Event Title (1st line) is too long. Max of 100 characters.` })
+				message.guild.channels.cache.get(DB.channels.mod).send({ content: `${message.member} reacted with ✅ but the Event Title (1st line) is too long. Max of 100 characters.` })
 			}
 		}
 	}

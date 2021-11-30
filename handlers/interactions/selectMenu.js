@@ -27,7 +27,6 @@ export const selectMenu = async (interaction, _, db, cache) => {
 		}
 	} else {
 		const [...keys] = interaction.values
-		console.log(keys, interaction.guild.id)
 		for (const key of keys) {
 			await db.collection.updateOne({ _id: interaction.guild.id },
 				{

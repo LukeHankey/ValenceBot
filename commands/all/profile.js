@@ -15,12 +15,12 @@ export default {
 	run: async (client, message, args, perms, db) => {
 		const channels = await db.channels
 		const memberID = message.member.id
-		const data = await db.collection.findOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': memberID }, { projection: { 'merchChannel.scoutTracker': 1 } })
-		const botRole = message.channel.guild.me.roles.cache.find(r => r.managed)
+		const data = await db.collection.findOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': memberID }, { projection: { 'merchChannel.scoutTracker': 1 } })
+		const botRole = message.guild.me.roles.cache.find(r => r.managed)
 		const memberRoles = message.member.roles.highest.position
 
 		const sendUserInfo = async (id = memberID, uData = { scoutTracker: data.merchChannel.scoutTracker }) => {
-			const fetchedMember = await message.channel.guild.members.fetch(id)
+			const fetchedMember = await message.guild.members.fetch(id)
 			const embed = new MessageEmbed()
 				.setTitle(`Member Profile - ${id}`)
 				.setDescription('Current tracked stats in this server.')
@@ -29,8 +29,8 @@ export default {
 				.setFooter('Something wrong or missing? Let a Moderator+ know!', client.user.displayAvatarURL())
 				.setTimestamp()
 			const userData = uData.scoutTracker.filter(mem => mem.userID === id)
-			const memberAssignedRoles = fetchedMember.roles.cache.filter(r => r.id !== message.channel.guild.id && r.position > botRole.position).sort((a, b) => b.position - a.position).map(role => `<@&${role.id}>`)
-			const memberSelfRoles = fetchedMember.roles.cache.filter(r => r.id !== message.channel.guild.id && r.position < botRole.position).map(role => `<@&${role.id}>`)
+			const memberAssignedRoles = fetchedMember.roles.cache.filter(r => r.id !== message.guild.id && r.position > botRole.position).sort((a, b) => b.position - a.position).map(role => `<@&${role.id}>`)
+			const memberSelfRoles = fetchedMember.roles.cache.filter(r => r.id !== message.guild.id && r.position < botRole.position).map(role => `<@&${role.id}>`)
 			const fields = []
 
 			if (!userData.length) return message.channel.send({ content: `\`${fetchedMember.nickname ?? fetchedMember.user.username}\` does not have a profile.` })
@@ -53,7 +53,7 @@ export default {
 		}
 
 		const sendRoleInfo = async (id, rData = { scoutTracker: data.merchChannel.scoutTracker }) => {
-			const roleObj = message.channel.guild.roles.cache.get(id)
+			const roleObj = message.guild.roles.cache.get(id)
 			const embed = new MessageEmbed()
 				.setTitle(`Member Profiles - ${roleObj.name}`)
 				.setDescription('Current tracked stats in this server.')
@@ -62,8 +62,8 @@ export default {
 				.setFooter('Something wrong or missing? Let a Moderator+ know!', client.user.displayAvatarURL())
 				.setTimestamp()
 
-			const fetchRole = message.channel.guild.roles.cache.get(id) ?? await message.channel.guild.roles.fetch(id)
-			const allMem = await message.channel.guild.members.fetch()
+			const fetchRole = message.guild.roles.cache.get(id) ?? await message.guild.roles.fetch(id)
+			const allMem = await message.guild.members.fetch()
 			const fetchAllMem = allMem.filter(mem => mem.roles.cache.find(r => r.id === roleObj.id))
 			const memCollection = fetchAllMem.map(mem => mem.id) || fetchRole.members.map(mem => mem.id)
 
@@ -128,12 +128,12 @@ export default {
 
 			if (checkNum(args[0])) {
 				try {
-					userID = message.guild.members.cache.get(args[0]) ?? await message.channel.guild.members.fetch(args[0])
+					userID = message.guild.members.cache.get(args[0]) ?? await message.guild.members.fetch(args[0])
 				} catch (err) {
 					channels.errors.send(err)
 				}
 			} else {
-				roleMention = message.channel.guild.roles.cache.has(args[0].slice(3, 21))
+				roleMention = message.guild.roles.cache.has(args[0].slice(3, 21))
 				userMention = message.mentions.members.first()
 			}
 

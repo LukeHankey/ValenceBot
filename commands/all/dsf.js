@@ -28,7 +28,7 @@ export default {
 			// eslint-disable-next-line default-case-last
 			default:
 				try {
-					const { merchChannel: { messages, channelID } } = await db.collection.findOne({ _id: message.channel.guild.id }, { projection: { 'merchChannel.messages': 1, 'merchChannel.channelID': 1 } })
+					const { merchChannel: { messages, channelID } } = await db.collection.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.messages': 1, 'merchChannel.channelID': 1 } })
 					const fields = []
 					const embed = nEmbed('List of messages currently stored in the DB',
 						'There shouldn\'t be too many as they get automatically deleted after 10 minutes. If the bot errors out, please clear all of them using \`;dsf messages clear\`.',
@@ -39,7 +39,7 @@ export default {
 					for (const values of messages) {
 						let date = new Date(values.time)
 						date = date.toString().split(' ')
-						fields.push({ name: `${values.author}`, value: `**Time:** ${date.slice(0, 5).join(' ')}\n**Content:** [${values.content}](https://discordapp.com/channels/${message.channel.guild.id}/${channelID}/${values.messageID} 'Click me to go to the message.')`, inline: false })
+						fields.push({ name: `${values.author}`, value: `**Time:** ${date.slice(0, 5).join(' ')}\n**Content:** [${values.content}](https://discordapp.com/channels/${message.guild.id}/${channelID}/${values.messageID} 'Click me to go to the message.')`, inline: false })
 					}
 					return message.channel.send({ embeds: [embed.addFields(fields)] })
 				} catch (e) {
@@ -49,7 +49,7 @@ export default {
 				}
 				break
 			case 'clear':
-				await db.collection.findOneAndUpdate({ _id: message.channel.guild.id },
+				await db.collection.findOneAndUpdate({ _id: message.guild.id },
 					{
 						$pull: {
 							'merchChannel.messages': { time: { $gt: 0 } }
@@ -62,7 +62,7 @@ export default {
 		case 'reacts':
 			switch (args[1]) {
 			case 'clear': {
-				const { merchChannel: { channelID, spamProtection } } = await db.collection.findOne({ _id: message.channel.guild.id }, { projection: { 'merchChannel.spamProtection': 1, 'merchChannel.channelID': 1 } })
+				const { merchChannel: { channelID, spamProtection } } = await db.collection.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.spamProtection': 1, 'merchChannel.channelID': 1 } })
 				const channel = client.channels.cache.get(channelID)
 
 				spamProtection.forEach(async (msgObj) => {
@@ -102,14 +102,14 @@ export default {
 			}
 				break
 			default: {
-				const { merchChannel: { spamProtection, channelID } } = await db.collection.findOne({ _id: message.channel.guild.id }, { projection: { 'merchChannel.spamProtection': 1, 'merchChannel.channelID': 1 } })
+				const { merchChannel: { spamProtection, channelID } } = await db.collection.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.spamProtection': 1, 'merchChannel.channelID': 1 } })
 				let page = 0
 				const fields = []
 
 				for (const values of spamProtection) {
 					let date = new Date(values.time)
 					date = date.toString().split(' ')
-					fields.push({ name: `${values.author}`, value: `**Time:** ${date.slice(0, 5).join(' ')}\n**Content:** [${values.content}](https://discordapp.com/channels/${message.channel.guild.id}/${channelID}/${values.messageID} 'Click me to go to the message.')`, inline: false })
+					fields.push({ name: `${values.author}`, value: `**Time:** ${date.slice(0, 5).join(' ')}\n**Content:** [${values.content}](https://discordapp.com/channels/${message.guild.id}/${channelID}/${values.messageID} 'Click me to go to the message.')`, inline: false })
 				}
 				const paginate = (dataFields) => {
 					const pageEmbeds = []
@@ -174,21 +174,21 @@ export default {
 				name._client = client
 				name._guild_name = serverName
 				name._db = await db.map(doc => {
-					if (doc.serverName === name._guild_name) return doc
+					if (doc.serverName === name._guildName) return doc
 					else return undefined
 				}).filter(x => x)[0]
-				return name._client && name._guild_name && name._db
+				return name._client && name._guildName && name._db
 			}
 			const res = await db.collection.find({}).toArray()
-			await classVars(vScout, message.channel.guild.name, res)
-			await classVars(scout, message.channel.guild.name, res)
+			await classVars(vScout, message.guild.name, res)
+			await classVars(scout, message.guild.name, res)
 			const num = args[2]
 
 			switch (args[1]) {
 			case 'scouter':
 				if (num) {
 					scout = new ScouterCheck('Scouter', parseInt(num))
-					await classVars(scout, message.channel.guild.name, res)
+					await classVars(scout, message.guild.name, res)
 					scout.send(message.channel.id)
 				} else {
 					const scoutCheck = await scout._checkForScouts()
@@ -200,7 +200,7 @@ export default {
 			case 'verified':
 				if (num) {
 					vScout = new ScouterCheck('Verified Scouter', parseInt(num))
-					await classVars(vScout, message.channel.guild.name, res)
+					await classVars(vScout, message.guild.name, res)
 					vScout.send(message.channel.id)
 				} else {
 					const verifiedCheck = await vScout._checkForScouts()
@@ -218,8 +218,8 @@ export default {
 			// eslint-disable-next-line prefer-const
 			let [userID, param, num] = args.slice(1)
 			const cacheCheck = async (user) => {
-				if (!message.channel.guild.members.cache.has(user)) {
-					return await message.channel.guild.members.fetch(user)
+				if (!message.guild.members.cache.has(user)) {
+					return await message.guild.members.fetch(user)
 						.then(() => true)
 						.catch(() => false)
 				} else {
@@ -236,7 +236,7 @@ export default {
 			switch (param) {
 			case 'add':
 				if (!num) {
-					await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+					await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
 						$inc: {
 							'merchChannel.scoutTracker.$.count': 1
 						}
@@ -244,7 +244,7 @@ export default {
 					if (reaction) return message.react('✅')
 					else return message.react('❌')
 				} else if (num === 'other') {
-					await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+					await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
 						$inc: {
 							'merchChannel.scoutTracker.$.otherCount': 1
 						}
@@ -265,7 +265,7 @@ export default {
 					} else { num = +num }
 					const other = args.slice(4)
 					if (other[0] === 'other') {
-						await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+						await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
 							$inc: {
 								'merchChannel.scoutTracker.$.otherCount': +num
 							}
@@ -273,7 +273,7 @@ export default {
 						if (reaction) return message.react('✅')
 						else return message.react('❌')
 					} else {
-						await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+						await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
 							$inc: {
 								'merchChannel.scoutTracker.$.count': +num
 							}
@@ -284,7 +284,7 @@ export default {
 				}
 			case 'remove':
 				if (!num) {
-					await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+					await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
 						$inc: {
 							'merchChannel.scoutTracker.$.count': -1
 						}
@@ -292,7 +292,7 @@ export default {
 					if (reaction) return message.react('✅')
 					else return message.react('❌')
 				} else if (num === 'other') {
-					await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+					await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
 						$inc: {
 							'merchChannel.scoutTracker.$.otherCount': -1
 						}
@@ -313,7 +313,7 @@ export default {
 					} else { num = +num }
 					const other = args.slice(4)
 					if (other[0] === 'other') {
-						await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+						await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
 							$inc: {
 								'merchChannel.scoutTracker.$.otherCount': -num
 							}
@@ -321,7 +321,7 @@ export default {
 						if (reaction) return message.react('✅')
 						else return message.react('❌')
 					} else {
-						await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+						await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
 							$inc: {
 								'merchChannel.scoutTracker.$.count': -num
 							}
