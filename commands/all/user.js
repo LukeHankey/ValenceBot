@@ -30,7 +30,7 @@ export default {
 
 			const embed = new MessageEmbed()
 				.setTitle(`User Profile - ${user.RSN}`)
-				.setThumbnail(member ? member.user.displayAvatarURL() : message.channel.guild.iconURL())
+				.setThumbnail(member ? member.user.displayAvatarURL() : message.guild.iconURL())
 				.setTimestamp()
 				.setDescription(desc)
 				.setColor(greenLight)
@@ -41,7 +41,7 @@ export default {
 
 		const createEmbedForNoDB = async (mem, desc) => {
 			let member
-			if (!desc) member = await message.channel.guild.members.fetch(mem)
+			if (!desc) member = await message.guild.members.fetch(mem)
 			const embed = new MessageEmbed()
 				.setTitle('User Profile - Not Found')
 				.setDescription(desc || `User with Discord ID: ${mem} not found but they are in the Discord as ${member.toString()}.`)

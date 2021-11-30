@@ -104,7 +104,7 @@ export default {
 							.setDescription(editFormat.reverse().join('\n'))
 						await msgToEdit.edit({ content: `${openMessage}\n\n`, embeds: [embed] })
 						const after = await channelToPush.send({ content: '**Links**', embeds: [embed] })
-						await db.collection.updateOne({ _id: message.channel.guild.id }, {
+						await db.collection.updateOne({ _id: message.guild.id }, {
 							$set: {
 								'merchantWishes.messages.links.opening': msgToEdit.id,
 								'merchantWishes.messages.links.after': after.id
@@ -113,7 +113,7 @@ export default {
 					}
 					sendLinks()
 
-					db.collection.updateOne({ _id: message.channel.guild.id }, {
+					db.collection.updateOne({ _id: message.guild.id }, {
 						$set: {
 							'merchantWishes.messages.first': firstID.id,
 							'merchantWishes.messages.second': secondID.id,

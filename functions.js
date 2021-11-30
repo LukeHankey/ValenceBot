@@ -49,7 +49,7 @@ const capitalise = (str) => {
 	return str.charAt(0).toUpperCase() + str.slice(1)
 }
 const removeMessage = async (message, reactMessage, database) => {
-	await database.updateOne({ _id: message.channel.guild.id }, {
+	await database.updateOne({ _id: message.guild.id }, {
 		$pull: {
 			'merchChannel.spamProtection': { messageID: reactMessage.id }
 		}

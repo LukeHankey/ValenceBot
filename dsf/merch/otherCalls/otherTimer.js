@@ -13,7 +13,7 @@ export const otherTimer = (message, db) => {
 			} catch (e) {
 				if (e.code === 10008) {
 					const errorMessageID = e.path.split('/')[4]
-					return await db.collection.updateOne({ _id: message.channel.guild.id }, { $pull: { 'merchChannel.otherMessages': { messageID: errorMessageID } } })
+					return await db.collection.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.otherMessages': { messageID: errorMessageID } } })
 				} else { return channels.errors.send(e) }
 			}
 		}

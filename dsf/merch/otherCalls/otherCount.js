@@ -2,7 +2,7 @@ export const addOtherCount = async (message, db) => {
 	// Adds count for other events channel
 	const channels = await db.channels
 	try {
-		const { merchChannel: { scoutTracker } } = await db.collection.findOne({ _id: message.channel.guild.id }, { projection: { 'merchChannel.scoutTracker': 1 } })
+		const { merchChannel: { scoutTracker } } = await db.collection.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.scoutTracker': 1 } })
 		const mesOne = await message.channel.messages.fetch({ limit: 1 })
 		const logOne = [...mesOne.values()]
 		const msg = logOne.map(val => val)
@@ -10,7 +10,7 @@ export const addOtherCount = async (message, db) => {
 		const findMessage = await scoutTracker.find(x => x.userID === msg[0].author.id)
 		if (!findMessage) {
 			console.log(`New other: ${msg[0].author.username} (${message.content})`, msg[0].author.id)
-			await db.collection.findOneAndUpdate({ _id: message.channel.guild.id },
+			await db.collection.findOneAndUpdate({ _id: message.guild.id },
 				{
 					$addToSet: {
 						'merchChannel.scoutTracker': {
@@ -32,7 +32,7 @@ export const addOtherCount = async (message, db) => {
 				})
 		} else {
 			console.log(`Old other: ${msg[0].author.username} (${message.content})`, msg[0].author.id)
-			await db.collection.updateOne({ _id: message.channel.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
+			await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': findMessage.userID }, {
 				$inc: {
 					'merchChannel.scoutTracker.$.otherCount': 1
 				},
@@ -56,7 +56,7 @@ export const addOtherCount = async (message, db) => {
 			const authorName = log[msgs].member?.displayName
 			const userId = log[msgs].author.id
 			if (authorName === null) return
-			await db.collection.findOneAndUpdate({ _id: message.channel.guild.id },
+			await db.collection.findOneAndUpdate({ _id: message.guild.id },
 				{
 					$addToSet: {
 						'merchChannel.otherMessages': {

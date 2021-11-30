@@ -5,8 +5,8 @@ export const buttons = async (interaction, db, data, cache) => {
 	const channels = await db.channels
 	const generalChannel = interaction.guild.channels.cache.find(c => c.name === 'general')
 	let [userId, user, content, timestamp] = interaction.message.content.split('\n').slice(3)
-	if (user) user.split(' ').slice(2).join(' ')
-	if (userId) userId.split(' ').slice(3)[0].slice(3, -1)
+	if (user) user = user.split(' ').slice(2).join(' ')
+	if (userId) userId = userId.split(' ').slice(3)[0].slice(3, -1)
 
 	try {
 		switch (interaction.customId) {
@@ -50,7 +50,7 @@ export const buttons = async (interaction, db, data, cache) => {
 				.addComponents(new MessageButton(interaction.message.components[0].components[0]).setEmoji('📩').setLabel('DM sent...').setDisabled())
 			await interaction.update({ components: [row] })
 			console.log(`Action: Password Button\nBy: ${interaction.user.username}\nUser: ${fetchUser.user.username}`)
-			cache.set(interaction.message.id, { ...interaction.user })
+			cache.set(interaction.message.id, { ...fetchUser.user })
 		}
 			break
 		case 'Clear Buttons':
@@ -74,7 +74,6 @@ export const buttons = async (interaction, db, data, cache) => {
 			break
 		case 'Remove Merch Count': {
 			if (interaction.user.bot) return
-			console.log(data.merchChannel)
 			const item = data.merchChannel.deletions.messages.find(item => item.messageID === interaction.message.id)
 			if (item) {
 				await db.collection.updateOne({ _id: interaction.guild.id, 'merchChannel.scoutTracker.userID': item.authorID }, {

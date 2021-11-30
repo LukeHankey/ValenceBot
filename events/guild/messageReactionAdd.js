@@ -10,8 +10,7 @@ const usersDB = new MongoCollection('Users')
 export default async (client, reaction, user) => {
 	const message = reaction.message
 	const channels = await db.channels
-	const { _id } = await db.collection.findOne({ _id: message.channel.guild.id })
-	console.log(_id)
+	const { _id } = await db.collection.findOne({ _id: message.guild.id })
 
 	if (message.partial) await message.fetch().catch(err => channels.errors.send(err))
 	switch (message.guild.id) {
@@ -35,10 +34,10 @@ export default async (client, reaction, user) => {
 
 					await removeEvents(message, db, 'messageReactionAdd', data, event.eventTag)
 				} else if (reaction.emoji.name === '📌') {
-					const userFetch = await message.channel.guild.members.fetch(user.id)
+					const userFetch = await message.guild.members.fetch(user.id)
 					const eventFound = data.events.find(e => e.messageID === message.id)
 					userFetch.roles.add(eventFound.roleID)
-					await db.collection.findOneAndUpdate({ _id: message.channel.guild.id, 'events.messageID': eventFound.messageID }, { $addToSet: { 'events.$.members': user.id } })
+					await db.collection.findOneAndUpdate({ _id: message.guild.id, 'events.messageID': eventFound.messageID }, { $addToSet: { 'events.$.members': user.id } })
 				}
 			} else if (message.channel.id === data.channels.adminChannel) {
 				const messageMatch = nameChange.find(o => o.messageID === message.id)
@@ -63,8 +62,8 @@ export default async (client, reaction, user) => {
 							}
 						}).then(async () => await usersDB.collection.deleteOne({ clanMate: potentialPreviousName }))
 
-						db.collection.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } })
-						message.edit({ content: `Action: ✅, by: ${user.username}\n${message.content}\nDon't forget to merge their name: https://rsclanadmin.com/Clan/Manager/Members/245 to update their points.` })
+						db.collection.updateOne({ _id: message.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } })
+						message.edit({ content: `Action: ✅, by: ${user.username}\n${message.content}\nDon't forget to merge their name: <https://rsclanadmin.com/Clan/Manager/Members/245> to update their points.` })
 						return message.reactions.removeAll()
 					} else if (reaction.emoji.name === '❌') {
 						let metricsProfile = await fetch(`https://secure.runescape.com/m=website-data/playerDetails.ws?names=%5B%22${potentialPreviousName}%22%5D&callback=jQuery000000000000000_0000000000&_=0`).then(response => response.text())
@@ -104,7 +103,7 @@ export default async (client, reaction, user) => {
 									await usersDB.collection.insertOne(oldData)
 								}
 							}
-							db.collection.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } })
+							db.collection.updateOne({ _id: message.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } })
 							message.edit({ content: `Action: ❌, by: ${user.username}\n${message.content}` })
 							return message.reactions.removeAll()
 						}
@@ -137,7 +136,7 @@ export default async (client, reaction, user) => {
 								}
 							})
 							await usersDB.collection.deleteOne({ clanMate: potentialPreviousName })
-							db.collection.updateOne({ _id: message.channel.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } })
+							db.collection.updateOne({ _id: message.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } })
 							message.edit({ content: `Action: 📝, by: ${user.username}\n${message.content}` })
 							return message.reactions.removeAll()
 						} catch (err) {
@@ -190,7 +189,7 @@ export default async (client, reaction, user) => {
 					} catch (e) {
 						if (e.code === 10008) {
 							const messageID = e.path.split('/')[4]
-							return await db.collection.updateOne({ _id: message.channel.guild.id }, {
+							return await db.collection.updateOne({ _id: message.guild.id }, {
 								$pull: {
 									'merchChannel.spamProtection': { messageID: messageID }
 								}

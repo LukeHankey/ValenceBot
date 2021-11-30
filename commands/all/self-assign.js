@@ -14,11 +14,11 @@ export default {
 		const rName = roleName.join(' ').trim()
 		let rNameMulti = rName.split(',')
 		rNameMulti = rNameMulti.map(x => x.trim().toLowerCase())
-		const botRole = message.channel.guild.me.roles.cache.find(r => r.managed)
+		const botRole = message.guild.me.roles.cache.find(r => r.managed)
 		const highBotRoleID = botRole.id
 
 		const role = rNameMulti.map(rN => {
-			return message.channel.guild.roles.cache.find(roles => {
+			return message.guild.roles.cache.find(roles => {
 				return roles.name.toLowerCase() === rN
 			})
 		})
@@ -34,7 +34,7 @@ export default {
 			return message.channel.send({ content: 'Please provide the role name(s) to add/remove.' })
 		}
 
-		const botRoleHighest = message.channel.guild.roles.cache.get(highBotRoleID)
+		const botRoleHighest = message.guild.roles.cache.get(highBotRoleID)
 		const botHighest = role.filter(x => {
 			if (x === undefined) return undefined
 			return botRoleHighest.position > x.position
@@ -44,12 +44,12 @@ export default {
 			.setTitle('Self-Assigned Information')
 			.setTimestamp()
 			.setColor(greenLight)
-			.setFooter(`${client.user.username} created by Luke_#8346`, message.channel.guild.iconURL())
+			.setFooter(`${client.user.username} created by Luke_#8346`, message.guild.iconURL())
 
 		if (args[0] === 'roles') {
 			let allAvailableRoles = []
 			// eslint-disable-next-line array-callback-return
-			message.channel.guild.roles.cache.filter(allRoles => {
+			message.guild.roles.cache.filter(allRoles => {
 				if (message.guild.id === '472448603642920973') {
 					if (allRoles.position < 36) {
 						return allAvailableRoles.push(allRoles.name)

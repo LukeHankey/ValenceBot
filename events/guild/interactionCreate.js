@@ -17,7 +17,6 @@ export default async (client, interaction) => {
 	} else if (interaction.isSelectMenu()) {
 		await selectMenu(interaction, data, db, cache)
 	} else if (interaction.isContextMenu()) {
-		const client = interaction.client
 		const command = client.commands.get(interaction.commandName)
 
 		await command.menu(interaction, data, db)

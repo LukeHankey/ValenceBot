@@ -1,9 +1,6 @@
 import { merchRegex, otherCalls } from './constants.js'
-import { addMerchCount } from './merchChannel/merchCount.js'
-import { skullTimer } from './merchChannel/skullTimer.js'
-import { addOtherCount } from './otherCalls/otherCount.js'
-import { otherTimer } from './otherCalls/otherTimer.js'
 import { arrIncludesString, alreadyCalled } from './merchFunctions.js'
+import { addMerchCount, skullTimer, addOtherCount, otherTimer } from '../index.js'
 
 const dsf = async (client, message, db) => {
 	const channels = await db.channels
