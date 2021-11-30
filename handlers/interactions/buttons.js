@@ -5,8 +5,8 @@ export const buttons = async (interaction, db, data, cache) => {
 	const channels = await db.channels
 	const generalChannel = interaction.guild.channels.cache.find(c => c.name === 'general')
 	let [userId, user, content, timestamp] = interaction.message.content.split('\n').slice(3)
-	if (user) user.split(' ').slice(2).join(' ')
-	if (userId) userId.split(' ').slice(3)[0].slice(3, -1)
+	if (user) user = user.split(' ').slice(2).join(' ')
+	if (userId) userId = userId.split(' ').slice(3)[0].slice(3, -1)
 
 	try {
 		switch (interaction.customId) {
