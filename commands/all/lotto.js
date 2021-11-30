@@ -228,7 +228,7 @@ export default {
 									client.user.displayAvatarURL()
 								)
 									.addFields(found)
-									.addField('Want to enter twice for double the chance of winning?', 'It only costs 30 Clan Points! Let the Admins know in <#640641467798519808>!')
+									.addField('Want to enter twice for double the chance of winning?', 'It only costs 100 Clan Points! Let the Admins know in <#640641467798519808>!')
 								]
 							})
 						} else if (nameFound && nameFound.length === 2) {
