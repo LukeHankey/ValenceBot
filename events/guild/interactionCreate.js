@@ -6,7 +6,7 @@ const cache = new Collection()
 
 export default async (client, interaction) => {
 	const db = new MongoCollection('Settings')
-	const data = await db.collection.findOne({ _id: interaction.guildId }, { projection: { merchChannel: { components: 1, channelID: 1, otherChannelID: 1 } } })
+	const data = await db.collection.findOne({ _id: interaction.guildId }, { projection: { merchChannel: { components: 1, channelID: 1, otherChannelID: 1, deletions: 1 } } })
 
 	if (interaction.isButton()) {
 		await buttons(interaction, db, data, cache)
