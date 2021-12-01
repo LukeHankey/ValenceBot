@@ -53,8 +53,7 @@ const clanCheck = async (users, db) => {
 			return true
 		} else {
 			console.log(metricsProfile.name, 'is not in any clan')
-			await db.collection.deleteOne({ clanMate: metricsProfile.name }, { justOne: true })
-			return false
+			return true
 		}
 	} catch (err) {
 		console.error(err)
@@ -66,6 +65,10 @@ export const nameChanges = async (missingNames, db) => {
 
 	for (const names of missingNames) {
 		const potentialChangers = await db.collection.findOne({ clanMate: names })
+		/**
+		 * Find any clan member who has the same rank, kills and has gameActive as undefined.
+		 * gameActive: undefined since these will be the members who are "new to the clan"
+		 */
 		const potentialNewNames = await db.collection.find({ clanRank: potentialChangers.clanRank, kills: potentialChangers.kills, gameActive: 'undefined' }).toArray()
 		const check = await clanCheck(names, db)
 		await wait(1000)
@@ -73,7 +76,7 @@ export const nameChanges = async (missingNames, db) => {
 		if (check) {
 			// eslint-disable-next-line array-callback-return
 			const xpCheck = potentialNewNames.filter(user => {
-				if (Number(user.totalXP) - 10000000 < Number(potentialChangers.totalXP) && Number(user.totalXP) + 10000000 > Number(potentialChangers.totalXP)) {
+				if (Number(user.totalXP) - 10_000_000 < Number(potentialChangers.totalXP) && Number(user.totalXP) + 10_000_000 > Number(potentialChangers.totalXP)) {
 					return user
 				}
 			})
@@ -82,10 +85,11 @@ export const nameChanges = async (missingNames, db) => {
 		}
 	}
 
+
 	if (nameChange.length) {
 		return nameChange.forEach(async user => {
 			console.log(`Updating ${user.clanMate} as they have potentially changed names`)
-			return await db.collection.updateOne({ clanMate: user.clanMate }, { $set: { potentialNewNames: user.potentialNewNames } })
+			await db.collection.updateOne({ clanMate: user.clanMate }, { $set: { potentialNewNames: user.potentialNewNames } })
 		})
 	}
 }

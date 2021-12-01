@@ -63,7 +63,7 @@ export default async (client, reaction, user) => {
 						}).then(async () => await usersDB.collection.deleteOne({ clanMate: potentialPreviousName }))
 
 						db.collection.updateOne({ _id: message.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } })
-						message.edit({ content: `Action: ✅, by: ${user.username}\n${message.content}\nDon't forget to merge their name: https://rsclanadmin.com/Clan/Manager/Members/245 to update their points.` })
+						message.edit({ content: `Action: ✅, by: ${user.username}\n${message.content}\nDon't forget to merge their name: <https://rsclanadmin.com/Clan/Manager/Members/245> to update their points.` })
 						return message.reactions.removeAll()
 					} else if (reaction.emoji.name === '❌') {
 						let metricsProfile = await fetch(`https://secure.runescape.com/m=website-data/playerDetails.ws?names=%5B%22${potentialPreviousName}%22%5D&callback=jQuery000000000000000_0000000000&_=0`).then(response => response.text())
