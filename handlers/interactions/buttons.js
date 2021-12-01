@@ -50,7 +50,7 @@ export const buttons = async (interaction, db, data, cache) => {
 				.addComponents(new MessageButton(interaction.message.components[0].components[0]).setEmoji('📩').setLabel('DM sent...').setDisabled())
 			await interaction.update({ components: [row] })
 			console.log(`Action: Password Button\nBy: ${interaction.user.username}\nUser: ${fetchUser.user.username}`)
-			cache.set(interaction.message.id, { ...interaction.user })
+			cache.set(interaction.message.id, { ...fetchUser.user })
 		}
 			break
 		case 'Clear Buttons':

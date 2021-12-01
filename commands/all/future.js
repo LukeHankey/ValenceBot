@@ -105,7 +105,7 @@ export default {
 							.setDescription(editFormat.reverse().join('\n'))
 						await msgToEdit.edit({ content: `${openMessage}\n\n`, embeds: [embed] })
 						const after = await futureChannel.send({ content: '**Links**', embeds: [embed] })
-						await db.collection.updateOne({ _id: message.channel.guild.id }, {
+						await db.collection.updateOne({ _id: message.guild.id }, {
 							$set: {
 								'futureStock.messages.links.opening': msgToEdit.id,
 								'futureStock.messages.links.after': after.id
@@ -114,7 +114,7 @@ export default {
 					}
 					sendLinks()
 
-					db.collection.updateOne({ _id: message.channel.guild.id }, {
+					db.collection.updateOne({ _id: message.guild.id }, {
 						$set: {
 							'futureStock.messages.first': firstID.id,
 							'futureStock.messages.second': secondID.id,

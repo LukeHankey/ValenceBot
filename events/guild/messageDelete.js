@@ -32,8 +32,8 @@ export default async (client, message) => {
 
 	// Cached messages only show the message object without null //
 	// No DMs and only in merch channels
-	if (!message.channel.guild || fullDB.merchChannel.channelID !== message.channel.id) return
-	const fetchedLogs = await message.channel.guild.fetchAuditLogs({
+	if (!message.guild || fullDB.merchChannel.channelID !== message.channel.id) return
+	const fetchedLogs = await message.guild.fetchAuditLogs({
 		limit: 1,
 		type: 'MESSAGE_DELETE'
 	})
@@ -57,7 +57,7 @@ export default async (client, message) => {
 		return embed
 	}
 
-	if (message.channel.guild === null || message.author === null) return console.log('Failed to fetch data for an uncached message.')
+	if (message.guild === null || message.author === null) return console.log('Failed to fetch data for an uncached message.')
 
 	// Self deletion
 	if (target.id !== message.author.id) {
@@ -67,7 +67,7 @@ export default async (client, message) => {
 
 		const checkDB = fullDB.merchChannel.messages.find(entry => entry.messageID === message.id)
 		if (checkDB === undefined) { return console.log('Deleted message was not uploaded to the DataBase.') } else {
-			const user = await message.channel.guild.members
+			const user = await message.guild.members
 				.fetch(checkDB.userID)
 				.catch(err => console.error('message delete', err))
 
@@ -91,7 +91,7 @@ export default async (client, message) => {
 
 		const checkDB = fullDB.merchChannel.messages.find(entry => entry.messageID === message.id)
 		if (checkDB === undefined) { return console.log('Deleted message was not uploaded to the DataBase.') } else {
-			const user = await message.channel.guild.members
+			const user = await message.guild.members
 				.fetch(checkDB.userID)
 				.catch(err => console.error('message delete own', err))
 

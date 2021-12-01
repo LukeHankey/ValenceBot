@@ -19,7 +19,7 @@ export default {
 	run: async (client, message, args, perms, db) => {
 		const channels = await db.channels
 		const vFactsColl = new MongoCollection('Facts')
-		const { prefix } = await db.collection.findOne({ _id: message.channel.guild.id }, { projection: { prefix: 1 } })
+		const { prefix } = await db.collection.findOne({ _id: message.guild.id }, { projection: { prefix: 1 } })
 
 		const count = await vFactsColl.collection.stats().then(r => r.count).catch(async err => channels.errors.send(err))
 		const random = Math.floor((Math.random() * count) + 1)
@@ -109,7 +109,7 @@ export default {
 					.then(async r => {
 						message.delete()
 						const sentFact = await message.channel.send({ embeds: [factEmbed(r.Message)] })
-						channels.logs.send(`<@${message.author.id}> used the Fact command in <#${message.channel.id}>. https://discordapp.com/channels/${message.channel.guild.id}/${message.channel.id}/${sentFact.id} ${code}#${r.number}. ${r.Message}${code}`)
+						channels.logs.send(`<@${message.author.id}> used the Fact command in <#${message.channel.id}>. https://discordapp.com/channels/${message.guild.id}/${message.channel.id}/${sentFact.id} ${code}#${r.number}. ${r.Message}${code}`)
 					})
 					.catch(async err => channels.errors.send(err))
 			} else {

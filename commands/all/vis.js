@@ -91,7 +91,7 @@ export default {
 
 		const embed = new MessageEmbed()
 			.setTitle('New Vis Wax Upload')
-			.setDescription(`**${message.member.nickname ?? message.author.tag}** uploaded a new Vis Wax Image from Server:\n**${message.channel.guild.name}** - ${message.channel.guild.id}.`)
+			.setDescription(`**${message.member.nickname ?? message.author.tag}** uploaded a new Vis Wax Image from Server:\n**${message.guild.name}** - ${message.guild.id}.`)
 			.setTimestamp()
 			.setThumbnail(message.author.displayAvatarURL())
 			.setColor(cream)

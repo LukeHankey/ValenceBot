@@ -121,7 +121,7 @@ export default async (client, message) => {
 	if (message.author.bot) return
 
 	// Valence Events Channel
-	if (message.channel.guild.id === '472448603642920973' || message.channel.guild.id === '668330890790699079') {
+	if (message.guild.id === '472448603642920973' || message.guild.id === '668330890790699079') {
 		// Valence - Filter
 		const filterWords = ['retard', 'nigger']
 		const blocked = filterWords.filter(word => {
@@ -133,7 +133,7 @@ export default async (client, message) => {
 	}
 
 	try {
-		const commandDB = await db.collection.findOne({ _id: message.channel.guild.id }, { projection: { prefix: 1, roles: 1 } })
+		const commandDB = await db.collection.findOne({ _id: message.guild.id }, { projection: { prefix: 1, roles: 1 } })
 		if (!message.content.startsWith(commandDB.prefix)) return
 
 		const args = message.content.slice(commandDB.prefix.length).split(/ +/g)
@@ -148,8 +148,8 @@ export default async (client, message) => {
 
 		const perms = {
 			owner: owner.botOwner(),
-			admin: message.member.roles.cache.has(aR.memberRole()[0]) || message.member.roles.cache.has(aR.roleID) || message.author.id === message.channel.guild.ownerId,
-			mod: message.member.roles.cache.has(mR.memberRole()[0]) || message.member.roles.cache.has(mR.roleID) || mR.modPlusRoles() >= mR._role.rawPosition || message.author.id === message.channel.guild.ownerId,
+			admin: message.member.roles.cache.has(aR.memberRole()[0]) || message.member.roles.cache.has(aR.roleID) || message.author.id === message.guild.ownerId,
+			mod: message.member.roles.cache.has(mR.memberRole()[0]) || message.member.roles.cache.has(mR.roleID) || mR.modPlusRoles() >= mR._role.rawPosition || message.author.id === message.guild.ownerId,
 			errorO: owner.ownerError(),
 			errorM: mR.error(),
 			errorA: aR.error()
@@ -157,7 +157,7 @@ export default async (client, message) => {
 
 		try {
 			if (command?.menu === 'menu') return
-			command.guildSpecific === 'all' || command.guildSpecific.includes(message.channel.guild.id)
+			command.guildSpecific === 'all' || command.guildSpecific.includes(message.guild.id)
 				? command.run(client, message, args, perms, db)
 				: message.channel.send({ content: 'You cannot use that command in this server.' })
 		} catch (error) {
