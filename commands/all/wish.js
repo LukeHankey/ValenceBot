@@ -68,13 +68,13 @@ export default {
 				const botUser = await dsfServer.members.fetch(client.user.id)
 
 				const embedMaker = (num, dates) => {
-					return nEmbed(dates, 'The last 30 days of stock for the Entrepreneurial wish: Travelling Merchant coupon.', cream, '', client.user.displayAvatarURL())
+					return nEmbed(dates, 'The last 31 days of stock for the Entrepreneurial wish: Travelling Merchant coupon.', cream, '', client.user.displayAvatarURL())
 						.setFooter(`${botUser.nickname || client.user.username} created by Luke_#8346`, client.user.displayAvatarURL())
 						.addFields(num)
 				}
 
 				const channelToPush = client.channels.cache.get(merchantWishes.channelID)
-				const openMessage = '**Travelling Merchant Wishes**\n\nWith the release of the wishes that came out on Monday 24th May, we thought we would compile the last 30 days of stock for you so you are able to see which items and on which days the different stock was available. Please note that you will only be able to purchase the stock if you had not already purchased it on that specific day.'
+				const openMessage = '**Travelling Merchant Wishes**\n\nWith the release of the wishes that came out on Monday 24th May, we thought we would compile the last 31 days of stock for you so you are able to see which items and on which days the different stock was available. Please note that you will only be able to purchase the stock if you had not already purchased it on that specific day.'
 
 				const firstDate = `${dataArr[0][0]} - ${dataArr[21][0]}`
 				const secondDate = `${dataArr[24][0]} - ${dataArr[45][0]}`
