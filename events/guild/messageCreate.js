@@ -57,7 +57,7 @@ export default async (client, message) => {
 		const { merchChannel: { channelID, otherChannelID }, channels: { adminChannel } } = await db.collection.findOne({ _id: message.guild.id, merchChannel: { $exists: true } }, { projection: { 'merchChannel.channelID': 1, 'merchChannel.otherChannelID': 1, channels: 1 } })
 
 		// eslint-disable-next-line no-useless-escape
-		const scamLinkRegex = /((?!.*discord)(?=.*\b(d\w{5,8}[dcl]){1}[-\./](give|gift|nitro))\b.*)/gi
+		const scamLinkRegex = /((?!.*discord)(?=.*\b(d\w{5,8}[dcl]){1}[-\./]?(give|gift|nitro))\b.*)/gi
 		const scamWordMatchRegex = /((.*? )?(discord|nitro|free|@everyone|steam)){3}/gi
 		if (scamLinkRegex.test(message.content) || scamWordMatchRegex.test(message.content)) {
 			const bannedMember = message.member
