@@ -16,6 +16,9 @@ export default {
 			try {
 				const dsfServerErrorChannel = await client.channels.cache.get('884076361940078682')
 				const message = interaction.channel.messages.cache.get(interaction.targetId)
+				// 1st safeguard to check the cache.
+				if (message.reactions.cache.has('☠️')) return await interaction.editReply({ content: 'This call is already marked as dead.' })
+
 				const reaction = await message.react('☠️')
 				const userReactCollection = await reaction.users.fetch()
 				const timestamp = interaction.createdAt.toString().split(' ').slice(0, 5).join(' ')
