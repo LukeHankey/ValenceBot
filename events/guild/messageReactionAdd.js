@@ -66,10 +66,20 @@ export default async (client, reaction, user) => {
 						message.edit({ content: `Action: ✅, by: ${user.username}\n${message.content}\nDon't forget to merge their name: <https://rsclanadmin.com/Clan/Manager/Members/245> to update their points.` })
 						return message.reactions.removeAll()
 					} else if (reaction.emoji.name === '❌') {
+						// Checks if the potential previous name is equal to the current name.
 						let metricsProfile = await fetch(`https://secure.runescape.com/m=website-data/playerDetails.ws?names=%5B%22${potentialPreviousName}%22%5D&callback=jQuery000000000000000_0000000000&_=0`).then(response => response.text())
 						metricsProfile = JSON.parse(metricsProfile.slice(34, -4))
 						const userLeft = await usersDB.collection.findOne({ $text: { $search: potentialPreviousName, $caseSensitive: false } }, { projection: { _id: 0, potentialNewNames: 0, profile: 0 } })
 
+						/**
+						 * metricsProfile.clan can be undefined if not in a clan.
+						 * 3 cases: undefined, Valence, default (not valence)
+						 *
+						 * Redesign with buttons
+						 *
+						 * Member must be removed from Users and Valence if they are not in Valence.
+						 * If member in Valence, remove from listing
+						 */
 						if (metricsProfile.clan && metricsProfile.clan !== 'Valence') {
 							const embed = new MessageEmbed()
 								.setTitle(`${userLeft.clanMate} is no longer in Valence`)
@@ -81,32 +91,16 @@ export default async (client, reaction, user) => {
 							await usersDB.collection.deleteOne({ clanMate: userLeft.clanMate })
 						} else {
 							// Checks if the potential previous name is equal to the current name.
-							let metricsProfile = await fetch(`https://secure.runescape.com/m=website-data/playerDetails.ws?names=%5B%22${potentialPreviousName}%22%5D&callback=jQuery000000000000000_0000000000&_=0`).then(response => response.text())
-							metricsProfile = JSON.parse(metricsProfile.slice(34, -4))
-							const userLeft = await usersDB.collection.findOne({ $text: { $search: potentialPreviousName, $caseSensitive: false } }, { projection: { _id: 0, potentialNewNames: 0, profile: 0 } })
-
-							if (metricsProfile.clan && metricsProfile.clan !== 'Valence') {
-								const embed = new MessageEmbed()
-									.setTitle(`${userLeft.clanMate} is no longer in Valence`)
-									.setDescription(`${user.username} chose ❌ on name changes. (Not changed names or none match). User has been removed from the database.`)
-									.setColor(redDark)
-									.addField('Users old profile', `\`\`\`${JSON.stringify(userLeft)}\`\`\``)
-								const channel = client.channels.cache.get(channels.errors.id)
-								channel.send(embed)
-								await usersDB.collection.deleteOne({ clanMate: userLeft.clanMate })
-							} else {
-								// Checks if the potential previous name is equal to the current name.
-								// eslint-disable-next-line no-lonely-if
-								if (userLeft.clanMate === potentialPreviousName) {
-									oldData = oldData.find(u => u.clanMate.toLowerCase() === potentialPreviousName.toLowerCase())
-									await usersDB.collection.deleteOne({ clanMate: potentialPreviousName })
-									await usersDB.collection.insertOne(oldData)
-								}
+							// eslint-disable-next-line no-lonely-if
+							if (userLeft.clanMate === potentialPreviousName) {
+								oldData = oldData.find(u => u.clanMate.toLowerCase() === potentialPreviousName.toLowerCase())
+								await usersDB.collection.deleteOne({ clanMate: potentialPreviousName })
+								await usersDB.collection.insertOne(oldData)
 							}
-							db.collection.updateOne({ _id: message.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } })
-							message.edit({ content: `Action: ❌, by: ${user.username}\n${message.content}` })
-							return message.reactions.removeAll()
 						}
+						db.collection.updateOne({ _id: message.guild.id }, { $pull: { nameChange: { messageID: messageMatch.messageID } } })
+						message.edit({ content: `Action: ❌, by: ${user.username}\n${message.content}` })
+						return message.reactions.removeAll()
 					} else if (reaction.emoji.name === '📝') {
 						try {
 							message.channel.send('Please type out one of the above suggested names.')

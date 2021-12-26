@@ -91,6 +91,15 @@ export const buttons = async (interaction, db, data, cache) => {
 				await interaction.message.edit({ embeds: [newEmbed], components: [] })
 			}
 		}
+			break
+		case 'Timeout': {
+			const member = await interaction.guild.members.fetch(userId)
+			const bansChannel = interaction.guild.channels.cache.get('624655664920395786')
+
+			await member.disableCommunicationUntil(Date.now() + (10 * 60 * 1000), `${interaction.member.displayName}: Timeout ${member.displayName} for 10 minutes.`)
+			await bansChannel.send({ content: `${member.displayName} has been timed out by ${interaction.member.displayName} for 10 minutes.` })
+			await interaction.update({ components: [] })
+		}
 		}
 	} catch (err) {
 		channels.errors.send(err)
