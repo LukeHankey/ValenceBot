@@ -36,6 +36,11 @@ export const addMerchCount = async (client, message, db) => {
 					.setStyle('SUCCESS')
 					.setEmoji('👀'),
 				new MessageButton()
+					.setCustomId('Timeout')
+					.setLabel('Timeout')
+					.setStyle('SECONDARY')
+					.setEmoji('⏲️'),
+				new MessageButton()
 					.setCustomId('Clear Buttons')
 					.setLabel('Clear Buttons')
 					.setStyle('DANGER')
