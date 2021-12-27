@@ -87,6 +87,7 @@ const randomNum = () => {
 	return (Math.round(Math.random() * 10000) + 1)
 }
 const removeEvents = async (message, db, module, database, eventTag) => {
+	const channels = await db.channels
 	try {
 		const eventsChannel = message.guild.channels.cache.get(database.channels.events)
 		const [eventMessageCheck] = database.events.filter(event => { if (event.eventTag === eventTag) { return event } else return undefined })
@@ -127,9 +128,9 @@ const removeEvents = async (message, db, module, database, eventTag) => {
 		const updateEmbed = new MessageEmbed(calMessage.embeds[0])
 		updateEmbed.spliceFields(foundIndex, 1)
 		calMessage.edit({ embeds: [updateEmbed] })
-		return await db.channels.logs.send(`Calendar updated - ${message.member.displayName} removed event: \`\`\`diff\n- Removed\n${removedItem.join()}\`\`\``)
+		return channels.logs.send(`Calendar updated - ${message.member.displayName} removed event: \`\`\`diff\n- Removed\n${removedItem.join()}\`\`\``)
 	} catch (err) {
-		return await db.channels.errors.send(err)
+		return channels.errors.send(err)
 	}
 }
 const csvJSON = (csv) => {

@@ -1,4 +1,4 @@
-import gsheet from '../../gsheets.js'
+import { googleClient } from '../../gsheets.js'
 import { google } from 'googleapis'
 import { nEmbed } from '../../functions.js'
 import { greenLight, redDark, gold, greenDark, redLight } from '../../colors.js'
@@ -23,9 +23,9 @@ export default {
 		const altMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
 		const monthIndex = (new Date()).getUTCMonth()
 		try {
-			gsheet.googleClient.authorize(err => {
+			googleClient.authorize(err => {
 				if (err) console.error(err)
-				googleSheets(gsheet.googleClient)
+				googleSheets(googleClient)
 			})
 			let rangeName
 			if (database.lottoSheet === null) {
