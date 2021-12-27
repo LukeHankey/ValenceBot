@@ -8,6 +8,8 @@ import dsf from '../../dsf/merch/main.js'
 const db = new MongoCollection('Settings')
 
 export default async (client, message) => {
+	const channels = await db.channels
+
 	// Handling DMs
 	if (message.guild === null || message.channel.type === 'DM') {
 		if (message.partial) await message.fetch()
@@ -108,6 +110,7 @@ export default async (client, message) => {
 			const contentArr = message.content.split('\n')
 			await db.collection.updateOne({ _id: 'Globals' }, {
 				$set: {
+					vis: null,
 					visContent: contentArr,
 					visTime: message.createdAt
 				}
@@ -161,7 +164,6 @@ export default async (client, message) => {
 			if (commandName !== command) return
 		}
 	} catch (err) {
-		const channels = await db.channels
 		channels.errors.send(err)
 	}
 }

@@ -70,7 +70,7 @@ export const nameChanges = async (missingNames, db) => {
 		 * gameActive: undefined since these will be the members who are "new to the clan"
 		 */
 		const potentialNewNames = await db.collection.find({ clanRank: potentialChangers.clanRank, kills: potentialChangers.kills, gameActive: 'undefined' }).toArray()
-		const check = await clanCheck(names)
+		const check = await clanCheck(names, db)
 		await wait(1000)
 
 		if (check) {
