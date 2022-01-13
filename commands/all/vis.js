@@ -45,16 +45,28 @@ export default {
 			const savedDate = visTime.toString().split(' ')
 
 			if (year !== savedDate[3] || month !== savedDate[1] || day !== savedDate[2]) {
-				interaction.reply({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' })
+				interaction.reply({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command. I will ping you when the stock is out.' })
 				return await db.collection.updateOne({ _id: 'Globals' }, {
 					$set: {
 						vis: null,
 						visContent: []
+					},
+					$addToSet: {
+						visCache: {
+							$each: { user: interaction.user.id, channel: interaction.channel.id, guild: interaction.guild.id }
+						}
 					}
 				})
 			}
 			if (vis === null && visContent.length === 0) {
-				return await interaction.reply({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' })
+				await db.collection.updateOne({ _id: 'Globals' }, {
+					$addToSet: {
+						visCache: {
+							$each: { user: interaction.user.id, channel: interaction.channel.id, guild: interaction.guild.id }
+						}
+					}
+				})
+				return await interaction.reply({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command. I will ping you when the stock is out.' })
 			} else if (vis) {
 				return interaction.reply({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}>\nSource: [Vis Wax Server](https://discord.gg/wv9Ecs4)`, files: [vis] })
 			} else {
@@ -106,17 +118,27 @@ export default {
 				const savedDate = visTime.toString().split(' ')
 
 				if (year !== savedDate[3] || month !== savedDate[1] || day !== savedDate[2]) {
-					message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' })
-					return await db.collection.updateOne({ _id: 'Globals' }, {
+					message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command. I will ping you when the stock is out.' })
+					await db.collection.updateOne({ _id: 'Globals' }, {
 						$set: {
 							vis: null,
 							visContent: []
 						}
 					})
+					return await db.collection.updateOne({ _id: 'Globals' }, {
+						$addToSet: {
+							visCache: { user: message.author.id, channel: message.channel.id, guild: message.guild.id }
+						}
+					})
 				}
 
 				if (vis === null && visContent.length === 0) {
-					return message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' })
+					await db.collection.updateOne({ _id: 'Globals' }, {
+						$addToSet: {
+							visCache: { user: message.author.id, channel: message.channel.id, guild: message.guild.id }
+						}
+					})
+					return message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command. I will ping you when the stock is out.' })
 				} else if (vis) {
 					return message.channel.send({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}>\nSource: Vis Wax Server | <https://discord.gg/wv9Ecs4>`, files: [vis] })
 				} else {
@@ -134,7 +156,12 @@ export default {
 					return await message.channel.send({ content: `**Image uploaded at:** <t:${(Math.round(Date.parse(visTime)) / 1000)}>\nSource: Vis Wax Server | <https://discord.gg/wv9Ecs4>\n${newContent.join('\n')}` })
 				}
 			} catch (err) {
-				return message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command for others if you have the current stock.' })
+				await db.collection.updateOne({ _id: 'Globals' }, {
+					$addToSet: {
+						visCache: { user: message.author.id, channel: message.channel.id, guild: message.guild.id }
+					}
+				})
+				return message.channel.send({ content: 'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command. I will ping you when the stock is out.' })
 			}
 		} else { // Image URL
 			const array = ['gif', 'jpeg', 'tiff', 'png', 'webp', 'bmp', 'prnt.sc', 'gyazo.com']

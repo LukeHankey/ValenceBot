@@ -115,6 +115,41 @@ export default async (client, message) => {
 					visTime: message.createdAt
 				}
 			})
+			const { visCache, visContent } = await db.collection.findOne({ _id: 'Globals' }, { projection: { visCache: 1, visContent: 1 } })
+			const channels = new Set()
+			const guilds = new Set()
+			visCache.forEach(obj => {
+				channels.add(obj.channel)
+				guilds.add(obj.guild)
+			})
+
+			const content = visContent.flat()
+			const slotOneIndex = content.findIndex(el => el.match(/slot/i))
+			const newContent = content.slice(slotOneIndex).map(el => {
+				const match = el.match(/<:[\w_]{1,14}:\d{1,18}>/g)
+				if (match) {
+					el = el.trim().slice(match[0].length)
+					return `\t${el}`
+				}
+				return el
+			})
+
+			for (const guild of guilds) {
+				const g = client.guilds.cache.get(guild)
+				for (const channel of channels) {
+					const c = g.channels.cache.get(channel)
+					if (!c) continue
+
+					const usersWithSameChannel = visCache.map(o => { if (o.channel === c.id) return `<@!${o.user}>` }).filter(Boolean)
+					await c.send({ content: `${usersWithSameChannel.join(', ')}\nSource: Vis Wax Server | <https://discord.gg/wv9Ecs4>\n${newContent.join('\n')}` })
+				}
+			}
+
+			await db.collection.updateOne({ _id: 'Globals' }, {
+				$set: {
+					visCache: []
+				}
+			})
 		}
 	}
 
