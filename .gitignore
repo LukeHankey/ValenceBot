@@ -6,5 +6,6 @@ Webhook
 client_secret.json
 reminders*
 test*
-nick*
+nick.js
 slashCommands.js
+archived/*
