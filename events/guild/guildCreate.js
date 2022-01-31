@@ -16,8 +16,7 @@ export default async (client, guild) => {
 				adminChannel: null,
 				modChannel: null,
 				eventsChannel: null
-			},
-			citadel_reset_time: { hour: '*', minute: '*', day: '*', scheduled: 'false', reminders: [] }
+			}
 		},
 		{ forceServerObjectId: true }
 	)
