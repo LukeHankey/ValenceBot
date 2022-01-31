@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-octal */
 import { MongoCollection } from '../../DataBase.js'
-import { msCalc, doubleDigits, nextDay } from '../../functions.js'
 import { Formatters } from 'discord.js'
 import { skullTimer, otherTimer, updateStockTables, scout, vScout, classVars, addedRoles, removedRoles, removeInactives } from '../../dsf/index.js'
 import { sendFact, updateRoles } from '../../valence/index.js'
