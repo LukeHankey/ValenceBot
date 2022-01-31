@@ -88,54 +88,6 @@ export default async client => {
 		sendFact(client)
 	})
 
-	// Citadel Server Reminders //
-	await db.collection.find({}).toArray().then(r => {
-		for (const document in r) {
-			if (!r[document].citadel_reset_time) return
-			cron.schedule('*/5 * * * *', async () => {
-				const today = new Date()
-				const todayNum = today.getUTCDay()
-				const todayStr = days[todayNum]
-				// eslint-disable-next-line no-shadow
-				const newDates = function (days, hours, minutes, timer) {
-					const time = msCalc(days, doubleDigits(hours), doubleDigits(minutes)) + timer
-					return new Date(time).toUTCString()
-				}
-				await db.collection.find({}).toArray().then(res => {
-					const dayNum = days.indexOf(res[document].citadel_reset_time.day)
-					const resetString = nextDay(dayNum).toUTCString().split(' ')
-					resetString.splice(4, 1, `${res[document].citadel_reset_time.hour}:${res[document].citadel_reset_time.minute}:00`)
-					const resetms = Date.parse(resetString.join(' '))
-
-					const reminders = res[document].citadel_reset_time.reminders
-					for (const remDoc in reminders) {
-						if (reminders[remDoc].dayReset === 'reset') {
-							const newDate = newDates(reminders[remDoc].dayResetPlus, reminders[remDoc].hourResetPlus, reminders[remDoc].minResetPlus, resetms)
-							const dateDays = newDate.split(' ')[0].slice(0, 3)
-							const dateHours = newDate.split(' ')[4].slice(0, 2)
-							const dateMins = newDate.split(' ')[4].slice(3, 5)
-
-							if (dateDays === todayStr.substr(0, 3)) {
-								if (today.getUTCHours() === +dateHours) {
-									if (+dateMins <= today.getUTCMinutes() && today.getUTCMinutes() < (+dateMins + 5)) {
-										client.channels.cache.get(res[document].citadel_reset_time.reminders[remDoc].channel).send(`${res[document].citadel_reset_time.reminders[remDoc].message}`)
-									}
-								}
-							}
-						} else if (res[document].citadel_reset_time.day === todayNum || res[document].citadel_reset_time.day === todayStr || res[document].citadel_reset_time.day === todayStr.substr(0, 3)) {
-							if (today.getUTCHours() === res[document].citadel_reset_time.hour) {
-								if (res[document].citadel_reset_time.minute <= today.getUTCMinutes() && today.getUTCMinutes() < (+res[document].citadel_reset_time.minute + 5)) {
-									client.channels.cache.get(res[document].citadel_reset_time.reminders[remDoc].channel).send(`${res[document].citadel_reset_time.reminders[remDoc].message}\`\`\`You can also help out with setting the Citadel Reset Time since it changes almost every single week! Use the following command to let your Clan Admins know the next Citadel Reset:\n\n${res[document].prefix}citadel reset info <days> <hours> <minutes> <image (optional)>\n\nExample:\n${res[document].prefix}citadel reset info 6 22 42\`\`\``)
-								}
-							}
-						}
-					}
-				})
-				// Will continue to be on/off and won't switch until the bot resets
-			}, { scheduled: r[document].citadel_reset_time.scheduled })
-		}
-	})
-
 	const stream = users.collection.watch({ fullDocument: 'updateLookup' })
 	stream.on('change', next => {
 		if (next.updateDescription) {
