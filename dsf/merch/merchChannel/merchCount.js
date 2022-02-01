@@ -1,13 +1,11 @@
-import { MongoCollection } from '../../../DataBase.js'
 import { merchRegex } from '../constants.js'
 import { checkMemberRole, arrIncludesString, alreadyCalled } from '../merchFunctions.js'
 import { MessageActionRow, MessageButton } from 'discord.js'
 
-export const addMerchCount = async (client, message, db) => {
+export const addMerchCount = async (client, message, db, scouter) => {
 	const channels = await db.channels
 	try {
 		const { merchChannel: { channelID, messages }, disallowedWords } = await db.collection.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.channelID': 1, 'merchChannel.messages': 1, disallowedWords: 1 } })
-		const scouter = new MongoCollection('ScoutTracker')
 		const merchChannelID = client.channels.cache.get(channelID)
 		const botServerErrorChannel = await client.channels.cache.get('784543962174062608')
 		const dsfServerErrorChannel = await client.channels.cache.get('794608385106509824')

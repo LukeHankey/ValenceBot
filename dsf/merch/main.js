@@ -20,7 +20,7 @@ const dsf = async (client, message, db) => {
 					return await message.channel.messages.fetch(messageID[4]).then(x => x.delete()).catch(async (err) => channels.errors.send(err))
 				})
 			:	setTimeout(() => message.delete(), 200)
-		await addMerchCount(client, message, db)
+		await addMerchCount(client, message, db, scouters)
 		skullTimer(message, db)
 	} else if (message.channel.id === otherChannelID) {
 		if (!otherCalls.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, otherMessages)) {
