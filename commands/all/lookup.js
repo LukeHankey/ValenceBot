@@ -1,3 +1,4 @@
+import { MongoCollection } from '../../DataBase.js'
 import { nEmbed } from '../../functions.js'
 import { gold } from '../../colors.js'
 import ms from 'pretty-ms'
@@ -14,36 +15,29 @@ export default {
 	usage: [''],
 	guildSpecific: ['420803245758480405', '668330890790699079'],
 	permissionLevel: 'Admin',
-	run: async (client, message, args, perms, db) => {
+	run: async (client, message, args, perms) => {
+		const db = new MongoCollection('ScoutTracker')
 		if (!perms.admin) return message.channel.send(perms.errorA)
 		if (!args[0]) return message.channel.send({ content: 'Please provide a User ID' })
 
-		const val = await db.collection.findOne({ _id: '420803245758480405' })
-		const fields = []
-		const dataIndex = val.merchChannel.scoutTracker.findIndex(mem => {
-			return mem.userID === args[0]
-		})
-		const allData = val.merchChannel.scoutTracker.length
-		const member = val.merchChannel.scoutTracker.filter(mem => mem.userID === args[0])
-		val.merchChannel.scoutTracker.filter(mem => {
-			if (mem.userID === args[0]) {
-				const date = (when) => {
-					let date = new Date(when)
-					date = date.toString().split(' ')
-					return date.slice(0, 5).join(' ')
-				}
+		const date = (when) => {
+			let date = new Date(when)
+			date = date.toString().split(' ')
+			return date.slice(0, 5).join(' ')
+		}
 
-				return fields.push({
-					name: '\u200b',
-					value: `**firstTimestamp:** ${mem.firstTimestamp}\n**firstTimestampReadable:** ${date(mem.firstTimestampReadable)}\n**lastTimestamp:** ${mem.lastTimestamp}\n**lastTimestampReadable:** ${date(mem.lastTimestampReadable)}\n**Merch count:** ${mem.count}\n**Other count:** ${mem.otherCount}\n**Active for:** ${ms(mem.lastTimestamp - mem.firstTimestamp)}\n**Active:** ${mem.active ? 'True' : 'False'}`,
-					inline: true
-				})
-			} else return undefined
-		})
+		const user = await db.collection.findOne({ userID: args[0] }, { projection: { _id: 0 } })
 
-		if (member[0]) {
-			const embed = nEmbed(`Diagnostic DB Lookup - ${member[0].author} [${dataIndex}/${allData}]`, 'Testing command to lookup user info for DSF in DB.', gold)
-			return message.channel.send({ embeds: [embed.addFields(fields)] })
+		const allData = await db.collection.countDocuments({})
+		const embedFields = [{
+			name: '\u200b',
+			value: `**firstTimestamp:** ${user.firstTimestamp}\n**firstTimestampReadable:** ${date(user.firstTimestampReadable)}\n**lastTimestamp:** ${user.lastTimestamp}\n**lastTimestampReadable:** ${date(user.lastTimestampReadable)}\n**Merch count:** ${user.count}\n**Other count:** ${user.otherCount}\n**Active for:** ${ms(user.lastTimestamp - user.firstTimestamp)}\n**Active:** ${user.active ? 'True' : 'False'}`,
+			inline: true
+		}]
+
+		if (user) {
+			const embed = nEmbed(`DB Lookup - ${user.author} [${allData}]`, 'Lookup user info for DSF in the Scouter DataBase.', gold)
+			return message.channel.send({ embeds: [embed.addFields(embedFields)] })
 		} else {
 			message.channel.send({ content: 'No profile found for this ID.' })
 		}

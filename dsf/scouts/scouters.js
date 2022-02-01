@@ -3,22 +3,23 @@ import { Util, Formatters } from 'discord.js'
 const scout = new ScouterCheck('Scouter')
 const vScout = new ScouterCheck('Verified Scouter')
 
-const classVars = async (name, serverName, database, client) => {
+const classVars = async (name, serverName, database, client, scouters) => {
 	name._client = client
 	name._guildName = serverName
 	// eslint-disable-next-line array-callback-return
 	name._db = await database.map(doc => {
 		if (doc.serverName === name._guildName) return doc
 	}).filter(x => x)[0]
+	name._scouters = scouters
 }
 
 const addedRoles = async (name, db) => {
 	const members = await name.checkRolesAdded()
 	members.map(async x => {
 		const role = await name.role
-		await db.collection.updateOne({ serverName: name._guildName, 'merchChannel.scoutTracker.userID': x.id }, {
+		await db.collection.updateOne({ userID: x.id }, {
 			$addToSet: {
-				'merchChannel.scoutTracker.$.assigned': role.id
+				assigned: role.id
 			}
 		})
 	})
@@ -27,15 +28,15 @@ const removedRoles = async (name, db) => {
 	const checkRoles = await name.checkRolesRemoved()
 	checkRoles.map(async x => {
 		const role = await name.role
-		await db.collection.updateOne({ serverName: name._guildName, 'merchChannel.scoutTracker.userID': x.id }, {
+		await db.collection.updateOne({ userID: x.id }, {
 			$pull: {
-				'merchChannel.scoutTracker.$.assigned': role.id
+				assigned: role.id
 			}
 		})
 	})
 }
 
-const removeInactives = async (name, db) => {
+const removeInactives = async (name, db, scouters) => {
 	const inactives = await name.removeInactive()
 	const channels = await db.channels
 	const removed = []
@@ -45,16 +46,15 @@ const removeInactives = async (name, db) => {
 		if (doc.active === 0 && (Date.now() - doc.lastTimestamp) > sixMonths) {
 			removed.push(doc.author)
 			allItems.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}).`)
-			await db.collection.updateOne(
-				{ serverName: name._guildName },
-				{ $pull: { 'merchChannel.scoutTracker': { userID: doc.userID } } }
+			await scouters.collection.remove(
+				{ userID: doc.userID }
 			)
 		} else {
 			if (!doc.active) return
 			allItems.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}). User has been marked as inactive.`)
-			await db.collection.updateOne(
-				{ serverName: name._guildName, 'merchChannel.scoutTracker.userID': doc.userID },
-				{ $set: { 'merchChannel.scoutTracker.$.active': 0 } }
+			await scouters.collection.updateOne(
+				{ userID: doc.userID },
+				{ $set: { active: 0 } }
 			)
 		}
 	})

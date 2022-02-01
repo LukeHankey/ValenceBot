@@ -1,8 +1,10 @@
+import { MongoCollection } from '../../DataBase.js'
 import { MessageButton, MessageActionRow, MessageSelectMenu, MessageEmbed } from 'discord.js'
 import { greenLight } from '../../colors.js'
 
 export const buttons = async (interaction, db, data, cache) => {
 	const channels = await db.channels
+	const scouters = new MongoCollection('ScoutTracker')
 	const generalChannel = interaction.guild.channels.cache.find(c => c.name === 'general')
 	let [userId, user, content, timestamp] = interaction.message.content.split('\n').slice(3)
 	if (user) user = user.split(' ').slice(2).join(' ')
@@ -76,9 +78,9 @@ export const buttons = async (interaction, db, data, cache) => {
 			if (interaction.user.bot) return
 			const item = data.merchChannel.deletions.messages.find(item => item.messageID === interaction.message.id)
 			if (item) {
-				await db.collection.updateOne({ _id: interaction.guild.id, 'merchChannel.scoutTracker.userID': item.authorID }, {
+				await scouters.collection.updateOne({ userID: item.authorID }, {
 					$inc: {
-						'merchChannel.scoutTracker.$.count': -1
+						count: -1
 					}
 				})
 				await db.collection.updateOne({ _id: interaction.guild.id }, {
