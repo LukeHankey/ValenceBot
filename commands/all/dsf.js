@@ -238,7 +238,7 @@ export default {
 			switch (param) {
 			case 'add':
 				if (!num) {
-					await scouters.updateOne({ userID: userMention }, {
+					await scouters.collection.updateOne({ userID: userMention }, {
 						$inc: {
 							count: 1
 						}
@@ -246,7 +246,7 @@ export default {
 					if (reaction) return message.react('✅')
 					else return message.react('❌')
 				} else if (num === 'other') {
-					await scouters.updateOne({ userID: userMention }, {
+					await scouters.collection.updateOne({ userID: userMention }, {
 						$inc: {
 							otherCount: 1
 						}
@@ -254,7 +254,7 @@ export default {
 					if (reaction) return message.react('✅')
 					else return message.react('❌')
 				} else if (num === 'game') {
-					await scouters.updateOne({ userID: userMention }, {
+					await scouters.collection.updateOne({ userID: userMention }, {
 						$inc: {
 							game: 1
 						}
@@ -267,7 +267,7 @@ export default {
 					} else { num = +num }
 					const other = args.slice(4)
 					if (other[0] === 'other') {
-						await scouters.updateOne({ userID: userMention }, {
+						await scouters.collection.updateOne({ userID: userMention }, {
 							$inc: {
 								otherCount: +num
 							}
@@ -275,7 +275,7 @@ export default {
 						if (reaction) return message.react('✅')
 						else return message.react('❌')
 					} else {
-						await scouters.updateOne({ userID: userMention }, {
+						await scouters.collection.updateOne({ userID: userMention }, {
 							$inc: {
 								count: +num
 							}
@@ -286,7 +286,7 @@ export default {
 				}
 			case 'remove':
 				if (!num) {
-					await scouters.updateOne({ userID: userMention }, {
+					await scouters.collection.updateOne({ userID: userMention }, {
 						$inc: {
 							count: -1
 						}
@@ -294,7 +294,7 @@ export default {
 					if (reaction) return message.react('✅')
 					else return message.react('❌')
 				} else if (num === 'other') {
-					await scouters.updateOne({ userID: userMention }, {
+					await scouters.collection.updateOne({ userID: userMention }, {
 						$inc: {
 							otherCount: -1
 						}
@@ -302,7 +302,7 @@ export default {
 					if (reaction) return message.react('✅')
 					else return message.react('❌')
 				} else if (num === 'game') {
-					await scouters.updateOne({ userID: userMention }, {
+					await scouters.collection.updateOne({ userID: userMention }, {
 						$inc: {
 							game: -1
 						}
@@ -315,7 +315,7 @@ export default {
 					} else { num = +num }
 					const other = args.slice(4)
 					if (other[0] === 'other') {
-						await scouters.updateOne({ userID: userMention }, {
+						await scouters.collection.updateOne({ userID: userMention }, {
 							$inc: {
 								otherCount: -num
 							}
@@ -323,7 +323,7 @@ export default {
 						if (reaction) return message.react('✅')
 						else return message.react('❌')
 					} else {
-						await scouters.updateOne({ userID: userMention }, {
+						await scouters.collection.updateOne({ userID: userMention }, {
 							$inc: {
 								count: -num
 							}
