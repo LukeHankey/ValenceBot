@@ -1,5 +1,6 @@
 /* eslint-disable no-shadow */
 /* eslint-disable no-useless-escape */
+import { MongoCollection } from '../../DataBase.js'
 import { nEmbed, checkNum, removeMessage } from '../../functions.js'
 import { cream, cyan } from '../../colors.js'
 import { ScouterCheck } from '../../classes.js'
@@ -20,6 +21,7 @@ export default {
 	run: async (client, message, args, perms, db) => {
 		if (!perms.admin) return message.channel.send(perms.errorA)
 		const channels = await db.channels
+		const scouters = new MongoCollection('ScoutTracker')
 
 		switch (args[0]) {
 		case 'm':
@@ -236,25 +238,25 @@ export default {
 			switch (param) {
 			case 'add':
 				if (!num) {
-					await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+					await scouters.collection.updateOne({ userID: userMention }, {
 						$inc: {
-							'merchChannel.scoutTracker.$.count': 1
+							count: 1
 						}
 					})
 					if (reaction) return message.react('✅')
 					else return message.react('❌')
 				} else if (num === 'other') {
-					await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+					await scouters.collection.updateOne({ userID: userMention }, {
 						$inc: {
-							'merchChannel.scoutTracker.$.otherCount': 1
+							otherCount: 1
 						}
 					})
 					if (reaction) return message.react('✅')
 					else return message.react('❌')
 				} else if (num === 'game') {
-					await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+					await scouters.collection.updateOne({ userID: userMention }, {
 						$inc: {
-							'merchChannel.scoutTracker.$.game': 1
+							game: 1
 						}
 					})
 					if (reaction) return message.react('✅')
@@ -265,17 +267,17 @@ export default {
 					} else { num = +num }
 					const other = args.slice(4)
 					if (other[0] === 'other') {
-						await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+						await scouters.collection.updateOne({ userID: userMention }, {
 							$inc: {
-								'merchChannel.scoutTracker.$.otherCount': +num
+								otherCount: +num
 							}
 						})
 						if (reaction) return message.react('✅')
 						else return message.react('❌')
 					} else {
-						await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+						await scouters.collection.updateOne({ userID: userMention }, {
 							$inc: {
-								'merchChannel.scoutTracker.$.count': +num
+								count: +num
 							}
 						})
 						if (reaction) return message.react('✅')
@@ -284,25 +286,25 @@ export default {
 				}
 			case 'remove':
 				if (!num) {
-					await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+					await scouters.collection.updateOne({ userID: userMention }, {
 						$inc: {
-							'merchChannel.scoutTracker.$.count': -1
+							count: -1
 						}
 					})
 					if (reaction) return message.react('✅')
 					else return message.react('❌')
 				} else if (num === 'other') {
-					await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+					await scouters.collection.updateOne({ userID: userMention }, {
 						$inc: {
-							'merchChannel.scoutTracker.$.otherCount': -1
+							otherCount: -1
 						}
 					})
 					if (reaction) return message.react('✅')
 					else return message.react('❌')
 				} else if (num === 'game') {
-					await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+					await scouters.collection.updateOne({ userID: userMention }, {
 						$inc: {
-							'merchChannel.scoutTracker.$.game': -1
+							game: -1
 						}
 					})
 					if (reaction) return message.react('✅')
@@ -313,17 +315,17 @@ export default {
 					} else { num = +num }
 					const other = args.slice(4)
 					if (other[0] === 'other') {
-						await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+						await scouters.collection.updateOne({ userID: userMention }, {
 							$inc: {
-								'merchChannel.scoutTracker.$.otherCount': -num
+								otherCount: -num
 							}
 						})
 						if (reaction) return message.react('✅')
 						else return message.react('❌')
 					} else {
-						await db.collection.updateOne({ _id: message.guild.id, 'merchChannel.scoutTracker.userID': userMention }, {
+						await scouters.collection.updateOne({ userID: userMention }, {
 							$inc: {
-								'merchChannel.scoutTracker.$.count': -num
+								count: -num
 							}
 						})
 						if (reaction) return message.react('✅')

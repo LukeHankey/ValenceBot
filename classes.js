@@ -96,6 +96,14 @@ class ScouterCheck {
 		this.guild_name = name
 	}
 
+	set _scouters (scoutTracker) {
+		this.scoutTracker = scoutTracker
+	}
+
+	get _scouters () {
+		return this.scoutTracker
+	}
+
 	get _client () {
 		return this.client
 	}
@@ -121,11 +129,11 @@ class ScouterCheck {
 	get potentialScouts () {
 		let scout
 		if (this.roleName.toLowerCase() === 'scouter') {
-			scout = this._db.merchChannel.scoutTracker.filter(val => {
+			scout = this._scouters.filter(val => {
 				return this._checkScouts(val, this.value ?? 40, this.week)
 			})
 		} else if (this.roleName.toLowerCase() === 'verified scouter') {
-			scout = this._db.merchChannel.scoutTracker.filter(val => {
+			scout = this._scouters.filter(val => {
 				return this._checkVerifiedScouts(val, this.value ?? 100, this.month)
 			})
 		} else {
@@ -143,7 +151,7 @@ class ScouterCheck {
 	}
 
 	get scouts () {
-		return this._db.merchChannel.scoutTracker.filter(scouts => {
+		return this._scouters.filter(scouts => {
 			return scouts.assigned.length >= 1
 		})
 	}
@@ -226,10 +234,8 @@ class ScouterCheck {
 	}
 
 	async removeInactive () {
-		const db = await this._db
-
 		return new Promise(async (resolve) => {
-			let merch = await db.merchChannel.scoutTracker
+			let merch = this._scouters
 			merch = merch.filter(doc => {
 				const totalCount = (doc.count + (doc.otherCount ?? 0)) < 10
 				const timeGone = 1000 * 60 * 60 * 24 * 31
