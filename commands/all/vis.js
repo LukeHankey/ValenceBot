@@ -53,7 +53,7 @@ export default {
 					},
 					$addToSet: {
 						visCache: {
-							$each: { user: interaction.user.id, channel: interaction.channel.id, guild: interaction.guild.id }
+							$each: [{ user: interaction.user.id, channel: interaction.channel.id, guild: interaction.guild.id }]
 						}
 					}
 				})
@@ -62,7 +62,7 @@ export default {
 				await db.collection.updateOne({ _id: 'Globals' }, {
 					$addToSet: {
 						visCache: {
-							$each: { user: interaction.user.id, channel: interaction.channel.id, guild: interaction.guild.id }
+							$each: [{ user: interaction.user.id, channel: interaction.channel.id, guild: interaction.guild.id }]
 						}
 					}
 				})
