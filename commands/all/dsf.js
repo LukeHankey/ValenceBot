@@ -66,30 +66,20 @@ export default {
 			case 'clear': {
 				const { merchChannel: { channelID, spamProtection } } = await db.collection.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.spamProtection': 1, 'merchChannel.channelID': 1 } })
 				const channel = client.channels.cache.get(channelID)
+				const oneHour = 3_600_000
 
-				spamProtection.forEach(async (msgObj) => {
+				const filtered = spamProtection.filter(m => (Date.now() - m.time) >= oneHour)
+
+				if (!filtered.length) return await message.react('❌')
+
+				for (const f of filtered) {
 					try {
-						const m = await channel.messages.fetch(msgObj.messageID)
+						const m = await channel.messages.fetch(f.messageID)
 
-						// Remove all reactions if there is > 1 or 0. Then add a skull.
-						if (Date.now() - m.createdTimestamp >= 3600000 && (m.reactions.cache.size > 1 || m.reactions.cache.size === 0)) {
-							await m.reactions.removeAll()
-							await removeMessage(message, m, db.collection)
-							await message.react('✅')
-							return await m.react('☠️')
-						} else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
-							// If there is only a skull, remove users and message from DB
-							await removeMessage(message, m, db.collection)
-							await m.reactions.removeAll()
-							await message.react('✅')
-							return await m.react('☠️')
-						} else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && !m.reactions.cache.has('☠️')) {
-							// If there is a single reaction which is not the Skull, then remove that and react with skull. Repeat process over.
-							await m.reactions.removeAll()
-							await removeMessage(message, m, db.collection)
-							await message.react('✅')
-							return await m.react('☠️')
-						} else { return await message.react('❌') }
+						await m.reactions.removeAll()
+						await removeMessage(message, m, db.collection)
+						await m.react('☠️')
+						await message.react('✅')
 					} catch (e) {
 						if (e.code === 10008) {
 							const messageID = e.path.split('/')[4]
@@ -100,7 +90,7 @@ export default {
 							})
 						} else { channels.errors.send(e) }
 					}
-				})
+				}
 			}
 				break
 			default: {
