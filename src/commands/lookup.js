@@ -1,6 +1,6 @@
-import { MongoCollection } from '../../DataBase.js'
-import { nEmbed } from '../../functions.js'
-import Color from '../../colors.js'
+import { MongoCollection } from '../DataBase.js'
+import { nEmbed } from '../functions.js'
+import Color from '../colors.js'
 import ms from 'pretty-ms'
 
 /**

@@ -1,7 +1,7 @@
 /* eslint-disable no-inline-comments */
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { MessageEmbed, MessageActionRow, MessageButton } from 'discord.js'
-import Color from '../../colors.js'
+import Color from '../colors.js'
 
 export default {
 	name: 'ticket',

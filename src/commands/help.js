@@ -1,5 +1,5 @@
-import Color from '../../colors.js'
-import { nEmbed, capitalise } from '../../functions.js'
+import Color from '../colors.js'
+import { nEmbed, capitalise } from '../functions.js'
 
 export default {
 	name: 'help',
