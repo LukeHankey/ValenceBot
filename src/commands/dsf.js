@@ -1,9 +1,9 @@
 /* eslint-disable no-shadow */
 /* eslint-disable no-useless-escape */
-import { MongoCollection } from '../../DataBase.js'
-import { nEmbed, checkNum, removeMessage } from '../../functions.js'
-import { cream, cyan } from '../../colors.js'
-import { ScouterCheck } from '../../classes.js'
+import { MongoCollection } from '../DataBase.js'
+import { nEmbed, checkNum, removeMessage } from '../functions.js'
+import { cream, cyan } from '../colors.js'
+import { ScouterCheck } from '../classes.js'
 
 /**
  * 733164313744769024 - Test Server

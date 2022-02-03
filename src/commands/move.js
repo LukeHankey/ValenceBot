@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { ChannelType } from 'discord-api-types/v9'
 import { Formatters, MessageActionRow, MessageSelectMenu } from 'discord.js'
-import { randomNum } from '../../functions.js'
+import { randomNum } from '../functions.js'
 
 export default {
 	name: 'move',

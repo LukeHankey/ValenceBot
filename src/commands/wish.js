@@ -1,7 +1,7 @@
-import { cream, aqua } from '../../colors.js'
-import { googleClient } from '../../gsheets.js'
+import { cream, aqua } from '../colors.js'
+import { googleClient } from '../gsheets.js'
 import { google } from 'googleapis'
-import { nEmbed } from '../../functions.js'
+import { nEmbed } from '../functions.js'
 import { MessageEmbed } from 'discord.js'
 
 export default {

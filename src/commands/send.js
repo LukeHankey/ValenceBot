@@ -1,4 +1,4 @@
-import { checkNum } from '../../functions.js'
+import { checkNum } from '../functions.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { Util } from 'discord.js'
 
