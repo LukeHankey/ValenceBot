@@ -1,5 +1,5 @@
-import Color from '../../colors.js'
-import { nEmbed, checkNum } from '../../functions.js'
+import Color from '../colors.js'
+import { nEmbed, checkNum } from '../functions.js'
 
 export default {
 	name: 'db.collection',

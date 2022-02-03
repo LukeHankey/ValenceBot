@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { MessageEmbed } from 'discord.js'
-import Color from '../../colors.js'
+import Color from '../colors.js'
 
 const data = new SlashCommandBuilder()
 	.setName('invite')

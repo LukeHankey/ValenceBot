@@ -1,7 +1,7 @@
 import { MessageEmbed } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
-import Color from '../../colors.js'
-import { randomNum, removeEvents } from '../../functions.js'
+import Color from '../colors.js'
+import { randomNum, removeEvents } from '../functions.js'
 
 const monthChoices = [
 	['January', 'January'],

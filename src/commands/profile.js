@@ -2,7 +2,7 @@
 /* eslint-disable no-inline-comments */
 import { MongoCollection } from '../DataBase.js'
 import { MessageEmbed } from 'discord.js'
-import Color from '../../colors.js'
+import Color from '../colors.js'
 import ms from 'pretty-ms'
 import { checkNum, paginate, paginateFollowUP, capitalise } from '../functions.js'
 
