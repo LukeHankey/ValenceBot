@@ -1,6 +1,6 @@
 import { MongoCollection } from '../../DataBase.js'
 import { MessageEmbed, MessageActionRow, MessageButton } from 'discord.js'
-import { redDark } from '../../colors.js'
+import Color from '../../colors.js'
 
 export default async (client, message) => {
 	const db = new MongoCollection('Settings')
@@ -46,7 +46,7 @@ export default async (client, message) => {
 	const messageDeletion = (document) => {
 		const embed = new MessageEmbed()
 			.setTitle('Message Deleted')
-			.setColor(redDark)
+			.setColor(Color.redDark)
 			.addField('Message ID:', `${document.messageID}`, true)
 			.addField('Message Content:', `${document.content}`, true)
 			.addField('\u200B', '\u200B', true)

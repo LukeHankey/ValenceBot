@@ -1,7 +1,7 @@
 import { googleClient } from '../../gsheets.js'
 import { google } from 'googleapis'
 import { nEmbed } from '../../functions.js'
-import { greenLight, redDark, gold, greenDark, redLight } from '../../colors.js'
+import Color from '../../colors.js'
 
 /**
  * 668330890790699079 - Valence Bot Test
@@ -81,7 +81,7 @@ export default {
 				const tag = args.slice(-1).join('')
 				const colName = dataC.find(val => val.toLowerCase() === colNameArgs.toLowerCase())
 
-				const lottoEmbed = nEmbed('Lotto entry added successfully!', '', greenLight, message.author.displayAvatarURL(), client.user.displayAvatarURL())
+				const lottoEmbed = nEmbed('Lotto entry added successfully!', '', Color.greenLight, message.author.displayAvatarURL(), client.user.displayAvatarURL())
 					.addFields(
 						{ name: 'RuneScape Name:', value: `${rsn || undefined}`, inline: true },
 						{ name: 'Amount:', value: '500,000', inline: true },
@@ -99,7 +99,7 @@ export default {
 							} else if (colName === undefined) {
 								message.channel.send({
 									embeds: [
-										nEmbed('Lottery Collectors', `**${colNameArgs}** is not a Lottery Collector.`, redDark, message.author.displayAvatarURL(), client.user.displayAvatarURL())
+										nEmbed('Lottery Collectors', `**${colNameArgs}** is not a Lottery Collector.`, Color.redDark, message.author.displayAvatarURL(), client.user.displayAvatarURL())
 											.addField('Current Collectors', dataC.join(', '))]
 								})
 							} else if (!rsn) {
@@ -134,7 +134,7 @@ export default {
 							} else if (colName === undefined) {
 								message.channel.send({
 									embeds: [
-										nEmbed('Lottery Collectors', `**${colNameArgs}** is not a Lottery Collector.`, redDark, message.author.displayAvatarURL(), client.user.displayAvatarURL())
+										nEmbed('Lottery Collectors', `**${colNameArgs}** is not a Lottery Collector.`, Color.redDark, message.author.displayAvatarURL(), client.user.displayAvatarURL())
 											.addField('Current Collectors', dataC.join(', '))]
 								})
 							} else if (!rsn) {
@@ -176,7 +176,7 @@ export default {
 					const arrTotal = dataTotals.data.values
 					const totalArr = []
 					const totalValues = []
-					const totalEmbed = nEmbed(`Total Prize Pool for month of ${months[monthIndex]}!`, 'This is the current prize pool so far with dividends for 1st, 2nd and 3rd place!', gold, message.author.displayAvatarURL(), client.user.displayAvatarURL())
+					const totalEmbed = nEmbed(`Total Prize Pool for month of ${months[monthIndex]}!`, 'This is the current prize pool so far with dividends for 1st, 2nd and 3rd place!', Color.gold, message.author.displayAvatarURL(), client.user.displayAvatarURL())
 
 					for (let values of arrTotal) {
 						values = values.filter(x => x !== '')
@@ -223,7 +223,7 @@ export default {
 								embeds: [nEmbed(
 									'Lottery Entrance',
 									'You are in the lottery only once for this month!',
-									greenDark,
+									Color.greenDark,
 									message.author.displayAvatarURL(),
 									client.user.displayAvatarURL()
 								)
@@ -236,7 +236,7 @@ export default {
 								embeds: [nEmbed(
 									'Lottery Entrance',
 									`You are in the lottery ${nameFound.length} times for this month!`,
-									greenDark,
+									Color.greenDark,
 									message.author.displayAvatarURL(),
 									client.user.displayAvatarURL()
 								)
@@ -249,7 +249,7 @@ export default {
 								embeds: [nEmbed(
 									'Lottery Entrance - Error',
 									`You have been entered in the lottery more than two times! (Total of ${nameFound.length})`,
-									redLight,
+									Color.redLight,
 									message.author.displayAvatarURL(),
 									client.user.displayAvatarURL()
 								)
@@ -261,7 +261,7 @@ export default {
 								embeds: [nEmbed(
 									'Lottery Entrance',
 									'You are **Not** in the lottery for this month!',
-									redDark,
+									Color.redDark,
 									message.author.displayAvatarURL(),
 									client.user.displayAvatarURL()
 								)
@@ -284,7 +284,7 @@ export default {
 								const gEmbed = nEmbed(
 									`Lottery Entrants for the month of ${months[monthIndex]}`,
 									'Those that appear twice in the list have paid for a double entry.',
-									greenLight,
+									Color.greenLight,
 									message.author.displayAvatarURL()
 								)
 									.addFields(info)

@@ -1,6 +1,6 @@
 import { MongoCollection } from '../../DataBase.js'
 import { MessageButton, MessageActionRow, MessageSelectMenu, MessageEmbed } from 'discord.js'
-import { greenLight } from '../../colors.js'
+import Color from '../../colors.js'
 import { Ticket } from '../../dsf/ticket.js'
 
 export const buttons = async (interaction, db, data, cache) => {
@@ -90,7 +90,7 @@ export const buttons = async (interaction, db, data, cache) => {
 					}
 				})
 				const newEmbed = new MessageEmbed(interaction.message.embeds[0])
-				newEmbed.setColor(greenLight).setTitle('Message Deleted - Count Removed')
+				newEmbed.setColor(Color.greenLight).setTitle('Message Deleted - Count Removed')
 				await interaction.message.edit({ embeds: [newEmbed], components: [] })
 			}
 		}

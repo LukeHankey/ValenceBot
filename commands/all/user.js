@@ -1,6 +1,6 @@
 import { MessageEmbed } from 'discord.js'
 import { checkNum, renameKeys, nEmbed } from '../../functions.js'
-import { greenLight, redLight } from '../../colors.js'
+import Color from '../../colors.js'
 import { MongoCollection } from '../../DataBase.js'
 
 export default {
@@ -33,7 +33,7 @@ export default {
 				.setThumbnail(member ? member.user.displayAvatarURL() : message.guild.iconURL())
 				.setTimestamp()
 				.setDescription(desc)
-				.setColor(greenLight)
+				.setColor(Color.greenLight)
 				.setFooter('If any of the data above is wrong, please update it.')
 				.addFields(fields)
 			return message.channel.send({ embeds: [embed] })
@@ -45,7 +45,7 @@ export default {
 			const embed = new MessageEmbed()
 				.setTitle('User Profile - Not Found')
 				.setDescription(desc || `User with Discord ID: ${mem} not found but they are in the Discord as ${member.toString()}.`)
-				.setColor(redLight)
+				.setColor(Color.redLight)
 				.setTimestamp()
 			return message.channel.send({ embeds: [embed] })
 		}
@@ -96,7 +96,7 @@ export default {
 					const gEmbed = nEmbed(
 						`User Profile - ${rankArg}`,
 						'A comprehensive list of all clan members within this rank. Active refers to being in this server with a valid Discord ID.',
-						greenLight,
+						Color.greenLight,
 						''
 					)
 						.addFields(info)

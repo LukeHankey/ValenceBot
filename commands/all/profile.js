@@ -2,7 +2,7 @@
 /* eslint-disable no-inline-comments */
 import { MongoCollection } from '../../DataBase.js'
 import { MessageEmbed } from 'discord.js'
-import { aqua } from '../../colors.js'
+import Color from '../../colors.js'
 import ms from 'pretty-ms'
 import { checkNum, paginate, paginateFollowUP, capitalise } from '../../functions.js'
 
@@ -26,7 +26,7 @@ export default {
 			const embed = new MessageEmbed()
 				.setTitle(`Member Profile - ${id}`)
 				.setDescription('Current tracked stats in this server.')
-				.setColor(aqua)
+				.setColor(Color.aqua)
 				.setThumbnail(message.author.displayAvatarURL())
 				.setFooter('Something wrong or missing? Let a Moderator+ know!', client.user.displayAvatarURL())
 				.setTimestamp()
@@ -59,7 +59,7 @@ export default {
 			const embed = new MessageEmbed()
 				.setTitle(`Member Profiles - ${roleObj.name}`)
 				.setDescription('Current tracked stats in this server.')
-				.setColor(aqua)
+				.setColor(Color.aqua)
 				.setThumbnail(message.author.displayAvatarURL())
 				.setFooter('Something wrong or missing? Let a Moderator+ know!', client.user.displayAvatarURL())
 				.setTimestamp()

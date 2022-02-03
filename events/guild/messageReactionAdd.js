@@ -1,7 +1,7 @@
 import { MongoCollection } from '../../DataBase.js'
 import { MessageEmbed } from 'discord.js'
 import { removeMessage, removeEvents } from '../../functions.js'
-import { redDark } from '../../colors.js'
+import Color from '../../colors.js'
 import fetch from 'node-fetch'
 
 const db = new MongoCollection('Settings')
@@ -84,7 +84,7 @@ export default async (client, reaction, user) => {
 							const embed = new MessageEmbed()
 								.setTitle(`${userLeft.clanMate} is no longer in Valence`)
 								.setDescription(`${user.username} chose ❌ on name changes. (Not changed names or none match). User has been removed from the database.`)
-								.setColor(redDark)
+								.setColor(Color.redDark)
 								.addField('Users old profile', `\`\`\`${JSON.stringify(userLeft)}\`\`\``)
 							const channel = client.channels.cache.get(channels.errors.id)
 							channel.send(embed)

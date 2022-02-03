@@ -1,6 +1,6 @@
 import { MessageEmbed } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { purpleMedium } from '../../colors.js'
+import Color from '../../colors.js'
 import { randomNum, removeEvents } from '../../functions.js'
 
 const monthChoices = [
@@ -197,7 +197,7 @@ export default {
 			const embed = new MessageEmbed()
 				.setTitle(title)
 				.setDescription('This months events are as follows:')
-				.setColor(purpleMedium)
+				.setColor(Color.purpleMedium)
 				.setThumbnail(interaction.guild.iconURL())
 				.setTimestamp()
 				.setFooter('Valence Bot created by Luke_#8346', client.user.displayAvatarURL())

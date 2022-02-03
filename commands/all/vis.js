@@ -1,7 +1,7 @@
 /* eslint-disable no-inline-comments */
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { MessageEmbed } from 'discord.js'
-import { cream } from '../../colors.js'
+import Color from '../../colors.js'
 
 const description = ['Shows the current Vis Wax combinations.', 'Upload an image of the current Vis wax combinations or a message link which includes an attachment.', 'Force reset of image.']
 
@@ -106,7 +106,7 @@ export default {
 			.setDescription(`**${message.member.nickname ?? message.author.tag}** uploaded a new Vis Wax Image from Server:\n**${message.guild.name}** - ${message.guild.id}.`)
 			.setTimestamp()
 			.setThumbnail(message.author.displayAvatarURL())
-			.setColor(cream)
+			.setColor(Color.cream)
 
 		const { visTime, vis, visContent } = await db.collection.findOne({ _id: 'Globals' }, { projection: { visTime: 1, vis: 1, visContent: 1 } })
 		if (!args.length && !message.attachments.size) {

@@ -1,4 +1,4 @@
-import { greenLight, redLight, cyan } from '../../colors.js'
+import Color from '../../colors.js'
 import { MessageEmbed } from 'discord.js'
 
 export default {
@@ -43,7 +43,7 @@ export default {
 		const embed = new MessageEmbed()
 			.setTitle('Self-Assigned Information')
 			.setTimestamp()
-			.setColor(greenLight)
+			.setColor(Color.greenLight)
 			.setFooter(`${client.user.username} created by Luke_#8346`, message.guild.iconURL())
 
 		if (args[0] === 'roles') {
@@ -73,7 +73,7 @@ export default {
 
 			if (!allAvailableRoles.length) return message.channel.send({ content: 'No roles are assignable as no roles are above my highest role.' })
 
-			return message.channel.send({ embeds: [embed.setColor(cyan).setDescription(`Available roles to add:\n ${allAvailableRoles}`)] })
+			return message.channel.send({ embeds: [embed.setColor(Color.cyan).setDescription(`Available roles to add:\n ${allAvailableRoles}`)] })
 		}
 
 		const rID = botHighest.map(x => x.id)
@@ -98,7 +98,7 @@ export default {
 		console.log(added, removed, wrong)
 
 		wrong.length && (!added.length && !removed.length)
-			? message.channel.send({ embeds: [embed.setColor(redLight).addFields(wrongAdd).setDescription('Can\'t find the role name? Use `;sa roles` for a full list of self-assignable role names.')] })
+			? message.channel.send({ embeds: [embed.setColor(Color.redLight).addFields(wrongAdd).setDescription('Can\'t find the role name? Use `;sa roles` for a full list of self-assignable role names.')] })
 			: wrong.length
 				? message.channel.send({ embeds: [embed.addFields(fieldsPlus).setDescription('Can\'t find the role name? Use `;sa roles` for a full list of self-assignable role names.')] })
 				: message.channel.send({ embeds: [embed.addFields(fields)] })
