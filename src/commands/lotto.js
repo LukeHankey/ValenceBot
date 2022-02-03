@@ -1,7 +1,7 @@
-import { googleClient } from '../../gsheets.js'
+import { googleClient } from '../gsheets.js'
 import { google } from 'googleapis'
-import { nEmbed } from '../../functions.js'
-import { greenLight, redDark, gold, greenDark, redLight } from '../../colors.js'
+import { nEmbed } from '../functions.js'
+import { greenLight, redDark, gold, greenDark, redLight } from '../colors.js'
 
 /**
  * 668330890790699079 - Valence Bot Test

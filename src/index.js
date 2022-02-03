@@ -2,24 +2,20 @@ import cron from 'node-cron'
 import { Client, Collection } from 'discord.js'
 import { DataBase, MongoCollection } from './DataBase.js'
 import { getData, addActive } from './scheduler/clan.js'
+import { Load } from './handlers/index.js'
 import dotenv from 'dotenv'
 dotenv.config()
 
 const client = new Client({ intents: ['GUILDS', 'GUILD_MEMBERS', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS', 'DIRECT_MESSAGES'], partials: ['MESSAGE', 'REACTION', 'CHANNEL'] })
 client.commands = new Collection()
-const handlers = ['commands', 'events']
 
-handlers.forEach(async x => {
-	const handler = await import(`./handlers/${x}.js`)
-	handler.default(client)
-})
-
+const _ = new Load(client)
 process.on('unhandledRejection', (reason, p) => {
 	console.log('Unhandled Rejection at:', p, 'reason:', reason)
 })
 
 client.login(process.env.NODE_ENV === 'DEV' ? process.env.DEVELOPMENT_BOT : process.env.BOT_TOKEN)
-const _ = new DataBase()
+const __ = new DataBase()
 const db = new MongoCollection('Users')
 
 // Daily at 5am

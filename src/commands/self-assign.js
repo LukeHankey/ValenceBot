@@ -1,4 +1,4 @@
-import { greenLight, redLight, cyan } from '../../colors.js'
+import { greenLight, redLight, cyan } from '../colors.js'
 import { MessageEmbed } from 'discord.js'
 
 export default {

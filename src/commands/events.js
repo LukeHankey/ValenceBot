@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { MessageEmbed } from 'discord.js'
-import { cyan } from '../../colors.js'
-import { removeEvents } from '../../functions.js'
+import { cyan } from '../colors.js'
+import { removeEvents } from '../functions.js'
 
 /**
  * 733164313744769024 - Test Server
