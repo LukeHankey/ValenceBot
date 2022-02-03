@@ -1,6 +1,6 @@
 import { MessageEmbed, Util, Formatters } from 'discord.js'
-import { checkNum } from '../../functions.js'
-import { MongoCollection } from '../../DataBase.js'
+import { checkNum } from '../functions.js'
+import { MongoCollection } from '../DataBase.js'
 const randomColor = Math.floor(Math.random() * 16777215).toString(16)
 
 /**

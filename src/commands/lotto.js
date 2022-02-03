@@ -1,4 +1,4 @@
-import { googleClient } from '../../gsheets.js'
+import { googleClient } from '../gsheets.js'
 import { google } from 'googleapis'
 import { nEmbed } from '../../functions.js'
 import Color from '../../colors.js'
