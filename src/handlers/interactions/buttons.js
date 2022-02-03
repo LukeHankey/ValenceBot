@@ -1,7 +1,7 @@
 import { MongoCollection } from '../../DataBase.js'
 import { MessageButton, MessageActionRow, MessageSelectMenu, MessageEmbed } from 'discord.js'
 import Color from '../../colors.js'
-import { Ticket } from '../../dsf/ticket.js'
+import Ticket from '../../dsf/ticket.js'
 
 export const buttons = async (interaction, db, data, cache) => {
 	const channels = await db.channels
@@ -112,8 +112,8 @@ export const buttons = async (interaction, db, data, cache) => {
 			break
 		case 'Resolve Issue':
 			await interaction.reply({ content: `Ticket closed by <@!${interaction.member.id}>.` })
-			interaction.channel.setLocked(true)
-			interaction.channel.setArchived(true)
+			await interaction.channel.setLocked(true)
+			await interaction.channel.setArchived(true)
 		}
 	} catch (err) {
 		channels.errors.send(err)

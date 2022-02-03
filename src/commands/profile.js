@@ -2,7 +2,7 @@
 /* eslint-disable no-inline-comments */
 import { MongoCollection } from '../DataBase.js'
 import { MessageEmbed } from 'discord.js'
-import Color from '../../colors.js'
+import Color from '../colors.js'
 import ms from 'pretty-ms'
 import { checkNum, paginate, paginateFollowUP, capitalise } from '../functions.js'
 
@@ -96,8 +96,8 @@ export default {
 				message.channel.awaitMessages({ filter, max: 1, time: 60000, errors: ['time'] })
 					.then(async col => {
 						col = col.first()
-						if (col.content === 'no') { return } else {
-							await scouters.collection.insert({
+						if (col.content === 'no') { } else {
+							await scouters.collection.insertOne({
 								userID: col.author.id,
 								author: col.member.nickname ?? col.author.username,
 								firstTimestamp: col.createdTimestamp,

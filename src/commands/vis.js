@@ -1,7 +1,7 @@
 /* eslint-disable no-inline-comments */
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { MessageEmbed } from 'discord.js'
-import Color from '../../colors.js'
+import Color from '../colors.js'
 
 const description = ['Shows the current Vis Wax combinations.', 'Upload an image of the current Vis wax combinations or a message link which includes an attachment.', 'Force reset of image.']
 

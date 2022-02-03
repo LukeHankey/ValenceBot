@@ -1,7 +1,7 @@
 import { MessageEmbed } from 'discord.js'
-import { checkNum, renameKeys, nEmbed } from '../../functions.js'
-import Color from '../../colors.js'
-import { MongoCollection } from '../../DataBase.js'
+import { checkNum, renameKeys, nEmbed } from '../functions.js'
+import Color from '../colors.js'
+import { MongoCollection } from '../DataBase.js'
 
 export default {
 	name: 'user',

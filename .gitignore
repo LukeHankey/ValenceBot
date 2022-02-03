@@ -4,5 +4,5 @@ Webhook
 .eslintrc.cjs
 client_secret.json
 test.js
-slashCommands.js
+src/slashCommands.js
 archived

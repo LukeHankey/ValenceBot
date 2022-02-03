@@ -1,5 +1,5 @@
-import Color from '../../colors.js'
-import { googleClient } from '../../gsheets.js'
+import Color from '../colors.js'
+import { googleClient } from '../gsheets.js'
 import { google } from 'googleapis'
 import { nEmbed } from '../functions.js'
 import { MessageEmbed } from 'discord.js'

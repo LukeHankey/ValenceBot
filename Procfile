@@ -1,1 +1,1 @@
-worker node index.js --max-old-space-size=1024
+worker node ./src/index.js --max-old-space-size=1024

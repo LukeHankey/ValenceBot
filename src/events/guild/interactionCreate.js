@@ -1,6 +1,6 @@
 import { MongoCollection } from '../../DataBase.js'
 import { Collection } from 'discord.js'
-import { buttons, commands, autoComplete, selectMenu} from '../../handlers/interactions/index.js'
+import { buttons, commands, autoComplete, selectMenu } from '../../handlers/interactions/index.js'
 
 const cache = new Collection()
 
