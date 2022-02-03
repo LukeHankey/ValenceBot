@@ -1,6 +1,6 @@
 import { MessageActionRow, MessageButton } from 'discord.js'
 
-export class Ticket {
+export default class Ticket {
 	constructor (interaction, database) {
 		this.interaction = interaction
 		this.database = database
