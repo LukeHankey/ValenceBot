@@ -1,7 +1,7 @@
 import { MongoCollection } from '../../DataBase.js'
 import { MessageButton, MessageActionRow, MessageSelectMenu, MessageEmbed } from 'discord.js'
 import Color from '../../colors.js'
-import { Ticket } from '../../dsf/ticket.js'
+import Ticket from '../../dsf/ticket.js'
 
 export const buttons = async (interaction, db, data, cache) => {
 	const channels = await db.channels
