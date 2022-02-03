@@ -85,7 +85,6 @@ export const nameChanges = async (missingNames, db) => {
 		}
 	}
 
-
 	if (nameChange.length) {
 		return nameChange.forEach(async user => {
 			console.log(`Updating ${user.clanMate} as they have potentially changed names`)
