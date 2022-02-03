@@ -56,7 +56,7 @@ export const addMerchCount = async (client, message, db, scouter) => {
 				return await dsfServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\`\`\``, components: [buttonSelection] })
 			}
 			console.log(`New: ${userN.user.username} (${message.content})`, userN.id)
-			await scouter.collection.insert({
+			await scouter.collection.insertOne({
 				userID: userN.id,
 				author: userN.nickname ?? userN.user.username,
 				firstTimestamp: msg[0].createdTimestamp,
