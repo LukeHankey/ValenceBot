@@ -1,5 +1,5 @@
 import { MongoCollection } from '../../DataBase.js'
-import { blueDark } from '../../colors.js'
+import Color from '../../colors.js'
 import { modAppEmbed, defaultEmbed } from '../../templateEmbeds.js'
 import { Permissions } from '../../classes.js'
 import { MessageEmbed } from 'discord.js'
@@ -27,7 +27,7 @@ export default async (client, message) => {
 		const embed = new MessageEmbed()
 			.setTitle('New DM Recieved')
 			.setDescription(`${dmPerson.tag} sent me a DM.`)
-			.setColor(blueDark)
+			.setColor(Color.blueDark)
 			.addField('User ID', `${dmPerson.id}`, false)
 			.addField('Message contents', `${dmMsg.join('\n')}`)
 			.setTimestamp()

@@ -1,7 +1,7 @@
 /* eslint-disable no-inner-declarations */
 /* eslint-disable no-inline-comments */
-import { cream, aqua } from '../colors.js'
-import { googleClient } from '../gsheets.js'
+import Color from '../../colors.js'
+import { googleClient } from '../../gsheets.js'
 import { google } from 'googleapis'
 import { nEmbed } from '../functions.js'
 import { MessageEmbed } from 'discord.js'
@@ -67,7 +67,7 @@ export default {
 				const botUser = await dsfServer.members.fetch(client.user.id)
 
 				const embedMaker = (num, dates) => {
-					return nEmbed(dates, 'The next 31 days of stock for the Travelling Merchant.', cream, '', client.user.displayAvatarURL())
+					return nEmbed(dates, 'The next 31 days of stock for the Travelling Merchant.', Color.cream, '', client.user.displayAvatarURL())
 						.setFooter(`${botUser.nickname || client.user.username} created by Luke_#8346`, client.user.displayAvatarURL())
 						.addFields(num)
 				}
@@ -101,7 +101,7 @@ export default {
 							return `- [${title}](${baseURL}/${item.id})`
 						})
 						const embed = new MessageEmbed()
-							.setColor(aqua)
+							.setColor(Color.aqua)
 							.setDescription(editFormat.reverse().join('\n'))
 						await msgToEdit.edit({ content: `${openMessage}\n\n`, embeds: [embed] })
 						const after = await futureChannel.send({ content: '**Links**', embeds: [embed] })
@@ -143,7 +143,7 @@ export default {
 								const format = dataArray.filter(prop => prop.links === false).map(obj => {
 									return `- [${obj.date}](${baseURL}/${obj.messageID})`
 								})
-								const embed = new MessageEmbed().setDescription(format.join('\n')).setColor(aqua)
+								const embed = new MessageEmbed().setDescription(format.join('\n')).setColor(Color.aqua)
 								return dataArray.filter(prop => prop.links === true).forEach(async arrData => {
 									const msg = await futureChannel.messages.fetch(arrData.messageID)
 									await msg.edit({ embeds: [embed] })

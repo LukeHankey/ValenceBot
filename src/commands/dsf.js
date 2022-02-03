@@ -1,9 +1,9 @@
 /* eslint-disable no-shadow */
 /* eslint-disable no-useless-escape */
-import { MongoCollection } from '../DataBase.js'
-import { nEmbed, checkNum, removeMessage } from '../functions.js'
-import { cream, cyan } from '../colors.js'
-import { ScouterCheck } from '../classes.js'
+import { MongoCollection } from '../../DataBase.js'
+import { nEmbed, checkNum, removeMessage } from '../../functions.js'
+import Color from '../../colors.js'
+import { ScouterCheck } from '../../classes.js'
 
 /**
  * 733164313744769024 - Test Server
@@ -34,7 +34,7 @@ export default {
 					const fields = []
 					const embed = nEmbed('List of messages currently stored in the DB',
 						'There shouldn\'t be too many as they get automatically deleted after 10 minutes. If the bot errors out, please clear all of them using \`;dsf messages clear\`.',
-						cream,
+						Color.cream,
 						message.member.user.displayAvatarURL(),
 						client.user.displayAvatarURL())
 
@@ -113,7 +113,7 @@ export default {
 						const info = current
 						const embed = nEmbed('List of reaction messages currently stored in the DB that have had reactions added too',
 							'There may be quite a few and if there are, clear them out using \`;dsf reacts clear\`.',
-							cream,
+							Color.cream,
 							message.member.user.displayAvatarURL(),
 							client.user.displayAvatarURL())
 						embed.setTimestamp().addFields(info)
@@ -331,7 +331,7 @@ export default {
 				embeds: [nEmbed(
 					'**DSF Admin Commands List**',
 					'Here\'s a list of all the DSF commands you can use. Any parameter(s) in \`<>\` are optional:\n\n\`messages|m\`\n\`messages|m clear\`\n\`view scouter <num>\`\n\`view verified <num>\`\n\`user memberID/@member add <other/game> <num>\`\n\`user memberID/@member remove <other/game> <num>\`\n\`reacts\`\n\`reacts clear\`',
-					cyan,
+					Color.cyan,
 					client.user.displayAvatarURL()
 				)]
 			})

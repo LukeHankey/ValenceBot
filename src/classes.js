@@ -1,6 +1,6 @@
 /* eslint-disable no-async-promise-executor */
 import { MessageEmbed } from 'discord.js'
-import { redDark, orange } from './colors.js'
+import Color from './colors.js'
 import { nEmbed } from './functions.js'
 import ms from 'pretty-ms'
 
@@ -64,13 +64,13 @@ class Permissions {
 	}
 
 	ownerError () {
-		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', redDark)
+		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', Color.redDark)
 			.addField('Only the bot owner can:', `<@!${this.owner}>`)
 		return { embeds: [embed] }
 	}
 
 	error () {
-		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', redDark)
+		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', Color.redDark)
 			.addField('Only the following Roles & Users can:', `${this.higherRoles().length > 0 ? this.higherRoles().join(', ') : '0'}`, true)
 			.addField('\u200b', `<@${this.msg.guild.ownerId}>`, true)
 		return { embeds: [embed] }
@@ -187,7 +187,7 @@ class ScouterCheck {
 		const embed = new MessageEmbed()
 			.setTitle(`Potential Scouters - ${this.roleName}`)
 			.setDescription(`List of members who have met the minimum to obtain the <@&${role.id}> role.`)
-			.setColor(orange)
+			.setColor(Color.orange)
 			.setFooter('Review these members and manually assign the role to them.', this._client.user.displayAvatarURL())
 			.setTimestamp()
 

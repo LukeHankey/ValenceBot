@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { MessageEmbed } from 'discord.js'
-import { cyan } from '../colors.js'
+import Color from '../../colors.js'
 
 const data = new SlashCommandBuilder()
 	.setName('invite')
@@ -16,7 +16,7 @@ export default {
 	data,
 	slash: async (interaction) => {
 		const invite = interaction.client.generateInvite({ scopes: ['bot', 'applications.commands'], permissions: 123212262595n })
-		const embed = new MessageEmbed().setTitle('Here is your invite link.').setURL(invite).setColor(cyan)
+		const embed = new MessageEmbed().setTitle('Here is your invite link.').setURL(invite).setColor(Color.cyan)
 		await interaction.reply({ embeds: [embed], ephemeral: true })
 	}
 }
