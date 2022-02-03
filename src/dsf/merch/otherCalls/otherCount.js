@@ -9,7 +9,7 @@ export const addOtherCount = async (message, db, scouters) => {
 		const findMessage = await scouters.collection.findOne({ userID: msg[0].author.id })
 		if (!findMessage) {
 			console.log(`New other: ${msg[0].author.username} (${message.content})`, msg[0].author.id)
-			await scouters.collection.insert({
+			await scouters.collection.insertOne({
 				userID: msg[0].author.id,
 				author: msg[0].member.nickname ?? msg[0].author.username,
 				firstTimestamp: msg[0].createdTimestamp,

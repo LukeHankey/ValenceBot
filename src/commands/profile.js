@@ -97,7 +97,7 @@ export default {
 					.then(async col => {
 						col = col.first()
 						if (col.content === 'no') { return } else {
-							await scouters.collection.insert({
+							await scouters.collection.insertOne({
 								userID: col.author.id,
 								author: col.member.nickname ?? col.author.username,
 								firstTimestamp: col.createdTimestamp,
