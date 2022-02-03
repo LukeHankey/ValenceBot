@@ -89,6 +89,8 @@ export default async (client, reaction, user) => {
 							const channel = client.channels.cache.get(channels.errors.id)
 							channel.send(embed)
 							await usersDB.collection.deleteOne({ clanMate: userLeft.clanMate })
+						} else if (!metricsProfile.clan) {
+							await usersDB.collection.deleteOne({ clanMate: userLeft.clanMate })
 						} else {
 							// Checks if the potential previous name is equal to the current name.
 							// eslint-disable-next-line no-lonely-if
