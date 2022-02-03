@@ -1,4 +1,4 @@
-import { redDark } from './colors.js'
+import Color from './colors.js'
 import { promisify } from 'util'
 import { MessageEmbed } from 'discord.js'
 import pkg from 'mongodb'
@@ -106,7 +106,7 @@ export class MongoCollection extends DataBase {
 						const fileName = filePath[filePath.length - 1]
 						const embed = new MessageEmbed()
 							.setTitle(`An error occured in ${fileName}`)
-							.setColor(redDark)
+							.setColor(Color.redDark)
 							.addField(`${err.message}`, `\`\`\`${err.stack}\`\`\``)
 						return embed
 					},

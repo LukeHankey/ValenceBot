@@ -1,7 +1,7 @@
 import { MessageEmbed } from 'discord.js'
-import { aqua, cyan } from './colors.js'
+import Color from './colors.js'
 
-const nEmbed = (title, description, color = cyan, thumbnail = '', guildIcon) => {
+const nEmbed = (title, description, color = Color.cyan, thumbnail = '', guildIcon) => {
 	const embed = new MessageEmbed()
 		.setTitle(title)
 		.setDescription(description)
@@ -169,7 +169,7 @@ const paginate = (data, { author }, text, desc = '') => {
 		const embed = new MessageEmbed()
 			.setTitle(`${text} Member Profiles - Top Scouters`)
 			.setDescription(`Current tracked stats in this server for the top 24 ${desc} scouters per page.`)
-			.setColor(aqua)
+			.setColor(Color.aqua)
 			.setThumbnail(author.displayAvatarURL())
 			.setTimestamp()
 			.addFields(info)

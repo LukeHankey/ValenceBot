@@ -1,5 +1,5 @@
 import { MessageEmbed } from 'discord.js'
-import { orange } from '../colors.js'
+import Color from '../../colors.js'
 
 export default {
 	name: 'vote',
@@ -15,7 +15,7 @@ export default {
 		const embed = new MessageEmbed()
 			.setTitle('New Vote!')
 			.setDescription(`${content}`)
-			.setColor(orange)
+			.setColor(Color.orange)
 			.setTimestamp()
 
 		message.delete()

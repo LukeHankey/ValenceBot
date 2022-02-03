@@ -1,5 +1,5 @@
-import { cyan, redDark } from '../colors.js'
-import { nEmbed, checkNum } from '../functions.js'
+import Color from '../../colors.js'
+import { nEmbed, checkNum } from '../../functions.js'
 
 export default {
 	name: 'db.collection',
@@ -116,7 +116,7 @@ export default {
 						? message.channel.send({ content: 'Your Admin Channel is set as: `Null`' })
 						: message.channel.send({ content: `Your Admin Channel is set as: <#${adminChannel}>` })
 				} else {
-					message.channel.send(nEmbed('Permission Denied', 'You do not have permission to see the Admin Channel!', redDark))
+					message.channel.send(nEmbed('Permission Denied', 'You do not have permission to see the Admin Channel!', Color.redDark))
 				}
 			}
 			break
@@ -147,7 +147,7 @@ export default {
 						? message.channel.send({ content: 'Your events Channel is set as: `Null`' })
 						: message.channel.send({ content: `Your events Channel is set as: <#${events}>` })
 				} else {
-					message.channel.send({ embeds: [nEmbed('Permission Denied', 'You do not have permission to see the Admin Channel!', redDark)] })
+					message.channel.send({ embeds: [nEmbed('Permission Denied', 'You do not have permission to see the Admin Channel!', Color.redDark)] })
 				}
 			}
 			break
@@ -178,7 +178,7 @@ export default {
 						? message.channel.send({ content: 'Your Mod Channel is set as: `Null`' })
 						: message.channel.send({ content: `Your Mod Channel is set as: <#${mod}>` })
 				} else {
-					message.channel.send({ embeds: [nEmbed('Permission Denied', 'You do not have permission to see the Admin Channel!', redDark)] })
+					message.channel.send({ embeds: [nEmbed('Permission Denied', 'You do not have permission to see the Admin Channel!', Color.redDark)] })
 				}
 			}
 			break
@@ -188,7 +188,7 @@ export default {
 					embeds: [nEmbed(
 						'**Settings List**',
 						'Here\'s a list of all the db.collection you can change:',
-						cyan,
+						Color.cyan,
 						client.user.displayAvatarURL()
 					)
 						.addFields(

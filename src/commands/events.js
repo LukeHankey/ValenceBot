@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { MessageEmbed } from 'discord.js'
-import { cyan } from '../colors.js'
-import { removeEvents } from '../functions.js'
+import Color from '../../colors.js'
+import { removeEvents } from '../../functions.js'
 
 /**
  * 733164313744769024 - Test Server
@@ -49,7 +49,7 @@ export default {
 
 				const embed = new MessageEmbed()
 					.setTitle('Event Listing')
-					.setColor(cyan)
+					.setColor(Color.cyan)
 					.setDescription('These are all of the events currently stored. Some may be old ones, others relatively new and ongoing. Feel free to remove events by their event ID.')
 					.addFields(fieldHolder)
 				return interaction.reply({ embeds: [embed] })
@@ -104,7 +104,7 @@ export default {
 
 				const embed = new MessageEmbed()
 					.setTitle('Event Listing')
-					.setColor(cyan)
+					.setColor(Color.cyan)
 					.setDescription('These are all of the events currently stored. Some may be old ones, others relatively new and ongoing. Feel free to remove events by their event ID.')
 					.addFields(fieldHolder)
 				message.channel.send({ embeds: [embed] })

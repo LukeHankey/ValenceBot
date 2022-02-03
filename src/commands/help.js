@@ -1,5 +1,5 @@
-import { cyan, aqua } from '../colors.js'
-import { nEmbed, capitalise } from '../functions.js'
+import Color from '../../colors.js'
+import { nEmbed, capitalise } from '../../functions.js'
 
 export default {
 	name: 'help',
@@ -40,7 +40,7 @@ export default {
 				embeds: [nEmbed(
 					'**Help Commands List**',
 					'Here\'s a list of all my commands:',
-					cyan,
+					Color.cyan,
 					message.author.displayAvatarURL(),
 					client.user.displayAvatarURL()
 				)
@@ -71,7 +71,7 @@ export default {
 				embeds: [nEmbed(
 					`**Command:** ${cName}`,
 					`**Aliases:** ${command.aliases.join(', ') || '[NO ALIASES]'}\n**Permission Level:** ${command.permissionLevel}\n**Usage:**`,
-					aqua,
+					Color.aqua,
 					message.member.user.displayAvatarURL(),
 					client.user.displayAvatarURL()
 				)

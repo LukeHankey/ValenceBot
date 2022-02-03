@@ -1,7 +1,7 @@
 /* eslint-disable no-inline-comments */
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { MessageEmbed, MessageActionRow, MessageButton } from 'discord.js'
-import { aqua } from '../colors.js'
+import Color from '../../colors.js'
 
 export default {
 	name: 'ticket',
@@ -27,7 +27,7 @@ export default {
 		const ticketEmbed = new MessageEmbed()
 			.setTitle('Open a Ticket!')
 			.setDescription('If you have an issue with anyone in this server or friends chat, false calls, or any issue related to our server <#420803482002653190> then please open a ticket.')
-			.setColor(aqua)
+			.setColor(Color.aqua)
 			.setTimestamp()
 
 		await interaction.reply({ embeds: [ticketEmbed], components: [ticketButton] })
