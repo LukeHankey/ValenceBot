@@ -1,5 +1,5 @@
-import { cyan, redDark } from '../../colors.js'
-import { nEmbed, checkNum } from '../../functions.js'
+import { cyan, redDark } from '../colors.js'
+import { nEmbed, checkNum } from '../functions.js'
 
 export default {
 	name: 'db.collection',

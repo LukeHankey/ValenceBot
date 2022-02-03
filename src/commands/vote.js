@@ -1,5 +1,5 @@
 import { MessageEmbed } from 'discord.js'
-import { orange } from '../../colors.js'
+import { orange } from '../colors.js'
 
 export default {
 	name: 'vote',

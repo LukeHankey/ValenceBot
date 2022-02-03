@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-escape */
-import { checkNum } from '../../functions.js'
+import { checkNum } from '../functions.js'
 
 export default {
 	name: 'kick',

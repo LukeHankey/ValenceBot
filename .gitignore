@@ -5,4 +5,4 @@ Webhook
 client_secret.json
 test.js
 slashCommands.js
-archived/*
+archived
