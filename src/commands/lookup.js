@@ -27,6 +27,7 @@ export default {
 		}
 
 		const user = await db.collection.findOne({ userID: args[0] }, { projection: { _id: 0 } })
+		if (!user) return message.channel.send({ content: `<@!${args[0]}> is not in the database.` })
 
 		const allData = await db.collection.countDocuments({})
 		const embedFields = [{
