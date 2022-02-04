@@ -5,7 +5,7 @@
   "main": "./src/index.js",
   "scripts": {
     "start": "node ./src/index.js",
-    "slash": "set NODE_ENV=DEV&&node slashCommands.js",
+    "slash": "set NODE_ENV=DEV&&node ./src/slashCommands.js",
     "lint": "eslint --fix .",
     "dev": "set NODE_ENV=DEV&&node ./src/index.js"
   },

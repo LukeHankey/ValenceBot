@@ -112,8 +112,8 @@ export const buttons = async (interaction, db, data, cache) => {
 			break
 		case 'Resolve Issue':
 			await interaction.reply({ content: `Ticket closed by <@!${interaction.member.id}>.` })
-			interaction.channel.setLocked(true)
-			interaction.channel.setArchived(true)
+			await interaction.channel.setLocked(true)
+			await interaction.channel.setArchived(true)
 		}
 	} catch (err) {
 		channels.errors.send(err)
