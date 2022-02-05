@@ -1,7 +1,7 @@
 import { MongoCollection } from '../../DataBase.js'
 import { MessageButton, MessageActionRow, MessageSelectMenu, MessageEmbed } from 'discord.js'
 import Color from '../../colors.js'
-import Ticket from '../../dsf/ticket.js'
+import Ticket from '../../ticket.js'
 
 export const buttons = async (interaction, db, data, cache) => {
 	const channels = await db.channels
@@ -105,15 +105,34 @@ export const buttons = async (interaction, db, data, cache) => {
 		}
 			break
 		case 'Open Ticket': {
-			const ticket = new Ticket(interaction, db)
+			const ticketData = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
+			const ticket = new Ticket(interaction, ticketData, db)
 			const created = await ticket.create()
 			interaction.reply({ content: `Your ticket has been created at <#${created.id}>`, ephemeral: true })
 		}
 			break
 		case 'Resolve Issue':
-			await interaction.reply({ content: `Ticket closed by <@!${interaction.member.id}>.` })
-			await interaction.channel.setLocked(true)
-			await interaction.channel.setArchived(true)
+			await interaction.update({ components: [new MessageActionRow().addComponents(new MessageButton(interaction.message.components[0].components[0]).setEmoji('✅').setLabel('Issue resolved.').setDisabled(true))] })
+			await interaction.followUp({ content: `Ticket closed by <@!${interaction.member.id}>.` })
+			if (interaction.channel.type === 'GUILD_PRIVATE_THREAD') {
+				await interaction.channel.setLocked(true)
+				await interaction.channel.setArchived(true)
+			} else {
+				const ticketData = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
+
+				await interaction.channel.permissionOverwrites.set([
+					{
+						id: ticketData.ticket.role,
+						allow: 'VIEW_CHANNEL',
+						type: 'role'
+					},
+					{
+						id: interaction.guild.id,
+						deny: 'VIEW_CHANNEL',
+						type: 'role'
+					}
+				])
+			}
 		}
 	} catch (err) {
 		channels.errors.send(err)
