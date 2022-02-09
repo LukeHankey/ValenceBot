@@ -84,7 +84,7 @@ export default class Ticket {
 	}
 
 	_checkThreadsPreference () {
-		return !!['Tier_2', 'Tier_3'].includes(this.interaction.guild.premiumTier)
+		return !!['TIER_2', 'TIER_3'].includes(this.interaction.guild.premiumTier)
 	}
 
 	_sendInitialResponse (channel, memberId) {
