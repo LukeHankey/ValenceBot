@@ -66,7 +66,7 @@ export default async client => {
 
 	const postData = async (data) => {
 		if (!data) return
-		const valenceChannels = await db.collection.findOne({ _id: '668330890790699079' }, { projection: { channels: 1 } })
+		const valenceChannels = await db.collection.findOne({ _id: '472448603642920973' }, { projection: { channels: 1 } })
 		const valenceAdminChannel = client.channels.cache.get(valenceChannels.channels.adminChannel)
 		const messageSend = await valenceAdminChannel.send({ content: `${Formatters.codeBlock(formatTemplate(data))}` })
 		await messageSend.react('✅')
