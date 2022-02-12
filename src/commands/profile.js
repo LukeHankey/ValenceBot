@@ -8,9 +8,9 @@ import { checkNum, paginate, paginateFollowUP, capitalise } from '../functions.j
 
 export default {
 	name: 'profile',
-	description: ['Displays the members profile if one is found, otherwise has the option of creating one.', 'Displays the specified members profile if one is found.', 'Displays either the specified members profiile or everyone who has <@role>', 'Shows the top 25 in terms of scout count.', 'Shows the top 25 in terms of activity within the last 31 days.', 'Shows the top 25, per page, in terms of inactivity. No calls made within the last 31 days.'],
+	description: ['Displays the members profile if one is found, otherwise has the option of creating one.', 'Displays the specified members profile if one is found.', 'Displays either the specified members profiile or everyone who has <@role>', 'Shows the top 25 in terms of scout count.', 'Shows the top 25 in terms of activity within the last 31 days, either altogether or by role.', 'Shows the top 25, per page, in terms of inactivity. No calls made within the last 31 days.'],
 	aliases: ['p'],
-	usage: ['', '<member ID>', '<@member/@role>', 'all', 'active', 'inactive'],
+	usage: ['', '<member ID>', '<@member/@role>', 'all', 'active scouter/verified', 'inactive'],
 	guildSpecific: ['420803245758480405', '668330890790699079'],
 	permissionLevel: 'Everyone',
 	run: async (client, message, args, perms, db) => {
@@ -96,7 +96,7 @@ export default {
 				message.channel.awaitMessages({ filter, max: 1, time: 60000, errors: ['time'] })
 					.then(async col => {
 						col = col.first()
-						if (col.content === 'no') { } else {
+						if (col.content === 'no') { return } else {
 							await scouters.collection.insertOne({
 								userID: col.author.id,
 								author: col.member.nickname ?? col.author.username,
@@ -164,7 +164,27 @@ export default {
 					.catch(async err => channels.errors.send(err))
 			} else if (args[0] === 'active') {
 				if (memberRoles < botRole.position) return
-				const scoutTracker = await scouters.collection.find({ count: { $gte: 15 } }).toArray()
+				let scoutTracker = null
+				if (args[1]) {
+					switch (args[1].toLowerCase()) {
+					case 'scouter': {
+						const scouter = message.guild.roles.cache.find(r => r.name.toLowerCase() === 'scouter')
+						scoutTracker = await scouters.collection.find({ 'assigned.0': scouter.id, active: 1 }).toArray()
+					}
+						break
+					case 'verified scouter':
+					case 'verified': {
+						const oneMonth = 2.628e+9
+						const verified = message.guild.roles.cache.find(r => r.name.toLowerCase() === 'verified scouter')
+						scoutTracker = await scouters.collection.find({ 'assigned.1': verified.id, active: 1, lastTimestamp: { $gte: Date.now() - oneMonth } }).toArray()
+					}
+						break
+					default:
+						return message.channel.send(`There only criteria to check are the Scouter and Verified Scouter roles, not ${args[1]}.`)
+					}
+				} else {
+					scoutTracker = await scouters.collection.find({ count: { $gte: 15 } }).toArray()
+				}
 				const items = scoutTracker.filter(profile => profile.active).sort((a, b) => b.count - a.count)
 				let fields = []
 
