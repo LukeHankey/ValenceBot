@@ -13,26 +13,31 @@ export const skullTimer = (message, db) => {
 					await db.collection.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID } } })
 				}
 
-				if (Date.now() - time > 600000) {
+				if (Date.now() - time > 600_000) {
 					const fetched = await message.channel.messages.fetch(messageID)
-					fetched.react('☠️')
-						.then(async () => {
-							await db.collection.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID } } })
-							const getPerms = await merchChannelID.permissionOverwrites.cache.get(userID)
-							if (getPerms) {
-								const moreThanOnce = messages.filter(obj => {
-									if (obj.userID === userID && obj.messageID !== messageID) return obj
-									else return undefined
-								})
-								if (moreThanOnce.length) return
-								console.log(`Removing ${author} (${userID}) from channel overrides.`)
-								return getPerms.delete()
+					try {
+						await fetched.react('☠️')
+						await db.collection.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID } } })
+						const getPerms = merchChannelID.permissionOverwrites.cache.get(userID)
+						if (getPerms) {
+							const moreThanOnce = messages.filter(obj => (obj.userID === userID) && (obj.messageID !== messageID))
+							if (moreThanOnce.length) return
+							console.log(`Removing ${author} (${userID}) from channel overrides.`)
+							getPerms.delete()
+
+							const overridesCheck = merchChannelID.permissionOverwrites.cache.filter(p => p.type === 'member' && p.id !== userID)
+							if (overridesCheck.length) {
+								for (const rem of overridesCheck) {
+									console.log(`Removing remenant member: ${message.guild.members.resolve(rem.id).displayName} from channel overrides.`)
+									const userToRemove = merchChannelID.permissionOverwrites.cache.get(rem.id)
+									userToRemove.delete()
+								}
 							}
-						})
-						.catch(async (e) => {
-							channels.errors.send(e)
-							return timer.stop()
-						})
+						}
+					} catch (err) {
+						channels.errors.send(err)
+						return timer.stop()
+					}
 				}
 			} catch (e) {
 				if (e.code === 10008) {

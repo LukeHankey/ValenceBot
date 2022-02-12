@@ -10,7 +10,7 @@ const usersDB = new MongoCollection('Users')
 export default async (client, reaction, user) => {
 	const message = reaction.message
 	const channels = await db.channels
-	const { _id } = await db.collection.findOne({ _id: message.guild.id })
+	const { _id } = await db.collection.findOne({ _id: message.guild.id }, { projection: { _id: 1 }})
 
 	if (message.partial) await message.fetch().catch(err => channels.errors.send(err))
 	switch (message.guild.id) {
@@ -159,42 +159,31 @@ export default async (client, reaction, user) => {
 
 			switch (message.channel.id) {
 			case channelID: {
-				if (user.bot) return
+				const channel = client.channels.cache.get(channelID)
+				const oneHour = 3_600_000
 
-				const merchChannelID = client.channels.cache.get(channelID)
-				spamProtection.forEach(async (msgObj) => {
+				const filtered = spamProtection.filter(m => (Date.now() - m.time) >= oneHour)
+
+				if (!filtered.length) return
+
+				for (const f of filtered) {
 					try {
-						const m = await merchChannelID.messages.fetch(msgObj.messageID)
+						const m = await channel.messages.fetch(f.messageID)
 
-						// Remove all reactions if there is > 1 or 0. Then add a skull.
-						if (Date.now() - m.createdTimestamp >= 3600000 && (m.reactions.cache.size > 1 || m.reactions.cache.size === 0)) {
-							await m.reactions.removeAll()
-							await removeMessage(message, m, db.collection)
-							return await m.react('☠️')
-						} else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && m.reactions.cache.has('☠️')) {
-							// If there is only a skull, remove users and message from DB
-							await removeMessage(message, m, db.collection)
-							await m.reactions.removeAll()
-							return await m.react('☠️')
-						} else if (Date.now() - m.createdTimestamp >= 3600000 && m.reactions.cache.size === 1 && !m.reactions.cache.has('☠️')) {
-							// If there is a single reaction which is not the Skull, then remove that and react with skull. Repeat process over.
-							await m.reactions.removeAll()
-							await removeMessage(message, m, db.collection)
-							return await m.react('☠️')
-						} else { return }
+						await m.reactions.removeAll()
+						await removeMessage(message, m, db.collection)
+						return await m.react('☠️')
 					} catch (e) {
 						if (e.code === 10008) {
 							const messageID = e.path.split('/')[4]
-							return await db.collection.updateOne({ _id: message.guild.id }, {
+							await db.collection.updateOne({ _id: message.guild.id }, {
 								$pull: {
 									'merchChannel.spamProtection': { messageID: messageID }
 								}
 							})
-						} else { return channels.errors.send(e) }
+						} else { channels.errors.send(e) }
 					}
-				})
-			}
-				break
+				}
 			}
 		}
 	}

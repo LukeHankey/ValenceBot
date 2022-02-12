@@ -101,15 +101,12 @@ export const addMerchCount = async (client, message, db, scouter) => {
 
 		// Database logging for merch worlds
 		let mes = await message.channel.messages.fetch({ limit: 10 })
-		mes = mes.filter(m => {
-			if (m.reactions.cache.has('☠️')) return undefined
-			else return mes
-		})
+		mes = mes.filter(m => !m.reactions.cache.has('☠️'))
 		const log = [...mes.values()]
 		for (const msgs in log) {
-			const authorName = log[msgs].member?.nickname ?? log[msgs].author.username
+			const authorName = log[msgs].member?.displayName
 			const userId = log[msgs].member?.id ?? log[msgs].author.id
-			if (authorName === null) return
+			if (!authorName || userId === '668330399033851924') return
 			await db.collection.findOneAndUpdate({ _id: message.guild.id },
 				{
 					$addToSet: {
