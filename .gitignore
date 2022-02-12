@@ -6,3 +6,4 @@ client_secret.json
 test.js
 src/slashCommands.js
 archived
+*api.*
