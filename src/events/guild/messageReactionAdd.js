@@ -10,13 +10,13 @@ const usersDB = new MongoCollection('Users')
 export default async (client, reaction, user) => {
 	const message = reaction.message
 	const channels = await db.channels
-	const { _id } = await db.collection.findOne({ _id: message.guild.id }, { projection: { _id: 1 }})
+	const { _id } = await db.collection.findOne({ _id: message.guild.id }, { projection: { _id: 1 } })
 
 	if (message.partial) await message.fetch().catch(err => channels.errors.send(err))
 	switch (message.guild.id) {
 	case _id:
 		// Valence
-		if (_id === '472448603642920973' | _id === '668330890790699079') {
+		if (_id === '472448603642920973' || _id === '668330890790699079') {
 			if (user.bot) return
 			const data = await db.collection.findOne({ _id: message.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } })
 			const { nameChange } = await db.collection.findOne({ _id: message.guild.id }, { projection: { nameChange: 1, _id: 0 } })
@@ -184,6 +184,7 @@ export default async (client, reaction, user) => {
 						} else { channels.errors.send(e) }
 					}
 				}
+			}
 			}
 		}
 	}
