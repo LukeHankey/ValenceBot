@@ -4,6 +4,7 @@ import { MongoCollection } from '../DataBase.js'
 import { nEmbed, checkNum, removeMessage } from '../functions.js'
 import Color from '../colors.js'
 import { ScouterCheck } from '../classes.js'
+import { classVars } from '../dsf/index.js'
 
 /**
  * 733164313744769024 - Test Server
@@ -161,26 +162,17 @@ export default {
 			let scout = new ScouterCheck('Scouter')
 			let vScout = new ScouterCheck('Verified Scouter')
 
-			// eslint-disable-next-line no-shadow
-			const classVars = async (name, serverName, db) => {
-				name._client = client
-				name._guild_name = serverName
-				name._db = await db.map(doc => {
-					if (doc.serverName === name._guildName) return doc
-					else return undefined
-				}).filter(x => x)[0]
-				return name._client && name._guildName && name._db
-			}
 			const res = await db.collection.find({}).toArray()
-			await classVars(vScout, message.guild.name, res)
-			await classVars(scout, message.guild.name, res)
+			const scouter = await scouters.collection.find({ count: { $gte: 40 } }).toArray()
+			await classVars(vScout, message.guild.name, res, client, scouter)
+			await classVars(scout, message.guild.name, res, client, scouter)
 			const num = args[2]
 
 			switch (args[1]) {
 			case 'scouter':
 				if (num) {
 					scout = new ScouterCheck('Scouter', parseInt(num))
-					await classVars(scout, message.guild.name, res)
+					await classVars(scout, message.guild.name, res, client, scouter)
 					scout.send(message.channel.id)
 				} else {
 					const scoutCheck = await scout._checkForScouts()
@@ -192,7 +184,7 @@ export default {
 			case 'verified':
 				if (num) {
 					vScout = new ScouterCheck('Verified Scouter', parseInt(num))
-					await classVars(vScout, message.guild.name, res)
+					await classVars(vScout, message.guild.name, res, client, scouter)
 					vScout.send(message.channel.id)
 				} else {
 					const verifiedCheck = await vScout._checkForScouts()
