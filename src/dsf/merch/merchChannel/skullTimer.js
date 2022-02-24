@@ -28,6 +28,7 @@ export const skullTimer = (message, db) => {
 							const overridesCheck = merchChannelID.permissionOverwrites.cache.filter(p => p.type === 'member' && p.id !== userID)
 							if (overridesCheck.size) {
 								const overrides = [...overridesCheck.values()]
+								console.log(overrides)
 								for (let rem in overrides) {
 									rem = overrides[rem]
 									console.log(`Checking override: ${rem}`)
