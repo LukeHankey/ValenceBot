@@ -29,6 +29,7 @@ export const skullTimer = (message, db) => {
 							if (overridesCheck.size) {
 								const overrides = [...overridesCheck.values()]
 								for (const rem of overrides) {
+									if (moreThanOnce.length) continue
 									const leftOverMember = await message.guild.members.fetch(rem.id)
 									console.log(leftOverMember.id, leftOverMember.displayName)
 									console.log(`Removing remenant member: ${leftOverMember?.displayName} from channel overrides.`)
