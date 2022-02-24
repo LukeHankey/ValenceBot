@@ -26,10 +26,14 @@ export const skullTimer = (message, db) => {
 							getPerms.delete()
 
 							const overridesCheck = merchChannelID.permissionOverwrites.cache.filter(p => p.type === 'member' && p.id !== userID)
-							console.log(`Override check: ${overridesCheck}`)
-							if (overridesCheck.length) {
-								for (const rem of overridesCheck) {
-									console.log(`Removing remenant member: ${message.guild.members.resolve(rem.id).displayName} from channel overrides.`)
+							if (overridesCheck.size) {
+								const overrides = [...overridesCheck.values()]
+								for (const rem of overrides) {
+									const moreThanOnce = messages.filter(obj => (obj.userID === rem.id) && (obj.messageID !== messageID)).map(m => m.userID)
+									if (moreThanOnce.includes(rem.id)) continue
+									const leftOverMember = await message.guild.members.fetch(rem.id)
+									console.log(leftOverMember.id, leftOverMember.displayName)
+									console.log(`Removing remenant member: ${leftOverMember?.displayName} from channel overrides.`)
 									const userToRemove = merchChannelID.permissionOverwrites.cache.get(rem.id)
 									userToRemove.delete()
 								}
