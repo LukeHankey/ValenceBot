@@ -6,7 +6,7 @@ export const skullTimer = (message, db) => {
 		const channels = await db.channels
 		const { merchChannel: { messages, channelID } } = await db.collection.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.messages': 1, 'merchChannel.channelID': 1 } })
 		const merchChannelID = message.guild.channels.cache.get(channelID)
-		for await (const { messageID, content, time, userID, author } of messages) {
+		for (const { messageID, content, time, userID, author } of messages) {
 			try {
 				// Removes bot messages
 				if (userID === '668330399033851924' || content.includes('<@&670842187461820436>')) {
