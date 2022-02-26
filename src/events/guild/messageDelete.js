@@ -62,7 +62,6 @@ export default async (client, message) => {
 	// Self deletion
 	if (target.id !== message.author.id) {
 		// Bot self delete
-		console.log('Message deleted:', message.content, message.author.id)
 		if (message.author.id === '668330399033851924') return
 
 		const checkDB = fullDB.merchChannel.messages.find(entry => entry.messageID === message.id)
