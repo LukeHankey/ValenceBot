@@ -21,10 +21,5 @@ export const sendFact = async (client) => {
 	const random = Math.floor((Math.random() * count) + 1)
 
 	const factDB = await vFactsColl.collection.findOne({ number: random })
-	// #test-channel & #good-chats
-	const ID = ['732014449182900247', '473235620991336468']
-
-	ID.forEach(channel => {
-		client.channels.cache.get(channel).send({ embeds: [factEmbed(factDB.Message)] })
-	})
+	client.channels.cache.get('473235620991336468').send({ embeds: [factEmbed(factDB.Message)] })
 }
