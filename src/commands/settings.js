@@ -2,7 +2,7 @@ import Color from '../colors.js'
 import { nEmbed, checkNum } from '../functions.js'
 
 export default {
-	name: 'db.collection',
+	name: 'settings',
 	description: ['Displays the db.collection that you can change.', 'Shows the current prefix.', 'Sets the new prefix in the server.', 'Shows the current admin role.', 'Sets the new admin role in the server.', 'Shows the current mod role.', 'Sets the new mod role in the server.', 'Shows the current admin channel.', 'Sets the current admin channel.'],
 	aliases: ['s'],
 	usage: ['', 'prefix', 'prefix set <new prefix>', 'adminRole', 'adminRole set <new role>', 'modRole', 'modRole set <new role>', 'adminChannel', 'adminChannel set <channel>'],
