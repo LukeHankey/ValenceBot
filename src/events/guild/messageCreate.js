@@ -118,6 +118,7 @@ export default async (client, message) => {
 
 			for (const guild of guilds) {
 				const g = client.guilds.cache.get(guild)
+				if (!g) continue
 				for (const channel of channels) {
 					const c = g.channels.cache.get(channel)
 					if (!c) continue
