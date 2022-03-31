@@ -182,7 +182,7 @@ export default {
 		const monthIndex = (new Date()).getUTCMonth()
 		const currentYear = new Date().getFullYear()
 		const currentMonth = months[monthIndex]
-		const calChannel = interaction.guild.channels.cache.find((ch) => ch.name === 'calendar')
+		const calChannel = interaction.guild.channels.cache.find((ch) => ch.name === 'event-calendar📅')
 		const channels = await db.channels
 
 		const dataFromDb = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } })

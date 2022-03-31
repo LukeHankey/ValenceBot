@@ -38,7 +38,7 @@ export const vEvents = async (client, message, channels) => {
 					name: eventTitle[0].concat(` #${randomNum()}`)
 				})
 
-				const calChannel = message.guild.channels.cache.find((ch) => ch.name === 'calendar')
+				const calChannel = message.guild.channels.cache.find((ch) => ch.name === 'event-calendar📅')
 				const dateRegex = /^(Date(:)?\s)+((3[0-1]|2\d|1\d|[1-9])(st|nd|rd|th)?)+\s?((-|to)+\s?((3[0-1]|2\d|1\d|[1-9])(st|nd|rd|th)?)+)?(\s)?$/im
 				const timeRegex = /^(Time(:)?\s)+(([1-6]+(\s)?(day(s)?|week(s)?|month(s)?)(\s)?$)?|(([0-1]\d|2[0-3]):([0-5]\d)\s?)?((-|to)+\s?(([0-1]\d|2[0-3]):([0-5]\d))?)?)$/im
 				const link = `https://discord.com/channels/${last.guild.id}/${last.channel.id}/${last.id}`
