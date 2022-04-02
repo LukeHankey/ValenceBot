@@ -1,7 +1,7 @@
 import { MongoCollection } from '../../DataBase.js'
 import Color from '../../colors.js'
 import { Permissions } from '../../classes.js'
-import { MessageEmbed } from 'discord.js'
+import { MessageActionRow, MessageButton, MessageEmbed } from 'discord.js'
 import { vEvents } from '../../valence/valenceEvents.js'
 import dsf from '../../dsf/merch/main.js'
 const db = new MongoCollection('Settings')
@@ -47,10 +47,42 @@ export default async (client, message) => {
 			try {
 				const perms = message.guild.me.permissions.has('BAN_MEMBERS')
 				if (perms) {
-					console.log(message.content)
 					await bannedMember.ban({ days: 7, reason: 'Bang bang I gotcha, I gotcha in my scope' })
+					const botLogsAdminChannel = message.guild.channels.cache.get('794608385106509824')
+					const banEmbed = new MessageEmbed()
+						.setTitle(`${bannedMember.displayName} has been banned!`)
+						.setColor(Color.orange)
+						.setDescription(`Potentially dangerous content. Please don't click on or go to any links that you don't know!\n\n> ${message.content}`)
+						.addFields(
+							{ name: 'User ID', value: bannedMember.id, inline: true },
+							{ name: 'Status', value: 'Banned', inline: true }
+						)
+						.setTimestamp()
+					const banButtons = new MessageActionRow()
+						.addComponents(
+							new MessageButton()
+								.setCustomId('Unban')
+								.setLabel('Unban')
+								.setStyle('DANGER')
+								.setEmoji('🔓'),
+							new MessageButton()
+								.setCustomId('Clear Buttons')
+								.setLabel('Clear Buttons')
+								.setStyle('SUCCESS')
+								.setEmoji('✅')
+						)
+
+					const banCase = await botLogsAdminChannel.send({ embeds: [banEmbed], components: [banButtons] })
+					const banCaseButton = new MessageActionRow()
+						.addComponents(
+							new MessageButton()
+								.setLabel('Ban Case')
+								.setStyle('LINK')
+								.setURL(banCase.url)
+						)
+
 					const bChannel = message.guild.channels.cache.get('624655664920395786')
-					return await bChannel.send({ content: `Banned: ${bannedMember.displayName} - ${bannedMember.id} -- Posting a scam link. Bang bang I gotcha, I gotcha in my scope.` })
+					return await bChannel.send({ content: `Banned: ${bannedMember.displayName} - ${bannedMember.id} -- Posting a scam link. Bang bang I gotcha, I gotcha in my scope.`, components: [banCaseButton] })
 				} else {
 					const aChannel = message.guild.channels.cache.get(adminChannel)
 					return aChannel.send({ content: `I am unable to ban ${message.member.displayName} as I do not have the \`BAN_MEMBERS\` permission.` })

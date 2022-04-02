@@ -57,6 +57,12 @@ export const buttons = async (interaction, db, data, cache) => {
 		}
 			break
 		case 'Clear Buttons':
+			if (interaction.message.embeds.length) {
+				const embed = interaction.message.embeds[0]
+				const updatedEmbed = new MessageEmbed(embed)
+					.setColor(Color.greenLight)
+				return await interaction.update({ components: [], embeds: [updatedEmbed] })
+			}
 			await interaction.update({ components: [] })
 			break
 		case 'Show How To React': {
@@ -133,6 +139,26 @@ export const buttons = async (interaction, db, data, cache) => {
 					}
 				])
 			}
+			break
+		case 'Unban': {
+			const banEmbed = interaction.message.embeds[0]
+			const userId = banEmbed.fields.filter(field => field.name === 'User ID')[0].value
+			const banStatus = banEmbed.fields.filter(field => field.name === 'Status')[0]
+			const updatedBanEmbed = new MessageEmbed(banEmbed)
+				.setColor(Color.greenLight)
+				.spliceFields(banEmbed.fields.indexOf(banStatus), 1, Object.assign(banStatus, { value: 'Unbanned' }))
+			try {
+				await interaction.guild.bans.remove(userId)
+			} catch (err) {
+				const updateErrorBanEmbed = new MessageEmbed(banEmbed)
+					.setColor(Color.greenLight)
+					.spliceFields(banEmbed.fields.indexOf(banStatus), 1, Object.assign(banStatus, { value: err.message }))
+				interaction.reply({ content: `Unable to unban user: \`${err.message}\`.`, ephemeral: true })
+				return await interaction.message.edit({ components: [], embeds: [updateErrorBanEmbed] })
+			}
+
+			await interaction.update({ components: [], embeds: [updatedBanEmbed] })
+		}
 		}
 	} catch (err) {
 		channels.errors.send(err)
