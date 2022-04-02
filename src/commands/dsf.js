@@ -164,15 +164,15 @@ export default {
 
 			const res = await db.collection.find({}).toArray()
 			const scouter = await scouters.collection.find({ count: { $gte: 40 } }).toArray()
-			await classVars(vScout, message.guild.name, res, client, scouters)
-			await classVars(scout, message.guild.name, res, client, scouters)
+			await classVars(vScout, message.guild.name, res, client, scouter)
+			await classVars(scout, message.guild.name, res, client, scouter)
 			const num = args[2]
 
 			switch (args[1]) {
 			case 'scouter':
 				if (num) {
 					scout = new ScouterCheck('Scouter', parseInt(num))
-					await classVars(scout, message.guild.name, res, client, scouters)
+					await classVars(scout, message.guild.name, res, client, scouter)
 					scout.send(message.channel.id)
 				} else {
 					const scoutCheck = await scout._checkForScouts()
@@ -184,7 +184,7 @@ export default {
 			case 'verified':
 				if (num) {
 					vScout = new ScouterCheck('Verified Scouter', parseInt(num))
-					await classVars(vScout, message.guild.name, res, client, scouters)
+					await classVars(vScout, message.guild.name, res, client, scouter)
 					vScout.send(message.channel.id)
 				} else {
 					const verifiedCheck = await vScout._checkForScouts()
