@@ -13,22 +13,22 @@ const classVars = async (name, serverName, database, client, scouters) => {
 	name._scouters = scouters
 }
 
-const addedRoles = async (name, db) => {
+const addedRoles = async (name, scoutTracker) => {
 	const members = await name.checkRolesAdded()
 	members.map(async x => {
 		const role = await name.role
-		await db.collection.updateOne({ userID: x.id }, {
+		await scoutTracker.collection.updateOne({ userID: x.id }, {
 			$addToSet: {
 				assigned: role.id
 			}
 		})
 	})
 }
-const removedRoles = async (name, db) => {
+const removedRoles = async (name, scoutTracker) => {
 	const checkRoles = await name.checkRolesRemoved()
 	checkRoles.map(async x => {
 		const role = await name.role
-		await db.collection.updateOne({ userID: x.id }, {
+		await scoutTracker.collection.updateOne({ userID: x.id }, {
 			$pull: {
 				assigned: role.id
 			}
@@ -36,8 +36,8 @@ const removedRoles = async (name, db) => {
 	})
 }
 
-const removeInactives = async (name, db, scouters) => {
-	const inactives = await name.removeInactive()
+const removeInactives = async (name, db, scoutTracker) => {
+	const inactives = await name.removeInactive(scoutTracker)
 	const channels = await db.channels
 	const removed = []
 	const allItems = []
@@ -46,13 +46,13 @@ const removeInactives = async (name, db, scouters) => {
 		if (doc.active === 0 && (Date.now() - doc.lastTimestamp) > sixMonths) {
 			removed.push(doc.author)
 			allItems.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}).`)
-			await scouters.collection.remove(
+			await scoutTracker.collection.remove(
 				{ userID: doc.userID }
 			)
 		} else {
 			if (!doc.active) return
 			allItems.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}). User has been marked as inactive.`)
-			await scouters.collection.updateOne(
+			await scoutTracker.collection.updateOne(
 				{ userID: doc.userID },
 				{ $set: { active: 0 } }
 			)

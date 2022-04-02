@@ -96,12 +96,12 @@ class ScouterCheck {
 		this.guild_name = name
 	}
 
-	set _scouters (scoutTracker) {
-		this.scoutTracker = scoutTracker
+	set _scouters (scouts) {
+		this.scouts = scouts
 	}
 
 	get _scouters () {
-		return this.scoutTracker
+		return this.scouts
 	}
 
 	get _client () {
@@ -147,13 +147,6 @@ class ScouterCheck {
 		return new Promise(async (resolve) => {
 			const guild = await this.guild
 			return resolve(guild.roles.cache.find(r => r.name.toLowerCase() === this.roleName.toLowerCase())) // Find the guild and then find the role
-		})
-	}
-
-	get scouts () {
-		return new Promise(async (resolve) => {
-			const scouts = await this._scouters.collection.find({ count: { $gte: 40 } }).toArray()
-			return resolve(scouts)
 		})
 	}
 
@@ -222,7 +215,7 @@ class ScouterCheck {
 		const role = await this.role
 
 		return new Promise(async (resolve) => {
-			const userID = await this.scouts.map(doc => doc.userID)
+			const userID = await this._scouters.map(doc => doc.userID)
 			const memberFetch = await guild.members.fetch({ user: userID })
 			const membersArray = []
 			memberFetch.forEach(mem => {
@@ -234,9 +227,9 @@ class ScouterCheck {
 		})
 	}
 
-	async removeInactive () {
+	async removeInactive (scouters) {
 		return new Promise(async (resolve) => {
-			let merch = await this._scouters.collection.find({}).toArray()
+			let merch = await scouters.collection.find({}).toArray()
 			merch = merch.filter(doc => {
 				const totalCount = (doc.count + (doc.otherCount ?? 0)) < 10
 				const timeGone = 1000 * 60 * 60 * 24 * 31

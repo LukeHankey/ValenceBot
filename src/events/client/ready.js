@@ -89,16 +89,16 @@ export default async client => {
 	// DSF Activity Posts //
 	cron.schedule('0 */6 * * *', async () => {
 		const res = await db.collection.find({}).toArray()
-		const scouter = new MongoCollection('ScoutTracker')
-		const scouters = await scouter.collection.find({ count: { $gte: 40 } }).toArray()
-		await classVars(scout, 'Deep Sea Fishing', res, client, scouter)
-		await classVars(vScout, 'Deep Sea Fishing', res, client, scouter);
+		const scoutTracker = new MongoCollection('ScoutTracker')
+		const scouters = await scoutTracker.collection.find({ count: { $gte: 40 } }).toArray()
+		await classVars(scout, 'Deep Sea Fishing', res, client, scouters)
+		await classVars(vScout, 'Deep Sea Fishing', res, client, scouters);
 
 		[scout, vScout].forEach(role => {
-			addedRoles(role, scouter)
-			removedRoles(role, scouter)
+			addedRoles(role, scoutTracker)
+			removedRoles(role, scoutTracker)
 		})
-		removeInactives(scout, db, scouter)
+		removeInactives(scout, db, scoutTracker)
 
 		// Daily Reset
 		if (new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
