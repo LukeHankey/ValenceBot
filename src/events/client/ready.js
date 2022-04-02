@@ -91,8 +91,8 @@ export default async client => {
 		const res = await db.collection.find({}).toArray()
 		const scouter = new MongoCollection('ScoutTracker')
 		const scouters = await scouter.collection.find({ count: { $gte: 40 } }).toArray()
-		await classVars(scout, 'Deep Sea Fishing', res, client, scouters)
-		await classVars(vScout, 'Deep Sea Fishing', res, client, scouters);
+		await classVars(scout, 'Deep Sea Fishing', res, client, scouter)
+		await classVars(vScout, 'Deep Sea Fishing', res, client, scouter);
 
 		[scout, vScout].forEach(role => {
 			addedRoles(role, scouter)
