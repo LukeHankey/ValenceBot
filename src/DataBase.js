@@ -117,9 +117,9 @@ export class MongoCollection extends DataBase {
 				},
 				logs: {
 					id: logs,
-					send: function (content) {
+					send: function (content, rest) {
 						const channel = client.default.channels.cache.get(this.id)
-						return channel.send({ content })
+						return channel.send({ content, ...rest })
 					}
 				}
 			}
