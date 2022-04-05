@@ -34,7 +34,7 @@ export default {
 				.setTimestamp()
 				.setDescription(desc)
 				.setColor(Color.greenLight)
-				.setFooter('If any of the data above is wrong, please update it.')
+				.setFooter({ text: 'If any of the data above is wrong, please update it.' })
 				.addFields(fields)
 			return message.channel.send({ embeds: [embed] })
 		}

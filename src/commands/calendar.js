@@ -200,7 +200,7 @@ export default {
 				.setColor(Color.purpleMedium)
 				.setThumbnail(interaction.guild.iconURL())
 				.setTimestamp()
-				.setFooter('Valence Bot created by Luke_#8346', client.user.displayAvatarURL())
+				.setFooter({ text: 'Valence Bot created by Luke_#8346', iconURL: client.user.displayAvatarURL()})
 			return embed
 		}
 

@@ -71,7 +71,7 @@ export const addMerchCount = async (client, message, db, scouter) => {
 			})
 			if (!(await checkMemberRole(userN.id, message))) {
 				console.log(`Adding ${userN.nickname ?? userN.user.username} (${userN.id}) to channel overrides.`)
-				await merchChannelID.permissionOverwrites.create(userN.id, { ADD_REACTIONS: true })
+				await merchChannelID.permissionOverwrites.create(userN.id, { AddReactions: true })
 			}
 		} else {
 			if (!merchRegex.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, messages)) {
@@ -95,7 +95,7 @@ export const addMerchCount = async (client, message, db, scouter) => {
 			})
 			if (!(await checkMemberRole(userN.id, message))) {
 				console.log(`Adding ${userN.user.username} (${userN.id}) to channel overrides.`)
-				await merchChannelID.permissionOverwrites.create(userN.id, { ADD_REACTIONS: true })
+				await merchChannelID.permissionOverwrites.create(userN.id, { AddReactions: true })
 			}
 		}
 
