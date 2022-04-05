@@ -8,7 +8,7 @@ const nEmbed = (title, description, color = Color.cyan, thumbnail = '', guildIco
 		.setColor(color)
 		.setThumbnail(thumbnail)
 		.setTimestamp()
-		.setFooter('Valence Bot created by Luke_#8346', guildIcon)
+		.setFooter({ text: 'Valence Bot created by Luke_#8346', iconURL: guildIcon })
 	return embed
 }
 const checkNum = (id = 0, greaterOrEqualTo = 1, lowerOrEqualTo = Infinity) => {
@@ -190,13 +190,13 @@ const paginateFollowUP = async (msg, { author }, page, embeds, client) => {
 				msg.reactions.resolve('▶️').users.remove(u.id)
 				page++
 				if (page === embeds.length) --page
-				msg.edit({ embeds: [embeds[page].setFooter(`Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, client.user.displayAvatarURL())] })
+				msg.edit({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, iconURL: client.user.displayAvatarURL() })] })
 			}
 		} else if (r.emoji.name === '◀️') {
 			if (page !== 0) {
 				msg.reactions.resolve('◀️').users.remove(u.id)
 				--page
-				msg.edit({ embeds: [embeds[page].setFooter(`Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, client.user.displayAvatarURL())] })
+				msg.edit({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, iconURL: client.user.displayAvatarURL() })] })
 			} else { msg.reactions.resolve('◀️').users.remove(u.id) }
 		}
 	})

@@ -74,8 +74,7 @@ const newBoost = async (message, boostChannel) => {
 
 				await gsapi.spreadsheets.values.append(writeOptions)
 				const nitroEmbed = new MessageEmbed()
-					.setAuthor(`${message.author.username}`, `${message.author.displayAvatarURL()}`)
-
+					.setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
 					.setTitle('New Booster!')
 					.setColor(pink)
 					.setThumbnail('https://cdn.discordapp.com/attachments/869877392603234324/879052719225200680/discord_nitro.png')

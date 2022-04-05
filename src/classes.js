@@ -182,7 +182,7 @@ class ScouterCheck {
 			.setTitle(`Potential Scouters - ${this.roleName}`)
 			.setDescription(`List of members who have met the minimum to obtain the <@&${role.id}> role.`)
 			.setColor(Color.orange)
-			.setFooter('Review these members and manually assign the role to them.', this._client.user.displayAvatarURL())
+			.setFooter({ text: 'Review these members and manually assign the role to them.', iconURL: this._client.user.displayAvatarURL() })
 			.setTimestamp()
 
 		const fields = await this._checkForScouts()

@@ -67,7 +67,7 @@ export default {
 
 				const embedMaker = (num, dates) => {
 					return nEmbed(dates, 'The last 31 days of stock for the Entrepreneurial wish: Travelling Merchant coupon.', Color.cream, '', client.user.displayAvatarURL())
-						.setFooter(`${botUser.nickname || client.user.username} created by Luke_#8346`, client.user.displayAvatarURL())
+						.setFooter({ text: `${botUser.nickname || client.user.username} created by Luke_#8346`, iconURL: client.user.displayAvatarURL()})
 						.addFields(num)
 				}
 
