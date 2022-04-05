@@ -114,21 +114,26 @@ export const buttons = async (interaction, db, data, cache) => {
 			const ticketData = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
 			const ticket = new Ticket(interaction, ticketData, db)
 			const created = await ticket.create()
-			interaction.reply({ content: `Your ticket has been created at <#${created.id}>`, ephemeral: true })
+			if (!ticket.memberIncluded) {
+				interaction.reply({ content: `Your ticket has been created at <#${created.id}>`, ephemeral: true })
+			} else {
+				interaction.reply({ content: `Your ticket has been created. Please wait while the <@&${ticket.roleId}> review.`, ephemeral: true })
+			}
 		}
 			break
-		case 'Resolve Issue':
-			await interaction.update({ components: [new MessageActionRow().addComponents(new MessageButton(interaction.message.components[0].components[0]).setEmoji('✅').setLabel('Issue resolved.').setDisabled(true))] })
+		case 'Resolve Issue': {
+			const buttonDisabled = new MessageActionRow().addComponents(new MessageButton(interaction.message.components[0].components[0]).setEmoji('✅').setLabel('Issue resolved').setDisabled(true))
+			await interaction.update({ components: [buttonDisabled], fetchReply: true })
 			await interaction.followUp({ content: `Ticket closed by <@!${interaction.member.id}>.` })
 			if (interaction.channel.type === 'GUILD_PRIVATE_THREAD') {
 				await interaction.channel.setLocked(true)
 				await interaction.channel.setArchived(true)
 			} else {
-				const ticketData = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
+				const roleId = interaction.message.content.split(' ')[1].slice(3, 21)
 
 				await interaction.channel.permissionOverwrites.set([
 					{
-						id: ticketData.ticket.role,
+						id: roleId,
 						allow: 'VIEW_CHANNEL',
 						type: 'role'
 					},
@@ -139,6 +144,7 @@ export const buttons = async (interaction, db, data, cache) => {
 					}
 				])
 			}
+		}
 			break
 		case 'Unban': {
 			const banEmbed = interaction.message.embeds[0]
@@ -158,6 +164,16 @@ export const buttons = async (interaction, db, data, cache) => {
 			}
 
 			await interaction.update({ components: [], embeds: [updatedBanEmbed] })
+		}
+			break
+		case 'Pull User In': {
+			const content = interaction.message.content
+			const userId = content.split(' ')[2].slice(3, 21)
+			interaction.channel.permissionOverwrites.edit(userId, {
+				VIEW_CHANNEL: true
+			})
+			const [resolveIssueButton] = interaction.message.components[0].components.filter(b => b.label === 'Resolve Issue')
+			interaction.update({ components: [new MessageActionRow().addComponents(resolveIssueButton)] })
 		}
 		}
 	} catch (err) {
