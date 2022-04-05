@@ -44,7 +44,7 @@ export default {
 			.setTitle('Self-Assigned Information')
 			.setTimestamp()
 			.setColor(Color.greenLight)
-			.setFooter({ text: `${client.user.username} created by Luke_#8346`, iconURL: message.guild.iconURL()})
+			.setFooter({ text: `${client.user.username} created by Luke_#8346`, iconURL: message.guild.iconURL() })
 
 		if (args[0] === 'roles') {
 			let allAvailableRoles = []
