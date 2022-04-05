@@ -28,7 +28,7 @@ export default {
 				.setDescription('Current tracked stats in this server.')
 				.setColor(Color.aqua)
 				.setThumbnail(message.author.displayAvatarURL())
-				.setFooter({ text: 'Something wrong or missing? Let a Moderator+ know!', iconURL: client.user.displayAvatarURL()})
+				.setFooter({ text: 'Something wrong or missing? Let a Moderator+ know!', iconURL: client.user.displayAvatarURL() })
 				.setTimestamp()
 			const userData = [await uData.scoutTracker.collection.findOne({ userID: id })]
 			const memberAssignedRoles = fetchedMember.roles.cache.filter(r => r.id !== message.guild.id && r.position > botRole.position).sort((a, b) => b.position - a.position).map(role => `<@&${role.id}>`)
@@ -61,7 +61,7 @@ export default {
 				.setDescription('Current tracked stats in this server.')
 				.setColor(Color.aqua)
 				.setThumbnail(message.author.displayAvatarURL())
-				.setFooter({ text: 'Something wrong or missing? Let a Moderator+ know!', iconURL: client.user.displayAvatarURL()})
+				.setFooter({ text: 'Something wrong or missing? Let a Moderator+ know!', iconURL: client.user.displayAvatarURL() })
 				.setTimestamp()
 
 			const fetchRole = message.guild.roles.cache.get(id) ?? await message.guild.roles.fetch(id)
@@ -157,7 +157,7 @@ export default {
 				const page = 0
 				const embeds = paginate(fields, message, capitalise(args[0].toLowerCase()))
 
-				message.channel.send({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, iconURL: client.user.displayAvatarURL())] }})
+				message.channel.send({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, iconURL: client.user.displayAvatarURL() })] })
 					.then(async msg => {
 						await paginateFollowUP(msg, message, page, embeds, client)
 					})
@@ -195,7 +195,7 @@ export default {
 				const page = 0
 				const embeds = paginate(fields, message, capitalise(args[0].toLowerCase()), args[0].toLowerCase())
 
-				message.channel.send({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, iconURL: client.user.displayAvatarURL())] }})
+				message.channel.send({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, iconURL: client.user.displayAvatarURL() })] })
 					.then(async msg => {
 						await paginateFollowUP(msg, message, page, embeds, client)
 					})
@@ -213,7 +213,7 @@ export default {
 				const page = 0
 				const embeds = paginate(fields, message, capitalise(args[0].toLowerCase()), args[0].toLowerCase())
 
-				message.channel.send({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, iconURL: client.user.displayAvatarURL())] }})
+				message.channel.send({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, iconURL: client.user.displayAvatarURL() })] })
 					.then(async msg => {
 						await paginateFollowUP(msg, message, page, embeds, client)
 					})
