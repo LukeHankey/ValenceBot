@@ -35,6 +35,11 @@ export default {
 				.setName('description')
 				.setDescription('Be specific but concise of what you want users to use the tickets for.')
 				.setRequired(true)
+		)
+		.addBooleanOption(option =>
+			option
+				.setName('includes_member')
+				.setDescription('Decide whether you want the person opening the ticket to be included in the thread/channel.')
 		),
 	slash: async (interaction, _, db) => {
 		const ticketButton = new MessageActionRow()
@@ -49,19 +54,7 @@ export default {
 		const description = interaction.options.getString('description')
 		const role = interaction.options.getRole('role')
 		const prefer = interaction.options.getString('prefer')
-
-		await db.collection.updateOne({ _id: interaction.guild.id }, {
-			$set: {
-				ticket: {
-					role: role.id,
-					description,
-					prefer,
-					ticketStarter: interaction.user.id,
-					guildName: interaction.guild.name,
-					channelId: interaction.channel.id
-				}
-			}
-		})
+		const includesMember = interaction.options.getBoolean('includes_member')
 
 		const ticketEmbed = new MessageEmbed()
 			.setTitle('Open a Ticket!')
@@ -69,6 +62,23 @@ export default {
 			.setColor(Color.aqua)
 			.setTimestamp()
 
-		await interaction.reply({ embeds: [ticketEmbed], components: [ticketButton] })
+		const message = await interaction.reply({ embeds: [ticketEmbed], components: [ticketButton], fetchReply: true })
+
+		await db.collection.updateOne({ _id: interaction.guild.id }, {
+			$addToSet: {
+				ticket: {
+					$each: [{
+						role: role.id,
+						description,
+						prefer,
+						ticketStarter: interaction.user.id,
+						guildName: interaction.guild.name,
+						channelId: interaction.channel.id,
+						messageId: message.id,
+						includesMember: includesMember
+					}]
+				}
+			}
+		})
 	}
 }
