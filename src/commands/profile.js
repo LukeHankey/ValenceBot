@@ -1,7 +1,7 @@
 /* eslint-disable no-shadow */
 /* eslint-disable no-inline-comments */
 import { MongoCollection } from '../DataBase.js'
-import { MessageEmbed } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 import Color from '../colors.js'
 import ms from 'pretty-ms'
 import { checkNum, paginate, paginateFollowUP, capitalise } from '../functions.js'
@@ -23,7 +23,7 @@ export default {
 
 		const sendUserInfo = async (id = memberID, uData = { scoutTracker: scouters }) => {
 			const fetchedMember = await message.guild.members.fetch(id)
-			const embed = new MessageEmbed()
+			const embed = new EmbedBuilder()
 				.setTitle(`Member Profile - ${id}`)
 				.setDescription('Current tracked stats in this server.')
 				.setColor(Color.aqua)
@@ -51,12 +51,12 @@ export default {
 					// Think about if there is anything else to view in the user profile stats
 				)
 			}
-			return message.channel.send({ embeds: [embed.addFields(fields)] })
+			return message.channel.send({ embeds: [embed.addFields(...fields)] })
 		}
 
 		const sendRoleInfo = async (id, rData = { scoutTracker: scouters }) => {
 			const roleObj = message.guild.roles.cache.get(id)
-			const embed = new MessageEmbed()
+			const embed = new EmbedBuilder()
 				.setTitle(`Member Profiles - ${roleObj.name}`)
 				.setDescription('Current tracked stats in this server.')
 				.setColor(Color.aqua)
@@ -84,7 +84,7 @@ export default {
 			for (const values of newArr) {
 				fields.push({ name: `${values.author}`, value: `Scout count: ${values.count}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true })
 			}
-			return message.channel.send({ embeds: [embed.addFields(fields)] })
+			return message.channel.send({ embeds: [embed.addFields(...fields)] })
 		}
 
 		if (!args.length) {

@@ -1,5 +1,5 @@
 import { MongoCollection } from '../../DataBase.js'
-import { MessageEmbed, MessageActionRow, MessageButton } from 'discord.js'
+import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, AuditLogEvent } from 'discord.js'
 import Color from '../../colors.js'
 
 export default async (client, message) => {
@@ -11,13 +11,13 @@ export default async (client, message) => {
 	const botServerChannel = await client.channels.cache.get('784543962174062608')
 	const dsfServerChannel = await client.channels.cache.get('884076361940078682')
 
-	const buttonSelection = new MessageActionRow()
+	const buttonSelection = new ActionRowBuilder()
 		.addComponents(
-			new MessageButton()
+			new ButtonBuilder()
 				.setCustomId('Remove Merch Count')
 				.setLabel('Remove Merch Count')
-				.setStyle('SUCCESS')
-				.setEmoji('✅'))
+				.setStyle(ButtonStyle.Success)
+				.setEmoji({ name: '✅' }))
 
 	const sendAndUpdate = async (webhook, embed, data) => {
 		const sentChannel = await webhook.send({ embeds: [embed], components: [buttonSelection] })
@@ -35,7 +35,7 @@ export default async (client, message) => {
 	if (!message.guild || fullDB.merchChannel.channelID !== message.channel.id) return
 	const fetchedLogs = await message.guild.fetchAuditLogs({
 		limit: 1,
-		type: 'MESSAGE_DELETE'
+		type: AuditLogEvent.MessageDelete
 	})
 
 	const deletionLog = fetchedLogs.entries.first()
@@ -44,16 +44,18 @@ export default async (client, message) => {
 	const { executor, target } = deletionLog
 
 	const messageDeletion = (document) => {
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setTitle('Message Deleted')
 			.setColor(Color.redDark)
-			.addField('Message ID:', `${document.messageID}`, true)
-			.addField('Message Content:', `${document.content}`, true)
-			.addField('\u200B', '\u200B', true)
-			.addField('Author ID:', `${document.userID}`, true)
-			.addField('Author Tag:', `<@!${document.userID}>`, true)
-			.addField('\u200B', '\u200B', true)
-			.addField('Message Timestamp:', `${new Date(document.time).toString().split(' ').slice(0, -4).join(' ')}`, false)
+			.addFields(
+				{ name: 'Message ID:', value: `${document.messageID}`, inline: true },
+				{ name: 'Message Content:', value: `${document.content}`, inline: true },
+				{ name: '\u200B', value: '\u200B', inline: true },
+				{ name: 'Author ID:', value: `${document.userID}`, inline: true },
+				{ name: 'Author Tag:', value: `<@!${document.userID}>`, inline: true },
+				{ name: '\u200B', value: '\u200B', inline: true },
+				{ name: 'Message Timestamp:', value: `${new Date(document.time).toString().split(' ').slice(0, -4).join(' ')}`, inline: false }
+			)
 		return embed
 	}
 

@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { MessageEmbed } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 import Color from '../colors.js'
 import { removeEvents } from '../functions.js'
 
@@ -47,7 +47,7 @@ export default {
 					return { name: obj.title, value: `ID: ${obj.eventTag}\nRole: <@&${obj.roleID}>\n[Event posted ${obj.date ? 'on ' + obj.date.toString().split(' ').slice(0, 4).join(' ') : ''}](${link}${obj.messageID})\nEvent ends on ${obj.dateEnd}\nInterested 📌: ${members.join(', ')}` }
 				})
 
-				const embed = new MessageEmbed()
+				const embed = new EmbedBuilder()
 					.setTitle('Event Listing')
 					.setColor(Color.cyan)
 					.setDescription('These are all of the events currently stored. Some may be old ones, others relatively new and ongoing. Feel free to remove events by their event ID.')
@@ -102,7 +102,7 @@ export default {
 					return { name: obj.title, value: `ID: ${obj.eventTag}\nRole: <@&${obj.roleID}>\n[Event posted ${obj.date ? 'on ' + obj.date.toString().split(' ').slice(0, 4).join(' ') : ''}](${link}${obj.messageID})\nEvent ends on ${obj.dateEnd}\nInterested 📌: ${members.join(', ')}` }
 				})
 
-				const embed = new MessageEmbed()
+				const embed = new EmbedBuilder()
 					.setTitle('Event Listing')
 					.setColor(Color.cyan)
 					.setDescription('These are all of the events currently stored. Some may be old ones, others relatively new and ongoing. Feel free to remove events by their event ID.')

@@ -2,7 +2,7 @@ const gsheet = require('../gsheets')
 const { google } = require('googleapis')
 const { GoogleSheet } = require('../classes')
 const { pink } = require('../colors.json')
-const { MessageEmbed } = require('discord.js')
+const { EmbedBuilder } = require('discord.js')
 
 /**
      * Update the sheet, check the Discord ID column to see if each member is still a booster.
@@ -73,7 +73,7 @@ const newBoost = async (message, boostChannel) => {
 				nitros.push(['Unknown', new Date().toString().split(' ').slice(0, 4).join(' '), 0, message.author.id, message.author.username])
 
 				await gsapi.spreadsheets.values.append(writeOptions)
-				const nitroEmbed = new MessageEmbed()
+				const nitroEmbed = new EmbedBuilder()
 					.setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
 					.setTitle('New Booster!')
 					.setColor(pink)

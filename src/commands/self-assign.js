@@ -1,5 +1,5 @@
 import Color from '../colors.js'
-import { MessageEmbed } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 
 export default {
 	name: 'self-assign',
@@ -40,11 +40,11 @@ export default {
 			return botRoleHighest.position > x.position
 		})
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setTitle('Self-Assigned Information')
 			.setTimestamp()
 			.setColor(Color.greenLight)
-			.setFooter({ text: `${client.user.username} created by Luke_#8346`, iconURL: message.guild.iconURL() })
+			.setFooter({ text: `${client.user.username} created by Luke_#1838`, iconURL: message.guild.iconURL() })
 
 		if (args[0] === 'roles') {
 			let allAvailableRoles = []
@@ -98,9 +98,9 @@ export default {
 		console.log(added, removed, wrong)
 
 		wrong.length && (!added.length && !removed.length)
-			? message.channel.send({ embeds: [embed.setColor(Color.redLight).addFields(wrongAdd).setDescription('Can\'t find the role name? Use `;sa roles` for a full list of self-assignable role names.')] })
+			? message.channel.send({ embeds: [embed.setColor(Color.redLight).addFields(...wrongAdd).setDescription('Can\'t find the role name? Use `;sa roles` for a full list of self-assignable role names.')] })
 			: wrong.length
-				? message.channel.send({ embeds: [embed.addFields(fieldsPlus).setDescription('Can\'t find the role name? Use `;sa roles` for a full list of self-assignable role names.')] })
-				: message.channel.send({ embeds: [embed.addFields(fields)] })
+				? message.channel.send({ embeds: [embed.addFields(...fieldsPlus).setDescription('Can\'t find the role name? Use `;sa roles` for a full list of self-assignable role names.')] })
+				: message.channel.send({ embeds: [embed.addFields(...fields)] })
 	}
 }

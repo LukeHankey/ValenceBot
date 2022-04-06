@@ -1,6 +1,6 @@
 import Color from './colors.js'
 import { promisify } from 'util'
-import { MessageEmbed } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 import pkg from 'mongodb'
 const wait = promisify(setTimeout)
 const { MongoClient } = pkg
@@ -104,10 +104,10 @@ export class MongoCollection extends DataBase {
 					embed: function (err) {
 						const filePath = import.meta.url.split('/')
 						const fileName = filePath[filePath.length - 1]
-						const embed = new MessageEmbed()
+						const embed = new EmbedBuilder()
 							.setTitle(`An error occured in ${fileName}`)
 							.setColor(Color.redDark)
-							.addField(`${err.message}`, `\`\`\`${err.stack}\`\`\``)
+							.addFields({ name: `${err.message}`, value: `\`\`\`${err.stack.split('\n').filter(s => !s.includes('node_modules')).join('\n')}\`\`\`` })
 						return embed
 					},
 					send: function (...args) {

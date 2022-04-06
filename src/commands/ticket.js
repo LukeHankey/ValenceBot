@@ -1,6 +1,6 @@
 /* eslint-disable no-inline-comments */
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { MessageEmbed, MessageActionRow, MessageButton } from 'discord.js'
+import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 import Color from '../colors.js'
 
 export default {
@@ -25,9 +25,9 @@ export default {
 				.setName('prefer')
 				.setDescription('Preference of how to handle tickets. Private threads allowed if boost level is at least level 2.')
 				.setRequired(true)
-				.addChoices([
-					['Threads', 'Threads'],
-					['Channels', 'Channels']
+				.addChoices(...[
+					{ name: 'Threads', value: 'Threads' },
+					{ name: 'Channels', value: 'Channels' }
 				])
 		)
 		.addStringOption(option =>
@@ -42,13 +42,13 @@ export default {
 				.setDescription('Decide whether you want the person opening the ticket to be included in the thread/channel.')
 		),
 	slash: async (interaction, _, db) => {
-		const ticketButton = new MessageActionRow()
+		const ticketButton = new ActionRowBuilder()
 			.addComponents(
-				new MessageButton()
+				new ButtonBuilder()
 					.setCustomId('Open Ticket')
 					.setLabel('Open Ticket')
-					.setStyle('PRIMARY')
-					.setEmoji('✉️')
+					.setStyle(ButtonStyle.Primary)
+					.setEmoji({ name: '✉️' })
 			)
 
 		const description = interaction.options.getString('description')
@@ -56,7 +56,7 @@ export default {
 		const prefer = interaction.options.getString('prefer')
 		const includesMember = interaction.options.getBoolean('includes_member')
 
-		const ticketEmbed = new MessageEmbed()
+		const ticketEmbed = new EmbedBuilder()
 			.setTitle('Open a Ticket!')
 			.setDescription(description)
 			.setColor(Color.aqua)

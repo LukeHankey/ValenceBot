@@ -1,14 +1,14 @@
-import { MessageEmbed } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 import Color from './colors.js'
 
-const nEmbed = (title, description, color = Color.cyan, thumbnail = '', guildIcon) => {
-	const embed = new MessageEmbed()
+const nEmbed = (title, description, color = Color.cyan, thumbnail = null, guildIcon) => {
+	const embed = new EmbedBuilder()
 		.setTitle(title)
 		.setDescription(description)
 		.setColor(color)
 		.setThumbnail(thumbnail)
 		.setTimestamp()
-		.setFooter({ text: 'Valence Bot created by Luke_#8346', iconURL: guildIcon })
+		.setFooter({ text: 'Valence Bot created by Luke_#1838', iconURL: guildIcon })
 	return embed
 }
 const checkNum = (id = 0, greaterOrEqualTo = 1, lowerOrEqualTo = Infinity) => {
@@ -125,7 +125,7 @@ const removeEvents = async (message, db, module, database, eventTag) => {
 		})
 
 		const removedItem = [fields[foundIndex]].map(obj => `${obj.name}\n${obj.value}`)
-		const updateEmbed = new MessageEmbed(calMessage.embeds[0])
+		const updateEmbed = new EmbedBuilder(calMessage.embeds[0])
 		updateEmbed.spliceFields(foundIndex, 1)
 		calMessage.edit({ embeds: [updateEmbed] })
 		return channels.logs.send(`Calendar updated - ${message.member.displayName} removed event: \`\`\`diff\n- Removed\n${removedItem.join()}\`\`\``)
@@ -166,13 +166,13 @@ const paginate = (data, { author }, text, desc = '') => {
 		const current = data.slice(i, k)
 		k += 24
 		const info = current
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setTitle(`${text} Member Profiles - Top Scouters`)
 			.setDescription(`Current tracked stats in this server for the top 24 ${desc} scouters per page.`)
 			.setColor(Color.aqua)
 			.setThumbnail(author.displayAvatarURL())
 			.setTimestamp()
-			.addFields(info)
+			.addFields(...info)
 		embeds.push(embed)
 	}
 	return embeds

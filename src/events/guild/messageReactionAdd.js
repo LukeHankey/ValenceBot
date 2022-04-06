@@ -1,5 +1,5 @@
 import { MongoCollection } from '../../DataBase.js'
-import { MessageEmbed } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 import { removeMessage, removeEvents } from '../../functions.js'
 import Color from '../../colors.js'
 import fetch from 'node-fetch'
@@ -81,11 +81,11 @@ export default async (client, reaction, user) => {
 						 * If member in Valence, remove from listing
 						 */
 						if (metricsProfile.clan && metricsProfile.clan !== 'Valence') {
-							const embed = new MessageEmbed()
+							const embed = new EmbedBuilder()
 								.setTitle(`${userLeft.clanMate} is no longer in Valence`)
 								.setDescription(`${user.username} chose ❌ on name changes. (Not changed names or none match). User has been removed from the database.`)
 								.setColor(Color.redDark)
-								.addField('Users old profile', `\`\`\`${JSON.stringify(userLeft)}\`\`\``)
+								.addFields({ name: 'Users old profile', value: `\`\`\`${JSON.stringify(userLeft)}\`\`\`` })
 							const channel = client.channels.cache.get(channels.errors.id)
 							channel.send(embed)
 							await usersDB.collection.deleteOne({ clanMate: userLeft.clanMate })

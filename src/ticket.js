@@ -1,4 +1,4 @@
-import { MessageActionRow, MessageButton } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 
 export default class Ticket {
 	constructor (interaction, ticketData, database) {
@@ -59,25 +59,25 @@ export default class Ticket {
 				// Ticket requester
 				{
 					id: this.interaction.member.id,
-					allow: 'VIEW_CHANNEL',
+					allow: 'ViewChannel',
 					type: 'member'
 				},
 				// Bot
 				{
 					id: this.interaction.message.author.id,
-					allow: 'VIEW_CHANNEL',
+					allow: 'ViewChannel',
 					type: 'member'
 				},
 				// Ticket responders
 				{
 					id: this.roleId,
-					allow: 'VIEW_CHANNEL',
+					allow: 'ViewChannel',
 					type: 'role'
 				},
 				// Everyone role
 				{
 					id: this.interaction.guild.id,
-					deny: 'VIEW_CHANNEL',
+					deny: 'ViewChannel',
 					type: 'role'
 				}
 			]
@@ -86,7 +86,7 @@ export default class Ticket {
 				{
 					parent: this.interaction.channel.parentId,
 					reason: 'Ticket for report.',
-					permissionOverwrites: channelPermissions ? !this.memberIncluded : channelPermissions.slice(1)
+					permissionOverwrites: !this.memberIncluded ? channelPermissions : channelPermissions.slice(1)
 				}
 			)
 		}
@@ -101,19 +101,19 @@ export default class Ticket {
 	}
 
 	_sendInitialResponse (channel, memberId, included = false) {
-		const resolveButton = new MessageActionRow()
+		const resolveButton = new ActionRowBuilder()
 			.addComponents(
-				new MessageButton()
+				new ButtonBuilder()
 					.setCustomId('Resolve Issue')
 					.setLabel('Resolve Issue')
-					.setStyle('SUCCESS')
-					.setEmoji('❗')
+					.setStyle(ButtonStyle.Success)
+					.setEmoji({ name: '❗' })
 			)
-		const bringUserIn = new MessageButton()
+		const bringUserIn = new ButtonBuilder()
 			.setCustomId('Pull User In')
 			.setLabel('Pull User In')
-			.setStyle('SUCCESS')
-			.setEmoji('📥')
+			.setStyle(ButtonStyle.Success)
+			.setEmoji({ name: '📥' })
 
 		if (!included) {
 			channel.send({ content: `Hello <@!${memberId}>, a member of <@&${this.roleId}> will be with you shortly.`, components: [resolveButton] })

@@ -1,21 +1,21 @@
-import { MessageEmbed } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
 import Color from '../colors.js'
 import { randomNum, removeEvents } from '../functions.js'
 
 const monthChoices = [
-	['January', 'January'],
-	['February', 'February'],
-	['March', 'March'],
-	['April', 'April'],
-	['May', 'May'],
-	['June', 'June'],
-	['July', 'July'],
-	['August', 'August'],
-	['September', 'September'],
-	['October', 'October'],
-	['November', 'November'],
-	['December', 'December']
+	{ name: 'January', value: 'January' },
+	{ name: 'February', value: 'February' },
+	{ name: 'March', value: 'March' },
+	{ name: 'April', value: 'April' },
+	{ name: 'May', value: 'May' },
+	{ name: 'June', value: 'June' },
+	{ name: 'July', value: 'July' },
+	{ name: 'August', value: 'August' },
+	{ name: 'September', value: 'September' },
+	{ name: 'October', value: 'October' },
+	{ name: 'November', value: 'November' },
+	{ name: 'December', value: 'December' },
 ]
 
 export default {
@@ -37,7 +37,7 @@ export default {
 					option
 						.setName('month')
 						.setDescription('Choose a month for the current embed.')
-						.addChoices(monthChoices)
+						.addChoices(...monthChoices)
 				)
 		)
 		.addSubcommand(subcommand =>
@@ -83,7 +83,7 @@ export default {
 					option
 						.setName('month')
 						.setDescription('Choose the month of the calendar you want to add to.')
-						.addChoices(monthChoices)
+						.addChoices(...monthChoices)
 				)
 		)
 		.addSubcommand(subcommand =>
@@ -100,12 +100,12 @@ export default {
 					option
 						.setName('field')
 						.setDescription('The field name in which to edit.')
-						.addChoices([
-							['Date', 'date'],
-							['Title', 'event'],
-							['Time', 'time'],
-							['Announcement', 'announcement'],
-							['Host', 'host']
+						.addChoices(...[
+							{ name: 'Date', value: 'date' },
+							{ name: 'Title', value: 'event' },
+							{ name: 'Time', value: 'time' },
+							{ name: 'Announcement', value: 'announcement' },
+							{ name: 'Host', value: 'host' }
 						])
 						.setRequired(true)
 				)
@@ -119,7 +119,7 @@ export default {
 					option
 						.setName('month')
 						.setDescription('Choose the month of the calendar you want to edit.')
-						.addChoices(monthChoices)
+						.addChoices(...monthChoices)
 				)
 		)
 		.addSubcommand(subcommand =>
@@ -141,7 +141,7 @@ export default {
 					option
 						.setName('month')
 						.setDescription('Choose the month of the calendar you want to edit.')
-						.addChoices(monthChoices)
+						.addChoices(...monthChoices)
 				)
 		)
 		.addSubcommand(subcommand =>
@@ -165,13 +165,13 @@ export default {
 					option
 						.setName('month')
 						.setDescription('Choose the month of the calendar you want to move an event from.')
-						.addChoices(monthChoices)
+						.addChoices(...monthChoices)
 				)
 				.addStringOption(option =>
 					option
 						.setName('month_to')
 						.setDescription('Choose the month of the calendar you want to move an event to.')
-						.addChoices(monthChoices)
+						.addChoices(...monthChoices)
 				)
 		),
 	slash: async (interaction, _, db) => {
@@ -194,13 +194,13 @@ export default {
 
 		// Functions
 		const createCalendarEmbed = (title) => {
-			const embed = new MessageEmbed()
+			const embed = new EmbedBuilder()
 				.setTitle(title)
 				.setDescription('This months events are as follows:')
 				.setColor(Color.purpleMedium)
 				.setThumbnail(interaction.guild.iconURL())
 				.setTimestamp()
-				.setFooter({ text: 'Valence Bot created by Luke_#8346', iconURL: client.user.displayAvatarURL()})
+				.setFooter({ text: 'Valence Bot created by Luke_#1838', iconURL: client.user.displayAvatarURL()})
 			return embed
 		}
 
@@ -253,7 +253,7 @@ export default {
 				if (!monthFromDb[0]) return await interaction.reply({ content: 'Unable to find that calendar.', ephemeral: true })
 
 				const message = await interaction.channel.messages.fetch(monthFromDb[0].messageID)
-				const calEmbed = new MessageEmbed(message.embeds[0])
+				const calEmbed = new EmbedBuilder(message.embeds[0])
 
 				// Create the new role and update the db.collection
 				const newRole = await interaction.guild.roles.create({
@@ -322,7 +322,7 @@ export default {
 				if (!monthFromDb[0]) return await interaction.reply({ content: 'Unable to find that calendar.', ephemeral: true })
 
 				const message = await interaction.channel.messages.fetch(monthFromDb[0].messageID)
-				const calEmbed = new MessageEmbed(message.embeds[0])
+				const calEmbed = new EmbedBuilder(message.embeds[0])
 				const existingFields = calEmbed.fields[position - 1]
 				const oldValues = existingFields.value.split('\n')
 				const roleId = oldValues[4].slice(9, 27)
@@ -382,7 +382,7 @@ export default {
 			if (!monthFromDb[0]) return await interaction.reply({ content: 'Unable to find that calendar.', ephemeral: true })
 
 			const message = await interaction.channel.messages.fetch(monthFromDb[0].messageID)
-			const calEmbed = new MessageEmbed(message.embeds[0])
+			const calEmbed = new EmbedBuilder(message.embeds[0])
 
 			// Logging
 			const log = message.embeds[0].fields.splice(position - 1, deleteNum)
@@ -418,12 +418,12 @@ export default {
 			}
 
 			const message = await interaction.channel.messages.fetch(monthFromDb[0].messageID)
-			const calEmbed = new MessageEmbed(message.embeds[0])
+			const calEmbed = new EmbedBuilder(message.embeds[0])
 			const event = calEmbed.fields[from - 1]
 
 			if (monthTo !== null) {
 				const moveMessage = await interaction.channel.messages.fetch(monthFromDbTo[0].messageID)
-				const calEmbedTo = new MessageEmbed(moveMessage.embeds[0])
+				const calEmbedTo = new EmbedBuilder(moveMessage.embeds[0])
 				if (monthTo === month) {
 					calEmbedTo.spliceFields(to - 1, 0, {
 						name: event.name,
