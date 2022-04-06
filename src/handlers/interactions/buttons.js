@@ -1,7 +1,8 @@
 import { MongoCollection } from '../../DataBase.js'
-import { ActionRowBuilder, SelectMenuBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+import { ActionRowBuilder, SelectMenuBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputStyle } from 'discord.js'
 import Color from '../../colors.js'
 import Ticket from '../../ticket.js'
+import { TextInputBuilder, UnsafeTextInputBuilder } from '@discordjs/builders'
 
 export const buttons = async (interaction, db, data, cache) => {
 	const channels = await db.channels
@@ -176,14 +177,75 @@ export const buttons = async (interaction, db, data, cache) => {
 			await interaction.update({ components: [], embeds: [updatedBanEmbed] })
 		}
 			break
-		case 'Pull User In': {
-			const content = interaction.message.content
-			const userId = content.split(' ')[2].slice(3, 21)
-			interaction.channel.permissionOverwrites.edit(userId, {
-				VIEW_CHANNEL: true
+		case 'Create Application': {
+			const ticketData = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
+			const ticket = new Ticket(interaction, ticketData, db)
+			if (interaction.member.id !== ticket.currentTicket.ticketStarter) {
+				return interaction.reply({ content: 'You cannot use this button.', ephemeral: true })
+			}
+			const applicationModal = new ModalBuilder()
+				.setCustomId('createApplication')
+				.setTitle('Create Application')
+
+			const instructions = new TextInputBuilder()
+				.setCustomId('instructions')
+				.setLabel('Instructions')
+				.setStyle(TextInputStyle.Paragraph)
+				.setValue('-- Anything you write in this box will be ignored! --\n\nModals can have up to 5 fields, either a single line (short) or a paragraph box like this one. In the next box, please remove as appropriate and fill in the values.\n\ntitle=Modal title\nlabel=Title of current field (45 char max)\nstyle=1/2 (short/paragraph)\nrequired=true/false\n\nTitle, label and style are required.')
+
+			const modalExample = {
+				title: 'My Cool Modal',
+				components: [
+					{
+						label: 'What is your name?',
+						style: 1,
+						min_length: 2,
+						max_length: 100,
+						value: 'Bot',
+						required: true
+					},
+					{
+						label: 'Tell me a story',
+						style: 2,
+						min_length: 1,
+						max_length: 4000,
+						placeholder: '',
+						required: false
+					}
+				]
+			}
+
+			const exampleApplication = new TextInputBuilder()
+				.setCustomId('application')
+				.setLabel('Application')
+				.setStyle(TextInputStyle.Paragraph)
+				.setValue(JSON.stringify(modalExample, null, 4))
+
+			const firstActionRow = new ActionRowBuilder().addComponents(instructions)
+			const secondActionRow = new ActionRowBuilder().addComponents(exampleApplication)
+
+			applicationModal.addComponents(firstActionRow, secondActionRow)
+			await interaction.showModal(applicationModal)
+		}
+			break
+		case 'Start Application': {
+			const ticketData = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
+			const ticket = new Ticket(interaction, ticketData, db)
+
+			const applicationData = ticket.currentTicket.applicationModal
+			const applicationModal = new ModalBuilder()
+				.setCustomId(applicationData.custom_id)
+				.setTitle(applicationData.title)
+
+			const actionRows = applicationData.components.map(c => {
+				return new ActionRowBuilder()
+					.addComponents(
+						new UnsafeTextInputBuilder(c)
+					)
 			})
-			const [resolveIssueButton] = interaction.message.components[0].components.filter(b => b.label === 'Resolve Issue')
-			interaction.update({ components: [new ActionRowBuilder().addComponents(resolveIssueButton)] })
+
+			applicationModal.addComponents(...actionRows)
+			await interaction.showModal(applicationModal)
 		}
 		}
 	} catch (err) {

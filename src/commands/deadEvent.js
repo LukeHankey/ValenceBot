@@ -8,7 +8,7 @@ export default {
 		name: 'Mark event as dead.',
 		type: 3
 	},
-	menu: async (interaction, data, db) => {
+	menu: async (interaction, db, data) => {
 		const client = interaction.client
 		const channels = await db.channels
 		await interaction.deferReply({ ephemeral: true })

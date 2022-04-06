@@ -66,7 +66,7 @@ export default {
 				const botUser = await dsfServer.members.fetch(client.user.id)
 
 				const embedMaker = (num, dates) => {
-					return nEmbed(dates, 'The last 31 days of stock for the Entrepreneurial wish: Travelling Merchant coupon.', Color.cream, '', client.user.displayAvatarURL())
+					return nEmbed(dates, 'The last 31 days of stock for the Entrepreneurial wish: Travelling Merchant coupon.', Color.cream, null, client.user.displayAvatarURL())
 						.setFooter({ text: `${botUser.nickname || client.user.username} created by Luke_#1838`, iconURL: client.user.displayAvatarURL() })
 						.addFields(...num)
 				}

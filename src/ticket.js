@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType } from 'discord.js'
 
 export default class Ticket {
 	constructor (interaction, ticketData, database) {
@@ -16,10 +16,6 @@ export default class Ticket {
 		return this.currentTicket.prefer
 	}
 
-	get memberIncluded () {
-		return this.currentTicket.includesMember
-	}
-
 	get roleId () {
 		return this.currentTicket.role
 	}
@@ -28,15 +24,19 @@ export default class Ticket {
 		return this.interaction.member
 	}
 
+	isApplication () {
+		return this.currentTicket.application
+	}
+
 	async create () {
 		let newChannel
 		if (this.preference === 'Threads' && this._checkThreadsPreference()) {
 			newChannel = await this.interaction.channel.threads.create({
-				name: `Ticket by ${this.interaction.member.displayName}`,
+				name: `${this.isApplication() ? 'Application' : 'Ticket'} by ${this.interaction.member.displayName}`,
 				autoArchiveDuration: 1440,
-				type: 'GUILD_PRIVATE_THREAD',
+				type: ChannelType.GuildPrivateThread,
 				invitable: false,
-				reason: 'Ticket for report.'
+				reason: !this.isApplication() ? 'Ticket for report.' : 'Application'
 			})
 		} else {
 			if (this.preference === 'Threads') {
@@ -55,7 +55,7 @@ export default class Ticket {
 					}
 				})
 			}
-			const channelPermissions = [
+			const permissionOverwrites = [
 				// Ticket requester
 				{
 					id: this.interaction.member.id,
@@ -82,25 +82,25 @@ export default class Ticket {
 				}
 			]
 			newChannel = await this.interaction.guild.channels.create(
-				`Ticket by ${this.interaction.member.displayName}`,
+				`${this.isApplication() ? 'Application' : 'Ticket'} by ${this.interaction.member.displayName}`,
 				{
 					parent: this.interaction.channel.parentId,
-					reason: 'Ticket for report.',
-					permissionOverwrites: !this.memberIncluded ? channelPermissions : channelPermissions.slice(1)
+					reason: !this.isApplication() ? 'Ticket for report.' : 'Application',
+					permissionOverwrites: this.isApplication() ? permissionOverwrites.slice(1) : permissionOverwrites
 				}
 			)
 		}
 
 		// Brings in the user and all Staff
-		this._sendInitialResponse(newChannel, this.interaction.member.id, this.memberIncluded)
+		this._sendInitialResponse(newChannel, this.interaction.member.id)
 		return newChannel
 	}
 
 	_checkThreadsPreference () {
-		return !!['TIER_2', 'TIER_3'].includes(this.interaction.guild.premiumTier)
+		return !![2, 3].includes(this.interaction.guild.premiumTier)
 	}
 
-	_sendInitialResponse (channel, memberId, included = false) {
+	_sendInitialResponse (channel, memberId) {
 		const resolveButton = new ActionRowBuilder()
 			.addComponents(
 				new ButtonBuilder()
@@ -109,16 +109,11 @@ export default class Ticket {
 					.setStyle(ButtonStyle.Success)
 					.setEmoji({ name: '❗' })
 			)
-		const bringUserIn = new ButtonBuilder()
-			.setCustomId('Pull User In')
-			.setLabel('Pull User In')
-			.setStyle(ButtonStyle.Success)
-			.setEmoji({ name: '📥' })
 
-		if (!included) {
+		if (!this.isApplication()) {
 			channel.send({ content: `Hello <@!${memberId}>, a member of <@&${this.roleId}> will be with you shortly.`, components: [resolveButton] })
 		} else {
-			channel.send({ content: `Hello <@&${this.roleId}>! <@!${this.member.id}> has opened a ticket. If no message comes through shortly, please pull them in.`, components: [resolveButton.addComponents(bringUserIn)] })
+			channel.send({ content: `Hello <@&${this.roleId}>, <@!${memberId}> has submitted a new application! Please review and get back to them ASAP. They have been notified that their application is in review.` })
 		}
 	}
 }

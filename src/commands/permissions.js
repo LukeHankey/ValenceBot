@@ -1,5 +1,5 @@
 /* eslint-disable no-shadow */
-import { GuildMember, EmbedBuilder } from 'discord.js'
+import { GuildMember, EmbedBuilder, ApplicationCommandPermissionType } from 'discord.js'
 
 export default {
 	name: 'permissions',
@@ -96,7 +96,7 @@ export default {
 		switch (subType) {
 		case 'set': {
 			const userOrRoleId = interaction.options.getMentionable('mention').id
-			const userOrRole = interaction.options.getMentionable('mention') instanceof GuildMember ? 'USER' : 'ROLE'
+			const userOrRole = interaction.options.getMentionable('mention') instanceof GuildMember ? ApplicationCommandPermissionType.User : ApplicationCommandPermissionType.Role
 			const value = interaction.options.getBoolean('value')
 			const permType = interaction.options.getString('type')
 			let guildPerms

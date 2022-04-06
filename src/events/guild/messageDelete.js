@@ -4,6 +4,18 @@ import Color from '../../colors.js'
 
 export default async (client, message) => {
 	const db = new MongoCollection('Settings')
+	const ticketData = await db.collection.findOne({ _id: message.guild.id }, { projection: { ticket: 1 } })
+
+	const [currentTicket] = ticketData.ticket.filter(t => t.messageId === message.id)
+	if (!currentTicket) return
+	if (message.id === currentTicket.messageId) {
+		return await db.collection.findOneAndUpdate({ _id: message.guild.id }, {
+			$pull: {
+				ticket: { messageId: message.id }
+			}
+		})
+	}
+
 	const fullDB = await db.collection.findOne({ _id: message.guild.id, merchChannel: { $exists: true } }, { projection: { merchChannel: { messages: 1, channelID: 1 } } })
 	if (!fullDB) return
 	const merchChannelID = message.guild.channels.cache.get(fullDB.merchChannel.channelID)
