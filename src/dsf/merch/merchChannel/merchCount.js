@@ -1,14 +1,14 @@
 import { merchRegex } from '../constants.js'
 import { checkMemberRole, arrIncludesString, alreadyCalled } from '../merchFunctions.js'
-import { MessageActionRow, MessageButton } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 
 export const addMerchCount = async (client, message, db, scouter) => {
 	const channels = await db.channels
 	try {
 		const { merchChannel: { channelID, messages }, disallowedWords } = await db.collection.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.channelID': 1, 'merchChannel.messages': 1, disallowedWords: 1 } })
 		const merchChannelID = client.channels.cache.get(channelID)
-		const botServerErrorChannel = await client.channels.cache.get('784543962174062608')
 		const dsfServerErrorChannel = await client.channels.cache.get('794608385106509824')
+		const botServerErrorChannel = await client.channels.cache.get('903432222139355207')
 
 		// Adding count to members
 		const mesOne = await message.channel.messages.fetch({ limit: 1 })
@@ -18,42 +18,39 @@ export const addMerchCount = async (client, message, db, scouter) => {
 		const userN = message.member
 		const findMessage = await scouter.collection.findOne({ userID: userN.id })
 		const timestamp = message.createdAt.toString().split(' ').slice(0, 5).join(' ')
-		const buttonSelection = new MessageActionRow()
+		const buttonSelection = new ActionRowBuilder()
 			.addComponents(
-				new MessageButton()
+				new ButtonBuilder()
 					.setCustomId(`DM ${userN.user.username}`)
 					.setLabel(`DM ${userN.user.username}`)
-					.setStyle('PRIMARY')
-					.setEmoji('✉️'),
-				new MessageButton()
+					.setStyle(ButtonStyle.Primary)
+					.setEmoji({ name: '✉️' }),
+				new ButtonBuilder()
 					.setCustomId('Show How To React')
 					.setLabel('Show How To React')
-					.setStyle('SUCCESS')
-					.setEmoji('☠️'),
-				new MessageButton()
+					.setStyle(ButtonStyle.Success)
+					.setEmoji({ name: '☠️' }),
+				new ButtonBuilder()
 					.setCustomId('Eyes on Merch Calls')
 					.setLabel('Eyes on Merch Calls')
-					.setStyle('SUCCESS')
-					.setEmoji('👀'),
-				new MessageButton()
+					.setStyle(ButtonStyle.Success)
+					.setEmoji({ name: '👀' }),
+				new ButtonBuilder()
 					.setCustomId('Timeout')
 					.setLabel('Timeout')
-					.setStyle('SECONDARY')
-					.setEmoji('⏲️'),
-				new MessageButton()
+					.setStyle(ButtonStyle.Secondary)
+					.setEmoji({ name: '⏲️' }),
+				new ButtonBuilder()
 					.setCustomId('Clear Buttons')
 					.setLabel('Clear Buttons')
-					.setStyle('DANGER')
-					.setEmoji('❌')
+					.setStyle(ButtonStyle.Danger)
+					.setEmoji({ name: '❌' })
 			)
 
 		if (!findMessage) {
 			if (!merchRegex.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, messages)) {
 				console.log(`New & Spam: ${userN.user.username} (${message.content})`, userN.id)
-				if (message.guild.id === '668330890790699079') {
-					return await botServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\`\`\``, components: [buttonSelection] })
-				}
-				return await dsfServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\`\`\``, components: [buttonSelection] })
+				return await dsfServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``, components: [buttonSelection] })
 			}
 			console.log(`New: ${userN.user.username} (${message.content})`, userN.id)
 			await scouter.collection.insertOne({
@@ -75,11 +72,11 @@ export const addMerchCount = async (client, message, db, scouter) => {
 			}
 		} else {
 			if (!merchRegex.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, messages)) {
-				console.log(`Old & Spam: ${userN.user.username} (${message.content})`, userN.user.id)
 				if (message.guild.id === '668330890790699079') {
-					return await botServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.user.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\`\`\``, components: [buttonSelection] })
+					return await botServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``, components: [buttonSelection] })
 				}
-				return await dsfServerErrorChannel.send({ content: ` \`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.user.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\`\`\``, components: [buttonSelection] })
+				console.log(`Old & Spam: ${userN.user.username} (${message.content})`, userN.user.id)
+				return await dsfServerErrorChannel.send({ content: ` \`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.user.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``, components: [buttonSelection] })
 			}
 			console.log(`Old: ${userN.user.username} (${message.content})`, findMessage.userID === userN.id, findMessage.userID, userN.id)
 			await scouter.collection.updateOne({ userID: findMessage.userID }, {

@@ -2,7 +2,7 @@ import Color from '../colors.js'
 import { googleClient } from '../gsheets.js'
 import { google } from 'googleapis'
 import { nEmbed } from '../functions.js'
-import { MessageEmbed } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 
 export default {
 	name: 'wish',
@@ -67,8 +67,8 @@ export default {
 
 				const embedMaker = (num, dates) => {
 					return nEmbed(dates, 'The last 31 days of stock for the Entrepreneurial wish: Travelling Merchant coupon.', Color.cream, '', client.user.displayAvatarURL())
-						.setFooter({ text: `${botUser.nickname || client.user.username} created by Luke_#8346`, iconURL: client.user.displayAvatarURL() })
-						.addFields(num)
+						.setFooter({ text: `${botUser.nickname || client.user.username} created by Luke_#1838`, iconURL: client.user.displayAvatarURL() })
+						.addFields(...num)
 				}
 
 				const channelToPush = client.channels.cache.get(merchantWishes.channelID)
@@ -99,7 +99,7 @@ export default {
 							const title = item.embeds[0].title.slice(7)
 							return `- [${title}](${baseURL}/${item.id})`
 						})
-						const embed = new MessageEmbed()
+						const embed = new EmbedBuilder()
 							.setColor(Color.aqua)
 							.setDescription(editFormat.reverse().join('\n'))
 						await msgToEdit.edit({ content: `${openMessage}\n\n`, embeds: [embed] })
@@ -133,7 +133,7 @@ export default {
 						{ links: true, messageID: merchantWishes.messages.links.after }
 					]
 					const embedEditor = (info) => {
-						const embed = new MessageEmbed(info)
+						const embed = new EmbedBuilder(info)
 						return { embeds: [embed] }
 					}
 					const channel = client.channels.cache.get(merchantWishes.channelID)
@@ -144,7 +144,7 @@ export default {
 							const format = postData.filter(prop => prop.links === false).map(obj => {
 								return `- [${obj.date}](${baseURL}/${obj.messageID})`
 							})
-							const embed = new MessageEmbed().setDescription(format.join('\n')).setColor(Color.aqua)
+							const embed = new EmbedBuilder().setDescription(format.join('\n')).setColor(Color.aqua)
 							return dataArray.filter(prop => prop.links === true).forEach(async arrData => {
 								const msg = await channel.messages.fetch(arrData.messageID)
 								await msg.edit({ embeds: [embed] })

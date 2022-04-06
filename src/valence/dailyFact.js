@@ -1,13 +1,13 @@
-import { MessageEmbed } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 import { MongoCollection } from '../DataBase.js'
 const randomColor = Math.floor(Math.random() * 16777215).toString(16)
 
 const factEmbed = (factMessage) => {
-	const embed = new MessageEmbed()
+	const embed = new EmbedBuilder()
 		.setTitle('**Daily Valence Fact**')
 		.setDescription(factMessage)
 		.setColor(`#${randomColor}`)
-		.addField('**Sent By:**', '<@&685612946231263232>', true)
+		.addFields({ name: '**Sent By:**', value: '<@&685612946231263232>', inline: true })
 		.setTimestamp()
 	return embed
 }

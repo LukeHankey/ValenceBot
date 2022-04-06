@@ -23,10 +23,10 @@ const dsf = async (client, message, db) => {
 			:	setTimeout(() => message.delete(), 200)
 		skullTimer(message, db)
 	} else if (message.channel.id === otherChannelID) {
+		await addOtherCount(client, message, db, scouters)
 		if (!otherCalls.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, otherMessages)) {
-			return message.delete()
+			return setTimeout(() => message.delete(), 200)
 		}
-		await addOtherCount(message, db, scouters)
 		otherTimer(message, db)
 	}
 }

@@ -1,12 +1,12 @@
 import { checkNum } from '../functions.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { Util } from 'discord.js'
+import { Util, ChannelType } from 'discord.js'
 
 export default {
 	name: 'send',
-	description: ['Sends a message to a channel.', 'Edits a message by providing the channel and message ID and overwrite the previous post with new content.', 'Creates a new embed for the Ban/Friends List.', 'Adds an RSN to the ban list with a reason.', 'Edits an rsn or reason by finding the given rsn. Example:\n```css\n;send edit ban 1 Guys Reason: Is a noob.```', 'Removes a member from the ban or friends list by specifying their rsn and which embed they are in. Alternatively removes all info from the embed if the rsn is replaced with \'clear\'.'],
+	description: ['Sends a message to a channel.', 'Edits a message by providing the channel and message ID and overwrite the previous post with new content.'],
 	aliases: [''],
-	usage: ['<channel Tag/ID> <message content>', 'edit <channel Tag/ID> <message ID> <new message content>', 'embed <ban/friend/affiliate> <number>', 'info <ban/friend/affiliate> <num> RSN: <rsn> Reason: <reason>', 'edit <ban/friend/affiliate> <num> <rsn> <RSN:/Reason:> <value>', 'remove <ban/friend/affiliate> <num> <rsn/clear>'],
+	usage: ['<channel Tag/ID> <message content>', 'edit <channel Tag/ID> <message ID> <new message content>'],
 	guildSpecific: 'all',
 	permissionLevel: 'Admin',
 	data: new SlashCommandBuilder()
@@ -21,7 +21,7 @@ export default {
 					option
 						.setName('channel')
 						.setDescription('The channel you want to send a message to.')
-						.addChannelType(0)
+						.addChannelTypes(ChannelType.GuildText)
 						.setRequired(true)
 				)
 				.addStringOption((option) =>

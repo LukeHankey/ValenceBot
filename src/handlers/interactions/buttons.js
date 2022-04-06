@@ -1,5 +1,5 @@
 import { MongoCollection } from '../../DataBase.js'
-import { MessageButton, MessageActionRow, MessageSelectMenu, MessageEmbed } from 'discord.js'
+import { ActionRowBuilder, SelectMenuBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 import Color from '../../colors.js'
 import Ticket from '../../ticket.js'
 
@@ -19,9 +19,9 @@ export const buttons = async (interaction, db, data, cache) => {
 		 * customId = `DM ${User}`
 		 */
 		case `DM ${user}`: {
-			const menu = new MessageActionRow()
+			const menu = new ActionRowBuilder()
 				.addComponents(
-					new MessageSelectMenu()
+					new SelectMenuBuilder()
 						.setCustomId(`DM ${user}`)
 						.setPlaceholder('Nothing selected')
 						.addOptions([
@@ -47,10 +47,10 @@ export const buttons = async (interaction, db, data, cache) => {
 
 			/**
 			 * components[0]: The first ActionRow
-			 * components[0].components[0]: The first MessageButton
+			 * components[0].components[0]: The first Button
 			 */
-			const row = new MessageActionRow()
-				.addComponents(new MessageButton(interaction.message.components[0].components[0]).setEmoji('📩').setLabel('DM sent...').setDisabled())
+			const row = new ActionRowBuilder()
+				.addComponents(new ButtonBuilder(interaction.message.components[0].components[0]).setEmoji({ name: '📩' }).setLabel('DM sent...').setDisabled().setStyle(ButtonStyle.Primary))
 			await interaction.update({ components: [row] })
 			console.log(`Action: Password Button\nBy: ${interaction.user.username}\nUser: ${fetchUser.user.username}`)
 			cache.set(interaction.message.id, { ...fetchUser.user })
@@ -59,7 +59,7 @@ export const buttons = async (interaction, db, data, cache) => {
 		case 'Clear Buttons':
 			if (interaction.message.embeds.length) {
 				const embed = interaction.message.embeds[0]
-				const updatedEmbed = new MessageEmbed(embed)
+				const updatedEmbed = new EmbedBuilder(embed)
 					.setColor(Color.greenLight)
 				return await interaction.update({ components: [], embeds: [updatedEmbed] })
 			}
@@ -95,7 +95,7 @@ export const buttons = async (interaction, db, data, cache) => {
 						'merchChannel.deletions.messages': { messageID: item.messageID }
 					}
 				})
-				const newEmbed = new MessageEmbed(interaction.message.embeds[0])
+				const newEmbed = new EmbedBuilder(interaction.message.embeds[0])
 				newEmbed.setColor(Color.greenLight).setTitle('Message Deleted - Count Removed')
 				await interaction.message.edit({ embeds: [newEmbed], components: [] })
 			}
@@ -105,9 +105,19 @@ export const buttons = async (interaction, db, data, cache) => {
 			const member = await interaction.guild.members.fetch(userId)
 			const bansChannel = interaction.guild.channels.cache.get('624655664920395786')
 
-			await member.disableCommunicationUntil(Date.now() + (10 * 60 * 1000), `${interaction.member.displayName}: Timeout ${member.displayName} for 10 minutes.`)
-			await bansChannel.send({ content: `${member.displayName} has been timed out by ${interaction.member.displayName} for 10 minutes.` })
-			await interaction.update({ components: [] })
+			try {
+				await member.disableCommunicationUntil(Date.now() + (10 * 60 * 1000), `${interaction.member.displayName}: Timeout ${member.displayName} for 10 minutes.`)
+				await bansChannel.send({ content: `${member.displayName} has been timed out by ${interaction.member.displayName} for 10 minutes.` })
+				await interaction.update({ components: [] })
+			} catch (err) {
+				if (err.code === 50013) {
+					// Missing Permissions
+					interaction.reply({ content: `Unable to timeout ${member.displayName}. Missing Permissions.` })
+				} else {
+					channels.errors.send(err)
+					interaction.reply({ content: 'Something went wrong.' })
+				}
+			}
 		}
 			break
 		case 'Open Ticket': {
@@ -122,7 +132,7 @@ export const buttons = async (interaction, db, data, cache) => {
 		}
 			break
 		case 'Resolve Issue': {
-			const buttonDisabled = new MessageActionRow().addComponents(new MessageButton(interaction.message.components[0].components[0]).setEmoji('✅').setLabel('Issue resolved').setDisabled(true))
+			const buttonDisabled = new ActionRowBuilder().addComponents(new ButtonBuilder(interaction.message.components[0].components[0].data).setEmoji({ name: '✅' }).setLabel('Issue resolved').setDisabled(true))
 			await interaction.update({ components: [buttonDisabled], fetchReply: true })
 			await interaction.followUp({ content: `Ticket closed by <@!${interaction.member.id}>.` })
 			if (interaction.channel.type === 'GUILD_PRIVATE_THREAD') {
@@ -134,12 +144,12 @@ export const buttons = async (interaction, db, data, cache) => {
 				await interaction.channel.permissionOverwrites.set([
 					{
 						id: roleId,
-						allow: 'VIEW_CHANNEL',
+						allow: 'ViewChannel',
 						type: 'role'
 					},
 					{
 						id: interaction.guild.id,
-						deny: 'VIEW_CHANNEL',
+						deny: 'ViewChannel',
 						type: 'role'
 					}
 				])
@@ -150,13 +160,13 @@ export const buttons = async (interaction, db, data, cache) => {
 			const banEmbed = interaction.message.embeds[0]
 			const userId = banEmbed.fields.filter(field => field.name === 'User ID')[0].value
 			const banStatus = banEmbed.fields.filter(field => field.name === 'Status')[0]
-			const updatedBanEmbed = new MessageEmbed(banEmbed)
+			const updatedBanEmbed = new EmbedBuilder(banEmbed)
 				.setColor(Color.greenLight)
 				.spliceFields(banEmbed.fields.indexOf(banStatus), 1, Object.assign(banStatus, { value: 'Unbanned' }))
 			try {
 				await interaction.guild.bans.remove(userId)
 			} catch (err) {
-				const updateErrorBanEmbed = new MessageEmbed(banEmbed)
+				const updateErrorBanEmbed = new EmbedBuilder(banEmbed)
 					.setColor(Color.greenLight)
 					.spliceFields(banEmbed.fields.indexOf(banStatus), 1, Object.assign(banStatus, { value: err.message }))
 				interaction.reply({ content: `Unable to unban user: \`${err.message}\`.`, ephemeral: true })
@@ -173,7 +183,7 @@ export const buttons = async (interaction, db, data, cache) => {
 				VIEW_CHANNEL: true
 			})
 			const [resolveIssueButton] = interaction.message.components[0].components.filter(b => b.label === 'Resolve Issue')
-			interaction.update({ components: [new MessageActionRow().addComponents(resolveIssueButton)] })
+			interaction.update({ components: [new ActionRowBuilder().addComponents(resolveIssueButton)] })
 		}
 		}
 	} catch (err) {

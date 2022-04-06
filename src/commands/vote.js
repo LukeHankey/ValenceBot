@@ -1,4 +1,4 @@
-import { MessageEmbed } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 import Color from '../colors.js'
 
 export default {
@@ -11,8 +11,9 @@ export default {
 	run: async (client, message, args, perms, db) => {
 		if (!perms.mod) return message.channel.send(perms.errorM)
 		const content = args.join(' ')
+		if (!content) return message.channel.send({ content: 'Add some context regarding the vote.' })
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setTitle('New Vote!')
 			.setDescription(`${content}`)
 			.setColor(Color.orange)

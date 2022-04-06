@@ -1,5 +1,5 @@
 import { MongoCollection } from '../DataBase.js'
-import { MessageEmbed } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 import { randomNum } from '../functions.js'
 
 export const vEvents = async (client, message, channels) => {
@@ -65,7 +65,7 @@ export const vEvents = async (client, message, channels) => {
 						}
 					}
 
-					const editEmbed = new MessageEmbed(m.embeds[0])
+					const editEmbed = new EmbedBuilder(m.embeds[0])
 					editEmbed.addFields(
 						{ name: date, value: `Event: ${eventTitle[0]}\nTime: ${time}\n[Announcement](${link})\nHost: ${last.author}\nRole: ${newRole}` }
 					)

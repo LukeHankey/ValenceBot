@@ -1,6 +1,6 @@
 /* eslint-disable no-inline-comments */
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { MessageEmbed } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 import Color from '../colors.js'
 
 const description = ['Shows the current Vis Wax combinations.', 'Upload an image of the current Vis wax combinations or a message link which includes an attachment.', 'Force reset of image.']
@@ -101,7 +101,7 @@ export default {
 		const channels = await db.channels
 		const [...attachment] = args
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setTitle('New Vis Wax Upload')
 			.setDescription(`**${message.member.nickname ?? message.author.tag}** uploaded a new Vis Wax Image from Server:\n**${message.guild.name}** - ${message.guild.id}.`)
 			.setTimestamp()

@@ -1,4 +1,4 @@
-import { MessageEmbed } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 import { checkNum, renameKeys, nEmbed } from '../functions.js'
 import Color from '../colors.js'
 import { MongoCollection } from '../DataBase.js'
@@ -16,7 +16,7 @@ export default {
 		const usersColl = new MongoCollection('Users')
 		const ranks = ['recruit', 'corporal', 'sergeant', 'lieutenant', 'captain', 'general', 'admin', 'organiser', 'coordinator', 'overseer', 'deputy owner', 'owner']
 
-		const createEmbedForDB = async (user, { inDisc, type }, fields, desc = '') => {
+		const createEmbedForDB = async (user, { inDisc, type }, fields, desc = '\u200B') => {
 			let member
 			if (type === 'id') {
 				if (user.discord !== '' && inDisc) {
@@ -28,21 +28,21 @@ export default {
 				}
 			} else { return }
 
-			const embed = new MessageEmbed()
+			const embed = new EmbedBuilder()
 				.setTitle(`User Profile - ${user.RSN}`)
 				.setThumbnail(member ? member.user.displayAvatarURL() : message.guild.iconURL())
 				.setTimestamp()
 				.setDescription(desc)
 				.setColor(Color.greenLight)
 				.setFooter({ text: 'If any of the data above is wrong, please update it.' })
-				.addFields(fields)
+				.addFields(...fields)
 			return message.channel.send({ embeds: [embed] })
 		}
 
 		const createEmbedForNoDB = async (mem, desc) => {
 			let member
 			if (!desc) member = await message.guild.members.fetch(mem)
-			const embed = new MessageEmbed()
+			const embed = new EmbedBuilder()
 				.setTitle('User Profile - Not Found')
 				.setDescription(desc || `User with Discord ID: ${mem} not found but they are in the Discord as ${member.toString()}.`)
 				.setColor(Color.redLight)
@@ -96,16 +96,15 @@ export default {
 					const gEmbed = nEmbed(
 						`User Profile - ${rankArg}`,
 						'A comprehensive list of all clan members within this rank. Active refers to being in this server with a valid Discord ID.',
-						Color.greenLight,
-						''
+						Color.greenLight
 					)
-						.addFields(info)
+						.addFields(...info)
 					pageEmbeds.push(gEmbed)
 				}
 				return pageEmbeds
 			}
 
-			message.channel.send({ embeds: [embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`)] })
+			message.channel.send({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` })] })
 				.then(async msg => {
 					await msg.react('◀️')
 					await msg.react('▶️')
@@ -119,13 +118,13 @@ export default {
 								msg.reactions.resolve('▶️').users.remove(u.id)
 								page++
 								if (page === embeds.length) --page
-								msg.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`))
+								msg.edit(embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` }))
 							}
 						} else if (r.emoji.name === '◀️') {
 							if (page !== 0) {
 								msg.reactions.resolve('◀️').users.remove(u.id)
 								--page
-								msg.edit(embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`))
+								msg.edit(embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` }))
 							} else { msg.reactions.resolve('◀️').users.remove(u.id) }
 						}
 					})
@@ -183,10 +182,8 @@ export default {
 			}
 			if (findUser) {
 				if (findUser['Discord Active']) {
-					console.log(result)
 					await createEmbedForDB(findUser, { inDisc: null, type: 'rsn' }, result)
 				} else {
-					console.log(result)
 					await createEmbedForDB(findUser, { inDisc: null, type: 'rsn' }, result, 'This person is not in the server but they are in the clan.')
 				}
 			} else {

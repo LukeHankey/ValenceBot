@@ -52,6 +52,7 @@ export default {
 		} else {
 			const name = args[0]
 			const command = commands.get(name) || commands.find(c => c.aliases && c.aliases.includes(name))
+			if (!command) return
 			const otherView = ['Lotto', 'Calendar', 'Profile', 'Dsf', 'Send']
 
 			const cName = capitalise(command.name)
@@ -75,7 +76,7 @@ export default {
 					message.member.user.displayAvatarURL(),
 					client.user.displayAvatarURL()
 				)
-					.addFields(fields)]
+					.addFields(...fields)]
 			})
 		}
 	}

@@ -1,7 +1,7 @@
 import { MongoCollection } from '../../DataBase.js'
 import Color from '../../colors.js'
 import { Permissions } from '../../classes.js'
-import { MessageActionRow, MessageButton, MessageEmbed } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle } from 'discord.js'
 import { vEvents } from '../../valence/valenceEvents.js'
 import dsf from '../../dsf/merch/main.js'
 const db = new MongoCollection('Settings')
@@ -23,12 +23,14 @@ export default async (client, message) => {
 			dmMsg.push(dmMessages[val].content)
 		}
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setTitle('New DM Recieved')
 			.setDescription(`${dmPerson.tag} sent me a DM.`)
 			.setColor(Color.blueDark)
-			.addField('User ID', `${dmPerson.id}`, false)
-			.addField('Message contents', `${dmMsg.join('\n')}`)
+			.addFields(
+				{ name: 'User ID', value: `${dmPerson.id}`, inline: false },
+				{ name: 'Message contents', value: `${dmMsg.join('\n')}` }
+			)
 			.setTimestamp()
 
 		return client.channels.cache.get('788525524782940187').send({ embeds: [embed] })
@@ -45,11 +47,11 @@ export default async (client, message) => {
 			const bannedMember = message.member
 			// Check for permissions
 			try {
-				const perms = message.guild.me.permissions.has('BAN_MEMBERS')
+				const perms = message.guild.me.permissions.has('BanMembers')
 				if (perms) {
 					await bannedMember.ban({ days: 7, reason: 'Bang bang I gotcha, I gotcha in my scope' })
 					const botLogsAdminChannel = message.guild.channels.cache.get('794608385106509824')
-					const banEmbed = new MessageEmbed()
+					const banEmbed = new EmbedBuilder()
 						.setTitle(`${bannedMember.displayName} has been banned!`)
 						.setColor(Color.orange)
 						.setDescription(`Potentially dangerous content. Please don't click on or go to any links that you don't know!\n\n> ${message.content}`)
@@ -58,26 +60,26 @@ export default async (client, message) => {
 							{ name: 'Status', value: 'Banned', inline: true }
 						)
 						.setTimestamp()
-					const banButtons = new MessageActionRow()
+					const banButtons = new ActionRowBuilder()
 						.addComponents(
-							new MessageButton()
+							new ButtonBuilder()
 								.setCustomId('Unban')
 								.setLabel('Unban')
-								.setStyle('DANGER')
-								.setEmoji('🔓'),
-							new MessageButton()
+								.setStyle(ButtonStyle.Danger)
+								.setEmoji({ name: '🔓' }),
+							new ButtonBuilder()
 								.setCustomId('Clear Buttons')
 								.setLabel('Clear Buttons')
-								.setStyle('SUCCESS')
-								.setEmoji('✅')
+								.setStyle(ButtonStyle.Success)
+								.setEmoji({ name: '✅' })
 						)
 
 					const banCase = await botLogsAdminChannel.send({ embeds: [banEmbed], components: [banButtons] })
-					const banCaseButton = new MessageActionRow()
+					const banCaseButton = new ActionRowBuilder()
 						.addComponents(
-							new MessageButton()
+							new ButtonBuilder()
 								.setLabel('Ban Case')
-								.setStyle('LINK')
+								.setStyle(ButtonStyle.Link)
 								.setURL(banCase.url)
 						)
 

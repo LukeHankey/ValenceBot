@@ -81,7 +81,7 @@ export default {
 				const tag = args.slice(-1).join('')
 				const colName = dataC.find(val => val.toLowerCase() === colNameArgs.toLowerCase())
 
-				const lottoEmbed = nEmbed('Lotto entry added successfully!', '', Color.greenLight, message.author.displayAvatarURL(), client.user.displayAvatarURL())
+				const lottoEmbed = nEmbed('Lotto entry added successfully!', '\u200B', Color.greenLight, message.author.displayAvatarURL(), client.user.displayAvatarURL())
 					.addFields(
 						{ name: 'RuneScape Name:', value: `${rsn || undefined}`, inline: true },
 						{ name: 'Amount:', value: '500,000', inline: true },
@@ -100,7 +100,7 @@ export default {
 								message.channel.send({
 									embeds: [
 										nEmbed('Lottery Collectors', `**${colNameArgs}** is not a Lottery Collector.`, Color.redDark, message.author.displayAvatarURL(), client.user.displayAvatarURL())
-											.addField('Current Collectors', dataC.join(', '))]
+											.addField({ name: 'Current Collectors', value: dataC.join(', ') })]
 								})
 							} else if (!rsn) {
 								return message.channel.send({ content: 'Please provide the RSN of the lottery entree.' })
@@ -118,7 +118,7 @@ export default {
 									return message.channel.send({
 										embeds: [lottoEmbed
 											.spliceFields(0, 1, { name: 'RuneScape Name:', value: `${rsn.split(/ /g).slice(0, -1).join(' ')}`, inline: true })
-											.addField('Double Entry:', 'Yes', true)]
+											.addFields({ name: 'Double Entry:', value: 'Yes', inline: true })]
 									})
 								}
 								newArr.push([userData.length + 1, rsn.trim(), '500,000', colName, 'N/A'])
@@ -135,7 +135,7 @@ export default {
 								message.channel.send({
 									embeds: [
 										nEmbed('Lottery Collectors', `**${colNameArgs}** is not a Lottery Collector.`, Color.redDark, message.author.displayAvatarURL(), client.user.displayAvatarURL())
-											.addField('Current Collectors', dataC.join(', '))]
+											.addField({ name: 'Current Collectors', value: dataC.join(', ') })]
 								})
 							} else if (!rsn) {
 								return message.channel.send({ content: 'Please provide the RSN of the lottery entree.' })
@@ -154,7 +154,7 @@ export default {
 										embeds: [lottoEmbed
 											.spliceFields(1, 1, { name: 'Amount:', value: `${args[1]}`, inline: true })
 											.spliceFields(0, 1, { name: 'RuneScape Name:', value: `${rsn.split(/ /g).slice(0, -1).join(' ')}`, inline: true })
-											.addField('Double Entry:', 'Yes', true)]
+											.addFields({ name: 'Double Entry:', value: 'Yes', inline: true })]
 									})
 								}
 								newArr.push([userData.length + 1, rsn.trim(), args[1], colName, 'No'])
@@ -228,7 +228,7 @@ export default {
 									client.user.displayAvatarURL()
 								)
 									.addFields(found)
-									.addField('Want to enter twice for double the chance of winning?', 'It only costs 100 Clan Points! Let the Admins know in <#640641467798519808>!')
+									.addFields({ name: 'Want to enter twice for double the chance of winning?', value: 'It only costs 100 Clan Points! Let the Admins know in <#640641467798519808>!' })
 								]
 							})
 						} else if (nameFound && nameFound.length === 2) {
@@ -243,7 +243,7 @@ export default {
 									.addFields(found)
 								]
 							})
-							// .addField(`\u200B`, `\u200B`)
+							// .addFields({ name: `\u200B`, value: `\u200B` })
 						} else if (nameFound && nameFound.length > 2) {
 							message.channel.send({
 								embeds: [nEmbed(
@@ -253,7 +253,7 @@ export default {
 									message.author.displayAvatarURL(),
 									client.user.displayAvatarURL()
 								)
-									.addField('Solution:', 'Please let an Admin know to fix your entries!')
+									.addFields({ name: 'Solution:', value: 'Please let an Admin know to fix your entries!' })
 								]
 							})
 						} else {
@@ -265,7 +265,7 @@ export default {
 									message.author.displayAvatarURL(),
 									client.user.displayAvatarURL()
 								)
-									.addField('Get your lotto entry in!', 'Message any Admin in game to pay the 500k entry fee!')
+									.addFields({ name: 'Get your lotto entry in!', value: 'Message any Admin in game to pay the 500k entry fee!' })
 								]
 							})
 						}
@@ -287,12 +287,12 @@ export default {
 									Color.greenLight,
 									message.author.displayAvatarURL()
 								)
-									.addFields(info)
+									.addFields(...info)
 								pageEmbeds.push(gEmbed)
 							}
 							return pageEmbeds
 						}
-						message.channel.send({ embeds: [embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`)] })
+						message.channel.send({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` })] })
 							.then(async msg => {
 								await msg.react('◀️')
 								await msg.react('▶️')
@@ -306,13 +306,13 @@ export default {
 											msg.reactions.resolve('▶️').users.remove(u.id)
 											page++
 											if (page === embeds.length) --page
-											msg.edit({ embeds: [embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`)] })
+											msg.edit({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` })] })
 										}
 									} else if (r.emoji.name === '◀️') {
 										if (page !== 0) {
 											msg.reactions.resolve('◀️').users.remove(u.id)
 											--page
-											msg.edit({ embeds: [embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`)] })
+											msg.edit({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` })] })
 										} else { msg.reactions.resolve('◀️').users.remove(u.id) }
 									}
 								})

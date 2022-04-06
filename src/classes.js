@@ -1,5 +1,5 @@
 /* eslint-disable no-async-promise-executor */
-import { MessageEmbed } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 import Color from './colors.js'
 import { nEmbed } from './functions.js'
 import ms from 'pretty-ms'
@@ -65,14 +65,16 @@ class Permissions {
 
 	ownerError () {
 		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', Color.redDark)
-			.addField('Only the bot owner can:', `<@!${this.owner}>`)
+			.addFields({ name: 'Only the bot owner can:', value: `<@!${this.owner}>` })
 		return { embeds: [embed] }
 	}
 
 	error () {
 		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', Color.redDark)
-			.addField('Only the following Roles & Users can:', `${this.higherRoles().length > 0 ? this.higherRoles().join(', ') : '0'}`, true)
-			.addField('\u200b', `<@${this.msg.guild.ownerId}>`, true)
+			.addFields(
+				{ name: 'Only the following Roles & Users can:', value: `${this.higherRoles().length > 0 ? this.higherRoles().join(', ') : '0'}`, inline: true },
+				{ name: '\u200b', value: `<@${this.msg.guild.ownerId}>`, inline: true }
+			)
 		return { embeds: [embed] }
 	}
 }
@@ -178,7 +180,7 @@ class ScouterCheck {
 
 	async send (chan = this._db.channels.adminChannel) {
 		const role = await this.role
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setTitle(`Potential Scouters - ${this.roleName}`)
 			.setDescription(`List of members who have met the minimum to obtain the <@&${role.id}> role.`)
 			.setColor(Color.orange)

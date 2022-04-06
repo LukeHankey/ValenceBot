@@ -1,5 +1,5 @@
 /* eslint-disable no-shadow */
-import { GuildMember, MessageEmbed } from 'discord.js'
+import { GuildMember, EmbedBuilder } from 'discord.js'
 
 export default {
 	name: 'permissions',
@@ -170,12 +170,12 @@ export default {
 					return permList.push({ name: `Type: ${p.type}`, value: `${prefix}${p.id}${suffix}\nAccess: ${p.permission ? '✅' : '❌'}`, inline: true })
 				})
 
-				const permsEmbed = new MessageEmbed()
+				const permsEmbed = new EmbedBuilder()
 					.setTitle(`Permissions for the ${commandName} command.`)
 					.setTimestamp()
 					.setColor('BLURPLE')
 					.setDescription('Full list of permissions. If adding extra roles/users, keep in mind that there is a max limit of 10 users/roles per command.')
-					.addFields(permList)
+					.addFields(...permList)
 
 				return permsEmbed
 			}

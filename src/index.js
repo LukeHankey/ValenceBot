@@ -6,7 +6,7 @@ import { Load } from './handlers/index.js'
 import dotenv from 'dotenv'
 dotenv.config()
 
-const client = new Client({ intents: ['GUILDS', 'GUILD_MEMBERS', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS', 'DIRECT_MESSAGES'], partials: ['MESSAGE', 'REACTION', 'CHANNEL'] })
+const client = new Client({ intents: ['Guilds', 'GuildMembers', 'GuildMessages', 'MessageContent', 'GuildMessageReactions', 'DirectMessages'], partials: ['Message', 'Reaction', 'Channel'] })
 client.commands = new Collection()
 
 const _ = new Load(client)
