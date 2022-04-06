@@ -38,31 +38,37 @@ export default {
 		)
 		.addBooleanOption(option =>
 			option
-				.setName('includes_member')
-				.setDescription('Decide whether you want the person opening the ticket to be included in the thread/channel.')
+				.setName('application')
+				.setDescription('Create a form which interfaces with users who create tickets.')
 		),
 	slash: async (interaction, _, db) => {
-		const ticketButton = new ActionRowBuilder()
-			.addComponents(
-				new ButtonBuilder()
-					.setCustomId('Open Ticket')
-					.setLabel('Open Ticket')
-					.setStyle(ButtonStyle.Primary)
-					.setEmoji({ name: '✉️' })
-			)
+		const actionRow = new ActionRowBuilder()
+		const ticketButton = new ButtonBuilder()
+			.setCustomId('Open Ticket')
+			.setLabel('Open Ticket')
+			.setStyle(ButtonStyle.Primary)
+			.setEmoji({ name: '✉️' })
+
+		const applicationButton = new ButtonBuilder()
+			.setCustomId('Create Application')
+			.setLabel('Create Application')
+			.setStyle(ButtonStyle.Success)
+			.setEmoji({ name: '📜' })
 
 		const description = interaction.options.getString('description')
 		const role = interaction.options.getRole('role')
 		const prefer = interaction.options.getString('prefer')
-		const includesMember = interaction.options.getBoolean('includes_member')
+		const application = interaction.options.getBoolean('application')
+
+		const components = application ? [actionRow.addComponents(applicationButton)] : [actionRow.addComponents(ticketButton)]
 
 		const ticketEmbed = new EmbedBuilder()
-			.setTitle('Open a Ticket!')
+			.setTitle(application ? 'Submit an Application!' : 'Open a Ticket!')
 			.setDescription(description)
 			.setColor(Color.aqua)
 			.setTimestamp()
 
-		const message = await interaction.reply({ embeds: [ticketEmbed], components: [ticketButton], fetchReply: true })
+		const message = await interaction.reply({ embeds: [ticketEmbed], components, fetchReply: true })
 
 		await db.collection.updateOne({ _id: interaction.guild.id }, {
 			$addToSet: {
@@ -75,7 +81,7 @@ export default {
 						guildName: interaction.guild.name,
 						channelId: interaction.channel.id,
 						messageId: message.id,
-						includesMember: includesMember
+						application
 					}]
 				}
 			}

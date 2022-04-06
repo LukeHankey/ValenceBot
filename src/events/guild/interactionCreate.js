@@ -1,6 +1,6 @@
 import { MongoCollection } from '../../DataBase.js'
 import { Collection } from 'discord.js'
-import { buttons, commands, autoComplete, selectMenu } from '../../handlers/interactions/index.js'
+import { buttons, commands, autoComplete, selectMenu, modals } from '../../handlers/interactions/index.js'
 
 const cache = new Collection()
 
@@ -15,10 +15,11 @@ export default async (client, interaction) => {
 	} else if (interaction.isAutocomplete()) {
 		await autoComplete(interaction)
 	} else if (interaction.isSelectMenu()) {
-		await selectMenu(interaction, data, db, cache)
-	} else if (interaction.isContextMenu()) {
+		await selectMenu(interaction, db, data, cache)
+	} else if (interaction.isContextMenuCommand()) {
 		const command = client.commands.get(interaction.commandName)
-
-		await command.menu(interaction, data, db)
+		await command.menu(interaction, db, data)
+	} else if (interaction.isModalSubmit()) {
+		await modals(interaction, db, data)
 	}
 }

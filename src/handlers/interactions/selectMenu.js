@@ -1,4 +1,4 @@
-export const selectMenu = async (interaction, _, db, cache) => {
+export const selectMenu = async (interaction, db, _, cache) => {
 	const client = interaction.client
 	const channels = await db.channels
 
