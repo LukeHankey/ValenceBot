@@ -44,7 +44,7 @@ export default {
 						date = date.toString().split(' ')
 						fields.push({ name: `${values.author}`, value: `**Time:** ${date.slice(0, 5).join(' ')}\n**Content:** [${values.content}](https://discordapp.com/channels/${message.guild.id}/${channelID}/${values.messageID} 'Click me to go to the message.')`, inline: false })
 					}
-					return message.channel.send({ embeds: [embed.addFields(fields)] })
+					return message.channel.send({ embeds: [embed.addFields(...fields)] })
 				} catch (e) {
 					if (e.code === 50035) {
 						return message.channel.send({ content: 'Too many messages stored. Use the clear command.' })
@@ -83,7 +83,7 @@ export default {
 						await message.react('✅')
 					} catch (e) {
 						if (e.code === 10008) {
-							const messageID = e.path.split('/')[4]
+							const messageID = e.url.split('/')[8]
 							await db.collection.updateOne({ _id: message.guild.id }, {
 								$pull: {
 									'merchChannel.spamProtection': { messageID: messageID }

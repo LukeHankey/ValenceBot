@@ -46,7 +46,7 @@ const removeInactives = async (name, db, scoutTracker) => {
 		if (doc.active === 0 && (Date.now() - doc.lastTimestamp) > sixMonths) {
 			removed.push(doc.author)
 			allItems.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}).`)
-			await scoutTracker.collection.remove(
+			await scoutTracker.collection.deleteOne(
 				{ userID: doc.userID }
 			)
 		} else {

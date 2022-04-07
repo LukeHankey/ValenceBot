@@ -152,7 +152,7 @@ export default {
 						} else {
 							dataArray.filter(prop => prop.links === false).forEach(async arrData => {
 								const msg = await channel.messages.fetch(arrData.messageID)
-								await msg.edit(embedEditor(arrData.embed))
+								await msg.edit(embedEditor(arrData.embed.data))
 							})
 						}
 					}

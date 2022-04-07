@@ -46,7 +46,7 @@ export const skullTimer = (message, db) => {
 				}
 			} catch (e) {
 				if (e.code === 10008) {
-					const errorMessageID = e.path.split('/')[4]
+					const errorMessageID = e.url.split('/')[8]
 					return await db.collection.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: errorMessageID } } })
 				} else { return channels.errors.send(e) }
 			}

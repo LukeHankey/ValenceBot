@@ -10,7 +10,7 @@ export default async (client, interaction) => {
 
 	if (interaction.isButton()) {
 		await buttons(interaction, db, data, cache)
-	} else if (interaction.isCommand()) {
+	} else if (interaction.isChatInputCommand()) {
 		await commands(interaction, db, data)
 	} else if (interaction.isAutocomplete()) {
 		await autoComplete(interaction)

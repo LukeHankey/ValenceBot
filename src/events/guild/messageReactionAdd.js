@@ -175,7 +175,7 @@ export default async (client, reaction, user) => {
 						return await m.react('☠️')
 					} catch (e) {
 						if (e.code === 10008) {
-							const messageID = e.path.split('/')[4]
+							const messageID = e.url.split('/')[8]
 							await db.collection.updateOne({ _id: message.guild.id }, {
 								$pull: {
 									'merchChannel.spamProtection': { messageID: messageID }

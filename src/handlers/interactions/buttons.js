@@ -1,8 +1,8 @@
 import { MongoCollection } from '../../DataBase.js'
-import { ActionRowBuilder, SelectMenuBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputStyle } from 'discord.js'
+import { ActionRowBuilder, SelectMenuBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputStyle, ChannelType } from 'discord.js'
 import Color from '../../colors.js'
 import Ticket from '../../ticket.js'
-import { TextInputBuilder, UnsafeTextInputBuilder } from '@discordjs/builders'
+import { TextInputBuilder, UnsafeTextInputBuilder, UnsafeButtonBuilder } from '@discordjs/builders'
 
 export const buttons = async (interaction, db, data, cache) => {
 	const channels = await db.channels
@@ -25,7 +25,7 @@ export const buttons = async (interaction, db, data, cache) => {
 					new SelectMenuBuilder()
 						.setCustomId(`DM ${user}`)
 						.setPlaceholder('Nothing selected')
-						.addOptions([
+						.addOptions(
 							{
 								label: 'Yes, this was a password.',
 								description: 'Select this option to automatically remove it from our logs.',
@@ -35,7 +35,7 @@ export const buttons = async (interaction, db, data, cache) => {
 								label: 'No, this was not a password.',
 								value: 'no'
 							}
-						])
+						)
 				)
 
 			timestamp = timestamp.split(' ').slice(2).join(' ').slice(0, -3)
@@ -51,7 +51,7 @@ export const buttons = async (interaction, db, data, cache) => {
 			 * components[0].components[0]: The first Button
 			 */
 			const row = new ActionRowBuilder()
-				.addComponents(new ButtonBuilder(interaction.message.components[0].components[0]).setEmoji({ name: '📩' }).setLabel('DM sent...').setDisabled().setStyle(ButtonStyle.Primary))
+				.addComponents(new UnsafeButtonBuilder(interaction.message.components[0].components[0].data).setEmoji({ name: '📩' }).setLabel('DM sent...').setDisabled().setStyle(ButtonStyle.Primary))
 			await interaction.update({ components: [row] })
 			console.log(`Action: Password Button\nBy: ${interaction.user.username}\nUser: ${fetchUser.user.username}`)
 			cache.set(interaction.message.id, { ...fetchUser.user })
@@ -136,7 +136,7 @@ export const buttons = async (interaction, db, data, cache) => {
 			const buttonDisabled = new ActionRowBuilder().addComponents(new ButtonBuilder(interaction.message.components[0].components[0].data).setEmoji({ name: '✅' }).setLabel('Issue resolved').setDisabled(true))
 			await interaction.update({ components: [buttonDisabled], fetchReply: true })
 			await interaction.followUp({ content: `Ticket closed by <@!${interaction.member.id}>.` })
-			if (interaction.channel.type === 'GUILD_PRIVATE_THREAD') {
+			if (interaction.channel.type === ChannelType.GuildPrivateThread) {
 				await interaction.channel.setLocked(true)
 				await interaction.channel.setArchived(true)
 			} else {

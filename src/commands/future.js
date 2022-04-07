@@ -69,7 +69,7 @@ export default {
 				const embedMaker = (num, dates) => {
 					return nEmbed(dates, 'The next 31 days of stock for the Travelling Merchant.', Color.cream, null, client.user.displayAvatarURL())
 						.setFooter({ text: `${botUser.nickname || client.user.username} created by Luke_#1838`, iconURL: client.user.displayAvatarURL()})
-						.addFields(num)
+						.addFields(...num)
 				}
 
 				const futureChannel = client.channels.cache.get(futureStock.channelID)
@@ -151,7 +151,7 @@ export default {
 							} else {
 								dataArray.filter(prop => prop.links === false).forEach(async arrData => {
 									const msg = await futureChannel.messages.fetch(arrData.messageID)
-									await msg.edit({ embeds: [embedEditor(arrData.embed)] })
+									await msg.edit({ embeds: [embedEditor(arrData.embed.data)] })
 								})
 							}
 						}
