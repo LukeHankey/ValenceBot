@@ -52,7 +52,7 @@ export default {
 					if (err.code === 10008) {
 						return await interaction.reply({ content: 'Error. Unable to find message. Make sure you have the correct message ID.', ephemeral: true })
 					} else {
-						return await interaction.reply({ content: `Error. ${err.message}. Make sure you have the correct message ID.`, ephemeral: true })
+						return await interaction.reply({ content: `Error. ${err.rawError.message}. Make sure you have the correct message ID.`, ephemeral: true })
 					}
 				}
 			}

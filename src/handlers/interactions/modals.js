@@ -1,5 +1,5 @@
 import { MongoCollection } from '../../DataBase.js'
-import { ButtonStyle, Embed, EmbedBuilder } from 'discord.js'
+import { ButtonStyle, EmbedBuilder } from 'discord.js'
 import { ActionRowBuilder, ButtonBuilder, UnsafeModalBuilder } from '@discordjs/builders'
 import Ticket from '../../ticket.js'
 import Color from '../../colors.js'

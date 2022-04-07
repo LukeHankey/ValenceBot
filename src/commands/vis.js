@@ -209,13 +209,13 @@ export default {
 				} catch (e) {
 					// Catch errors for a guild where the bot isn't in. Same for channel or message
 					if (e.code === 50001) {
-						if (e.path.includes('guilds')) {
+						if (e.url.includes('guilds')) {
 							return message.channel.send({ content: 'I am not in that server so I cannot access that message link.' })
 						} else {
 							return message.channel.send({ content: 'I do not have access to that channel to view the message.' })
 						}
 					} else if (e.code === 10008) {
-						if (e.message === 'Unknown Message') {
+						if (e.rawError.message === 'Unknown Message') {
 							return message.channel.send({ content: 'I am unable to find that message. Maybe it has been deleted?' })
 						}
 					} else {

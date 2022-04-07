@@ -6,6 +6,7 @@ export default async (client, message) => {
 	const db = new MongoCollection('Settings')
 	const ticketData = await db.collection.findOne({ _id: message.guild.id }, { projection: { ticket: 1 } })
 
+	if (!ticketData || !ticketData.ticket) return
 	const [currentTicket] = ticketData.ticket.filter(t => t.messageId === message.id)
 	if (!currentTicket) return
 	if (message.id === currentTicket.messageId) {

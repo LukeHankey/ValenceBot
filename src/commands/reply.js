@@ -19,7 +19,7 @@ export default {
 			})
 			.catch(async e => {
 				if (e.code === 10013) {
-					return message.channel.send({ content: `Error: ${e.message}` })
+					return message.channel.send({ content: `Error: ${e.rawError.message}` })
 				} else { channels.errors.send(e) }
 			})
 	}

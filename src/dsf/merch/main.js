@@ -17,8 +17,8 @@ const dsf = async (client, message, db) => {
 					return setTimeout(() => mes.delete(), 200)
 				})
 				.catch(async err => {
-					const messageID = err.path.split('/')
-					return await message.channel.messages.fetch(messageID[4]).then(x => x.delete()).catch(async (err) => channels.errors.send(err))
+					const messageID = err.url.split('/')
+					return await message.channel.messages.fetch(messageID[8]).then(x => x.delete()).catch(async (err) => channels.errors.send(err))
 				})
 			:	setTimeout(() => message.delete(), 200)
 		skullTimer(message, db)
