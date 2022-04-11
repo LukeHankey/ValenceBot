@@ -23,8 +23,8 @@ export const addOtherCount = async (client, message, db, scouters) => {
 		const buttonSelection = new ActionRowBuilder()
 			.addComponents(
 				new ButtonBuilder()
-					.setCustomId(`DM ${userN.user.username}`)
-					.setLabel(`DM ${userN.user.username}`)
+					.setCustomId(`DM ${userN.displayName}`)
+					.setLabel(`DM ${userN.displayName}`)
 					.setStyle(ButtonStyle.Primary)
 					.setEmoji({ name: '✉️' }),
 				new ButtonBuilder()
@@ -51,8 +51,8 @@ export const addOtherCount = async (client, message, db, scouters) => {
 
 		if (!findMessage) {
 			if (!otherCalls.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, otherMessages)) {
-				console.log(`New & Spam: ${userN.user.username} (${message.content})`, userN.id)
-				return await dsfServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``, components: [buttonSelection] })
+				console.log(`New & Spam: ${userN.displayName} (${message.content})`, userN.id)
+				return await dsfServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``, components: [buttonSelection] })
 			}
 			console.log(`New other: ${msg[0].author.username} (${message.content})`, msg[0].author.id)
 			await scouters.collection.insertOne({
@@ -71,10 +71,10 @@ export const addOtherCount = async (client, message, db, scouters) => {
 		} else {
 			if (!otherCalls.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, otherMessages)) {
 				if (message.guild.id === '668330890790699079') {
-					return await botServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``, components: [buttonSelection] })
+					return await botServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``, components: [buttonSelection] })
 				}
-				console.log(`Old & Spam: ${userN.user.username} (${message.content})`, userN.id)
-				return await dsfServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``, components: [buttonSelection] })
+				console.log(`Old & Spam: ${userN.displayName} (${message.content})`, userN.id)
+				return await dsfServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``, components: [buttonSelection] })
 			}
 			console.log(`Old other: ${msg[0].author.username} (${message.content})`, msg[0].author.id)
 			await scouters.collection.updateOne({ userID: findMessage.userID }, {
