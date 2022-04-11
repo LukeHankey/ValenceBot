@@ -33,6 +33,11 @@ export const addOtherCount = async (client, message, db, scouters) => {
 					.setStyle(ButtonStyle.Success)
 					.setEmoji({ name: '☠️' }),
 				new ButtonBuilder()
+					.setCustomId('Read The Pins')
+					.setLabel('Read The Pins')
+					.setStyle(ButtonStyle.Success)
+					.setEmoji({ name: '📌' }),
+				new ButtonBuilder()
 					.setCustomId('Timeout')
 					.setLabel('Timeout')
 					.setStyle(ButtonStyle.Secondary)
