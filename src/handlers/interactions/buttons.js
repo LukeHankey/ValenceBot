@@ -247,6 +247,12 @@ export const buttons = async (interaction, db, data, cache) => {
 			applicationModal.addComponents(...actionRows)
 			await interaction.showModal(applicationModal)
 		}
+			break
+		case 'Too Slow!':
+			await interaction.reply({ content: 'What a noob! KEKW' })
+			break
+		case 'Read The Pins':
+			await generalChannel.send({ content: `<@!${userId}>, invalid call format. Read the pins!` })
 		}
 	} catch (err) {
 		channels.errors.send(err)
