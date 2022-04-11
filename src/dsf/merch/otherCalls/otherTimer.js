@@ -2,7 +2,7 @@ import cron from 'node-cron'
 
 export const otherTimer = (message, db) => {
 // Checking the DB and marking dead calls
-	cron.schedule('*/5 * * * *', async () => {
+	cron.schedule('* * * * *', async () => {
 		const channels = await db.channels
 		const { merchChannel: { otherMessages } } = await db.collection.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.otherMessages': 1 } })
 		for await (const { messageID, time } of otherMessages) {
