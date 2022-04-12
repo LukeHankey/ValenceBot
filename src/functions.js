@@ -1,4 +1,4 @@
-import { EmbedBuilder } from 'discord.js'
+import { EmbedBuilder, Collection } from 'discord.js'
 import Color from './colors.js'
 
 const nEmbed = (title, description, color = Color.cyan, thumbnail = null, guildIcon) => {
@@ -101,7 +101,7 @@ const removeEvents = async (message, db, module, database, eventTag) => {
 		// Remove role from server
 		await message.guild.roles.fetch(eventMessageCheck.roleID).then(r => r.delete())
 
-		const calChannel = message.guild.channels.cache.find((ch) => ch.name === 'calendar')
+		const calChannel = message.guild.channels.cache.get(database.channels.calendar)
 
 		if (eventMessageCheck.messageID) {
 			// Fetch the event message and remove reactions from event post
@@ -114,18 +114,18 @@ const removeEvents = async (message, db, module, database, eventTag) => {
 		// Remove the post from the calendar
 		const currentYear = new Date().getFullYear()
 		const [calendarMessage] = database.calendarID.filter(month => { if (month.month === eventMessageCheck.month && month.year === currentYear) { return month } else return undefined })
-		const calMessage = await calChannel.messages.fetch(calendarMessage.messageID)
-		const fields = calMessage.embeds[0].fields
+		let calMessage = await calChannel.messages.fetch(calendarMessage.messageID)
+		calMessage = calMessage instanceof Collection ? calMessage.first() : calMessage
+		const fields = calMessage.embeds[0].data.fields
 
 		const foundIndex = fields.findIndex(field => {
 			const roleItem = field.value.split('\n')[4]
 			const roleId = roleItem.slice(9, 27)
-			if (roleId === eventMessageCheck.roleID) return field
-			else return undefined
+			return roleId === eventMessageCheck.roleID
 		})
 
 		const removedItem = [fields[foundIndex]].map(obj => `${obj.name}\n${obj.value}`)
-		const updateEmbed = new EmbedBuilder(calMessage.embeds[0])
+		const updateEmbed = new EmbedBuilder(calMessage.embeds[0].data)
 		updateEmbed.spliceFields(foundIndex, 1)
 		calMessage.edit({ embeds: [updateEmbed] })
 		return channels.logs.send(`Calendar updated - ${message.member.displayName} removed event: \`\`\`diff\n- Removed\n${removedItem.join()}\`\`\``)

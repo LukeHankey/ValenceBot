@@ -12,7 +12,7 @@ export default {
 	description: ['List the current events.', 'Ends an event and removes the role.'],
 	aliases: ['e', 'event'],
 	usage: ['', 'end [ID]'],
-	guildSpecific: ['472448603642920973'],
+	guildSpecific: ['472448603642920973', '668330890790699079'],
 	permissionLevel: 'Mod',
 	data: new SlashCommandBuilder()
 		.setName('events')
@@ -51,7 +51,7 @@ export default {
 					.setTitle('Event Listing')
 					.setColor(Color.cyan)
 					.setDescription('These are all of the events currently stored. Some may be old ones, others relatively new and ongoing. Feel free to remove events by their event ID.')
-					.addFields(fieldHolder)
+					.addFields(...fieldHolder)
 				return interaction.reply({ embeds: [embed] })
 			} catch (err) {
 				channels.errors.send(err)
@@ -106,7 +106,7 @@ export default {
 					.setTitle('Event Listing')
 					.setColor(Color.cyan)
 					.setDescription('These are all of the events currently stored. Some may be old ones, others relatively new and ongoing. Feel free to remove events by their event ID.')
-					.addFields(fieldHolder)
+					.addFields(...fieldHolder)
 				message.channel.send({ embeds: [embed] })
 			} catch (err) {
 				channels.errors.send(err)
