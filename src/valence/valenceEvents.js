@@ -9,6 +9,7 @@ export const vEvents = async (client, message, channels) => {
 	// eslint-disable-next-line no-useless-escape
 	if (!DB) return
 	const eventChannel = DB.channels.events
+	const calChannelId = DB.channels.calendar
 
 	const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 	const monthIndex = (new Date()).getUTCMonth()
@@ -26,6 +27,8 @@ export const vEvents = async (client, message, channels) => {
 		await last.react('❌')
 		await last.react('✅')
 
+		if (eventTitle[0].includes('Date')) return
+
 		try {
 			const filter = (reaction, user) => ['❌', '✅'].includes(reaction.emoji.name) && user.id === message.author.id
 			const collectOne = await message.awaitReactions({ filter, max: 1, time: 300000, errors: ['time'] })
@@ -38,11 +41,11 @@ export const vEvents = async (client, message, channels) => {
 					name: eventTitle[0].concat(` #${randomNum()}`)
 				})
 
-				const calChannel = message.guild.channels.cache.find((ch) => ch.name === 'event-calendar📅')
+				const calChannel = message.guild.channels.cache.get(calChannelId)
 				const dateRegex = /^(Date(:)?\s)+((3[0-1]|2\d|1\d|[1-9])(st|nd|rd|th)?)+\s?((-|to)+\s?((3[0-1]|2\d|1\d|[1-9])(st|nd|rd|th)?)+)?(\s)?$/im
 				const timeRegex = /^(Time(:)?\s)+(([1-6]+(\s)?(day(s)?|week(s)?|month(s)?)(\s)?$)?|(([0-1]\d|2[0-3]):([0-5]\d)\s?)?((-|to)+\s?(([0-1]\d|2[0-3]):([0-5]\d))?)?)$/im
 				const link = `https://discord.com/channels/${last.guild.id}/${last.channel.id}/${last.id}`
-				const thisCal = await DB.calendarID.filter(prop => { if ((prop.year === currentYear) && prop.month === currentMonth) { return prop } else return undefined })
+				const thisCal = await DB.calendarID.filter(prop => prop.year === currentYear && prop.month === currentMonth)
 				const m = await calChannel.messages.fetch(thisCal[0].messageID)
 				let dateR, timeR
 
@@ -65,7 +68,7 @@ export const vEvents = async (client, message, channels) => {
 						}
 					}
 
-					const editEmbed = new EmbedBuilder(m.embeds[0])
+					const editEmbed = new EmbedBuilder(m.embeds[0].data)
 					editEmbed.addFields(
 						{ name: date, value: `Event: ${eventTitle[0]}\nTime: ${time}\n[Announcement](${link})\nHost: ${last.author}\nRole: ${newRole}` }
 					)
