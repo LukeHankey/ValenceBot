@@ -1,5 +1,6 @@
 /* eslint-disable no-shadow */
 import { GuildMember, EmbedBuilder, ApplicationCommandPermissionType } from 'discord.js'
+import Color from '../colors.js'
 
 export default {
 	name: 'permissions',
@@ -161,19 +162,18 @@ export default {
 			const gcmd = globCommands.filter(com => com.name === commandName)
 
 			const displayPerms = (perms) => {
-				const permList = []
-				perms.map(p => {
+				const permList = perms.map(p => {
 					const suffix = '>'
 					let prefix = '<@!'
-					if (p.type === 'ROLE') prefix = '<@&'
+					if (p.type === ApplicationCommandPermissionType.Role) prefix = '<@&'
 
-					return permList.push({ name: `Type: ${p.type}`, value: `${prefix}${p.id}${suffix}\nAccess: ${p.permission ? '✅' : '❌'}`, inline: true })
+					return { name: `Type: ${prefix.includes('&') ? 'Role' : 'User'}`, value: `${prefix}${p.id}${suffix}\nAccess: ${p.permission ? '✅' : '❌'}`, inline: true }
 				})
 
 				const permsEmbed = new EmbedBuilder()
 					.setTitle(`Permissions for the ${commandName} command.`)
 					.setTimestamp()
-					.setColor('BLURPLE')
+					.setColor(Color.gold)
 					.setDescription('Full list of permissions. If adding extra roles/users, keep in mind that there is a max limit of 10 users/roles per command.')
 					.addFields(...permList)
 
