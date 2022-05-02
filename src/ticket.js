@@ -92,7 +92,7 @@ export default class Ticket {
 		}
 
 		// Brings in the user and all Staff
-		this._sendInitialResponse(newChannel, this.interaction.member.id)
+		await this._sendInitialResponse(newChannel, this.interaction.member.id)
 		return newChannel
 	}
 
@@ -100,7 +100,7 @@ export default class Ticket {
 		return !![2, 3].includes(this.interaction.guild.premiumTier)
 	}
 
-	_sendInitialResponse (channel, memberId) {
+	async _sendInitialResponse (channel, memberId) {
 		const resolveButton = new ActionRowBuilder()
 			.addComponents(
 				new ButtonBuilder()
@@ -113,7 +113,9 @@ export default class Ticket {
 		if (!this.isApplication()) {
 			channel.send({ content: `Hello <@!${memberId}>, a member of <@&${this.roleId}> will be with you shortly.`, components: [resolveButton] })
 		} else {
-			channel.send({ content: `Hello <@&${this.roleId}>, ${this.interaction.member.displayName} (${memberId}) has submitted a new application! Please review and get back to them ASAP. They have been notified that their application is in review.` })
+			const msg = await channel.send({ content: `Hello <@&${this.roleId}>, ${this.interaction.member.displayName} (${memberId}) has submitted a new application! Please review and get back to them ASAP. They have been notified that their application is in review.` })
+			await msg.react('✅')
+			await msg.react('❌')
 		}
 	}
 }
