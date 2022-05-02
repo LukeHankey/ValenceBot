@@ -1,0 +1,27 @@
+# This config is equivalent to both the '.circleci/extended/orb-free.yml' and the base '.circleci/config.yml'
+version: 2.1
+
+jobs:
+  lint:
+    docker:
+      - image: cimg/node:17.2.0
+    resource_class: small
+    steps:
+      - checkout
+      - restore_cache:
+          key: v1-deps-{{ checksum "package-lock.json" }}
+      - run:
+          command: npm install
+          name: Install dependencies
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-deps-{{ checksum "package-lock.json" }}
+      - run:
+          command: npm run lint
+          name: Linting
+
+workflows:
+  lint_my_code:
+    jobs:
+      - lint

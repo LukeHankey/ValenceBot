@@ -1,7 +1,7 @@
 {
-  "name": "discord-bot",
+  "name": "valence-bot",
   "version": "1.0.0",
-  "description": "",
+  "description": "Small bot for RuneScape",
   "main": "./src/index.js",
   "scripts": {
     "start": "node ./src/index.js",
@@ -14,7 +14,7 @@
   "license": "ISC",
   "type": "module",
   "engines": {
-    "node": "16.14.2"
+    "node": "17.2.0"
   },
   "dependencies": {
     "@discordjs/rest": "^0.1.0-canary.0",
