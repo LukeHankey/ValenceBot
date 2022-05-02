@@ -7,7 +7,8 @@
     "start": "node ./src/index.js",
     "slash": "set NODE_ENV=DEV&&node ./src/slashCommands.js",
     "lint": "eslint --fix .",
-    "dev": "set NODE_ENV=DEV&&node ./src/index.js"
+    "dev": "set NODE_ENV=DEV&&node ./src/index.js",
+    "prepare": "husky install"
   },
   "author": "Luke",
   "license": "ISC",
@@ -35,6 +36,7 @@
     "@babel/preset-env": "^7.16.0",
     "concurrently": "^6.4.0",
     "eslint": "^7.12.1",
-    "eslint-config-standard": "^16.0.3"
+    "eslint-config-standard": "^16.0.3",
+    "husky": "^7.0.0"
   }
 }
