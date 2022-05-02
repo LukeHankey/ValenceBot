@@ -46,7 +46,8 @@ export const vEvents = async (client, message, channels) => {
 				const timeRegex = /^(Time(:)?\s)+(([1-6]+(\s)?(day(s)?|week(s)?|month(s)?)(\s)?$)?|(([0-1]\d|2[0-3]):([0-5]\d)\s?)?((-|to)+\s?(([0-1]\d|2[0-3]):([0-5]\d))?)?)$/im
 				const link = `https://discord.com/channels/${last.guild.id}/${last.channel.id}/${last.id}`
 				const thisCal = await DB.calendarID.filter(prop => prop.year === currentYear && prop.month === currentMonth)
-				const m = await calChannel.messages.fetch(thisCal[0].messageID)
+				let m = await calChannel.messages.fetch(thisCal[0].messageID)
+				m = m.first()
 				let dateR, timeR
 
 				dateRegex.exec(last.content) === null ? dateR = 'null' : dateR = dateRegex.exec(last.content)[0]
@@ -67,7 +68,6 @@ export const vEvents = async (client, message, channels) => {
 							client.channels.cache.get(DB.channels.mod).send({ content: `${last.author}, ${time === 'null' ? 'there was an error with the  \`Time\` parameter and it has been set as null. Please go update the calendar for your event.' : 'there was an error with the  \`Date\` parameter and it has been set as null. Please go update the calendar for your event.'}` })
 						}
 					}
-
 					const editEmbed = new EmbedBuilder(m.embeds[0].data)
 					editEmbed.addFields(
 						{ name: date, value: `Event: ${eventTitle[0]}\nTime: ${time}\n[Announcement](${link})\nHost: ${last.author}\nRole: ${newRole}` }

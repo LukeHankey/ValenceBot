@@ -58,6 +58,9 @@ export const addMerchCount = async (client, message, db, scouter) => {
 
 		if (!findMessage) {
 			if (!merchRegex.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, messages)) {
+				if (message.guild.id === '668330890790699079') {
+					return await botServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``, components: [buttonSelection, buttonSelectionExtra] })
+				}
 				console.log(`New & Spam: ${userN.displayName} (${message.content})`, userN.id)
 				return await dsfServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``, components: [buttonSelection, buttonSelectionExtra] })
 			}

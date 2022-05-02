@@ -43,6 +43,9 @@ export default {
 			}
 
 			for (const values of userData) {
+				if (values === null) {
+					return message.channel.send('There is no profile for that Id.')
+				}
 				fields.push(
 					{ name: `${values.author}`, value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nGame count: ${values.game}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true },
 					{ name: 'Assigned Roles:', value: `${memberAssignedRoles.join(', ') || _text('None')}`, inline: true },

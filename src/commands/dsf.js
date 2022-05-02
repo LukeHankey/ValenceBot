@@ -117,7 +117,7 @@ export default {
 							Color.cream,
 							message.member.user.displayAvatarURL(),
 							client.user.displayAvatarURL())
-						embed.setTimestamp().addFields(info)
+						embed.setTimestamp().addFields(...info)
 						pageEmbeds.push(embed)
 					}
 					return pageEmbeds
@@ -127,7 +127,7 @@ export default {
 					return message.channel.send({ content: 'There are no messages stored that have reactions added.' })
 				}
 
-				return message.channel.send({ embeds: [embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`)] })
+				return message.channel.send({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` })] })
 					.then(async msg => {
 						await msg.react('◀️')
 						await msg.react('▶️')
@@ -141,13 +141,13 @@ export default {
 									msg.reactions.resolve('▶️').users.remove(u.id)
 									page++
 									if (page === embeds.length) --page
-									msg.edit({ embeds: [embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`)] })
+									msg.edit({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` })] })
 								}
 							} else if (r.emoji.name === '◀️') {
 								if (page !== 0) {
 									msg.reactions.resolve('◀️').users.remove(u.id)
 									--page
-									msg.edit({ embeds: [embeds[page].setFooter(`Page ${page + 1} of ${embeds.length}`)] })
+									msg.edit({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` })] })
 								} else { msg.reactions.resolve('◀️').users.remove(u.id) }
 							}
 						})

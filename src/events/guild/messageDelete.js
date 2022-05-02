@@ -8,13 +8,14 @@ export default async (client, message) => {
 
 	if (!ticketData || !ticketData.ticket) return
 	const [currentTicket] = ticketData.ticket.filter(t => t.messageId === message.id)
-	if (!currentTicket) return
-	if (message.id === currentTicket.messageId) {
-		return await db.collection.findOneAndUpdate({ _id: message.guild.id }, {
-			$pull: {
-				ticket: { messageId: message.id }
-			}
-		})
+	if (currentTicket) {
+		if (message.id === currentTicket.messageId) {
+			return await db.collection.findOneAndUpdate({ _id: message.guild.id }, {
+				$pull: {
+					ticket: { messageId: message.id }
+				}
+			})
+		}
 	}
 
 	const fullDB = await db.collection.findOne({ _id: message.guild.id, merchChannel: { $exists: true } }, { projection: { merchChannel: { messages: 1, channelID: 1 } } })
@@ -88,7 +89,7 @@ export default async (client, message) => {
 			const embed = messageDeletion(checkDB)
 				.setDescription('This message was deleted by the message author - remove merch count.')
 				.setThumbnail(user.user.displayAvatarURL())
-				.setFooter('Click the ✅ or use the command to remove merch count.')
+				.setFooter({ text: 'Click the ✅ or use the command to remove merch count.' })
 
 			await sendAndUpdate(botServerChannel, embed, checkDB)
 			await sendAndUpdate(dsfServerChannel, embed, checkDB)

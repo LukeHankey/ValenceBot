@@ -189,7 +189,7 @@ export default {
 						const fields = { name: values[0], value: values[1], inline: true }
 						totalValues.push(fields)
 					}
-					message.channel.send({ embeds: [totalEmbed.addFields(totalValues).spliceFields(2, 0, { name: '\u200B', value: '\u200B', inline: true })] })
+					message.channel.send({ embeds: [totalEmbed.addFields(...totalValues).spliceFields(2, 0, { name: '\u200B', value: '\u200B', inline: true })] })
 				}
 					break
 				case 'sheet':
