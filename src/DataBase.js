@@ -14,24 +14,23 @@ export class DataBase {
 	static #db = null
 	static #name = 'Members'
 
-	constructor() {
+	constructor () {
 		if (!DataBase.#db) this.#initialize()
 	}
 
-	async #initialize() {
+	async #initialize () {
 		try {
 			// 1 Connection per event
 			const mongo = new MongoClient(process.env.DB_URI, DataBase.#options)
 			await mongo.connect()
 			DataBase.#db = mongo.db(DataBase.#name)
 			console.log('Database connected.')
-		}
-		catch (error) {
+		} catch (error) {
 			console.log(error)
 		}
 	}
 
-	async #retry() {
+	async #retry () {
 		console.log('Retrying connection...')
 		await this.#initialize()
 		await this.collectionNames()
@@ -40,15 +39,14 @@ export class DataBase {
 	/**
      * @returns {String[]} An array of collection names.
      */
-	 async collectionNames() {
-		let collectionNames;
+	async collectionNames () {
+		let collectionNames
 		try {
 			// Attempt to wait 5 seconds to connect database before any retries
 			if (!DataBase.#db) await wait(5000)
 			collectionNames = await DataBase.#db.listCollections().toArray()
 			collectionNames = collectionNames.map(c => c.name)
-		}
-		catch (err) {
+		} catch (err) {
 			if (err.name === 'TypeError' && err.message.includes('listCollections')) await this.#retry()
 			else console.error(err)
 			collectionNames = await DataBase.#db.listCollections().toArray()
@@ -57,8 +55,8 @@ export class DataBase {
 		}
 		return collectionNames
 	}
-    
-	get collection() {        
+
+	get collection () {
 		return DataBase.#db.collection(this.collectionName)
 	}
 }
@@ -67,26 +65,27 @@ export class MongoCollection extends DataBase {
 	/**
      * @param  {string} collectionName The name of the collection.
      */
-	constructor(collectionName) {
+	constructor (collectionName) {
 		super()
-		this.collectionName = collectionName;
+		this.collectionName = collectionName
 		this.#validateCollectionName(collectionName)
 	}
-    
+
 	/**
      * @param  {string} name The name of the collection.
      */
-	async #validateCollectionName(name) {
-		let collectionNames = await this.collectionNames()
+	async #validateCollectionName (name) {
+		const collectionNames = await this.collectionNames()
 
 		if (typeof name !== 'string') throw new Error(`${name} must be a string.`)
 		if (collectionNames.includes(name)) return true
-		else throw new Error(`${name} is not a valid collection name. Must be one of ${collectionNames.join(', ')}`);
+		else throw new Error(`${name} is not a valid collection name. Must be one of ${collectionNames.join(', ')}`)
 	}
+
 	/**
      * @returns {Promise<Object>}
      */
-	get channels() {
+	get channels () {
 		const getChannelsFromDB = async () => {
 			const client = await import('./index.js')
 			const { channels: { vis, errors, logs } } = await this.collection.findOne({ _id: 'Globals' }, { projection: { channels: { vis: 1, errors: 1, logs: 1 } } })

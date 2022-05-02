@@ -446,7 +446,7 @@ export default {
 				const messageId = announcement.split('/')[6] ?? null
 				const eventTag = role.name.slice(title.length + 2)
 
-				await db.collection.findOneAndUpdate({ _id: interaction.guild.id, 'calendarID.month': monthFromDb[0].month }, { $pull: { 'calendarID.$.events': { eventTag: eventTag } } })
+				await db.collection.findOneAndUpdate({ _id: interaction.guild.id, 'calendarID.month': monthFromDb[0].month }, { $pull: { 'calendarID.$.events': { eventTag } } })
 
 				await db.collection.findOneAndUpdate({ _id: interaction.guild.id, 'calendarID.month': monthFromDbTo[0].month },
 					{

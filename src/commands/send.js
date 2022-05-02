@@ -46,7 +46,7 @@ export default {
 			const editing = options.getString('edit_message')
 			if (editing) {
 				try {
-					await channel.messages.edit(editing, { content: content })
+					await channel.messages.edit(editing, { content })
 					return await interaction.reply({ content: 'Message successfully edited.', ephemeral: true })
 				} catch (err) {
 					if (err.code === 10008) {

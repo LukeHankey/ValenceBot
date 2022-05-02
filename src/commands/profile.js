@@ -99,7 +99,7 @@ export default {
 				message.channel.awaitMessages({ filter, max: 1, time: 60000, errors: ['time'] })
 					.then(async col => {
 						col = col.first()
-						if (col.content === 'no') { return } else {
+						if (col.content === 'yes') {
 							await scouters.collection.insertOne({
 								userID: col.author.id,
 								author: col.member.nickname ?? col.author.username,
