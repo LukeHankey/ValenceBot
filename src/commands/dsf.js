@@ -86,7 +86,7 @@ export default {
 							const messageID = e.url.split('/')[8]
 							await db.collection.updateOne({ _id: message.guild.id }, {
 								$pull: {
-									'merchChannel.spamProtection': { messageID: messageID }
+									'merchChannel.spamProtection': { messageID }
 								}
 							})
 						} else { channels.errors.send(e) }

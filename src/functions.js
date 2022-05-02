@@ -96,7 +96,7 @@ const removeEvents = async (message, db, module, database, eventTag) => {
 		await db.collection.updateOne({ _id: message.guild.id }, { $pull: { events: { eventTag } } })
 
 		// Remove from calendar
-		await db.collection.findOneAndUpdate({ _id: message.guild.id, 'calendarID.messageID': eventMessageCheck.calendarID }, { $pull: { 'calendarID.$.events': { eventTag: eventTag } } })
+		await db.collection.findOneAndUpdate({ _id: message.guild.id, 'calendarID.messageID': eventMessageCheck.calendarID }, { $pull: { 'calendarID.$.events': { eventTag } } })
 
 		// Remove role from server
 		await message.guild.roles.fetch(eventMessageCheck.roleID).then(r => r.delete())

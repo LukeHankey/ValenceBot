@@ -10,14 +10,14 @@ export const skullTimer = (message, db) => {
 			try {
 				// Removes bot messages
 				if (userID === '668330399033851924' || content.includes('<@&670842187461820436>')) {
-					await db.collection.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID } } })
+					await db.collection.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID } } })
 				}
 
 				if (Date.now() - time > 600_000) {
 					const fetched = await message.channel.messages.fetch(messageID)
 					try {
 						await fetched.react('☠️')
-						await db.collection.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageID } } })
+						await db.collection.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID } } })
 						const getPerms = merchChannelID.permissionOverwrites.cache.get(userID)
 						if (getPerms) {
 							const moreThanOnce = messages.filter(obj => (obj.userID === userID) && (obj.messageID !== messageID))

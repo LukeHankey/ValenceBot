@@ -6,13 +6,13 @@ import { TextInputBuilder, UnsafeTextInputBuilder, UnsafeButtonBuilder } from '@
 import camelCase from 'camelcase'
 
 class ButtonWarning {
-	UNLOGGED_NAMES = ["Clear Buttons", "Too Slow!"]
+	UNLOGGED_NAMES = ['Clear Buttons', 'Too Slow!']
 
 	/**
-	 * 
-	 * @param {string} name 
+	 *
+	 * @param {string} name
 	 */
-	constructor(interaction) {
+	constructor (interaction) {
 		this.name = interaction.customId
 		this.interaction = interaction
 		this.buttonName = this._cameliser()
@@ -23,7 +23,7 @@ class ButtonWarning {
 	 * @returns string
 	 */
 	_cameliser () {
-		return this.name.includes("DM") ? 'password' : camelCase(this.name)
+		return this.name.includes('DM') ? 'password' : camelCase(this.name)
 	}
 
 	set scouters (data) {
@@ -40,7 +40,7 @@ class ButtonWarning {
 	 */
 	async profile (userId) {
 		if (!this.scouters) {
-			throw new Error("Unable to get scouters. You must first specify the database.")
+			throw new Error('Unable to get scouters. You must first specify the database.')
 		}
 		const profile = await this.scouters.collection.findOne({ userID: userId })
 		if (profile === null) {
@@ -105,7 +105,7 @@ class ButtonWarning {
 	 * @param {string} userId The Id of the user you want to add a warning to.
 	 * @param {object} warningOptions Options including the button name, content and timestamp.
 	 */
-	async addWarning (userId, {button, content, timestamp} = {}) {
+	async addWarning (userId, { button, content, timestamp } = {}) {
 		if (!timestamp) timestamp = new Date()
 		await this.scouters.collection.findOneAndUpdate({ userID: userId }, {
 			$addToSet: {
@@ -121,19 +121,19 @@ class ButtonWarning {
 	}
 
 	/**
-	 * 
+	 *
 	 * @private
 	 * @param {object} data The unprocessed data.
 	 * @returns The processed data.
 	 */
 	_preprocess (data) {
 		for (const [k, v] of Object.entries(data)) {
-			if (typeof v !==  "string") continue
+			if (typeof v !== 'string') continue
 			if (k === 'content') {
-				data[k] = v.split(":")[1].trim()
+				data[k] = v.split(':')[1].trim()
 			} else {
-				const [_, ...rest] = v.split(": ")
-				data[k] = rest.join(":")
+				const [_, ...rest] = v.split(': ')
+				data[k] = rest.join(':')
 			}
 		}
 		return data
@@ -241,12 +241,12 @@ export const buttons = async (interaction, db, data, cache) => {
 			if (warningCount.length >= 3) {
 				const banChannel = interaction.guild.channels.cache.get('624655664920395786')
 				const member = await interaction.guild.members.fetch(userId)
-				const mutedRole = interaction.guild.roles.cache.find(r => r.name === "Muted")
+				const mutedRole = interaction.guild.roles.cache.find(r => r.name === 'Muted')
 				member.roles.add(mutedRole)
 				const displayFields = warningCount.map(w => {
 					return `${new Date(w.timestamp).toUTCString()}: ${w.content}`
 				}).reverse().slice(0, 5)
-				await banChannel.send({ content: `${member.toString()} (${userId}) has been Muted.\n\n**Recent Hisory:**\n${displayFields.join("\n")}` })
+				await banChannel.send({ content: `${member.toString()} (${userId}) has been Muted.\n\n**Recent Hisory:**\n${displayFields.join('\n')}` })
 			}
 		}
 			break
@@ -283,16 +283,16 @@ export const buttons = async (interaction, db, data, cache) => {
 				}).reverse().slice(0, 5)
 				let minutes = 10
 				switch (warningCount.length) {
-					case 1: minutes = 10
-						break
-					case 2: minutes = 60
-						break
-					case 3: minutes = 1440
-						break
-					default: minutes = 1440
+				case 1: minutes = 10
+					break
+				case 2: minutes = 60
+					break
+				case 3: minutes = 1440
+					break
+				default: minutes = 1440
 				}
 				await member.disableCommunicationUntil(Date.now() + (minutes * 60 * 1000), `${interaction.member.displayName}: Timeout ${member.displayName} for 10 minutes.`)
-				await bansChannel.send({ content: `${member.toString()} has been timed out by ${interaction.member.displayName} for ${minutes} minutes.\n\n**Recent Hisory:**\n${displayFields.join("\n")}` })
+				await bansChannel.send({ content: `${member.toString()} has been timed out by ${interaction.member.displayName} for ${minutes} minutes.\n\n**Recent Hisory:**\n${displayFields.join('\n')}` })
 				await interaction.update({ components: [] })
 			} catch (err) {
 				if (err.code === 50013) {
