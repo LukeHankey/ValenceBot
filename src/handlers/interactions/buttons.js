@@ -3,14 +3,165 @@ import { ActionRowBuilder, SelectMenuBuilder, EmbedBuilder, ButtonBuilder, Butto
 import Color from '../../colors.js'
 import Ticket from '../../ticket.js'
 import { TextInputBuilder, UnsafeTextInputBuilder, UnsafeButtonBuilder } from '@discordjs/builders'
+import camelCase from 'camelcase'
+
+class ButtonWarning {
+	UNLOGGED_NAMES = ["Clear Buttons", "Too Slow!"]
+
+	/**
+	 * 
+	 * @param {string} name 
+	 */
+	constructor(interaction) {
+		this.name = interaction.customId
+		this.interaction = interaction
+		this.buttonName = this._cameliser()
+	}
+
+	/**
+	 * @private
+	 * @returns string
+	 */
+	_cameliser () {
+		return this.name.includes("DM") ? 'password' : camelCase(this.name)
+	}
+
+	set scouters (data) {
+		this._scouters = data
+	}
+
+	get scouters () {
+		return this._scouters
+	}
+
+	/**
+	 * @param {string} userId The Id of the user you want to find.
+	 * @returns {object} The profile found by the userId.
+	 */
+	async profile (userId) {
+		if (!this.scouters) {
+			throw new Error("Unable to get scouters. You must first specify the database.")
+		}
+		const profile = await this.scouters.collection.findOne({ userID: userId })
+		if (profile === null) {
+			const member = await this.interaction.guild.members.fetch(userId)
+			console.log(member)
+			const message = this.interaction.message
+			const x = await this.scouters.collection.insertOne({
+				userID: userId,
+				author: member.nickname ?? member.user.username,
+				firstTimestamp: message.createdTimestamp,
+				firstTimestampReadable: new Date(message.createdTimestamp),
+				lastTimestamp: message.createdTimestamp,
+				lastTimestampReadable: new Date(message.createdTimestamp),
+				count: 0,
+				game: 0,
+				otherCount: 0,
+				assigned: []
+			})
+			const [profile] = x.ops
+			return profile
+		}
+		return profile
+	}
+
+	/**
+	 * @param {string} userId The Id of the user you want to add count to.
+	 * @returns {string} The button name.
+	 */
+	async addCount (userId) {
+		if (this.name in this.UNLOGGED_NAMES) {
+			return
+		}
+
+		const user = await this.profile(userId)
+		const button = this._cameliser()
+		const buttonName = `buttons.${button}`
+
+		if (!user.buttons) {
+			await this.scouters.collection.findOneAndUpdate({ userID: userId }, {
+				$set: {
+					[buttonName]: 1
+				}
+			})
+		} else if (user.buttons && !(button in user.buttons)) {
+			await this.scouters.collection.findOneAndUpdate({ userID: userId }, {
+				$set: {
+					[buttonName]: 1
+				}
+			})
+		} else {
+			await this.scouters.collection.findOneAndUpdate({ userID: userId }, {
+				$inc: {
+					[buttonName]: 1
+				}
+			})
+		}
+
+		return button
+	}
+
+	/**
+	 * @param {string} userId The Id of the user you want to add a warning to.
+	 * @param {object} warningOptions Options including the button name, content and timestamp.
+	 */
+	async addWarning (userId, {button, content, timestamp} = {}) {
+		if (!timestamp) timestamp = new Date()
+		await this.scouters.collection.findOneAndUpdate({ userID: userId }, {
+			$addToSet: {
+				warnings: {
+					$each: [{
+						button,
+						content,
+						timestamp: Date.parse(timestamp)
+					}]
+				}
+			}
+		})
+	}
+
+	/**
+	 * 
+	 * @private
+	 * @param {object} data The unprocessed data.
+	 * @returns The processed data.
+	 */
+	_preprocess (data) {
+		for (const [k, v] of Object.entries(data)) {
+			if (typeof v !==  "string") continue
+			if (k === 'content') {
+				data[k] = v.split(":")[1].trim()
+			} else {
+				const [_, ...rest] = v.split(": ")
+				data[k] = rest.join(":")
+			}
+		}
+		return data
+	}
+
+	/**
+	 * @param {string} userId The Id of the user to find and make changes to.
+	 * @param {object} data The fields if a warning is to be applied.
+	 */
+	async upload (userId, data = {}) {
+		const buttonName = await this.addCount(userId)
+		if (data.warning) {
+			data = this._preprocess(data)
+			data.button = buttonName
+			await this.addWarning(userId, data)
+		}
+	}
+}
 
 export const buttons = async (interaction, db, data, cache) => {
 	const channels = await db.channels
 	const scouters = new MongoCollection('ScoutTracker')
+	const buttonLogger = new ButtonWarning(interaction)
 	const generalChannel = interaction.guild.channels.cache.find(c => c.name === 'general')
 	let [userId, user, content, timestamp] = interaction.message.content.split('\n').slice(3)
 	if (user) user = user.split(' ').slice(2).join(' ')
 	if (userId) userId = userId.split(' ').slice(3)[0].slice(3, -1)
+	buttonLogger.scouters = scouters
 
 	try {
 		switch (interaction.customId) {
@@ -55,6 +206,7 @@ export const buttons = async (interaction, db, data, cache) => {
 			await interaction.update({ components: [row] })
 			console.log(`Action: Password Button\nBy: ${interaction.user.username}\nUser: ${fetchUser.user.username}`)
 			cache.set(interaction.message.id, { ...fetchUser.user })
+			await buttonLogger.upload(userId)
 		}
 			break
 		case 'Clear Buttons':
@@ -71,6 +223,7 @@ export const buttons = async (interaction, db, data, cache) => {
 
 			await generalChannel.send({ content: reactMessage })
 			await interaction.update({ components: [] })
+			await buttonLogger.upload(userId)
 		}
 			break
 		case 'Eyes on Merch Calls': {
@@ -80,6 +233,21 @@ export const buttons = async (interaction, db, data, cache) => {
 
 			await generalChannel.send({ content: nonsenseMessage })
 			await interaction.update({ components: [] })
+			await buttonLogger.upload(userId, { content, timestamp, warning: true })
+
+			// Mute Check
+			const profile = await buttonLogger.profile(userId)
+			const warningCount = profile?.warnings.filter(w => w.button === buttonLogger.buttonName)
+			if (warningCount.length >= 3) {
+				const banChannel = interaction.guild.channels.cache.get('624655664920395786')
+				const member = await interaction.guild.members.fetch(userId)
+				const mutedRole = interaction.guild.roles.cache.find(r => r.name === "Muted")
+				member.roles.add(mutedRole)
+				const displayFields = warningCount.map(w => {
+					return `${new Date(w.timestamp).toUTCString()}: ${w.content}`
+				}).reverse().slice(0, 5)
+				await banChannel.send({ content: `${member.toString()} (${userId}) has been Muted.\n\n**Recent Hisory:**\n${displayFields.join("\n")}` })
+			}
 		}
 			break
 		case 'Remove Merch Count': {
@@ -96,7 +264,7 @@ export const buttons = async (interaction, db, data, cache) => {
 						'merchChannel.deletions.messages': { messageID: item.messageID }
 					}
 				})
-				const newEmbed = new EmbedBuilder(interaction.message.embeds[0])
+				const newEmbed = new EmbedBuilder(interaction.message.embeds[0].data)
 				newEmbed.setColor(Color.greenLight).setTitle('Message Deleted - Count Removed')
 				await interaction.message.edit({ embeds: [newEmbed], components: [] })
 			}
@@ -105,10 +273,26 @@ export const buttons = async (interaction, db, data, cache) => {
 		case 'Timeout': {
 			const member = await interaction.guild.members.fetch(userId)
 			const bansChannel = interaction.guild.channels.cache.get('624655664920395786')
+			await buttonLogger.upload(userId, { content, timestamp, warning: true })
 
 			try {
-				await member.disableCommunicationUntil(Date.now() + (10 * 60 * 1000), `${interaction.member.displayName}: Timeout ${member.displayName} for 10 minutes.`)
-				await bansChannel.send({ content: `${member.displayName} has been timed out by ${interaction.member.displayName} for 10 minutes.` })
+				const profile = await buttonLogger.profile(userId)
+				const warningCount = profile?.warnings.filter(w => w.button === buttonLogger.buttonName)
+				const displayFields = warningCount.map(w => {
+					return `${new Date(w.timestamp).toUTCString()}: ${w.content}`
+				}).reverse().slice(0, 5)
+				let minutes = 10
+				switch (warningCount.length) {
+					case 1: minutes = 10
+						break
+					case 2: minutes = 60
+						break
+					case 3: minutes = 1440
+						break
+					default: minutes = 1440
+				}
+				await member.disableCommunicationUntil(Date.now() + (minutes * 60 * 1000), `${interaction.member.displayName}: Timeout ${member.displayName} for 10 minutes.`)
+				await bansChannel.send({ content: `${member.toString()} has been timed out by ${interaction.member.displayName} for ${minutes} minutes.\n\n**Recent Hisory:**\n${displayFields.join("\n")}` })
 				await interaction.update({ components: [] })
 			} catch (err) {
 				if (err.code === 50013) {
@@ -130,6 +314,7 @@ export const buttons = async (interaction, db, data, cache) => {
 			} else {
 				interaction.reply({ content: `Your ticket has been created. Please wait while the <@&${ticket.roleId}> review.`, ephemeral: true })
 			}
+			await buttonLogger.upload(userId)
 		}
 			break
 		case 'Resolve Issue': {
@@ -175,6 +360,7 @@ export const buttons = async (interaction, db, data, cache) => {
 			}
 
 			await interaction.update({ components: [], embeds: [updatedBanEmbed] })
+			await buttonLogger.upload(userId)
 		}
 			break
 		case 'Create Application': {
@@ -253,6 +439,7 @@ export const buttons = async (interaction, db, data, cache) => {
 			break
 		case 'Read The Pins':
 			await generalChannel.send({ content: `<@!${userId}>, invalid call format. Read the pins!` })
+			await buttonLogger.upload(userId)
 		}
 	} catch (err) {
 		channels.errors.send(err)

@@ -113,7 +113,7 @@ export default class Ticket {
 		if (!this.isApplication()) {
 			channel.send({ content: `Hello <@!${memberId}>, a member of <@&${this.roleId}> will be with you shortly.`, components: [resolveButton] })
 		} else {
-			channel.send({ content: `Hello <@&${this.roleId}>, <@!${memberId}> has submitted a new application! Please review and get back to them ASAP. They have been notified that their application is in review.` })
+			channel.send({ content: `Hello <@&${this.roleId}>, ${this.interaction.member.displayName} (${memberId}) has submitted a new application! Please review and get back to them ASAP. They have been notified that their application is in review.` })
 		}
 	}
 }

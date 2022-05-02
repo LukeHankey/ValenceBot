@@ -190,7 +190,7 @@ class ScouterCheck {
 		const fields = await this._checkForScouts()
 
 		if (fields.length) { // Perhaps look at adding something if there are > 25
-			return this._client.channels.cache.get(chan).send({ embeds: [embed.addFields(fields)] })
+			return this._client.channels.cache.get(chan).send({ embeds: [embed.addFields(...fields)] })
 		}
 	}
 
