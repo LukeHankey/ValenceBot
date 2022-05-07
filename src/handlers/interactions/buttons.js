@@ -132,6 +132,7 @@ class ButtonWarning {
 			if (k === 'content') {
 				data[k] = v.split(':')[1].trim()
 			} else {
+				// eslint-disable-next-line no-unused-vars
 				const [_, ...rest] = v.split(': ')
 				data[k] = rest.join(':')
 			}
