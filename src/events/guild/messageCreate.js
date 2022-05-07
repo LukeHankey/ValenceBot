@@ -27,10 +27,10 @@ export default async (client, message) => {
 			.setTitle('New DM Recieved')
 			.setDescription(`${dmPerson.tag} sent me a DM.`)
 			.setColor(Color.blueDark)
-			.addFields(
+			.addFields([
 				{ name: 'User ID', value: `${dmPerson.id}`, inline: false },
 				{ name: 'Message contents', value: `${dmMsg.join('\n')}` }
-			)
+			])
 			.setTimestamp()
 
 		return client.channels.cache.get('788525524782940187').send({ embeds: [embed] })
@@ -55,13 +55,13 @@ export default async (client, message) => {
 						.setTitle(`${bannedMember.displayName} has been banned!`)
 						.setColor(Color.orange)
 						.setDescription(`Potentially dangerous content. Please don't click on or go to any links that you don't know!\n\n> ${message.content}`)
-						.addFields(
+						.addFields([
 							{ name: 'User ID', value: bannedMember.id, inline: true },
 							{ name: 'Status', value: 'Banned', inline: true }
-						)
+						])
 						.setTimestamp()
 					const banButtons = new ActionRowBuilder()
-						.addComponents(
+						.addComponents([
 							new ButtonBuilder()
 								.setCustomId('Unban')
 								.setLabel('Unban')
@@ -72,16 +72,16 @@ export default async (client, message) => {
 								.setLabel('Clear Buttons')
 								.setStyle(ButtonStyle.Success)
 								.setEmoji({ name: '✅' })
-						)
+						])
 
 					const banCase = await botLogsAdminChannel.send({ embeds: [banEmbed], components: [banButtons] })
 					const banCaseButton = new ActionRowBuilder()
-						.addComponents(
+						.addComponents([
 							new ButtonBuilder()
 								.setLabel('Ban Case')
 								.setStyle(ButtonStyle.Link)
 								.setURL(banCase.url)
-						)
+						])
 
 					const bChannel = message.guild.channels.cache.get('624655664920395786')
 					return await bChannel.send({ content: `Banned: ${bannedMember.displayName} - ${bannedMember.id} -- Posting a scam link. Bang bang I gotcha, I gotcha in my scope.`, components: [banCaseButton] })

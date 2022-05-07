@@ -82,12 +82,12 @@ export default {
 				const colName = dataC.find(val => val.toLowerCase() === colNameArgs.toLowerCase())
 
 				const lottoEmbed = nEmbed('Lotto entry added successfully!', '\u200B', Color.greenLight, message.author.displayAvatarURL(), client.user.displayAvatarURL())
-					.addFields(
+					.addFields([
 						{ name: 'RuneScape Name:', value: `${rsn || undefined}`, inline: true },
 						{ name: 'Amount:', value: '500,000', inline: true },
 						{ name: 'To:', value: `${colName}`, inline: true },
 						{ name: 'Donations Updated:', value: 'N/A', inline: true }
-					)
+					])
 
 				switch (args[0]) {
 				case 'add':
@@ -118,7 +118,7 @@ export default {
 									return message.channel.send({
 										embeds: [lottoEmbed
 											.spliceFields(0, 1, { name: 'RuneScape Name:', value: `${rsn.split(/ /g).slice(0, -1).join(' ')}`, inline: true })
-											.addFields({ name: 'Double Entry:', value: 'Yes', inline: true })]
+											.addFields([{ name: 'Double Entry:', value: 'Yes', inline: true }])]
 									})
 								}
 								newArr.push([userData.length + 1, rsn.trim(), '500,000', colName, 'N/A'])
@@ -154,7 +154,7 @@ export default {
 										embeds: [lottoEmbed
 											.spliceFields(1, 1, { name: 'Amount:', value: `${args[1]}`, inline: true })
 											.spliceFields(0, 1, { name: 'RuneScape Name:', value: `${rsn.split(/ /g).slice(0, -1).join(' ')}`, inline: true })
-											.addFields({ name: 'Double Entry:', value: 'Yes', inline: true })]
+											.addFields([{ name: 'Double Entry:', value: 'Yes', inline: true }])]
 									})
 								}
 								newArr.push([userData.length + 1, rsn.trim(), args[1], colName, 'No'])
@@ -189,7 +189,7 @@ export default {
 						const fields = { name: values[0], value: values[1], inline: true }
 						totalValues.push(fields)
 					}
-					message.channel.send({ embeds: [totalEmbed.addFields(...totalValues).spliceFields(2, 0, { name: '\u200B', value: '\u200B', inline: true })] })
+					message.channel.send({ embeds: [totalEmbed.addFields(totalValues).spliceFields(2, 0, { name: '\u200B', value: '\u200B', inline: true })] })
 				}
 					break
 				case 'sheet':
@@ -228,7 +228,7 @@ export default {
 									client.user.displayAvatarURL()
 								)
 									.addFields(found)
-									.addFields({ name: 'Want to enter twice for double the chance of winning?', value: 'It only costs 100 Clan Points! Let the Admins know in <#640641467798519808>!' })
+									.addFields([{ name: 'Want to enter twice for double the chance of winning?', value: 'It only costs 100 Clan Points! Let the Admins know in <#640641467798519808>!' }])
 								]
 							})
 						} else if (nameFound && nameFound.length === 2) {
@@ -253,7 +253,7 @@ export default {
 									message.author.displayAvatarURL(),
 									client.user.displayAvatarURL()
 								)
-									.addFields({ name: 'Solution:', value: 'Please let an Admin know to fix your entries!' })
+									.addFields([{ name: 'Solution:', value: 'Please let an Admin know to fix your entries!' }])
 								]
 							})
 						} else {
@@ -265,7 +265,7 @@ export default {
 									message.author.displayAvatarURL(),
 									client.user.displayAvatarURL()
 								)
-									.addFields({ name: 'Get your lotto entry in!', value: 'Message any Admin in game to pay the 500k entry fee!' })
+									.addFields([{ name: 'Get your lotto entry in!', value: 'Message any Admin in game to pay the 500k entry fee!' }])
 								]
 							})
 						}
@@ -287,7 +287,7 @@ export default {
 									Color.greenLight,
 									message.author.displayAvatarURL()
 								)
-									.addFields(...info)
+									.addFields(info)
 								pageEmbeds.push(gEmbed)
 							}
 							return pageEmbeds

@@ -35,7 +35,7 @@ export default {
 				.setDescription(desc)
 				.setColor(Color.greenLight)
 				.setFooter({ text: 'If any of the data above is wrong, please update it.' })
-				.addFields(...fields)
+				.addFields(fields)
 			return message.channel.send({ embeds: [embed] })
 		}
 
@@ -98,7 +98,7 @@ export default {
 						'A comprehensive list of all clan members within this rank. Active refers to being in this server with a valid Discord ID.',
 						Color.greenLight
 					)
-						.addFields(...info)
+						.addFields(info)
 					pageEmbeds.push(gEmbed)
 				}
 				return pageEmbeds

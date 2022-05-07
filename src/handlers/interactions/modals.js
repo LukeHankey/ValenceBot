@@ -54,7 +54,7 @@ export const modals = async (interaction, db, data) => {
 				// Think about if there is anything else to view in the user profile stats
 			)
 		}
-		return embed.addFields(...fields)
+		return embed.addFields(fields)
 	}
 
 	try {
@@ -67,13 +67,13 @@ export const modals = async (interaction, db, data) => {
 			const newModal = new UnsafeModalBuilder({ components, custom_id: 'startApplication', title: parsedData.title })
 
 			const startApplication = new ActionRowBuilder()
-				.addComponents(
+				.addComponents([
 					new ButtonBuilder()
 						.setCustomId('Start Application')
 						.setLabel('Start Application')
 						.setStyle(ButtonStyle.Primary)
 						.setEmoji({ name: '📜' })
-				)
+				])
 
 			await interaction.reply({ content: 'Your application is all set up! Click the `Start Application` button to view.', ephemeral: true })
 

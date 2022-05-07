@@ -69,9 +69,9 @@ export const vEvents = async (client, message, channels) => {
 						}
 					}
 					const editEmbed = new EmbedBuilder(m.embeds[0].data)
-					editEmbed.addFields(
+					editEmbed.addFields([
 						{ name: date, value: `Event: ${eventTitle[0]}\nTime: ${time}\n[Announcement](${link})\nHost: ${last.author}\nRole: ${newRole}` }
-					)
+					])
 					m.edit({ embeds: [editEmbed] })
 					channels.logs.send(`Calendar updated - ${message.member.displayName} added an event automatically: \`\`\`Date: ${date}, Event: ${eventTitle[0]}, Time: ${time}, Link: ${link}, Host: ${last.author}\`\`\``)
 				}

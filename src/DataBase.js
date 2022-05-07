@@ -106,7 +106,7 @@ export class MongoCollection extends DataBase {
 						const embed = new EmbedBuilder()
 							.setTitle(`An error occured in ${fileName}`)
 							.setColor(Color.redDark)
-							.addFields({ name: `${err.message}`, value: `\`\`\`${err.stack.split('\n').filter(s => !s.includes('node_modules')).join('\n')}\`\`\`` })
+							.addFields([{ name: `${err.message}`, value: `\`\`\`${err.stack.split('\n').filter(s => !s.includes('node_modules')).join('\n')}\`\`\`` }])
 						return embed
 					},
 					send: function (...args) {

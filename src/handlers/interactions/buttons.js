@@ -173,7 +173,7 @@ export const buttons = async (interaction, db, data, cache) => {
 		 */
 		case `DM ${user}`: {
 			const menu = new ActionRowBuilder()
-				.addComponents(
+				.addComponents([
 					new SelectMenuBuilder()
 						.setCustomId(`DM ${user}`)
 						.setPlaceholder('Nothing selected')
@@ -188,7 +188,7 @@ export const buttons = async (interaction, db, data, cache) => {
 								value: 'no'
 							}
 						)
-				)
+				])
 
 			timestamp = timestamp.split(' ').slice(2).join(' ').slice(0, -3)
 			const serverName = interaction.member.guild.name
@@ -203,7 +203,7 @@ export const buttons = async (interaction, db, data, cache) => {
 			 * components[0].components[0]: The first Button
 			 */
 			const row = new ActionRowBuilder()
-				.addComponents(new UnsafeButtonBuilder(interaction.message.components[0].components[0].data).setEmoji({ name: '📩' }).setLabel('DM sent...').setDisabled().setStyle(ButtonStyle.Primary))
+				.addComponents([new UnsafeButtonBuilder(interaction.message.components[0].components[0].data).setEmoji({ name: '📩' }).setLabel('DM sent...').setDisabled().setStyle(ButtonStyle.Primary)])
 			await interaction.update({ components: [row] })
 			console.log(`Action: Password Button\nBy: ${interaction.user.username}\nUser: ${fetchUser.user.username}`)
 			cache.set(interaction.message.id, { ...fetchUser.user })
@@ -319,7 +319,7 @@ export const buttons = async (interaction, db, data, cache) => {
 		}
 			break
 		case 'Resolve Issue': {
-			const buttonDisabled = new ActionRowBuilder().addComponents(new ButtonBuilder(interaction.message.components[0].components[0].data).setEmoji({ name: '✅' }).setLabel('Issue resolved').setDisabled(true))
+			const buttonDisabled = new ActionRowBuilder().addComponents([new ButtonBuilder(interaction.message.components[0].components[0].data).setEmoji({ name: '✅' }).setLabel('Issue resolved').setDisabled(true)])
 			await interaction.update({ components: [buttonDisabled], fetchReply: true })
 			await interaction.followUp({ content: `Ticket closed by <@!${interaction.member.id}>.` })
 			if (interaction.channel.type === ChannelType.GuildPrivateThread) {
@@ -408,10 +408,10 @@ export const buttons = async (interaction, db, data, cache) => {
 				.setStyle(TextInputStyle.Paragraph)
 				.setValue(JSON.stringify(modalExample, null, 4))
 
-			const firstActionRow = new ActionRowBuilder().addComponents(instructions)
-			const secondActionRow = new ActionRowBuilder().addComponents(exampleApplication)
+			const firstActionRow = new ActionRowBuilder().addComponents([instructions])
+			const secondActionRow = new ActionRowBuilder().addComponents([exampleApplication])
 
-			applicationModal.addComponents(firstActionRow, secondActionRow)
+			applicationModal.addComponents([firstActionRow, secondActionRow])
 			await interaction.showModal(applicationModal)
 		}
 			break
@@ -426,12 +426,12 @@ export const buttons = async (interaction, db, data, cache) => {
 
 			const actionRows = applicationData.components.map(c => {
 				return new ActionRowBuilder()
-					.addComponents(
+					.addComponents([
 						new UnsafeTextInputBuilder(c)
-					)
+					])
 			})
 
-			applicationModal.addComponents(...actionRows)
+			applicationModal.addComponents(actionRows)
 			await interaction.showModal(applicationModal)
 		}
 			break
