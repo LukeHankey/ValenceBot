@@ -7,3 +7,4 @@ test.js
 src/slashCommands.js
 archived
 *api.*
+.history/
