@@ -19,7 +19,7 @@ export const addMerchCount = async (client, message, db, scouter) => {
 		const findMessage = await scouter.collection.findOne({ userID: userN.id })
 		const timestamp = message.createdAt.toString().split(' ').slice(0, 5).join(' ')
 		const buttonSelection = new ActionRowBuilder()
-			.addComponents(
+			.addComponents([
 				new ButtonBuilder()
 					.setCustomId(`DM ${userN.displayName}`)
 					.setLabel(`DM ${userN.displayName}`)
@@ -45,16 +45,16 @@ export const addMerchCount = async (client, message, db, scouter) => {
 					.setLabel('Clear Buttons')
 					.setStyle(ButtonStyle.Danger)
 					.setEmoji({ name: '❌' })
-			)
+			])
 
 		const buttonSelectionExtra = new ActionRowBuilder()
-			.addComponents(
+			.addComponents([
 				new ButtonBuilder()
 					.setCustomId('Too Slow!')
 					.setLabel('Too Slow!')
 					.setStyle(ButtonStyle.Secondary)
 					.setEmoji({ name: '🐌' })
-			)
+			])
 
 		if (!findMessage) {
 			if (!merchRegex.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, messages)) {

@@ -172,7 +172,7 @@ const paginate = (data, { author }, text, desc = '') => {
 			.setColor(Color.aqua)
 			.setThumbnail(author.displayAvatarURL())
 			.setTimestamp()
-			.addFields(...info)
+			.addFields(info)
 		embeds.push(embed)
 	}
 	return embeds

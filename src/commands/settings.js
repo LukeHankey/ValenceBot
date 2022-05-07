@@ -191,9 +191,9 @@ export default {
 						Color.cyan,
 						client.user.displayAvatarURL()
 					)
-						.addFields(
+						.addFields([
 							{ name: '**Settings**', value: '`prefix`\n`adminRole`\n`modRole`\n`adminChannel`\n`eventsChannel`\n`modChannel`', inline: false }
-						)]
+						])]
 				})
 			}
 		}

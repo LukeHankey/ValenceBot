@@ -263,9 +263,9 @@ export default {
 					await message.edit({ embeds: [calEmbed] })
 					await interaction.reply({ content: 'The calendar has been updated with the new event.', ephemeral: true })
 				} else {
-					calEmbed.addFields(
+					calEmbed.addFields([
 						{ name: date, value: `Event: ${title}\nTime: ${time}\n[Announcement](${announcement})\nHost: ${member}\nRole: ${newRole}` }
-					)
+					])
 
 					// Edit the embed with the new event
 					await message.edit({ embeds: [calEmbed] })
@@ -302,6 +302,9 @@ export default {
 				await eventMessage.react('📌')
 				await eventMessage.react('🛑')
 			} catch (err) {
+				if (err.name === 'TypeError') {
+					return await interaction.followUp({ content: 'Error: Unknown message from Announcement link.', ephemeral: true })
+				}
 				channels.errors.send(err)
 			}
 		}

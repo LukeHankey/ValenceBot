@@ -54,7 +54,7 @@ export default {
 					// Think about if there is anything else to view in the user profile stats
 				)
 			}
-			return message.channel.send({ embeds: [embed.addFields(...fields)] })
+			return message.channel.send({ embeds: [embed.addFields(fields)] })
 		}
 
 		const sendRoleInfo = async (id, rData = { scoutTracker: scouters }) => {
@@ -87,7 +87,7 @@ export default {
 			for (const values of newArr) {
 				fields.push({ name: `${values.author}`, value: `Scout count: ${values.count}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true })
 			}
-			return message.channel.send({ embeds: [embed.addFields(...fields)] })
+			return message.channel.send({ embeds: [embed.addFields(fields)] })
 		}
 
 		if (!args.length) {
