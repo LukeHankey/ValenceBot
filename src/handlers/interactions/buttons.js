@@ -177,7 +177,7 @@ export const buttons = async (interaction, db, data, cache) => {
 					new SelectMenuBuilder()
 						.setCustomId(`DM ${user}`)
 						.setPlaceholder('Nothing selected')
-						.addOptions(
+						.addOptions([
 							{
 								label: 'Yes, this was a password.',
 								description: 'Select this option to automatically remove it from our logs.',
@@ -187,7 +187,7 @@ export const buttons = async (interaction, db, data, cache) => {
 								label: 'No, this was not a password.',
 								value: 'no'
 							}
-						)
+						])
 				])
 
 			timestamp = timestamp.split(' ').slice(2).join(' ').slice(0, -3)
