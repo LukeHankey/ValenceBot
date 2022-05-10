@@ -157,7 +157,10 @@ export default async (client, message) => {
 					const c = g.channels.cache.get(channel)
 					if (!c) continue
 
-					const usersWithSameChannel = visCache.forEach(o => { if (o.channel === c.id) return `<@!${o.user}>` })
+					const usersWithSameChannel = visCache.map(o => {
+						if (o.channel !== c.id) return null
+						return `<@!${o.user}>`
+					}).filter(Boolean)
 					await c.send({ content: `${usersWithSameChannel.join(', ')}\nSource: Vis Wax Server | <https://discord.gg/wv9Ecs4>\n${newContent.join('\n')}` })
 				}
 			}
