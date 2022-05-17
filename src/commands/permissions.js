@@ -77,20 +77,20 @@ export default {
 		const commandArray = []
 		// let guild = true
 		let guildCommand = await interaction.client.guilds.cache.get(interaction.guild.id)?.commands.fetch()
-		// let globalCommands = await interaction.client.application?.commands.fetch()
+		const globalCommands = await interaction.client.application?.commands.fetch()
 		guildCommand = guildCommand.filter(com => {
 			commandArray.push(com.name)
 			if (com.name === commandName) {
 				return com
 			} else return undefined
 		})
-		// globalCommands = globalCommands.filter(com => {
-		// 	commandArray.push(com.name)
-		// 	if (com.name === commandName) {
-		// 		guild = false
-		// 		return com
-		// 	} else return undefined
-		// })
+		globalCommands.filter(com => {
+			commandArray.push(com.name)
+			if (com.name === commandName) {
+				// guild = false
+				return com
+			} else return undefined
+		})
 
 		if (!commandArray.includes(commandName)) return interaction.reply({ content: `There is no command by that name. Try one of: \`${commandArray.join(', ')}\``, ephemeral: true })
 
