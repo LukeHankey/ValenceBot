@@ -1,6 +1,6 @@
-import { checkNum } from '../functions.js'
+import { checkNum, splitMessage } from '../functions.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { Util, ChannelType } from 'discord.js'
+import { ChannelType } from 'discord.js'
 
 export default {
 	name: 'send',
@@ -44,20 +44,27 @@ export default {
 			const content = options.getString('message')
 			// Null if not provided
 			const editing = options.getString('edit_message')
-			if (editing) {
-				try {
+			try {
+				if (editing) {
 					await channel.messages.edit(editing, { content })
 					return await interaction.reply({ content: 'Message successfully edited.', ephemeral: true })
-				} catch (err) {
-					if (err.code === 10008) {
-						return await interaction.reply({ content: 'Error. Unable to find message. Make sure you have the correct message ID.', ephemeral: true })
-					} else {
-						return await interaction.reply({ content: `Error. ${err.rawError.message}. Make sure you have the correct message ID.`, ephemeral: true })
-					}
+				}
+
+				const sentChannel = await channel.send(content)
+				await interaction.reply({ content: 'Message successfully sent', ephemeral: true })
+
+				if (interaction.guild.id === '420803245758480405') {
+					const botLogsAdminChannel = '794608385106509824'
+					const channel = interaction.guild.channels.cache.get(botLogsAdminChannel)
+					await channel.send({ content: `${interaction.member.toString()} sent a message to <#${sentChannel.channelId}>` })
+				}
+			} catch (err) {
+				if (err.code === 10008) {
+					return await interaction.reply({ content: 'Error. Unable to find message. Make sure you have the correct message ID.', ephemeral: true })
+				} else {
+					return await interaction.reply({ content: `Error. ${err.rawError.message}. Unable to send message.`, ephemeral: true })
 				}
 			}
-			await channel.send(content)
-			await interaction.reply({ content: 'Message successfully sent', ephemeral: true })
 		}
 	},
 	run: async (client, message, args, perms, db) => {
@@ -74,82 +81,93 @@ export default {
 			} else { return { value: false, id: null } }
 		}
 
-		switch (args[0]) {
-		case 'edit': {
-			const [channelID, messageID, ...messageContent] = args.slice(1)
-			const { value, id } = checkAndGetID(channelID)
-			const messageCheck = checkAndGetID(messageID)
-			if (value) {
-				if (messageCheck.value && message.author.id !== myID && messageContent.length) {
-					if (message.guild.channels.cache.has(id)) {
-						const getChannel = message.guild.channels.cache.get(id)
-						try {
-							const msg = await getChannel.messages.fetch(messageCheck.id)
-							await msg.edit({ content: messageContent.join(' ') })
-							return message.react('✅')
-						} catch (err) {
-							channels.errors.send(err)
+		if (!args[0]) {
+			return message.channel.send({ content: 'Provide a valid channel Id.' })
+		}
+
+		if (args[0] && !content) {
+			return message.channel.send({ content: 'You must provide a message to send and a channel to send it to.' })
+		}
+
+		const catchMissingAccessError = (e) => {
+			if (e.code === 50001) {
+				return message.channel.send({ content: 'Error: Missing channel access.' })
+			}
+		}
+
+		try {
+			switch (args[0]) {
+			case 'edit': {
+				const [channelID, messageID, ...messageContent] = args.slice(1)
+				const { value, id } = checkAndGetID(channelID)
+				const messageCheck = checkAndGetID(messageID)
+				if (value) {
+					if (messageCheck.value && message.author.id !== myID && messageContent.length) {
+						if (message.guild.channels.cache.has(id)) {
+							const getChannel = message.guild.channels.cache.get(id)
+							try {
+								const msg = await getChannel.messages.fetch(messageCheck.id)
+								await msg.edit({ content: messageContent.join(' ') })
+								return message.react('✅')
+							} catch (err) {
+								channels.errors.send(err)
+							}
+						} else {
+							return message.channel.send({ content: 'You are not able to edit a message in another server.' })
 						}
 					} else {
-						return message.channel.send({ content: 'You are not able to edit a message in another server.' })
-					}
-				} else {
-					if (!messageContent.length) return message.channel.send({ content: 'You must provide a message to send and a channel to send it to.' })
-					if (!messageCheck.value) return message.channel.send({ content: `Make sure the messageID is valid and in <#${id}>` })
-					if (message.author.id === myID && messageCheck.value && messageContent.length) {
-						const getChannel = client.channels.cache.get(id)
-						try {
-							const msg = await getChannel.messages.fetch(messageCheck.id)
-							await msg.edit({ content: messageContent.join(' ') })
-							return message.react('✅')
-						} catch (err) {
-							channels.errors.send(err)
+						if (!messageContent.length) return message.channel.send({ content: 'You must provide a message to send and a channel to send it to.' })
+						if (!messageCheck.value) return message.channel.send({ content: `Make sure the messageID is valid and in <#${id}>` })
+						if (message.author.id === myID && messageCheck.value && messageContent.length) {
+							const getChannel = client.channels.cache.get(id)
+							try {
+								const msg = await getChannel.messages.fetch(messageCheck.id)
+								await msg.edit({ content: messageContent.join(' ') })
+								return message.react('✅')
+							} catch (err) {
+								channels.errors.send(err)
+							}
 						}
 					}
+				} else {
+					return message.channel.send({ content: 'You must have a valid channel ID.' })
 				}
-			} else {
-				return message.channel.send({ content: 'You must have a valid channel ID.' })
 			}
-		}
-			break
-		default: {
-			if (checkAndGetID(args[0]).value) { // Has valid channel ID
-				const split = Util.splitMessage(content)
-				if (message.guild.channels.cache.has(checkAndGetID(args[0]).id) && content && message.author.id !== myID) { // Has content and channel is in same server
-					split.forEach(text => {
-						client.channels.cache.get(checkAndGetID(args[0]).id).send({ content: text })
-							.catch(async err => {
-								if (err.code === 50013) {
-									return message.channel.send({ content: `I am missing some permissions to post in <#${checkAndGetID}>.` })
-								} else {
-									return channels.errors.send(err)
-								}
+				break
+			default: {
+				if (checkAndGetID(args[0]).value) { // Has valid channel ID
+					const split = splitMessage(content)
+					const channelId = checkAndGetID(args[0]).id
+					const sendChannel = client.channels.cache.get(channelId)
+					if (message.guild.channels.cache.has(channelId) && content && message.author.id !== myID) { // Has content and channel is in same server
+						split.forEach(text => {
+							sendChannel.send({ content: text }).catch(err => {
+								catchMissingAccessError(err)
 							})
-					})
-				}
-				if (message.author.id === myID && content) {
-					split.forEach(text => {
-						client.channels.cache.get(checkAndGetID(args[0]).id).send({ content: text })
-							.catch(async err => {
-								if (err.code === 50013) {
-									return message.channel.send({ content: `I am missing some permissions to post in <#${checkAndGetID}>.` })
-								} else {
-									return channels.errors.send(err)
-								}
+						})
+						if (message.guild.id === '668330890790699079') {
+							const botLogsAdminChannel = '903432222139355207'
+							const channel = message.guild.channels.cache.get(botLogsAdminChannel)
+							await channel.send({ content: `${message.member.toString()} sent a message to <#${sendChannel.id}>` })
+						}
+					}
+					if (message.author.id === myID && content) {
+						split.forEach(text => {
+							sendChannel.send({ content: text }).catch(err => {
+								catchMissingAccessError(err)
 							})
-					})
-				} else if (message.author.id !== myID && content && !message.guild.channels.cache.has(checkAndGetID(args[0]).id)) { // Checks for non-owner, message content and if ID is not in same server
-					message.channel.send({ content: 'You are not able to send a message to a channel in another server.' })
-					channels.logs.send({ content: `<@${message.author.id}> tried to send a message to another Server, from Channel: <#${message.channel.id}> to <#${args[0]}>: \`\`\`Server Name: ${message.guild.name}\nServer ID:${message.guild.id}\nMessage content: ${content}\`\`\`` })
+						})
+					} else if (message.author.id !== myID && content && !message.guild.channels.cache.has(checkAndGetID(args[0]).id)) { // Checks for non-owner, message content and if ID is not in same server
+						message.channel.send({ content: 'You are not able to send a message to a channel in another server.' })
+						channels.logs.send({ content: `<@${message.author.id}> tried to send a message to another Server, from Channel: <#${message.channel.id}> to <#${args[0]}>: \`\`\`Server Name: ${message.guild.name}\nServer ID:${message.guild.id}\nMessage content: ${content}\`\`\`` })
+					}
+				} else { // No valid ID
+					return message.channel.send({ content: 'You must provide a valid channel ID.' })
 				}
-			} else { // No valid ID
-				return message.channel.send({ content: 'You must provide a valid channel ID.' })
 			}
-
-			if (args[0] && !content) {
-				return message.channel.send({ content: 'You must provide a message to send and a channel to send it to.' })
 			}
-		}
+		} catch (err) {
+			await channels.errors.send(err)
 		}
 	}
 }
