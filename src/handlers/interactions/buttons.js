@@ -346,13 +346,13 @@ export const buttons = async (interaction, db, data, cache) => {
 			const banEmbed = interaction.message.embeds[0]
 			const userId = banEmbed.fields.filter(field => field.name === 'User ID')[0].value
 			const banStatus = banEmbed.fields.filter(field => field.name === 'Status')[0]
-			const updatedBanEmbed = new EmbedBuilder(banEmbed)
+			const updatedBanEmbed = new EmbedBuilder(banEmbed.data)
 				.setColor(Color.greenLight)
 				.spliceFields(banEmbed.fields.indexOf(banStatus), 1, Object.assign(banStatus, { value: 'Unbanned' }))
 			try {
 				await interaction.guild.bans.remove(userId)
 			} catch (err) {
-				const updateErrorBanEmbed = new EmbedBuilder(banEmbed)
+				const updateErrorBanEmbed = new EmbedBuilder(banEmbed.data)
 					.setColor(Color.greenLight)
 					.spliceFields(banEmbed.fields.indexOf(banStatus), 1, Object.assign(banStatus, { value: err.message }))
 				interaction.reply({ content: `Unable to unban user: \`${err.message}\`.`, ephemeral: true })
