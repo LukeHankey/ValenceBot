@@ -47,6 +47,7 @@ export default async (client, message) => {
 			const bannedMember = message.member
 			// Check for permissions
 			try {
+				console.log(`Bannned ${bannedMember.toString()}: ${message.content}`)
 				const perms = message.guild.me.permissions.has('BanMembers')
 				if (perms) {
 					await bannedMember.ban({ days: 7, reason: 'Bang bang I gotcha, I gotcha in my scope' })
