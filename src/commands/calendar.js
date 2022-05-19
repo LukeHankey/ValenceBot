@@ -355,7 +355,6 @@ export default {
 						else return undefined
 					})
 
-					console.log(valueToReplace)
 					const valueName = valueToReplace.split(':')[0]
 
 					calEmbed.spliceFields(position - 1, 1, {

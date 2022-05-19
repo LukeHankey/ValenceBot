@@ -45,7 +45,6 @@ class ButtonWarning {
 		const profile = await this.scouters.collection.findOne({ userID: userId })
 		if (profile === null) {
 			const member = await this.interaction.guild.members.fetch(userId)
-			console.log(member)
 			const message = this.interaction.message
 			const x = await this.scouters.collection.insertOne({
 				userID: userId,

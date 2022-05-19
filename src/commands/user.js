@@ -65,7 +65,6 @@ export default {
 			}
 
 			if (userInDiscord && findUser) {
-				console.log(result)
 				await createEmbedForDB(findUser, { inDisc: userInDiscord, type: 'id' }, result)
 			} else if (userInDiscord && !findUser) {
 				await createEmbedForNoDB(args[0])
