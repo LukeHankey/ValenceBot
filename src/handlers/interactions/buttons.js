@@ -219,7 +219,7 @@ export const buttons = async (interaction, db, data, cache) => {
 			await interaction.update({ components: [] })
 			break
 		case 'Show How To React': {
-			const reactMessage = `<@!${userId}> Right Click the Message > Apps > Mark event as dead.\nFor more information, check the pins in <#${data.merchChannel.channelID}>.`
+			const reactMessage = `<@!${userId}> Right Click / Long Press the Message > Apps > Mark event as dead.\nFor more information, check the pins in <#${data.merchChannel.channelID}>.`
 
 			await generalChannel.send({ content: reactMessage })
 			await interaction.update({ components: [] })
