@@ -30,7 +30,7 @@ export default {
 		if (!user) return message.channel.send({ content: `<@!${args[0]}> is not in the database.` })
 		console.log(user)
 
-		if (!user.warnings){
+		if (!user.warnings) {
 			user.warnings = []
 		}
 
