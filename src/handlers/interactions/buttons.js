@@ -46,7 +46,7 @@ class ButtonWarning {
 		if (profile === null) {
 			const member = await this.interaction.guild.members.fetch(userId)
 			const message = this.interaction.message
-			console.log(typeof(member), member)
+			console.log(typeof (member), member)
 			const x = await this.scouters.collection.insertOne({
 				userID: userId,
 				author: member.nickname ?? member.user.username,
@@ -213,7 +213,7 @@ export const buttons = async (interaction, db, data, cache) => {
 		case 'Clear Buttons':
 			if (interaction.message.embeds.length) {
 				const embed = interaction.message.embeds[0]
-				const updatedEmbed = new EmbedBuilder(embed)
+				const updatedEmbed = new EmbedBuilder(embed.data)
 					.setColor(Color.greenLight)
 				return await interaction.update({ components: [], embeds: [updatedEmbed] })
 			}
