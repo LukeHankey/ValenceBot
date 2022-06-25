@@ -440,6 +440,7 @@ export const buttons = async (interaction, db, data, cache) => {
 			break
 		case 'Read The Pins':
 			await generalChannel.send({ content: `<@!${userId}>, invalid call format. Read the pins!` })
+			await interaction.update({ components: [] })
 			await buttonLogger.upload(userId)
 		}
 	} catch (err) {
