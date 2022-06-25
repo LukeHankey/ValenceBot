@@ -158,7 +158,7 @@ export const buttons = async (interaction, db, data, cache) => {
 	const channels = await db.channels
 	const scouters = new MongoCollection('ScoutTracker')
 	const buttonLogger = new ButtonWarning(interaction)
-	const generalChannel = interaction.guild.channels.cache.find(c => c.name === 'general')
+	const generalChannel = interaction.guild.channels.cache.find(c => c.id === '696375576881004655')
 	let [userId, user, content, timestamp] = interaction.message.content.split('\n').slice(3)
 	if (user) user = user.split(' ').slice(2).join(' ')
 	if (userId) userId = userId.split(' ').slice(3)[0].slice(3, -1)
