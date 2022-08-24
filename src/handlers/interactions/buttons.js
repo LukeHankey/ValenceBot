@@ -314,7 +314,7 @@ export const buttons = async (interaction, db, data, cache) => {
 			} else {
 				interaction.reply({ content: `Your ticket has been created. Please wait while the <@&${ticket.roleId}> review.`, ephemeral: true })
 			}
-			if (interaction.guild.id === "420803245758480405") {
+			if (interaction.guild.id === '420803245758480405') {
 				await buttonLogger.upload(userId)
 			}
 		}
