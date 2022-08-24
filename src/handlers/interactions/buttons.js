@@ -46,7 +46,6 @@ class ButtonWarning {
 		if (profile === null) {
 			const member = await this.interaction.guild.members.fetch(userId)
 			const message = this.interaction.message
-			console.log(typeof (member), member)
 			const x = await this.scouters.collection.insertOne({
 				userID: userId,
 				author: member.nickname ?? member.user.username,
@@ -315,7 +314,9 @@ export const buttons = async (interaction, db, data, cache) => {
 			} else {
 				interaction.reply({ content: `Your ticket has been created. Please wait while the <@&${ticket.roleId}> review.`, ephemeral: true })
 			}
-			await buttonLogger.upload(userId)
+			if (interaction.guild.id === "420803245758480405") {
+				await buttonLogger.upload(userId)
+			}
 		}
 			break
 		case 'Resolve Issue': {
