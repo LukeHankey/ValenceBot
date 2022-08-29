@@ -62,9 +62,9 @@ export const modals = async (interaction, db, data) => {
 		case 'createApplication': {
 			const applicationFields = interaction.fields.getTextInputValue('application')
 			const parsedData = validateModalApplication(applicationFields)
-			const components = parsedData.components.map((c, i) => ({ ...c, type: 4, custom_id: `${c.label}_${i}` }))
+			const components = parsedData.components.map((c, i) => (new ActionRowBuilder({ ...c, type: 4, custom_id: `${c.label}_${i}` })))
 
-			const newModal = new ModalBuilder({ components, custom_id: 'startApplication', title: parsedData.title })
+			const newModal = new ModalBuilder({ components, custom_id: 'startApplication', title: parsedData.title }).toJSON()
 
 			const startApplication = new ActionRowBuilder()
 				.addComponents([
@@ -81,7 +81,7 @@ export const modals = async (interaction, db, data) => {
 
 			await db.collection.findOneAndUpdate({ _id: interaction.guild.id, 'ticket.messageId': interaction.message.id }, {
 				$set: {
-					'ticket.$.applicationModal': newModal.toJSON()
+					'ticket.$.applicationModal': newModal
 				}
 			})
 		}
