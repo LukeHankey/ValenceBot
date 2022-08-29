@@ -1,6 +1,6 @@
 import { MongoCollection } from '../../DataBase.js'
 import { ButtonStyle, EmbedBuilder } from 'discord.js'
-import { ActionRowBuilder, ButtonBuilder, UnsafeModalBuilder } from '@discordjs/builders'
+import { ActionRowBuilder, ButtonBuilder, ModalBuilder } from '@discordjs/builders'
 import Ticket from '../../ticket.js'
 import Color from '../../colors.js'
 import ms from 'pretty-ms'
@@ -24,7 +24,7 @@ export const modals = async (interaction, db, data) => {
 	}
 
 	const sendUserInfo = async (id, uData) => {
-		const botRole = interaction.guild.me.roles.cache.find(r => r.managed)
+		const botRole = interaction.guild.members.me.roles.cache.find(r => r.managed)
 		const fetchedMember = await interaction.guild.members.fetch(id)
 		const embed = new EmbedBuilder()
 			.setTitle(`Member Profile - ${id}`)
@@ -64,7 +64,7 @@ export const modals = async (interaction, db, data) => {
 			const parsedData = validateModalApplication(applicationFields)
 			const components = parsedData.components.map((c, i) => ({ ...c, type: 4, custom_id: `${c.label}_${i}` }))
 
-			const newModal = new UnsafeModalBuilder({ components, custom_id: 'startApplication', title: parsedData.title })
+			const newModal = new ModalBuilder({ components, custom_id: 'startApplication', title: parsedData.title })
 
 			const startApplication = new ActionRowBuilder()
 				.addComponents([

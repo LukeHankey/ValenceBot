@@ -73,7 +73,7 @@ export default {
 				const content = visContent.flat()
 				const slotOneIndex = content.findIndex(el => el.match(/slot/i))
 				const newContent = content.slice(slotOneIndex).map(el => {
-					const match = el.match(/<:[\w_]{1,14}:\d{1,18}>/g)
+					const match = el.match(/<:[\w_]{1,14}:\d{1,19}>/g)
 					if (match) {
 						el = el.trim().slice(match[0].length)
 						return `\t${el}`
@@ -145,7 +145,7 @@ export default {
 					const content = visContent.flat()
 					const slotOneIndex = content.findIndex(el => el.match(/slot/i))
 					const newContent = content.slice(slotOneIndex).map(el => {
-						const match = el.match(/<:[\w_]{1,14}:\d{1,18}>/g)
+						const match = el.match(/<:[\w_]{1,14}:\d{1,19}>/g)
 						if (match) {
 							el = el.trim().slice(match[0].length)
 							return `\t${el}`

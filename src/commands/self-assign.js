@@ -14,7 +14,7 @@ export default {
 		const rName = roleName.join(' ').trim()
 		let rNameMulti = rName.split(',')
 		rNameMulti = rNameMulti.map(x => x.trim().toLowerCase())
-		const botRole = message.guild.me.roles.cache.find(r => r.managed)
+		const botRole = message.guild.members.me.roles.cache.find(r => r.managed)
 		const highBotRoleID = botRole.id
 
 		const role = rNameMulti.map(rN => {

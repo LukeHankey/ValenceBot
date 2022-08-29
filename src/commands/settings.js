@@ -107,7 +107,7 @@ export default {
 					dbChannels.send(`<@${message.author.id}> set the Admin Channel in server: **${message.guild.name}** from <#${found.value.channels.adminChannel}> to <#${channelTag[0]}>`)
 				} else {
 					message.channel.send({ content: 'What do you want to set the Admin Channel to? Acceptable values:' })
-					message.channel.send({ content: '```diff\n+ Channel ID (18 Digits)\n+ Channel tag (#<Channel name>)```' })
+					message.channel.send({ content: '```diff\n+ Channel ID (18/19 Digits)\n+ Channel tag (#<Channel name>)```' })
 				}
 				break
 			default:
@@ -138,7 +138,7 @@ export default {
 					dbChannels.send(`<@${message.author.id}> set the Events Channel in server: **${message.guild.name}** from <#${found.value.channels.events}> to <#${channelTag[0]}>`)
 				} else {
 					message.channel.send({ content: 'What do you want to set the Events Channel to? Acceptable values:' })
-					message.channel.send({ content: '```diff\n+ Channel ID (18 Digits)\n+ Channel tag (#<Channel name>)```' })
+					message.channel.send({ content: '```diff\n+ Channel ID (18/19 Digits)\n+ Channel tag (#<Channel name>)```' })
 				}
 				break
 			default:
@@ -169,7 +169,7 @@ export default {
 					dbChannels.send(`<@${message.author.id}> set the Mod Channel in server: **${message.guild.name}** from <#${found.value.channels.mod}> to <#${channelTag[0]}>`)
 				} else {
 					message.channel.send({ content: 'What do you want to set the Mod Channel to? Acceptable values:' })
-					message.channel.send({ content: '```diff\n+ Channel ID (18 Digits)\n+ Channel tag (#<Channel name>)```' })
+					message.channel.send({ content: '```diff\n+ Channel ID (18/19 Digits)\n+ Channel tag (#<Channel name>)```' })
 				}
 				break
 			default:

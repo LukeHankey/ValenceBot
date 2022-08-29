@@ -393,7 +393,7 @@ export default {
 			for (const item of logValues) {
 				const items = item.split('\n')
 				const title = items[1].slice(7)
-				const roleId = items[5].slice(9, 27)
+				const roleId = items[5].match(/(\d+)/)[0]
 				const role = message.guild.roles.cache.get(roleId) ?? await message.guild.roles.fetch(roleId)
 				const eventTag = role instanceof Collection ? role.first().name.slice(title.length + 2) : role.name.slice(title.length + 2)
 

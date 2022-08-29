@@ -1,8 +1,7 @@
 import { MongoCollection } from '../../DataBase.js'
-import { ActionRowBuilder, SelectMenuBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputStyle, ChannelType } from 'discord.js'
+import { ActionRowBuilder, SelectMenuBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputStyle, ChannelType, TextInputBuilder } from 'discord.js'
 import Color from '../../colors.js'
 import Ticket from '../../ticket.js'
-import { TextInputBuilder, UnsafeTextInputBuilder, UnsafeButtonBuilder } from '@discordjs/builders'
 import camelCase from 'camelcase'
 
 class ButtonWarning {
@@ -202,7 +201,7 @@ export const buttons = async (interaction, db, data, cache) => {
 			 * components[0].components[0]: The first Button
 			 */
 			const row = new ActionRowBuilder()
-				.addComponents([new UnsafeButtonBuilder(interaction.message.components[0].components[0].data).setEmoji({ name: '📩' }).setLabel('DM sent...').setDisabled().setStyle(ButtonStyle.Primary)])
+				.addComponents([new ButtonBuilder(interaction.message.components[0].components[0].data).setEmoji({ name: '📩' }).setLabel('DM sent...').setDisabled().setStyle(ButtonStyle.Primary)])
 			await interaction.update({ components: [row] })
 			console.log(`Action: Password Button\nBy: ${interaction.user.username}\nUser: ${fetchUser.user.username}`)
 			cache.set(interaction.message.id, { ...fetchUser.user })
@@ -428,7 +427,7 @@ export const buttons = async (interaction, db, data, cache) => {
 			const actionRows = applicationData.components.map(c => {
 				return new ActionRowBuilder()
 					.addComponents([
-						new UnsafeTextInputBuilder(c)
+						new TextInputBuilder(c)
 					])
 			})
 

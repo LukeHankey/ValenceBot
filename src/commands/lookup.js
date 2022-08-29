@@ -28,7 +28,6 @@ export default {
 
 		const user = await db.collection.findOne({ userID: args[0] }, { projection: { _id: 0 } })
 		if (!user) return message.channel.send({ content: `<@!${args[0]}> is not in the database.` })
-		console.log(user)
 
 		if (!user.warnings) {
 			user.warnings = []

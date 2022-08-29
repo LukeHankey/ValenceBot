@@ -31,7 +31,7 @@ export default {
 			if (mentionedMember && message.author.id === mentionedMember.id) return true
 		}
 
-		if (!message.guild.me.permissions.has('KickMembers')) return message.channel.send({ content: 'I do not have permission to kick members from this server. I require \`KICK_MEMBERS\` permission.' })
+		if (!message.guild.members.me.permissions.has('KickMembers')) return message.channel.send({ content: 'I do not have permission to kick members from this server. I require \`KICK_MEMBERS\` permission.' })
 		if (permissionCheck()) return message.react('❌')
 
 		if (checkNum(memberToKick, 1, Infinity)) {
