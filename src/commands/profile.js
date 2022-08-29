@@ -18,7 +18,7 @@ export default {
 		const channels = await db.channels
 		const memberID = message.member.id
 		const data = await scouters.collection.findOne({ userID: memberID })
-		const botRole = message.guild.me.roles.cache.find(r => r.managed)
+		const botRole = message.guild.members.me.roles.cache.find(r => r.managed)
 		const memberRoles = message.member.roles.highest.position
 
 		const sendUserInfo = async (id = memberID, uData = { scoutTracker: scouters }) => {

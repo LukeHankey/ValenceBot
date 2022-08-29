@@ -74,7 +74,7 @@ export default {
 		if (!perms.admin) return message.channel.send(perms.errorA)
 
 		const checkAndGetID = (id) => {
-			if (checkNum(id, 0, Infinity) && id.length === 18) {
+			if (checkNum(id, 0, Infinity) && [18, 19].includes(id.length)) {
 				return { value: true, id }
 			} else if (message.mentions.has(id.slice(2, -1))) {
 				return { value: true, id: id.slice(2, -1) }

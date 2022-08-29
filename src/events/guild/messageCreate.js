@@ -48,7 +48,7 @@ export default async (client, message) => {
 			// Check for permissions
 			try {
 				console.log(`Bannned ${bannedMember.toString()}: ${message.content}`)
-				const perms = message.guild.me.permissions.has('BanMembers')
+				const perms = message.guild.members.me.permissions.has('BanMembers')
 				if (perms) {
 					await bannedMember.ban({ days: 7, reason: 'Bang bang I gotcha, I gotcha in my scope' })
 					const botLogsAdminChannel = message.guild.channels.cache.get('794608385106509824')
@@ -143,7 +143,7 @@ export default async (client, message) => {
 			const content = visContent.flat()
 			const slotOneIndex = content.findIndex(el => el.match(/slot/i))
 			const newContent = content.slice(slotOneIndex).map(el => {
-				const match = el.match(/<:[\w_]{1,14}:\d{1,18}>/g)
+				const match = el.match(/<:[\w_]{1,14}:\d{1,19}>/g)
 				if (match) {
 					el = el.trim().slice(match[0].length)
 					return `\t${el}`
