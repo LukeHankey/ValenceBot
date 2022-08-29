@@ -82,8 +82,8 @@ export default class Ticket {
 				}
 			]
 			newChannel = await this.interaction.guild.channels.create(
-				`${this.isApplication() ? 'Application' : 'Ticket'} by ${this.interaction.member.displayName}`,
 				{
+					name: `${this.isApplication() ? 'Application' : 'Ticket'} by ${this.interaction.member.displayName}`,
 					parent: this.interaction.channel.parentId,
 					reason: !this.isApplication() ? 'Ticket for report.' : 'Application',
 					permissionOverwrites: this.isApplication() ? permissionOverwrites.slice(1) : permissionOverwrites
