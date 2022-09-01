@@ -11,6 +11,10 @@ export const commands = async (interaction, db, data) => {
 	const mR = new Permissions('modRole', commandDB, interaction)
 	const owner = new Permissions('owner', commandDB, interaction)
 
+	if (mR._role === undefined) {
+		console.log(mR)
+		console.log(interaction)
+	}
 	const perms = {
 		owner: owner.botOwner(),
 		admin: interaction.member.roles.cache.has(aR.memberRole()[0]) || interaction.member.roles.cache.has(aR.roleID) || interaction.member.id === interaction.channel.guild.ownerId,
