@@ -3,6 +3,7 @@ import { EmbedBuilder } from 'discord.js'
 import Color from './colors.js'
 import { nEmbed } from './functions.js'
 import ms from 'pretty-ms'
+import { match } from 'assert'
 
 class Permissions {
 	constructor (name, db, msg) {
@@ -18,7 +19,9 @@ class Permissions {
 	// eslint-disable-next-line getter-return
 	get roleId () {
 		if (this.db?.roles[this.name]) {
-			return this.db?.roles[this.name].slice(3, 21)
+			console.log(this.db?.roles[this.name])
+			console.log(this.db?.roles[this.name].length)
+			return this.db?.roles[this.name].match(/\d{18,19}/)[0]
 		}
 	}
 
