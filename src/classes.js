@@ -3,7 +3,6 @@ import { EmbedBuilder } from 'discord.js'
 import Color from './colors.js'
 import { nEmbed } from './functions.js'
 import ms from 'pretty-ms'
-import { match } from 'assert'
 
 class Permissions {
 	constructor (name, db, msg) {
