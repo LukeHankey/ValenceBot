@@ -1,11 +1,10 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-octal */
 import { MongoCollection } from '../../DataBase.js'
-import { Formatters } from 'discord.js'
+import { codeBlock } from 'discord.js'
 import { skullTimer, otherTimer, updateStockTables, scout, vScout, classVars, addedRoles, removedRoles, removeInactives } from '../../dsf/index.js'
 import { sendFact, updateRoles } from '../../valence/index.js'
 import cron from 'node-cron'
-import os from 'os'
 
 const db = new MongoCollection('Settings')
 const users = new MongoCollection('Users')
@@ -46,7 +45,7 @@ export default async client => {
 		if (!data) return
 		const valenceChannels = await db.collection.findOne({ _id: '472448603642920973' }, { projection: { channels: 1 } })
 		const valenceAdminChannel = client.channels.cache.get(valenceChannels.channels.adminChannel)
-		const messageSend = await valenceAdminChannel.send({ content: `${Formatters.codeBlock(formatTemplate(data))}` })
+		const messageSend = await valenceAdminChannel.send({ content: `${codeBlock(formatTemplate(data))}` })
 		await messageSend.react('✅')
 		await messageSend.react('❌')
 		await messageSend.react('📝')

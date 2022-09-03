@@ -1,4 +1,4 @@
-import { EmbedBuilder, Formatters } from 'discord.js'
+import { EmbedBuilder, codeBlock } from 'discord.js'
 import { checkNum, splitMessage } from '../functions.js'
 import { MongoCollection } from '../DataBase.js'
 const randomColor = Math.floor(Math.random() * 16777215).toString(16)
@@ -98,7 +98,7 @@ export default {
 				await vFactsColl.collection.find({ }).sort({ number: 1 })
 					.forEach(x => list.push(`${x.number}. ${x.Message}\n`))
 				const split = splitMessage(list.join(''))
-				split.forEach(content => message.channel.send({ content: Formatters.codeBlock(content) }))
+				split.forEach(content => message.channel.send({ content: codeBlock(content) }))
 			} else {
 				message.channel.send(perms.errorM)
 			}

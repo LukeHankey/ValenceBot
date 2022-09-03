@@ -1,5 +1,5 @@
 import { ScouterCheck } from '../../classes.js'
-import { Formatters } from 'discord.js'
+import { codeBlock } from 'discord.js'
 import { splitMessage } from '../../functions.js'
 const scout = new ScouterCheck('Scouter')
 const vScout = new ScouterCheck('Verified Scouter')
@@ -61,7 +61,7 @@ const removeInactives = async (name, db, scoutTracker) => {
 	})
 	if (allItems.length) {
 		const split = splitMessage(`${allItems.join('\n')}`)
-		return split.forEach(async content => channels.logs.send(`${removed.length} profiles removed.\n${Formatters.codeBlock(content)}`))
+		return split.forEach(async content => channels.logs.send(`${removed.length} profiles removed.\n${codeBlock(content)}`))
 	}
 }
 

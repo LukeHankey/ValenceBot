@@ -1,5 +1,5 @@
 import { inspect } from 'util'
-import { Formatters } from 'discord.js'
+import { codeBlock } from 'discord.js'
 import { splitMessage } from '../functions.js'
 /**
  * 668330890790699079 - Valence Bot Server
@@ -28,7 +28,7 @@ export default {
 					evalCode = inspect(evalCode)
 				}
 				const split = splitMessage(evalCode)
-				return split.forEach(content => message.channel.send({ content: Formatters.codeBlock(content) }))
+				return split.forEach(content => message.channel.send({ content: codeBlock(content) }))
 			} catch (error) {
 				return message.channel.send({ content: 'Error:\n' + error })
 			}
