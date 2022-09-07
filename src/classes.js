@@ -18,8 +18,6 @@ class Permissions {
 	// eslint-disable-next-line getter-return
 	get roleId () {
 		if (this.db?.roles[this.name]) {
-			console.log(this.db?.roles[this.name])
-			console.log(this.db?.roles[this.name].length)
 			return this.db?.roles[this.name].match(/\d{18,19}/)[0]
 		}
 	}

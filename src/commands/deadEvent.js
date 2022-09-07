@@ -14,8 +14,8 @@ export default {
 		await interaction.deferReply({ ephemeral: true })
 		if ([data.merchChannel.channelID, data.merchChannel.otherChannelID].includes(interaction.channel.id)) {
 			try {
-				const dsfServerErrorChannel = await client.channels.cache.get('884076361940078682')
-				const message = interaction.channel.messages.cache.get(interaction.targetId)
+				const dsfServerErrorChannel = client.channels.cache.get('884076361940078682')
+				const message = await interaction.channel.messages.fetch(interaction.targetId)
 				// 1st safeguard to check the cache.
 				if (message.reactions.cache.has('☠️')) return await interaction.editReply({ content: 'This call is already marked as dead.' })
 
