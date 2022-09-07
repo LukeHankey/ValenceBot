@@ -22,11 +22,15 @@ export default async (client, guild) => {
 		{ forceServerObjectId: true }
 	)
 
-	client.channels.cache.get('731997087721586698').send(`The bot has been added to **${guild.name}**. The bot is in a total of ${client.guilds.cache.size} servers. 
+	const owner = await guild.fetchOwner()
+
+	client.channels.cache.get('731997087721586698').send({
+		content: `The bot has been added to **${guild.name}**. The bot is in a total of ${client.guilds.cache.size} servers. 
     \n\`\`\`diff\n
 + Server name: ${guild.name}
 + Server ID: ${guild.id}
-+ Owner: ${await guild.fetchOwner().nickname ?? await guild.fetchOwner().user.username}
++ Owner: ${owner?.user.username}
 + Channel count: ${guild.channels.cache.size}
-+ Member count: ${guild.memberCount}\`\`\``)
++ Member count: ${guild.memberCount}\`\`\``
+	})
 }
