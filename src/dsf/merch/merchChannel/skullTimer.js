@@ -32,7 +32,6 @@ export const skullTimer = (message, db) => {
 									const moreThanOnce = messages.filter(obj => (obj.userID === rem.id) && (obj.messageID !== messageID)).map(m => m.userID)
 									if (moreThanOnce.includes(rem.id)) continue
 									const leftOverMember = await message.guild.members.fetch(rem.id)
-									console.log(leftOverMember.id, leftOverMember.displayName)
 									console.log(`Removing remenant member: ${leftOverMember?.displayName} from channel overrides.`)
 									const userToRemove = merchChannelID.permissionOverwrites.cache.get(rem.id)
 									userToRemove.delete()

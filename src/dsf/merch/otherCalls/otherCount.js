@@ -21,7 +21,7 @@ export const addOtherCount = async (client, message, db, scouters) => {
 		const timestamp = message.createdAt.toString().split(' ').slice(0, 5).join(' ')
 
 		const buttonSelection = new ActionRowBuilder()
-			.addComponents(
+			.addComponents([
 				new ButtonBuilder()
 					.setCustomId(`DM ${userN.displayName}`)
 					.setLabel(`DM ${userN.displayName}`)
@@ -47,7 +47,7 @@ export const addOtherCount = async (client, message, db, scouters) => {
 					.setLabel('Clear Buttons')
 					.setStyle(ButtonStyle.Danger)
 					.setEmoji({ name: '❌' })
-			)
+			])
 
 		if (!findMessage) {
 			if (!otherCalls.test(message.content) || !arrIncludesString(disallowedWords, message.content) || !alreadyCalled(message, otherMessages)) {

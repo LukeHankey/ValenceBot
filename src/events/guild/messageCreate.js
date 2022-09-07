@@ -27,10 +27,10 @@ export default async (client, message) => {
 			.setTitle('New DM Recieved')
 			.setDescription(`${dmPerson.tag} sent me a DM.`)
 			.setColor(Color.blueDark)
-			.addFields(
+			.addFields([
 				{ name: 'User ID', value: `${dmPerson.id}`, inline: false },
 				{ name: 'Message contents', value: `${dmMsg.join('\n')}` }
-			)
+			])
 			.setTimestamp()
 
 		return client.channels.cache.get('788525524782940187').send({ embeds: [embed] })
@@ -42,12 +42,13 @@ export default async (client, message) => {
 
 		// eslint-disable-next-line no-useless-escape
 		const scamLinkRegex = /((?!.*discord)(?=.*\b(d\w{5,8}[dcl]){1}[-\./]?(give|gift|nitro))\b.*)/gi
-		const scamWordMatchRegex = /((.*? )?(discord|nitro|free|@everyone|steam)){3}/gi
+		const scamWordMatchRegex = /((.*? )?(nitro|free|@everyone|steam)){3}/gi
 		if (scamLinkRegex.test(message.content) || scamWordMatchRegex.test(message.content)) {
 			const bannedMember = message.member
 			// Check for permissions
 			try {
-				const perms = message.guild.me.permissions.has('BanMembers')
+				console.log(`Bannned ${bannedMember.toString()}: ${message.content}`)
+				const perms = message.guild.members.me.permissions.has('BanMembers')
 				if (perms) {
 					await bannedMember.ban({ days: 7, reason: 'Bang bang I gotcha, I gotcha in my scope' })
 					const botLogsAdminChannel = message.guild.channels.cache.get('794608385106509824')
@@ -55,13 +56,13 @@ export default async (client, message) => {
 						.setTitle(`${bannedMember.displayName} has been banned!`)
 						.setColor(Color.orange)
 						.setDescription(`Potentially dangerous content. Please don't click on or go to any links that you don't know!\n\n> ${message.content}`)
-						.addFields(
+						.addFields([
 							{ name: 'User ID', value: bannedMember.id, inline: true },
 							{ name: 'Status', value: 'Banned', inline: true }
-						)
+						])
 						.setTimestamp()
 					const banButtons = new ActionRowBuilder()
-						.addComponents(
+						.addComponents([
 							new ButtonBuilder()
 								.setCustomId('Unban')
 								.setLabel('Unban')
@@ -72,16 +73,16 @@ export default async (client, message) => {
 								.setLabel('Clear Buttons')
 								.setStyle(ButtonStyle.Success)
 								.setEmoji({ name: '✅' })
-						)
+						])
 
 					const banCase = await botLogsAdminChannel.send({ embeds: [banEmbed], components: [banButtons] })
 					const banCaseButton = new ActionRowBuilder()
-						.addComponents(
+						.addComponents([
 							new ButtonBuilder()
 								.setLabel('Ban Case')
 								.setStyle(ButtonStyle.Link)
 								.setURL(banCase.url)
-						)
+						])
 
 					const bChannel = message.guild.channels.cache.get('624655664920395786')
 					return await bChannel.send({ content: `Banned: ${bannedMember.displayName} - ${bannedMember.id} -- Posting a scam link. Bang bang I gotcha, I gotcha in my scope.`, components: [banCaseButton] })
@@ -142,7 +143,7 @@ export default async (client, message) => {
 			const content = visContent.flat()
 			const slotOneIndex = content.findIndex(el => el.match(/slot/i))
 			const newContent = content.slice(slotOneIndex).map(el => {
-				const match = el.match(/<:[\w_]{1,14}:\d{1,18}>/g)
+				const match = el.match(/<:[\w_]{1,14}:\d{1,19}>/g)
 				if (match) {
 					el = el.trim().slice(match[0].length)
 					return `\t${el}`
@@ -157,7 +158,10 @@ export default async (client, message) => {
 					const c = g.channels.cache.get(channel)
 					if (!c) continue
 
-					const usersWithSameChannel = visCache.map(o => { if (o.channel === c.id) return `<@!${o.user}>` }).filter(Boolean)
+					const usersWithSameChannel = visCache.map(o => {
+						if (o.channel !== c.id) return null
+						return `<@!${o.user}>`
+					}).filter(Boolean)
 					await c.send({ content: `${usersWithSameChannel.join(', ')}\nSource: Vis Wax Server | <https://discord.gg/wv9Ecs4>\n${newContent.join('\n')}` })
 				}
 			}

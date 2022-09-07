@@ -14,7 +14,7 @@ export default {
 		const rName = roleName.join(' ').trim()
 		let rNameMulti = rName.split(',')
 		rNameMulti = rNameMulti.map(x => x.trim().toLowerCase())
-		const botRole = message.guild.me.roles.cache.find(r => r.managed)
+		const botRole = message.guild.members.me.roles.cache.find(r => r.managed)
 		const highBotRoleID = botRole.id
 
 		const role = rNameMulti.map(rN => {
@@ -100,7 +100,7 @@ export default {
 		wrong.length && (!added.length && !removed.length)
 			? message.channel.send({ embeds: [embed.setColor(Color.redLight).addFields(wrongAdd).setDescription('Can\'t find the role name? Use `;sa roles` for a full list of self-assignable role names.')] })
 			: wrong.length
-				? message.channel.send({ embeds: [embed.addFields(...fieldsPlus).setDescription('Can\'t find the role name? Use `;sa roles` for a full list of self-assignable role names.')] })
-				: message.channel.send({ embeds: [embed.addFields(...fields)] })
+				? message.channel.send({ embeds: [embed.addFields(fieldsPlus).setDescription('Can\'t find the role name? Use `;sa roles` for a full list of self-assignable role names.')] })
+				: message.channel.send({ embeds: [embed.addFields(fields)] })
 	}
 }

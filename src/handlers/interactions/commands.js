@@ -28,7 +28,6 @@ export const commands = async (interaction, db, data) => {
 			await command.slash(interaction, perms, db)
 		}
 	} catch (error) {
-		console.log(error)
 		channels.errors.send(error)
 		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
 	}

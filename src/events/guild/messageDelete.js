@@ -26,12 +26,13 @@ export default async (client, message) => {
 	const dsfServerChannel = await client.channels.cache.get('884076361940078682')
 
 	const buttonSelection = new ActionRowBuilder()
-		.addComponents(
+		.addComponents([
 			new ButtonBuilder()
 				.setCustomId('Remove Merch Count')
 				.setLabel('Remove Merch Count')
 				.setStyle(ButtonStyle.Success)
-				.setEmoji({ name: '✅' }))
+				.setEmoji({ name: '✅' })
+		])
 
 	const sendAndUpdate = async (webhook, embed, data) => {
 		const sentChannel = await webhook.send({ embeds: [embed], components: [buttonSelection] })
@@ -61,7 +62,7 @@ export default async (client, message) => {
 		const embed = new EmbedBuilder()
 			.setTitle('Message Deleted')
 			.setColor(Color.redDark)
-			.addFields(
+			.addFields([
 				{ name: 'Message ID:', value: `${document.messageID}`, inline: true },
 				{ name: 'Message Content:', value: `${document.content}`, inline: true },
 				{ name: '\u200B', value: '\u200B', inline: true },
@@ -69,7 +70,7 @@ export default async (client, message) => {
 				{ name: 'Author Tag:', value: `<@!${document.userID}>`, inline: true },
 				{ name: '\u200B', value: '\u200B', inline: true },
 				{ name: 'Message Timestamp:', value: `${new Date(document.time).toString().split(' ').slice(0, -4).join(' ')}`, inline: false }
-			)
+			])
 		return embed
 	}
 

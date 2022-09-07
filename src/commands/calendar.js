@@ -263,9 +263,9 @@ export default {
 					await message.edit({ embeds: [calEmbed] })
 					await interaction.reply({ content: 'The calendar has been updated with the new event.', ephemeral: true })
 				} else {
-					calEmbed.addFields(
+					calEmbed.addFields([
 						{ name: date, value: `Event: ${title}\nTime: ${time}\n[Announcement](${announcement})\nHost: ${member}\nRole: ${newRole}` }
-					)
+					])
 
 					// Edit the embed with the new event
 					await message.edit({ embeds: [calEmbed] })
@@ -302,6 +302,9 @@ export default {
 				await eventMessage.react('📌')
 				await eventMessage.react('🛑')
 			} catch (err) {
+				if (err.name === 'TypeError') {
+					return await interaction.followUp({ content: 'Error: Unknown message from Announcement link.', ephemeral: true })
+				}
 				channels.errors.send(err)
 			}
 		}
@@ -352,7 +355,6 @@ export default {
 						else return undefined
 					})
 
-					console.log(valueToReplace)
 					const valueName = valueToReplace.split(':')[0]
 
 					calEmbed.spliceFields(position - 1, 1, {
@@ -391,7 +393,7 @@ export default {
 			for (const item of logValues) {
 				const items = item.split('\n')
 				const title = items[1].slice(7)
-				const roleId = items[5].slice(9, 27)
+				const roleId = items[5].match(/(\d+)/)[0]
 				const role = message.guild.roles.cache.get(roleId) ?? await message.guild.roles.fetch(roleId)
 				const eventTag = role instanceof Collection ? role.first().name.slice(title.length + 2) : role.name.slice(title.length + 2)
 

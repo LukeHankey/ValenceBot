@@ -82,8 +82,8 @@ export default class Ticket {
 				}
 			]
 			newChannel = await this.interaction.guild.channels.create(
-				`${this.isApplication() ? 'Application' : 'Ticket'} by ${this.interaction.member.displayName}`,
 				{
+					name: `${this.isApplication() ? 'Application' : 'Ticket'} by ${this.interaction.member.displayName}`,
 					parent: this.interaction.channel.parentId,
 					reason: !this.isApplication() ? 'Ticket for report.' : 'Application',
 					permissionOverwrites: this.isApplication() ? permissionOverwrites.slice(1) : permissionOverwrites
@@ -102,13 +102,13 @@ export default class Ticket {
 
 	async _sendInitialResponse (channel, memberId) {
 		const resolveButton = new ActionRowBuilder()
-			.addComponents(
+			.addComponents([
 				new ButtonBuilder()
 					.setCustomId('Resolve Issue')
 					.setLabel('Resolve Issue')
 					.setStyle(ButtonStyle.Success)
 					.setEmoji({ name: '❗' })
-			)
+			])
 
 		if (!this.isApplication()) {
 			channel.send({ content: `Hello <@!${memberId}>, a member of <@&${this.roleId}> will be with you shortly.`, components: [resolveButton] })

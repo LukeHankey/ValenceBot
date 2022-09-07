@@ -18,7 +18,7 @@ export default {
 		const channels = await db.channels
 		const memberID = message.member.id
 		const data = await scouters.collection.findOne({ userID: memberID })
-		const botRole = message.guild.me.roles.cache.find(r => r.managed)
+		const botRole = message.guild.members.me.roles.cache.find(r => r.managed)
 		const memberRoles = message.member.roles.highest.position
 
 		const sendUserInfo = async (id = memberID, uData = { scoutTracker: scouters }) => {
@@ -54,7 +54,7 @@ export default {
 					// Think about if there is anything else to view in the user profile stats
 				)
 			}
-			return message.channel.send({ embeds: [embed.addFields(...fields)] })
+			return message.channel.send({ embeds: [embed.addFields(fields)] })
 		}
 
 		const sendRoleInfo = async (id, rData = { scoutTracker: scouters }) => {
@@ -87,7 +87,7 @@ export default {
 			for (const values of newArr) {
 				fields.push({ name: `${values.author}`, value: `Scout count: ${values.count}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true })
 			}
-			return message.channel.send({ embeds: [embed.addFields(...fields)] })
+			return message.channel.send({ embeds: [embed.addFields(fields)] })
 		}
 
 		if (!args.length) {

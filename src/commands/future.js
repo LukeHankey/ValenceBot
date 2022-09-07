@@ -69,7 +69,7 @@ export default {
 				const embedMaker = (num, dates) => {
 					return nEmbed(dates, 'The next 31 days of stock for the Travelling Merchant.', Color.cream, null, client.user.displayAvatarURL())
 						.setFooter({ text: `${botUser.nickname || client.user.username} created by Luke_#1838`, iconURL: client.user.displayAvatarURL() })
-						.addFields(...num)
+						.addFields(num)
 				}
 
 				const futureChannel = client.channels.cache.get(futureStock.channelID)

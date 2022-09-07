@@ -1,6 +1,6 @@
 import { MongoCollection } from '../../DataBase.js'
 import { ButtonStyle, EmbedBuilder } from 'discord.js'
-import { ActionRowBuilder, ButtonBuilder, UnsafeModalBuilder } from '@discordjs/builders'
+import { ActionRowBuilder, ButtonBuilder, ModalBuilder } from '@discordjs/builders'
 import Ticket from '../../ticket.js'
 import Color from '../../colors.js'
 import ms from 'pretty-ms'
@@ -24,7 +24,7 @@ export const modals = async (interaction, db, data) => {
 	}
 
 	const sendUserInfo = async (id, uData) => {
-		const botRole = interaction.guild.me.roles.cache.find(r => r.managed)
+		const botRole = interaction.guild.members.me.roles.cache.find(r => r.managed)
 		const fetchedMember = await interaction.guild.members.fetch(id)
 		const embed = new EmbedBuilder()
 			.setTitle(`Member Profile - ${id}`)
@@ -54,7 +54,7 @@ export const modals = async (interaction, db, data) => {
 				// Think about if there is anything else to view in the user profile stats
 			)
 		}
-		return embed.addFields(...fields)
+		return embed.addFields(fields)
 	}
 
 	try {
@@ -62,18 +62,18 @@ export const modals = async (interaction, db, data) => {
 		case 'createApplication': {
 			const applicationFields = interaction.fields.getTextInputValue('application')
 			const parsedData = validateModalApplication(applicationFields)
-			const components = parsedData.components.map((c, i) => ({ ...c, type: 4, custom_id: `${c.label}_${i}` }))
+			const components = parsedData.components.map((c, i) => (new ActionRowBuilder({ ...c, type: 4, custom_id: `${c.label}_${i}` })))
 
-			const newModal = new UnsafeModalBuilder({ components, custom_id: 'startApplication', title: parsedData.title })
+			const newModal = new ModalBuilder({ components, custom_id: 'startApplication', title: parsedData.title }).toJSON()
 
 			const startApplication = new ActionRowBuilder()
-				.addComponents(
+				.addComponents([
 					new ButtonBuilder()
 						.setCustomId('Start Application')
 						.setLabel('Start Application')
 						.setStyle(ButtonStyle.Primary)
 						.setEmoji({ name: '📜' })
-				)
+				])
 
 			await interaction.reply({ content: 'Your application is all set up! Click the `Start Application` button to view.', ephemeral: true })
 
@@ -81,7 +81,7 @@ export const modals = async (interaction, db, data) => {
 
 			await db.collection.findOneAndUpdate({ _id: interaction.guild.id, 'ticket.messageId': interaction.message.id }, {
 				$set: {
-					'ticket.$.applicationModal': newModal.toJSON()
+					'ticket.$.applicationModal': newModal
 				}
 			})
 		}

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import cron from 'node-cron'
 import { Client, Collection } from 'discord.js'
 import { DataBase, MongoCollection } from './DataBase.js'
@@ -15,6 +16,7 @@ process.on('unhandledRejection', (reason, p) => {
 })
 
 client.login(process.env.NODE_ENV === 'DEV' ? process.env.DEVELOPMENT_BOT : process.env.BOT_TOKEN)
+
 const __ = new DataBase()
 const db = new MongoCollection('Users')
 

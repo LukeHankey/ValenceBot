@@ -1,8 +1,7 @@
 import { MongoCollection } from '../../DataBase.js'
-import { ActionRowBuilder, SelectMenuBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputStyle, ChannelType } from 'discord.js'
+import { ActionRowBuilder, SelectMenuBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputStyle, ChannelType, TextInputBuilder } from 'discord.js'
 import Color from '../../colors.js'
 import Ticket from '../../ticket.js'
-import { TextInputBuilder, UnsafeTextInputBuilder, UnsafeButtonBuilder } from '@discordjs/builders'
 import camelCase from 'camelcase'
 
 class ButtonWarning {
@@ -45,7 +44,6 @@ class ButtonWarning {
 		const profile = await this.scouters.collection.findOne({ userID: userId })
 		if (profile === null) {
 			const member = await this.interaction.guild.members.fetch(userId)
-			console.log(member)
 			const message = this.interaction.message
 			const x = await this.scouters.collection.insertOne({
 				userID: userId,
@@ -132,6 +130,7 @@ class ButtonWarning {
 			if (k === 'content') {
 				data[k] = v.split(':')[1].trim()
 			} else {
+				// eslint-disable-next-line no-unused-vars
 				const [_, ...rest] = v.split(': ')
 				data[k] = rest.join(':')
 			}
@@ -157,7 +156,7 @@ export const buttons = async (interaction, db, data, cache) => {
 	const channels = await db.channels
 	const scouters = new MongoCollection('ScoutTracker')
 	const buttonLogger = new ButtonWarning(interaction)
-	const generalChannel = interaction.guild.channels.cache.find(c => c.name === 'general')
+	const generalChannel = interaction.guild.channels.cache.find(c => c.id === '696375576881004655')
 	let [userId, user, content, timestamp] = interaction.message.content.split('\n').slice(3)
 	if (user) user = user.split(' ').slice(2).join(' ')
 	if (userId) userId = userId.split(' ').slice(3)[0].slice(3, -1)
@@ -172,11 +171,11 @@ export const buttons = async (interaction, db, data, cache) => {
 		 */
 		case `DM ${user}`: {
 			const menu = new ActionRowBuilder()
-				.addComponents(
+				.addComponents([
 					new SelectMenuBuilder()
 						.setCustomId(`DM ${user}`)
 						.setPlaceholder('Nothing selected')
-						.addOptions(
+						.addOptions([
 							{
 								label: 'Yes, this was a password.',
 								description: 'Select this option to automatically remove it from our logs.',
@@ -186,8 +185,8 @@ export const buttons = async (interaction, db, data, cache) => {
 								label: 'No, this was not a password.',
 								value: 'no'
 							}
-						)
-				)
+						])
+				])
 
 			timestamp = timestamp.split(' ').slice(2).join(' ').slice(0, -3)
 			const serverName = interaction.member.guild.name
@@ -202,7 +201,7 @@ export const buttons = async (interaction, db, data, cache) => {
 			 * components[0].components[0]: The first Button
 			 */
 			const row = new ActionRowBuilder()
-				.addComponents(new UnsafeButtonBuilder(interaction.message.components[0].components[0].data).setEmoji({ name: '📩' }).setLabel('DM sent...').setDisabled().setStyle(ButtonStyle.Primary))
+				.addComponents([new ButtonBuilder(interaction.message.components[0].components[0].data).setEmoji({ name: '📩' }).setLabel('DM sent...').setDisabled().setStyle(ButtonStyle.Primary)])
 			await interaction.update({ components: [row] })
 			console.log(`Action: Password Button\nBy: ${interaction.user.username}\nUser: ${fetchUser.user.username}`)
 			cache.set(interaction.message.id, { ...fetchUser.user })
@@ -212,14 +211,14 @@ export const buttons = async (interaction, db, data, cache) => {
 		case 'Clear Buttons':
 			if (interaction.message.embeds.length) {
 				const embed = interaction.message.embeds[0]
-				const updatedEmbed = new EmbedBuilder(embed)
+				const updatedEmbed = new EmbedBuilder(embed.data)
 					.setColor(Color.greenLight)
 				return await interaction.update({ components: [], embeds: [updatedEmbed] })
 			}
 			await interaction.update({ components: [] })
 			break
 		case 'Show How To React': {
-			const reactMessage = `<@!${userId}> Right Click the Message > Apps > Mark event as dead.\nFor more information, check the pins in <#${data.merchChannel.channelID}>.\n(If you're on mobile, let us know here as apps are currently not available on mobile.).`
+			const reactMessage = `<@!${userId}> Right Click / Long Press the Message > Apps > Mark event as dead.\nFor more information, check the pins in <#${data.merchChannel.channelID}>.`
 
 			await generalChannel.send({ content: reactMessage })
 			await interaction.update({ components: [] })
@@ -314,11 +313,13 @@ export const buttons = async (interaction, db, data, cache) => {
 			} else {
 				interaction.reply({ content: `Your ticket has been created. Please wait while the <@&${ticket.roleId}> review.`, ephemeral: true })
 			}
-			await buttonLogger.upload(userId)
+			if (interaction.guild.id === '420803245758480405') {
+				await buttonLogger.upload(userId)
+			}
 		}
 			break
 		case 'Resolve Issue': {
-			const buttonDisabled = new ActionRowBuilder().addComponents(new ButtonBuilder(interaction.message.components[0].components[0].data).setEmoji({ name: '✅' }).setLabel('Issue resolved').setDisabled(true))
+			const buttonDisabled = new ActionRowBuilder().addComponents([new ButtonBuilder(interaction.message.components[0].components[0].data).setEmoji({ name: '✅' }).setLabel('Issue resolved').setDisabled(true)])
 			await interaction.update({ components: [buttonDisabled], fetchReply: true })
 			await interaction.followUp({ content: `Ticket closed by <@!${interaction.member.id}>.` })
 			if (interaction.channel.type === ChannelType.GuildPrivateThread) {
@@ -346,13 +347,13 @@ export const buttons = async (interaction, db, data, cache) => {
 			const banEmbed = interaction.message.embeds[0]
 			const userId = banEmbed.fields.filter(field => field.name === 'User ID')[0].value
 			const banStatus = banEmbed.fields.filter(field => field.name === 'Status')[0]
-			const updatedBanEmbed = new EmbedBuilder(banEmbed)
+			const updatedBanEmbed = new EmbedBuilder(banEmbed.data)
 				.setColor(Color.greenLight)
 				.spliceFields(banEmbed.fields.indexOf(banStatus), 1, Object.assign(banStatus, { value: 'Unbanned' }))
 			try {
 				await interaction.guild.bans.remove(userId)
 			} catch (err) {
-				const updateErrorBanEmbed = new EmbedBuilder(banEmbed)
+				const updateErrorBanEmbed = new EmbedBuilder(banEmbed.data)
 					.setColor(Color.greenLight)
 					.spliceFields(banEmbed.fields.indexOf(banStatus), 1, Object.assign(banStatus, { value: err.message }))
 				interaction.reply({ content: `Unable to unban user: \`${err.message}\`.`, ephemeral: true })
@@ -407,10 +408,10 @@ export const buttons = async (interaction, db, data, cache) => {
 				.setStyle(TextInputStyle.Paragraph)
 				.setValue(JSON.stringify(modalExample, null, 4))
 
-			const firstActionRow = new ActionRowBuilder().addComponents(instructions)
-			const secondActionRow = new ActionRowBuilder().addComponents(exampleApplication)
+			const firstActionRow = new ActionRowBuilder().addComponents([instructions])
+			const secondActionRow = new ActionRowBuilder().addComponents([exampleApplication])
 
-			applicationModal.addComponents(firstActionRow, secondActionRow)
+			applicationModal.addComponents([firstActionRow, secondActionRow])
 			await interaction.showModal(applicationModal)
 		}
 			break
@@ -425,12 +426,12 @@ export const buttons = async (interaction, db, data, cache) => {
 
 			const actionRows = applicationData.components.map(c => {
 				return new ActionRowBuilder()
-					.addComponents(
-						new UnsafeTextInputBuilder(c)
-					)
+					.addComponents([
+						new TextInputBuilder(c)
+					])
 			})
 
-			applicationModal.addComponents(...actionRows)
+			applicationModal.addComponents(actionRows)
 			await interaction.showModal(applicationModal)
 		}
 			break
@@ -439,6 +440,7 @@ export const buttons = async (interaction, db, data, cache) => {
 			break
 		case 'Read The Pins':
 			await generalChannel.send({ content: `<@!${userId}>, invalid call format. Read the pins!` })
+			await interaction.update({ components: [] })
 			await buttonLogger.upload(userId)
 		}
 	} catch (err) {
