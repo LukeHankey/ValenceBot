@@ -8,7 +8,9 @@ export const otherTimer = (message, db) => {
 		for await (const { messageID, time } of otherMessages) {
 			try {
 				if (Date.now() - time > 600_000) {
+					const fetched = await message.channel.messages.fetch(messageID)
 					await db.collection.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.otherMessages': { messageID } } })
+					await fetched.react('☠️')
 				}
 			} catch (e) {
 				if (e.code === 10008) {
