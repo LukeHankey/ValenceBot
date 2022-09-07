@@ -127,34 +127,34 @@ export default {
 					return message.channel.send({ content: 'There are no messages stored that have reactions added.' })
 				}
 
-				return message.channel.send({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` })] })
-					.then(async msg => {
-						await msg.react('◀️')
-						await msg.react('▶️')
+				try {
+					const msg = await message.channel.send({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` })] })
+					await msg.react('◀️')
+					await msg.react('▶️')
 
-						const react = (reaction, user) => ['◀️', '▶️'].includes(reaction.emoji.name) && user.id === message.author.id
-						const collect = msg.createReactionCollector(react)
+					const react = (reaction, user) => ['◀️', '▶️'].includes(reaction.emoji.name) && user.id === message.author.id
+					const collect = msg.createReactionCollector(react)
 
-						collect.on('collect', (r, u) => {
-							if (r.emoji.name === '▶️') {
-								if (page < embeds.length) {
-									msg.reactions.resolve('▶️').users.remove(u.id)
-									page++
-									if (page === embeds.length) --page
-									msg.edit({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` })] })
-								}
-							} else if (r.emoji.name === '◀️') {
-								if (page !== 0) {
-									msg.reactions.resolve('◀️').users.remove(u.id)
-									--page
-									msg.edit({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` })] })
-								} else { msg.reactions.resolve('◀️').users.remove(u.id) }
+					collect.on('collect', (r, u) => {
+						if (u.bot) return
+						if (r.emoji.name === '▶️') {
+							if (page < embeds.length) {
+								msg.reactions.resolve('▶️').users.remove(u.id)
+								page++
+								if (page === embeds.length) --page
+								msg.edit({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` })] })
 							}
-						})
+						} else if (r.emoji.name === '◀️') {
+							if (page !== 0) {
+								msg.reactions.resolve('◀️').users.remove(u.id)
+								--page
+								msg.edit({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` })] })
+							} else { msg.reactions.resolve('◀️').users.remove(u.id) }
+						}
 					})
-					.catch(async err => {
-						channels.errors.send(err)
-					})
+				} catch (err) {
+					return channels.errors.send(err)
+				}
 			}
 			}
 			break

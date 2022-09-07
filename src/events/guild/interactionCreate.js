@@ -25,6 +25,7 @@ export default async (client, interaction) => {
 		}
 	} catch (err) {
 		const channels = await db.channels
+		console.log(err)
 		channels.errors.send(err)
 	}
 }
