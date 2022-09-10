@@ -48,13 +48,6 @@ const newDates = (days, hours, minutes, timer) => {
 const capitalise = (str) => {
 	return str.charAt(0).toUpperCase() + str.slice(1)
 }
-const removeMessage = async (message, reactMessage, database) => {
-	await database.updateOne({ _id: message.guild.id }, {
-		$pull: {
-			'merchChannel.spamProtection': { messageID: reactMessage.id }
-		}
-	})
-}
 const compressArray = (original) => {
 	const compressed = []
 	// make a copy of the input array
@@ -238,7 +231,6 @@ export {
 	nextDay,
 	newDates,
 	capitalise,
-	removeMessage,
 	compressArray,
 	randomNum,
 	removeEvents,
