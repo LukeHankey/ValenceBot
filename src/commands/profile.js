@@ -168,6 +168,7 @@ export default {
 								lastTimestampReadable: new Date(col.createdTimestamp),
 								count: 0,
 								game: 0,
+								active: 1,
 								otherCount: 0,
 								assigned: []
 							})
