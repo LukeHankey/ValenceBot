@@ -69,9 +69,9 @@ export const modals = async (interaction, db, data) => {
 			fields.push(
 				{
 					name: `${values.author}`,
-					value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nGame count: ${values.game}\nActive for: ${ms(
-						values.lastTimestamp - values.firstTimestamp
-					)}`,
+					value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nGame count: ${
+						values.game
+					}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`,
 					inline: true
 				},
 				{

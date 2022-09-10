@@ -48,7 +48,11 @@ export default {
 			case 'set':
 				args[2]
 					? db.collection
-						.findOneAndUpdate({ _id: message.guild.id }, { $set: { prefix: args[2] } }, { returnOriginal: true })
+						.findOneAndUpdate(
+							{ _id: message.guild.id },
+							{ $set: { prefix: args[2] } },
+							{ returnOriginal: true }
+						)
 						.then(async (r) => {
 							message.channel.send({
 								content: `Prefix has been changed from \`${r.value.prefix}\` to \`${args[2]}\``
@@ -162,7 +166,10 @@ export default {
 					dbChannels.send(
 						`<@${message.author.id}> changed the modRole in server: **${message.guild.name}**\n\`\`\`diff\n- ${found.value.roles.modRole}\n+ <@&${args[2]}>\`\`\``
 					)
-				} else if (roleName && message.guild.roles.cache.get(roleName.id).permissions.has(['KickMembers', 'BanMembers'])) {
+				} else if (
+					roleName &&
+							message.guild.roles.cache.get(roleName.id).permissions.has(['KickMembers', 'BanMembers'])
+				) {
 					// Setting role by name
 					const found = await db.collection.findOneAndUpdate(
 						{ _id: message.guild.id },
@@ -178,7 +185,9 @@ export default {
 					)
 				} else if (
 					message.mentions.roles.first() &&
-							message.guild.roles.cache.get(message.mentions.roles.first().id).permissions.has(['KickMembers', 'BanMembers'])
+							message.guild.roles.cache
+								.get(message.mentions.roles.first().id)
+								.permissions.has(['KickMembers', 'BanMembers'])
 				) {
 					// Setting role by mention
 					const found = await db.collection.findOneAndUpdate(
@@ -220,7 +229,11 @@ export default {
 				} else {
 					channelTag.push(args[2].slice(2, 20))
 				}
-				if (checkNum(args[2], 1, Infinity) && message.guild.channels.cache.has(args[2]) && message.guild.id !== args[2]) {
+				if (
+					checkNum(args[2], 1, Infinity) &&
+							message.guild.channels.cache.has(args[2]) &&
+							message.guild.id !== args[2]
+				) {
 					// Check by ID
 					const found = await db.collection.findOneAndUpdate(
 						{ _id: message.guild.id },
@@ -277,7 +290,11 @@ export default {
 				} else {
 					channelTag.push(args[2].slice(2, 20))
 				}
-				if (checkNum(args[2], 1, Infinity) && message.guild.channels.cache.has(args[2]) && message.guild.id !== args[2]) {
+				if (
+					checkNum(args[2], 1, Infinity) &&
+							message.guild.channels.cache.has(args[2]) &&
+							message.guild.id !== args[2]
+				) {
 					// Check by ID
 					const found = await db.collection.findOneAndUpdate(
 						{ _id: message.guild.id },
@@ -322,7 +339,11 @@ export default {
 				} else {
 					message.channel.send({
 						embeds: [
-							nEmbed('Permission Denied', 'You do not have permission to see the Admin Channel!', Color.redDark)
+							nEmbed(
+								'Permission Denied',
+								'You do not have permission to see the Admin Channel!',
+								Color.redDark
+							)
 						]
 					})
 				}
@@ -336,7 +357,11 @@ export default {
 				} else {
 					channelTag.push(args[2].slice(2, 20))
 				}
-				if (checkNum(args[2], 1, Infinity) && message.guild.channels.cache.has(args[2]) && message.guild.id !== args[2]) {
+				if (
+					checkNum(args[2], 1, Infinity) &&
+							message.guild.channels.cache.has(args[2]) &&
+							message.guild.id !== args[2]
+				) {
 					// Check by ID
 					const found = await db.collection.findOneAndUpdate(
 						{ _id: message.guild.id },
@@ -379,7 +404,11 @@ export default {
 				} else {
 					message.channel.send({
 						embeds: [
-							nEmbed('Permission Denied', 'You do not have permission to see the Admin Channel!', Color.redDark)
+							nEmbed(
+								'Permission Denied',
+								'You do not have permission to see the Admin Channel!',
+								Color.redDark
+							)
 						]
 					})
 				}

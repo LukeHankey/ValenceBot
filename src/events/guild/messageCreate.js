@@ -70,7 +70,11 @@ export default async (client, message) => {
 						])
 						.setTimestamp()
 					const banButtons = new ActionRowBuilder().addComponents([
-						new ButtonBuilder().setCustomId('Unban').setLabel('Unban').setStyle(ButtonStyle.Danger).setEmoji({ name: '🔓' }),
+						new ButtonBuilder()
+							.setCustomId('Unban')
+							.setLabel('Unban')
+							.setStyle(ButtonStyle.Danger)
+							.setEmoji({ name: '🔓' }),
 						new ButtonBuilder()
 							.setCustomId('Clear Buttons')
 							.setLabel('Clear Buttons')
@@ -152,7 +156,10 @@ export default async (client, message) => {
 					}
 				}
 			)
-			const { visCache, visContent } = await db.collection.findOne({ _id: 'Globals' }, { projection: { visCache: 1, visContent: 1 } })
+			const { visCache, visContent } = await db.collection.findOne(
+				{ _id: 'Globals' },
+				{ projection: { visCache: 1, visContent: 1 } }
+			)
 			const channels = new Set()
 			const guilds = new Set()
 			visCache.forEach((obj) => {
@@ -224,7 +231,8 @@ export default async (client, message) => {
 		const args = message.content.slice(commandDB.prefix.length).split(/ +/g)
 		const commandName = args.shift().toLowerCase()
 
-		const command = client.commands.get(commandName) || client.commands.find((cmd) => cmd.aliases && cmd.aliases.includes(commandName)) // Command object
+		const command =
+			client.commands.get(commandName) || client.commands.find((cmd) => cmd.aliases && cmd.aliases.includes(commandName)) // Command object
 
 		const aR = new Permissions('adminRole', commandDB, message)
 		const mR = new Permissions('modRole', commandDB, message)

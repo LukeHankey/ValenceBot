@@ -52,7 +52,11 @@ export default {
 		]
 
 		if (user) {
-			const embed = nEmbed(`DB Lookup - ${user.author} [${allData}]`, 'Lookup user info for DSF in the Scouter DataBase.', Color.gold)
+			const embed = nEmbed(
+				`DB Lookup - ${user.author} [${allData}]`,
+				'Lookup user info for DSF in the Scouter DataBase.',
+				Color.gold
+			)
 			return message.channel.send({ embeds: [embed.addFields(embedFields)] })
 		} else {
 			message.channel.send({ content: 'No profile found for this ID.' })

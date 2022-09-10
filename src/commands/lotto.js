@@ -198,7 +198,8 @@ export default {
 						default:
 							if (isNaN(parseInt(args[1]))) {
 								return message.channel.send({
-									content: 'Please make sure you give the amount as a number only, without any formatting.'
+									content:
+												'Please make sure you give the amount as a number only, without any formatting.'
 								})
 							} else if (!args[2]) {
 								message.channel.send({
@@ -333,7 +334,10 @@ export default {
 					if (perms.mod) {
 						const newSheet = args.slice(1).join(' ')
 						if (newSheet) {
-							await db.collection.findOneAndUpdate({ _id: message.guild.id }, { $set: { lottoSheet: newSheet } })
+							await db.collection.findOneAndUpdate(
+								{ _id: message.guild.id },
+								{ $set: { lottoSheet: newSheet } }
+							)
 							await message.react('✅')
 						} else {
 							const newName = await db.collection.findOne({ _id: message.guild.id })

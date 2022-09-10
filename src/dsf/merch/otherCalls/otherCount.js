@@ -48,7 +48,11 @@ export const addOtherCount = async (client, message, db, scouters) => {
 				.setLabel('Read The Pins')
 				.setStyle(ButtonStyle.Success)
 				.setEmoji({ name: '📌' }),
-			new ButtonBuilder().setCustomId('Timeout').setLabel('Timeout').setStyle(ButtonStyle.Secondary).setEmoji({ name: '⏲️' }),
+			new ButtonBuilder()
+				.setCustomId('Timeout')
+				.setLabel('Timeout')
+				.setStyle(ButtonStyle.Secondary)
+				.setEmoji({ name: '⏲️' }),
 			new ButtonBuilder()
 				.setCustomId('Clear Buttons')
 				.setLabel('Clear Buttons')

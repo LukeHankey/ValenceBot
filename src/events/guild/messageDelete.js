@@ -128,7 +128,9 @@ export default async (client, message) => {
 		if (checkDB === undefined) {
 			return console.log('Deleted message was not uploaded to the DataBase.')
 		} else {
-			const user = await message.guild.members.fetch(checkDB.userID).catch((err) => console.error('message delete own', err))
+			const user = await message.guild.members
+				.fetch(checkDB.userID)
+				.catch((err) => console.error('message delete own', err))
 
 			const embed = messageDeletion(checkDB)
 				.setDescription(`This message was deleted by ${executor.username} - remove merch count.`)

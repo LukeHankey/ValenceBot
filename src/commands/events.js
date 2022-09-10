@@ -29,7 +29,10 @@ export default {
 		),
 	slash: async (interaction, perms, db) => {
 		const channels = await db.channels
-		const data = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } })
+		const data = await db.collection.findOne(
+			{ _id: interaction.guild.id },
+			{ projection: { events: 1, channels: 1, calendarID: 1 } }
+		)
 		switch (interaction.options.getSubcommand()) {
 		case 'list':
 			try {
@@ -83,7 +86,10 @@ export default {
 	run: async (client, message, args, perms, db) => {
 		const channels = await db.channels
 		if (!perms.mod) return message.channel.send(perms.errorM)
-		const data = await db.collection.findOne({ _id: message.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } })
+		const data = await db.collection.findOne(
+			{ _id: message.guild.id },
+			{ projection: { events: 1, channels: 1, calendarID: 1 } }
+		)
 
 		switch (args[0]) {
 		case 'end':

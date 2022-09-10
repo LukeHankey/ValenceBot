@@ -22,7 +22,10 @@ export const getData = async (db) => {
 		}
 
 		newData.forEach(async (clanUser) => {
-			clanUser = renameKeys({ Clanmate: 'clanMate', ' Clan Rank': 'clanRank', ' Total XP': 'totalXP', ' Kills': 'kills' }, clanUser)
+			clanUser = renameKeys(
+				{ Clanmate: 'clanMate', ' Clan Rank': 'clanRank', ' Total XP': 'totalXP', ' Kills': 'kills' },
+				clanUser
+			)
 			clanUser.discord = ''
 			clanUser.discActive = false
 			clanUser.alt = false

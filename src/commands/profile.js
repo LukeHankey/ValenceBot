@@ -69,11 +69,11 @@ export default {
 				fields.push(
 					{
 						name: `${values.author}`,
-						value: `Merch count: ${values.count} ${oldScoutCheck() ? `(+${values.oldScout.count})` : ''}\nOther count: ${
-							values.otherCount
-						} ${oldScoutCheck() ? `(+${values.oldScout.otherCount})` : ''}\nGame count: ${values.game}\nActive for: ${ms(
-							values.lastTimestamp - values.firstTimestamp
-						)}`,
+						value: `Merch count: ${values.count} ${
+							oldScoutCheck() ? `(+${values.oldScout.count})` : ''
+						}\nOther count: ${values.otherCount} ${
+							oldScoutCheck() ? `(+${values.oldScout.otherCount})` : ''
+						}\nGame count: ${values.game}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`,
 						inline: true
 					},
 					{
@@ -254,7 +254,9 @@ export default {
 					case 'verified':
 						{
 							const oneMonth = 2.628e9
-							const verified = message.guild.roles.cache.find((r) => r.name.toLowerCase() === 'verified scouter')
+							const verified = message.guild.roles.cache.find(
+								(r) => r.name.toLowerCase() === 'verified scouter'
+							)
 							scoutTracker = await scouters.collection
 								.find({
 									'assigned.1': verified.id,
@@ -310,11 +312,9 @@ export default {
 				for (const values of items) {
 					fields.push({
 						name: `${values.author}`,
-						value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nLast Active: ${values.lastTimestampReadable
-							.toString()
-							.split(' ')
-							.slice(1, 5)
-							.join(' ')}`,
+						value: `Merch count: ${values.count}\nOther count: ${
+							values.otherCount
+						}\nLast Active: ${values.lastTimestampReadable.toString().split(' ').slice(1, 5).join(' ')}`,
 						inline: true
 					})
 				}

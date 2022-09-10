@@ -136,7 +136,9 @@ export default {
 						}
 					}
 				)
-				return channels.vis.send(`${interaction.member.user.tag} reset the Vis command in **${interaction.channel.guild.name}.**`)
+				return channels.vis.send(
+					`${interaction.member.user.tag} reset the Vis command in **${interaction.channel.guild.name}.**`
+				)
 			}
 		}
 	},

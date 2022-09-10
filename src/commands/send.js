@@ -28,7 +28,9 @@ export default {
 						.setRequired(true)
 				)
 				.addStringOption((option) => option.setName('message').setDescription('Write your message.').setRequired(true))
-				.addStringOption((option) => option.setName('edit_message').setDescription('If editing a message, provide the message ID.'))
+				.addStringOption((option) =>
+					option.setName('edit_message').setDescription('If editing a message, provide the message ID.')
+				)
 		),
 	slash: async (interaction, perms) => {
 		if (!perms.admin) return interaction.reply(perms.errorA)
@@ -181,7 +183,11 @@ export default {
 								catchMissingAccessError(err)
 							})
 						})
-					} else if (message.author.id !== myID && content && !message.guild.channels.cache.has(checkAndGetID(args[0]).id)) {
+					} else if (
+						message.author.id !== myID &&
+							content &&
+							!message.guild.channels.cache.has(checkAndGetID(args[0]).id)
+					) {
 						// Checks for non-owner, message content and if ID is not in same server
 						message.channel.send({
 							content: 'You are not able to send a message to a channel in another server.'

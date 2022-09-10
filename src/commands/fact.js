@@ -68,11 +68,16 @@ export default {
 						await vFactsColl.collection
 							.findOne({ number: Number(args[1]) })
 							.then(async (r) => {
-								await vFactsColl.collection.updateMany({ number: { $gt: r.number } }, { $inc: { number: -1 } })
+								await vFactsColl.collection.updateMany(
+									{ number: { $gt: r.number } },
+									{ $inc: { number: -1 } }
+								)
 								message.channel.send({
 									content: `Fact #${r.number} has been deleted from the list!\n${code}${r.number}. ${r.Message}${code}`
 								})
-								channels.logs.send(`<@${message.author.id}> removed a Fact: ${code}#${r.number}. ${r.Message}${code}`)
+								channels.logs.send(
+									`<@${message.author.id}> removed a Fact: ${code}#${r.number}. ${r.Message}${code}`
+								)
 							})
 							.catch(async (err) => channels.errors.send(err))
 						await vFactsColl.collection.deleteOne({ number: Number(args[1]) })

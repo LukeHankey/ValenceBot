@@ -14,11 +14,15 @@ export default {
 		.setName('ticket')
 		.setDescription('Sets up a ticket system using private threads or channels.')
 		.setDefaultPermission(false)
-		.addRoleOption((option) => option.setName('role').setDescription('The role that will be responding to tickets.').setRequired(true))
+		.addRoleOption((option) =>
+			option.setName('role').setDescription('The role that will be responding to tickets.').setRequired(true)
+		)
 		.addStringOption((option) =>
 			option
 				.setName('prefer')
-				.setDescription('Preference of how to handle tickets. Private threads allowed if boost level is at least level 2.')
+				.setDescription(
+					'Preference of how to handle tickets. Private threads allowed if boost level is at least level 2.'
+				)
 				.setRequired(true)
 				.addChoices(
 					...[
@@ -55,7 +59,9 @@ export default {
 		const prefer = interaction.options.getString('prefer')
 		const application = interaction.options.getBoolean('application')
 
-		const components = application ? [actionRow.addComponents([applicationButton])] : [actionRow.addComponents([ticketButton])]
+		const components = application
+			? [actionRow.addComponents([applicationButton])]
+			: [actionRow.addComponents([ticketButton])]
 
 		const ticketEmbed = new EmbedBuilder()
 			.setTitle(application ? 'Submit an Application!' : 'Open a Ticket!')

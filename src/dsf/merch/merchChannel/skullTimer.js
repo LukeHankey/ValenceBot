@@ -15,14 +15,20 @@ export const skullTimer = (message, db) => {
 			try {
 				// Removes bot messages
 				if (userID === '668330399033851924' || content.includes('<@&670842187461820436>')) {
-					await db.collection.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID } } })
+					await db.collection.updateOne(
+						{ _id: message.guild.id },
+						{ $pull: { 'merchChannel.messages': { messageID } } }
+					)
 				}
 
 				if (Date.now() - time > 600_000) {
 					const fetched = await message.channel.messages.fetch(messageID)
 					try {
 						await fetched.react('☠️')
-						await db.collection.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID } } })
+						await db.collection.updateOne(
+							{ _id: message.guild.id },
+							{ $pull: { 'merchChannel.messages': { messageID } } }
+						)
 						const getPerms = merchChannelID.permissionOverwrites.cache.get(userID)
 						if (getPerms) {
 							const moreThanOnce = messages.filter((obj) => obj.userID === userID && obj.messageID !== messageID)
@@ -41,7 +47,9 @@ export const skullTimer = (message, db) => {
 										.map((m) => m.userID)
 									if (moreThanOnce.includes(rem.id)) continue
 									const leftOverMember = await message.guild.members.fetch(rem.id)
-									console.log(`Removing remenant member: ${leftOverMember?.displayName} from channel overrides.`)
+									console.log(
+										`Removing remenant member: ${leftOverMember?.displayName} from channel overrides.`
+									)
 									const userToRemove = merchChannelID.permissionOverwrites.cache.get(rem.id)
 									userToRemove.delete()
 								}
@@ -77,7 +85,10 @@ export const skullTimer = (message, db) => {
 			if (dupe > 1) {
 				const messageId = getKeyByValue(counts, dupe)
 				const entry = messages.find((id) => id.messageID === messageId)
-				db.collection.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID: messageId } } })
+				db.collection.updateOne(
+					{ _id: message.guild.id },
+					{ $pull: { 'merchChannel.messages': { messageID: messageId } } }
+				)
 				return db.collection.updateOne({ _id: message.guild.id }, { $addToSet: { 'merchChannel.messages': entry } })
 			}
 		})

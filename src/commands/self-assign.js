@@ -120,7 +120,9 @@ export default {
 					embed
 						.setColor(Color.redLight)
 						.addFields(wrongAdd)
-						.setDescription("Can't find the role name? Use `;sa roles` for a full list of self-assignable role names.")
+						.setDescription(
+							"Can't find the role name? Use `;sa roles` for a full list of self-assignable role names."
+						)
 				]
 			  })
 			: wrong.length
@@ -128,7 +130,9 @@ export default {
 					embeds: [
 						embed
 							.addFields(fieldsPlus)
-							.setDescription("Can't find the role name? Use `;sa roles` for a full list of self-assignable role names.")
+							.setDescription(
+								"Can't find the role name? Use `;sa roles` for a full list of self-assignable role names."
+							)
 					]
 			  })
 				: message.channel.send({ embeds: [embed.addFields(fields)] })

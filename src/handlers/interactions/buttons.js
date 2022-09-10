@@ -279,7 +279,9 @@ export const buttons = async (interaction, db, data, cache) => {
 						.reverse()
 						.slice(0, 5)
 					await banChannel.send({
-						content: `${member.toString()} (${userId}) has been Muted.\n\n**Recent Hisory:**\n${displayFields.join('\n')}`
+						content: `${member.toString()} (${userId}) has been Muted.\n\n**Recent Hisory:**\n${displayFields.join(
+							'\n'
+						)}`
 					})
 				}
 			}
@@ -501,7 +503,9 @@ export const buttons = async (interaction, db, data, cache) => {
 				const ticket = new Ticket(interaction, ticketData, db)
 
 				const applicationData = ticket.currentTicket.applicationModal
-				const applicationModal = new ModalBuilder().setCustomId(applicationData.custom_id).setTitle(applicationData.title)
+				const applicationModal = new ModalBuilder()
+					.setCustomId(applicationData.custom_id)
+					.setTitle(applicationData.title)
 
 				const actionRows = applicationData.components.map((c) => {
 					return new ActionRowBuilder().addComponents([new TextInputBuilder(c)])

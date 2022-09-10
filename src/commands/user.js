@@ -64,7 +64,9 @@ export default {
 			if (!desc) member = await message.guild.members.fetch(mem)
 			const embed = new EmbedBuilder()
 				.setTitle('User Profile - Not Found')
-				.setDescription(desc || `User with Discord ID: ${mem} not found but they are in the Discord as ${member.toString()}.`)
+				.setDescription(
+					desc || `User with Discord ID: ${mem} not found but they are in the Discord as ${member.toString()}.`
+				)
 				.setColor(Color.redLight)
 				.setTimestamp()
 			return message.channel.send({ embeds: [embed] })
@@ -196,12 +198,18 @@ export default {
 
 				switch (param) {
 				case 'id':
-					await usersColl.collection.updateOne({ clanMate }, { $set: { discord: other.join(' '), discActive: true } })
+					await usersColl.collection.updateOne(
+						{ clanMate },
+						{ $set: { discord: other.join(' '), discActive: true } }
+					)
 					return await message.react('✅')
 				case 'discord':
 				case 'discActive':
 					if (other.join(' ') === 'true' || other.join(' ') === 'false') {
-						await usersColl.collection.updateOne({ clanMate }, { $set: { discActive: booleanConvert(other.join(' ')) } })
+						await usersColl.collection.updateOne(
+							{ clanMate },
+							{ $set: { discActive: booleanConvert(other.join(' ')) } }
+						)
 						return await message.react('✅')
 					} else {
 						return message.channel.send('Active state must be set as either `true` or `false`.')

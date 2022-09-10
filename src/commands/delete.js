@@ -11,7 +11,9 @@ export default {
 		.setName('delete')
 		.setDescription('Deletes a number of previous messages in the current channel.')
 		.setDefaultPermission(false)
-		.addIntegerOption((option) => option.setName('value').setDescription('The number of messages to delete.').setRequired(true)),
+		.addIntegerOption((option) =>
+			option.setName('value').setDescription('The number of messages to delete.').setRequired(true)
+		),
 	slash: async (interaction, _, db) => {
 		const int = interaction.options.getInteger('value')
 		const channels = await db.channels
