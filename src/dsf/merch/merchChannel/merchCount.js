@@ -115,7 +115,6 @@ export const addMerchCount = async (client, message, db, scouter) => {
 		for (const msgs in log) {
 			const authorName = log[msgs].member?.displayName
 			const userId = log[msgs].member?.id ?? log[msgs].author.id
-			console.log(`Checking author name: ${authorName}`)
 			if (!authorName || userId === '668330399033851924') return
 			await db.collection.findOneAndUpdate({ _id: message.guild.id },
 				{
