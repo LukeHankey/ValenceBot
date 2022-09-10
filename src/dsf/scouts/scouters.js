@@ -59,18 +59,14 @@ const removeInactives = async (name, db, scoutTracker) => {
 		} else {
 			if (!doc.active) return
 			allItems.push(
-				`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${
-					doc.count
-				}). User has been marked as inactive.`
+				`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}). User has been marked as inactive.`
 			)
 			await scoutTracker.collection.updateOne({ userID: doc.userID }, { $set: { active: 0 } })
 		}
 	})
 	if (allItems.length) {
 		const split = splitMessage(`${allItems.join('\n')}`)
-		return split.forEach(async (content) =>
-			channels.logs.send(`${removed.length} profiles removed.\n${codeBlock(content)}`)
-		)
+		return split.forEach(async (content) => channels.logs.send(`${removed.length} profiles removed.\n${codeBlock(content)}`))
 	}
 }
 

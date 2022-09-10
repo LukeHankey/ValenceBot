@@ -108,9 +108,7 @@ export default {
 							const title = item.embeds[0].title.slice(7)
 							return `- [${title}](${baseURL}/${item.id})`
 						})
-						const embed = new EmbedBuilder()
-							.setColor(Color.aqua)
-							.setDescription(editFormat.reverse().join('\n'))
+						const embed = new EmbedBuilder().setColor(Color.aqua).setDescription(editFormat.reverse().join('\n'))
 						await msgToEdit.edit({ content: `${openMessage}\n\n`, embeds: [embed] })
 						const after = await channelToPush.send({ content: '**Links**', embeds: [embed] })
 						await db.collection.updateOne(
@@ -181,9 +179,7 @@ export default {
 								.map((obj) => {
 									return `- [${obj.date}](${baseURL}/${obj.messageID})`
 								})
-							const embed = new EmbedBuilder()
-								.setDescription(format.join('\n'))
-								.setColor(Color.aqua)
+							const embed = new EmbedBuilder().setDescription(format.join('\n')).setColor(Color.aqua)
 							return dataArray
 								.filter((prop) => prop.links === true)
 								.forEach(async (arrData) => {

@@ -47,25 +47,17 @@ export default async (client) => {
 		}
 		if (!dataChanged.length) return
 		dataChanged = dataChanged.map((profile) => {
-			return `${padding(
-				profile.clanMate,
-				true,
-				Math.max(...dataChanged.map((el) => el.clanMate.length))
-			)}${padding(
+			return `${padding(profile.clanMate, true, Math.max(...dataChanged.map((el) => el.clanMate.length)))}${padding(
 				profile.clanRank,
 				false,
 				Math.max(...dataChanged.map((el) => el.clanRank.length))
-			)}${padding(
-				profile.totalXP,
+			)}${padding(profile.totalXP, false, Math.max(...dataChanged.map((el) => el.totalXP.length)))}${padding(
+				profile.kills,
 				false,
-				Math.max(...dataChanged.map((el) => el.totalXP.length))
-			)}${padding(profile.kills, false, Math.max(...dataChanged.map((el) => el.kills.length)))}`
+				Math.max(...dataChanged.map((el) => el.kills.length))
+			)}`
 		})
-		dataChanged.splice(
-			0,
-			0,
-			`'${data[0].clanMate}' might have changed names to one of these potential new names.\n`
-		)
+		dataChanged.splice(0, 0, `'${data[0].clanMate}' might have changed names to one of these potential new names.\n`)
 		dataChanged.push(
 			' ',
 			'Reactions:\n✅ Takes the primary suggestion.\n❌ Not changed names or none match.\n📝 Pick another suggestion.'
@@ -75,10 +67,7 @@ export default async (client) => {
 
 	const postData = async (data) => {
 		if (!data) return
-		const valenceChannels = await db.collection.findOne(
-			{ _id: '472448603642920973' },
-			{ projection: { channels: 1 } }
-		)
+		const valenceChannels = await db.collection.findOne({ _id: '472448603642920973' }, { projection: { channels: 1 } })
 		const valenceAdminChannel = client.channels.cache.get(valenceChannels.channels.adminChannel)
 		const messageSend = await valenceAdminChannel.send({ content: `${codeBlock(formatTemplate(data))}` })
 		await messageSend.react('✅')
@@ -117,10 +106,7 @@ export default async (client) => {
 		if (process.env.NODE_ENV === 'DEV') return
 		const {
 			merchChannel: { channelID }
-		} = await db.collection.findOne(
-			{ _id: '420803245758480405' },
-			{ projection: { merchChannel: { channelID: 1 } } }
-		)
+		} = await db.collection.findOne({ _id: '420803245758480405' }, { projection: { merchChannel: { channelID: 1 } } })
 		const merchantChannel = client.channels.cache.get(channelID)
 		let message = await merchantChannel.messages.fetch({ limit: 1 })
 		message = message.first()
@@ -189,10 +175,7 @@ export default async (client) => {
 			.then((r) => {
 				r = r.filter((doc) => doc.resetInfoCount >= 0)
 				for (const doc in r) {
-					if (
-						r[doc].resetInfoCount === 1 &&
-						r[doc].resetInfoTime < r[doc].resetInfoTime + 86400000
-					) {
+					if (r[doc].resetInfoCount === 1 && r[doc].resetInfoTime < r[doc].resetInfoTime + 86400000) {
 						return db.collection.updateOne(
 							{ serverName: r[doc].serverName },
 							{

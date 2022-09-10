@@ -24,18 +24,12 @@ export default {
 				.setName('end')
 				.setDescription('Ends an event.')
 				.addStringOption((option) =>
-					option
-						.setName('tag')
-						.setDescription('The event tag that matches the event.')
-						.setRequired(true)
+					option.setName('tag').setDescription('The event tag that matches the event.').setRequired(true)
 				)
 		),
 	slash: async (interaction, perms, db) => {
 		const channels = await db.channels
-		const data = await db.collection.findOne(
-			{ _id: interaction.guild.id },
-			{ projection: { events: 1, channels: 1, calendarID: 1 } }
-		)
+		const data = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } })
 		switch (interaction.options.getSubcommand()) {
 		case 'list':
 			try {
@@ -49,9 +43,7 @@ export default {
 						name: obj.title,
 						value: `ID: ${obj.eventTag}\nRole: <@&${obj.roleID}>\n[Event posted ${
 							obj.date ? 'on ' + obj.date.toString().split(' ').slice(0, 4).join(' ') : ''
-						}](${link}${obj.messageID})\nEvent ends on ${
-							obj.dateEnd
-						}\nInterested 📌: ${members.join(', ')}`
+						}](${link}${obj.messageID})\nEvent ends on ${obj.dateEnd}\nInterested 📌: ${members.join(', ')}`
 					}
 				})
 
@@ -91,10 +83,7 @@ export default {
 	run: async (client, message, args, perms, db) => {
 		const channels = await db.channels
 		if (!perms.mod) return message.channel.send(perms.errorM)
-		const data = await db.collection.findOne(
-			{ _id: message.guild.id },
-			{ projection: { events: 1, channels: 1, calendarID: 1 } }
-		)
+		const data = await db.collection.findOne({ _id: message.guild.id }, { projection: { events: 1, channels: 1, calendarID: 1 } })
 
 		switch (args[0]) {
 		case 'end':
@@ -130,9 +119,7 @@ export default {
 						name: obj.title,
 						value: `ID: ${obj.eventTag}\nRole: <@&${obj.roleID}>\n[Event posted ${
 							obj.date ? 'on ' + obj.date.toString().split(' ').slice(0, 4).join(' ') : ''
-						}](${link}${obj.messageID})\nEvent ends on ${
-							obj.dateEnd
-						}\nInterested 📌: ${members.join(', ')}`
+						}](${link}${obj.messageID})\nEvent ends on ${obj.dateEnd}\nInterested 📌: ${members.join(', ')}`
 					}
 				})
 

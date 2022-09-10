@@ -23,10 +23,7 @@ export const updateRoles = async (client, dbCheck, server, channels, users) => {
 		const getMember = server.members.cache.get(dbCheck.discord)
 		if (!getMember) {
 			errors.send({ content: `${dbCheck.clanMate} - ${dbCheck.discord} has left the Clan Discord.` })
-			return await users.collection.updateOne(
-				{ clanMate: dbCheck.clanMate },
-				{ $set: { discord: '', discActive: false } }
-			)
+			return await users.collection.updateOne({ clanMate: dbCheck.clanMate }, { $set: { discord: '', discActive: false } })
 		}
 		if (getMember.size) {
 			return errors.send({

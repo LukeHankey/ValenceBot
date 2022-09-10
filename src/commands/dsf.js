@@ -198,17 +198,14 @@ export default {
 
 				return message.channel
 					.send({
-						embeds: [
-							embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` })
-						]
+						embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` })]
 					})
 					.then(async (msg) => {
 						await msg.react('◀️')
 						await msg.react('▶️')
 
 						const react = (reaction, user) =>
-							['◀️', '▶️'].includes(reaction.emoji.name) &&
-									user.id === message.author.id
+							['◀️', '▶️'].includes(reaction.emoji.name) && user.id === message.author.id
 						const collect = msg.createReactionCollector(react)
 
 						collect.on('collect', (r, u) => {

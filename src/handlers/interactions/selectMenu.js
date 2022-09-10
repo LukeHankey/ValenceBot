@@ -18,9 +18,7 @@ export const selectMenu = async (interaction, db, _, cache) => {
 					})
 					await buttonMessage.delete()
 					await errorChannel.send({
-						content: `A password was confirmed by <@!${
-							cache.first().id
-						}> and the message has been deleted.`
+						content: `A password was confirmed by <@!${cache.first().id}> and the message has been deleted.`
 					})
 				} else {
 					await interaction.followUp({ content: 'Thank you for responding.' })
@@ -44,9 +42,7 @@ export const selectMenu = async (interaction, db, _, cache) => {
 			)
 		}
 		await interaction.update({
-			content: `${
-				keys.length === 1 ? `${keys.length} entry removed.` : `${keys.length} entries removed`
-			}`,
+			content: `${keys.length === 1 ? `${keys.length} entry removed.` : `${keys.length} entries removed`}`,
 			components: []
 		})
 	}

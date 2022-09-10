@@ -40,11 +40,7 @@ export const addMerchCount = async (client, message, db, scouter) => {
 				.setLabel('Eyes on Merch Calls')
 				.setStyle(ButtonStyle.Success)
 				.setEmoji({ name: '👀' }),
-			new ButtonBuilder()
-				.setCustomId('Timeout')
-				.setLabel('Timeout')
-				.setStyle(ButtonStyle.Secondary)
-				.setEmoji({ name: '⏲️' }),
+			new ButtonBuilder().setCustomId('Timeout').setLabel('Timeout').setStyle(ButtonStyle.Secondary).setEmoji({ name: '⏲️' }),
 			new ButtonBuilder()
 				.setCustomId('Clear Buttons')
 				.setLabel('Clear Buttons')
@@ -53,11 +49,7 @@ export const addMerchCount = async (client, message, db, scouter) => {
 		])
 
 		const buttonSelectionExtra = new ActionRowBuilder().addComponents([
-			new ButtonBuilder()
-				.setCustomId('Too Slow!')
-				.setLabel('Too Slow!')
-				.setStyle(ButtonStyle.Secondary)
-				.setEmoji({ name: '🐌' })
+			new ButtonBuilder().setCustomId('Too Slow!').setLabel('Too Slow!').setStyle(ButtonStyle.Secondary).setEmoji({ name: '🐌' })
 		])
 
 		if (!findMessage) {
@@ -93,9 +85,7 @@ export const addMerchCount = async (client, message, db, scouter) => {
 				assigned: []
 			})
 			if (!(await checkMemberRole(userN.id, message))) {
-				console.log(
-					`Adding ${userN.nickname ?? userN.displayName} (${userN.id}) to channel overrides.`
-				)
+				console.log(`Adding ${userN.nickname ?? userN.displayName} (${userN.id}) to channel overrides.`)
 				await merchChannelID.permissionOverwrites.create(userN.id, { AddReactions: true })
 			}
 		} else {
@@ -116,12 +106,7 @@ export const addMerchCount = async (client, message, db, scouter) => {
 					components: [buttonSelection, buttonSelectionExtra]
 				})
 			}
-			console.log(
-				`Old: ${userN.displayName} (${message.content})`,
-				findMessage.userID === userN.id,
-				findMessage.userID,
-				userN.id
-			)
+			console.log(`Old: ${userN.displayName} (${message.content})`, findMessage.userID === userN.id, findMessage.userID, userN.id)
 			if (findMessage.oldScout && findMessage.oldScout.firstPost) {
 				// If a scouter was inactive and becomes active again, reset fields.
 				await scouter.collection.updateOne(

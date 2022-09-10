@@ -22,10 +22,7 @@ export default async (client, reaction, user) => {
 				{ _id: message.guild.id },
 				{ projection: { events: 1, channels: 1, calendarID: 1 } }
 			)
-			const { nameChange } = await db.collection.findOne(
-				{ _id: message.guild.id },
-				{ projection: { nameChange: 1, _id: 0 } }
-			)
+			const { nameChange } = await db.collection.findOne({ _id: message.guild.id }, { projection: { nameChange: 1, _id: 0 } })
 
 			if (message.channel.id === data.channels.events) {
 				const messageMatch = data.events.filter((m) => m.messageID === message.id)
@@ -53,9 +50,7 @@ export default async (client, reaction, user) => {
 				if (messageMatch) {
 					let primary = message.content.split('\n')[3]
 					const potentialNewNamesList = []
-					messageMatch.data[0].potentialNewNames.forEach((item) =>
-						potentialNewNamesList.push(item.clanMate.toLowerCase())
-					)
+					messageMatch.data[0].potentialNewNames.forEach((item) => potentialNewNamesList.push(item.clanMate.toLowerCase()))
 					const potentialPreviousName = messageMatch.data[0].clanMate
 					let oldData = messageMatch.data.map((o) => {
 						return {
@@ -147,10 +142,7 @@ export default async (client, reaction, user) => {
 							// Checks if the potential previous name is equal to the current name.
 							// eslint-disable-next-line no-lonely-if
 							if (userLeft.clanMate === potentialPreviousName) {
-								oldData = oldData.find(
-									(u) =>
-										u.clanMate.toLowerCase() === potentialPreviousName.toLowerCase()
-								)
+								oldData = oldData.find((u) => u.clanMate.toLowerCase() === potentialPreviousName.toLowerCase())
 								await usersDB.collection.deleteOne({ clanMate: potentialPreviousName })
 								await usersDB.collection.insertOne(oldData)
 							}
@@ -184,9 +176,7 @@ export default async (client, reaction, user) => {
 										? (result.discord = currentName.discord)
 										: (result.discord = previousName.discord)
 								}
-								currentName.alt || previousName.alt
-									? (result.alt = true)
-									: (result.alt = false)
+								currentName.alt || previousName.alt ? (result.alt = true) : (result.alt = false)
 								currentName.gameActive || previousName.gameActive
 									? (result.gameActive = true)
 									: (result.gameActive = false)

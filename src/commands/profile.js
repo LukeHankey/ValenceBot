@@ -52,9 +52,7 @@ export default {
 
 			if (!userData.length) {
 				return message.channel.send({
-					content: `\`${
-						fetchedMember.nickname ?? fetchedMember.user.username
-					}\` does not have a profile.`
+					content: `\`${fetchedMember.nickname ?? fetchedMember.user.username}\` does not have a profile.`
 				})
 			}
 
@@ -71,11 +69,9 @@ export default {
 				fields.push(
 					{
 						name: `${values.author}`,
-						value: `Merch count: ${values.count} ${
-							oldScoutCheck() ? `(+${values.oldScout.count})` : ''
-						}\nOther count: ${values.otherCount} ${
-							oldScoutCheck() ? `(+${values.oldScout.otherCount})` : ''
-						}\nGame count: ${values.game}\nActive for: ${ms(
+						value: `Merch count: ${values.count} ${oldScoutCheck() ? `(+${values.oldScout.count})` : ''}\nOther count: ${
+							values.otherCount
+						} ${oldScoutCheck() ? `(+${values.oldScout.otherCount})` : ''}\nGame count: ${values.game}\nActive for: ${ms(
 							values.lastTimestamp - values.firstTimestamp
 						)}`,
 						inline: true
@@ -136,9 +132,7 @@ export default {
 			for (const values of newArr) {
 				fields.push({
 					name: `${values.author}`,
-					value: `Scout count: ${values.count}\nActive for: ${ms(
-						values.lastTimestamp - values.firstTimestamp
-					)}`,
+					value: `Scout count: ${values.count}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`,
 					inline: true
 				})
 			}
@@ -152,8 +146,7 @@ export default {
 				message.channel.send({
 					content: "You don't currently have a profile. Would you like to set one up? `Yes/No`"
 				})
-				const filter = (m) =>
-					['yes', 'no'].includes(m.content.toLowerCase()) && m.member.id === message.member.id
+				const filter = (m) => ['yes', 'no'].includes(m.content.toLowerCase()) && m.member.id === message.member.id
 				message.channel
 					.awaitMessages({ filter, max: 1, time: 60000, errors: ['time'] })
 					.then(async (col) => {
@@ -193,9 +186,7 @@ export default {
 
 			if (checkNum(args[0])) {
 				try {
-					userID =
-						message.guild.members.cache.get(args[0]) ??
-						(await message.guild.members.fetch(args[0]))
+					userID = message.guild.members.cache.get(args[0]) ?? (await message.guild.members.fetch(args[0]))
 				} catch (err) {
 					channels.errors.send(err)
 				}
@@ -225,9 +216,9 @@ export default {
 				for (const values of items) {
 					fields.push({
 						name: `${values.author}`,
-						value: `Merch count: ${values.count}\nOther count: ${
-							values.otherCount
-						}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`,
+						value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nActive for: ${ms(
+							values.lastTimestamp - values.firstTimestamp
+						)}`,
 						inline: true
 					})
 				}
@@ -239,9 +230,7 @@ export default {
 					.send({
 						embeds: [
 							embeds[page].setFooter({
-								text: `Page ${page + 1} of ${
-									embeds.length
-								} - Something wrong or missing? Let a Moderator+ know!`,
+								text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`,
 								iconURL: client.user.displayAvatarURL()
 							})
 						]
@@ -257,21 +246,15 @@ export default {
 					switch (args[1].toLowerCase()) {
 					case 'scouter':
 						{
-							const scouter = message.guild.roles.cache.find(
-								(r) => r.name.toLowerCase() === 'scouter'
-							)
-							scoutTracker = await scouters.collection
-								.find({ 'assigned.0': scouter.id, active: 1 })
-								.toArray()
+							const scouter = message.guild.roles.cache.find((r) => r.name.toLowerCase() === 'scouter')
+							scoutTracker = await scouters.collection.find({ 'assigned.0': scouter.id, active: 1 }).toArray()
 						}
 						break
 					case 'verified scouter':
 					case 'verified':
 						{
 							const oneMonth = 2.628e9
-							const verified = message.guild.roles.cache.find(
-								(r) => r.name.toLowerCase() === 'verified scouter'
-							)
+							const verified = message.guild.roles.cache.find((r) => r.name.toLowerCase() === 'verified scouter')
 							scoutTracker = await scouters.collection
 								.find({
 									'assigned.1': verified.id,
@@ -289,36 +272,27 @@ export default {
 				} else {
 					scoutTracker = await scouters.collection.find({ count: { $gte: 15 } }).toArray()
 				}
-				const items = scoutTracker
-					.filter((profile) => profile.active)
-					.sort((a, b) => b.count - a.count)
+				const items = scoutTracker.filter((profile) => profile.active).sort((a, b) => b.count - a.count)
 				let fields = []
 
 				for (const values of items) {
 					fields.push({
 						name: `${values.author}`,
-						value: `Merch count: ${values.count}\nOther count: ${
-							values.otherCount
-						}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`,
+						value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nActive for: ${ms(
+							values.lastTimestamp - values.firstTimestamp
+						)}`,
 						inline: true
 					})
 				}
 				fields = fields.slice(0, 100)
 				const page = 0
-				const embeds = paginate(
-					fields,
-					message,
-					capitalise(args[0].toLowerCase()),
-					args[0].toLowerCase()
-				)
+				const embeds = paginate(fields, message, capitalise(args[0].toLowerCase()), args[0].toLowerCase())
 
 				message.channel
 					.send({
 						embeds: [
 							embeds[page].setFooter({
-								text: `Page ${page + 1} of ${
-									embeds.length
-								} - Something wrong or missing? Let a Moderator+ know!`,
+								text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`,
 								iconURL: client.user.displayAvatarURL()
 							})
 						]
@@ -330,17 +304,13 @@ export default {
 			} else if (args[0] === 'inactive') {
 				if (memberRoles < botRole.position) return
 				const scoutTracker = await scouters.collection.find({ count: { $gte: 15 } }).toArray()
-				const items = scoutTracker
-					.filter((profile) => !profile.active)
-					.sort((a, b) => a.lastTimestamp - b.lastTimestamp)
+				const items = scoutTracker.filter((profile) => !profile.active).sort((a, b) => a.lastTimestamp - b.lastTimestamp)
 				let fields = []
 
 				for (const values of items) {
 					fields.push({
 						name: `${values.author}`,
-						value: `Merch count: ${values.count}\nOther count: ${
-							values.otherCount
-						}\nLast Active: ${values.lastTimestampReadable
+						value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nLast Active: ${values.lastTimestampReadable
 							.toString()
 							.split(' ')
 							.slice(1, 5)
@@ -350,20 +320,13 @@ export default {
 				}
 				fields = fields.slice(0, 100)
 				const page = 0
-				const embeds = paginate(
-					fields,
-					message,
-					capitalise(args[0].toLowerCase()),
-					args[0].toLowerCase()
-				)
+				const embeds = paginate(fields, message, capitalise(args[0].toLowerCase()), args[0].toLowerCase())
 
 				message.channel
 					.send({
 						embeds: [
 							embeds[page].setFooter({
-								text: `Page ${page + 1} of ${
-									embeds.length
-								} - Something wrong or missing? Let a Moderator+ know!`,
+								text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`,
 								iconURL: client.user.displayAvatarURL()
 							})
 						]

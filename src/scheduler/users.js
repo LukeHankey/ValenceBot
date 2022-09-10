@@ -12,9 +12,7 @@ export const addActive = async (db) => {
 				`https://apps.runescape.com/runemetrics/profile/profile?user=${users[index].clanMate}&activities=1`
 			)
 				.then((response) => response.json())
-				.catch((err) =>
-					console.error(`Unable to fetch RuneMetrics Profile for ${users[index].clanMate}.`, err)
-				)
+				.catch((err) => console.error(`Unable to fetch RuneMetrics Profile for ${users[index].clanMate}.`, err))
 
 			let lastActivityDate
 			if ('error' in metricsProfile) {
@@ -29,16 +27,10 @@ export const addActive = async (db) => {
 
 				if (Date.now() - 2.628e9 > lastActivityDate) {
 					// console.log(`${users[index].clanMate} is not active`);
-					await db.collection.updateOne(
-						{ clanMate: users[index].clanMate },
-						{ $set: { gameActive: false } }
-					)
+					await db.collection.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: false } })
 				} else {
 					// console.log(`${users[index].clanMate} is active`);
-					await db.collection.updateOne(
-						{ clanMate: users[index].clanMate },
-						{ $set: { gameActive: true } }
-					)
+					await db.collection.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: true } })
 				}
 			}
 			index++
@@ -112,10 +104,7 @@ export const nameChanges = async (missingNames, db) => {
 	if (nameChange.length) {
 		return nameChange.forEach(async (user) => {
 			console.log(`Updating ${user.clanMate} as they have potentially changed names`)
-			await db.collection.updateOne(
-				{ clanMate: user.clanMate },
-				{ $set: { potentialNewNames: user.potentialNewNames } }
-			)
+			await db.collection.updateOne({ clanMate: user.clanMate }, { $set: { potentialNewNames: user.potentialNewNames } })
 		})
 	}
 }

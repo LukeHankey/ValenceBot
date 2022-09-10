@@ -52,9 +52,7 @@ const newBoost = async (message, boostChannel) => {
 				const updateExisting = async () => {
 					for (const boosters of boosterData) {
 						const discordID = boosters[3]
-						const fetched =
-							message.guild.members.cache.get(discordID) ??
-							(await message.guild.members.fetch(discordID))
+						const fetched = message.guild.members.cache.get(discordID) ?? (await message.guild.members.fetch(discordID))
 						const roleCheck = fetched.roles.cache.has(boostRoleId)
 						if (roleCheck) {
 							nitros.push([
@@ -94,9 +92,7 @@ const newBoost = async (message, boostChannel) => {
 					.setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
 					.setTitle('New Booster!')
 					.setColor(pink)
-					.setThumbnail(
-						'https://cdn.discordapp.com/attachments/869877392603234324/879052719225200680/discord_nitro.png'
-					)
+					.setThumbnail('https://cdn.discordapp.com/attachments/869877392603234324/879052719225200680/discord_nitro.png')
 					.setTimestamp()
 					.setDescription(
 						`${message.author.username}, thank you for boosting this server! Please check out the pins to check on any updated information and if you would like the rank in the FC, please provide us with your RSN.`

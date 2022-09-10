@@ -13,11 +13,7 @@ export default {
 		const content = args.join(' ')
 		if (!content) return message.channel.send({ content: 'Add some context regarding the vote.' })
 
-		const embed = new EmbedBuilder()
-			.setTitle('New Vote!')
-			.setDescription(`${content}`)
-			.setColor(Color.orange)
-			.setTimestamp()
+		const embed = new EmbedBuilder().setTitle('New Vote!').setDescription(`${content}`).setColor(Color.orange).setTimestamp()
 
 		message.delete()
 		message.channel

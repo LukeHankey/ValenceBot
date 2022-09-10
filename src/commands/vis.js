@@ -19,9 +19,7 @@ export default {
 	data: new SlashCommandBuilder()
 		.setName('vis')
 		.setDescription(description[0])
-		.addSubcommand((subcommand) =>
-			subcommand.setName('wax').setDescription('Todays Vis Wax combinations.')
-		),
+		.addSubcommand((subcommand) => subcommand.setName('wax').setDescription('Todays Vis Wax combinations.')),
 	// 	.addSubcommand(subcommand =>
 	// 		subcommand
 	// 			.setName('other_commands')
@@ -138,9 +136,7 @@ export default {
 						}
 					}
 				)
-				return channels.vis.send(
-					`${interaction.member.user.tag} reset the Vis command in **${interaction.channel.guild.name}.**`
-				)
+				return channels.vis.send(`${interaction.member.user.tag} reset the Vis command in **${interaction.channel.guild.name}.**`)
 			}
 		}
 	},
@@ -151,11 +147,9 @@ export default {
 		const embed = new EmbedBuilder()
 			.setTitle('New Vis Wax Upload')
 			.setDescription(
-				`**${
-					message.member.nickname ?? message.author.tag
-				}** uploaded a new Vis Wax Image from Server:\n**${message.guild.name}** - ${
-					message.guild.id
-				}.`
+				`**${message.member.nickname ?? message.author.tag}** uploaded a new Vis Wax Image from Server:\n**${
+					message.guild.name
+				}** - ${message.guild.id}.`
 			)
 			.setTimestamp()
 			.setThumbnail(message.author.displayAvatarURL())

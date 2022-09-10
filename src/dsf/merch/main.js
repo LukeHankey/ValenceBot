@@ -25,9 +25,7 @@ const dsf = async (client, message, db) => {
 	if (message.author.bot) return
 	if (message.channel.id === channelID) {
 		await addMerchCount(client, message, db, scouters)
-		merchRegex.test(message.content) &&
-		arrIncludesString(disallowedWords, message.content) &&
-		alreadyCalled(message, messages)
+		merchRegex.test(message.content) && arrIncludesString(disallowedWords, message.content) && alreadyCalled(message, messages)
 			? message.channel
 				.send(`<@&670842187461820436> - ${message.content}`)
 				.then(async (mes) => {

@@ -10,10 +10,7 @@ export default {
 	permissionLevel: 'Everyone',
 	run: async (client, message, args, perms, db) => {
 		const { commands } = message.client
-		const { prefix } = await db.collection.findOne(
-			{ _id: message.guild.id },
-			{ projection: { prefix: 1 } }
-		)
+		const { prefix } = await db.collection.findOne({ _id: message.guild.id }, { projection: { prefix: 1 } })
 
 		if (!args.length) {
 			// eslint-disable-next-line array-callback-return
@@ -41,10 +38,7 @@ export default {
 								return `\`${command.name}\``
 							}
 						} else if (perms.mod) {
-							if (
-								command.permissionLevel === 'Mod' ||
-									command.permissionLevel === 'Everyone'
-							) {
+							if (command.permissionLevel === 'Mod' || command.permissionLevel === 'Everyone') {
 								return `\`${command.name}\``
 							}
 						} else if (command.permissionLevel === 'Everyone') {
@@ -108,9 +102,9 @@ export default {
 				embeds: [
 					nEmbed(
 						`**Command:** ${cName}`,
-						`**Aliases:** ${
-							command.aliases.join(', ') || '[NO ALIASES]'
-						}\n**Permission Level:** ${command.permissionLevel}\n**Usage:**`,
+						`**Aliases:** ${command.aliases.join(', ') || '[NO ALIASES]'}\n**Permission Level:** ${
+							command.permissionLevel
+						}\n**Usage:**`,
 						Color.aqua,
 						message.member.user.displayAvatarURL(),
 						client.user.displayAvatarURL()

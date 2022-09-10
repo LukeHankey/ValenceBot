@@ -18,13 +18,7 @@ export default {
 		"Adds a clanmate's lottery entry to google sheet.\nExample:\n```js\n;lotto add 1000000 clan bank / J ulian\n;lotto add 500000 clan bank / Guys / double```"
 	],
 	aliases: ['lottery'],
-	usage: [
-		'',
-		'total',
-		'sheet <Google Sheet Name>',
-		'<user>',
-		'add <amount> <collector> / <clanmate> / double (optional)'
-	],
+	usage: ['', 'total', 'sheet <Google Sheet Name>', '<user>', 'add <amount> <collector> / <clanmate> / double (optional)'],
 	guildSpecific: ['472448603642920973', '668330890790699079'],
 	permissionLevel: 'Everyone',
 	run: async (client, message, args, perms, db) => {
@@ -45,20 +39,7 @@ export default {
 			'November',
 			'December'
 		]
-		const altMonths = [
-			'Jan',
-			'Feb',
-			'Mar',
-			'Apr',
-			'May',
-			'June',
-			'July',
-			'Aug',
-			'Sept',
-			'Oct',
-			'Nov',
-			'Dec'
-		]
+		const altMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
 		const monthIndex = new Date().getUTCMonth()
 		try {
 			googleClient.authorize((err) => {
@@ -143,8 +124,7 @@ export default {
 						case '500000':
 							if (!args[2]) {
 								message.channel.send({
-									content:
-												"Add who's entry?\nFormat: <amount> <collector name> <clanmate>"
+									content: "Add who's entry?\nFormat: <amount> <collector name> <clanmate>"
 								})
 							} else if (colName === undefined) {
 								message.channel.send({
@@ -168,9 +148,7 @@ export default {
 							} else {
 								// If there is an rsn
 								if (dataArr.length > userData.length) {
-									const ranges = `${rangeName}!A${userData.length + 2}:F${
-										dataArr.length + 1
-									}`
+									const ranges = `${rangeName}!A${userData.length + 2}:F${dataArr.length + 1}`
 									await gsapi.spreadsheets.values.clear({
 										spreadsheetId: '1ZView14HaimCuCUg_durvI-3wiOn4Pf5mZRKYVwrHlY',
 										range: ranges
@@ -191,10 +169,7 @@ export default {
 											lottoEmbed
 												.spliceFields(0, 1, {
 													name: 'RuneScape Name:',
-													value: `${rsn
-														.split(/ /g)
-														.slice(0, -1)
-														.join(' ')}`,
+													value: `${rsn.split(/ /g).slice(0, -1).join(' ')}`,
 													inline: true
 												})
 												.addFields([
@@ -207,13 +182,7 @@ export default {
 										]
 									})
 								}
-								newArr.push([
-									userData.length + 1,
-									rsn.trim(),
-									'500,000',
-									colName,
-									'N/A'
-								])
+								newArr.push([userData.length + 1, rsn.trim(), '500,000', colName, 'N/A'])
 								await gsapi.spreadsheets.values.append(optW)
 								return message.channel.send({
 									embeds: [
@@ -229,13 +198,11 @@ export default {
 						default:
 							if (isNaN(parseInt(args[1]))) {
 								return message.channel.send({
-									content:
-												'Please make sure you give the amount as a number only, without any formatting.'
+									content: 'Please make sure you give the amount as a number only, without any formatting.'
 								})
 							} else if (!args[2]) {
 								message.channel.send({
-									content:
-												"Add who's entry?\nFormat: <amount> <collector name> <clanmate>"
+									content: "Add who's entry?\nFormat: <amount> <collector name> <clanmate>"
 								})
 							} else if (colName === undefined) {
 								message.channel.send({
@@ -259,9 +226,7 @@ export default {
 							} else {
 								// If there is an rsn
 								if (dataArr.length > userData.length) {
-									const ranges = `${rangeName}!A${userData.length + 2}:F${
-										dataArr.length + 1
-									}`
+									const ranges = `${rangeName}!A${userData.length + 2}:F${dataArr.length + 1}`
 									await gsapi.spreadsheets.values.clear({
 										spreadsheetId: '1ZView14HaimCuCUg_durvI-3wiOn4Pf5mZRKYVwrHlY',
 										range: ranges
@@ -287,10 +252,7 @@ export default {
 												})
 												.spliceFields(0, 1, {
 													name: 'RuneScape Name:',
-													value: `${rsn
-														.split(/ /g)
-														.slice(0, -1)
-														.join(' ')}`,
+													value: `${rsn.split(/ /g).slice(0, -1).join(' ')}`,
 													inline: true
 												})
 												.addFields([
@@ -371,10 +333,7 @@ export default {
 					if (perms.mod) {
 						const newSheet = args.slice(1).join(' ')
 						if (newSheet) {
-							await db.collection.findOneAndUpdate(
-								{ _id: message.guild.id },
-								{ $set: { lottoSheet: newSheet } }
-							)
+							await db.collection.findOneAndUpdate({ _id: message.guild.id }, { $set: { lottoSheet: newSheet } })
 							await message.react('✅')
 						} else {
 							const newName = await db.collection.findOne({ _id: message.guild.id })
@@ -391,9 +350,7 @@ export default {
 
 					if (username) {
 						const nameFound = dataArr.filter((name) => {
-							return (
-								name[1] !== undefined && name[1].toLowerCase() === username.toLowerCase()
-							)
+							return name[1] !== undefined && name[1].toLowerCase() === username.toLowerCase()
 						})
 						for (const values of nameFound) {
 							const fields = { name: `${values[1]}`, value: `${values[2]}`, inline: true }
@@ -502,8 +459,7 @@ export default {
 								await msg.react('▶️')
 
 								const react = (reaction, user) =>
-									['◀️', '▶️'].includes(reaction.emoji.name) &&
-										user.id === message.author.id
+									['◀️', '▶️'].includes(reaction.emoji.name) && user.id === message.author.id
 								const collect = msg.createReactionCollector({ filter: react })
 
 								collect.on('collect', (r, u) => {

@@ -80,9 +80,7 @@ export class MongoCollection extends DataBase {
 		if (typeof name !== 'string') throw new Error(`${name} must be a string.`)
 		if (collectionNames.includes(name)) return true
 		else {
-			throw new Error(
-				`${name} is not a valid collection name. Must be one of ${collectionNames.join(', ')}`
-			)
+			throw new Error(`${name} is not a valid collection name. Must be one of ${collectionNames.join(', ')}`)
 		}
 	}
 
@@ -94,10 +92,7 @@ export class MongoCollection extends DataBase {
 			const client = await import('./index.js')
 			const {
 				channels: { vis, errors, logs }
-			} = await this.collection.findOne(
-				{ _id: 'Globals' },
-				{ projection: { channels: { vis: 1, errors: 1, logs: 1 } } }
-			)
+			} = await this.collection.findOne({ _id: 'Globals' }, { projection: { channels: { vis: 1, errors: 1, logs: 1 } } })
 			const channels = {
 				vis: {
 					id: vis,

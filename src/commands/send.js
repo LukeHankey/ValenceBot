@@ -27,14 +27,8 @@ export default {
 						.addChannelTypes(ChannelType.GuildText)
 						.setRequired(true)
 				)
-				.addStringOption((option) =>
-					option.setName('message').setDescription('Write your message.').setRequired(true)
-				)
-				.addStringOption((option) =>
-					option
-						.setName('edit_message')
-						.setDescription('If editing a message, provide the message ID.')
-				)
+				.addStringOption((option) => option.setName('message').setDescription('Write your message.').setRequired(true))
+				.addStringOption((option) => option.setName('edit_message').setDescription('If editing a message, provide the message ID.'))
 		),
 	slash: async (interaction, perms) => {
 		if (!perms.admin) return interaction.reply(perms.errorA)
@@ -60,9 +54,7 @@ export default {
 					const botLogsAdminChannel = '794608385106509824'
 					const channel = interaction.guild.channels.cache.get(botLogsAdminChannel)
 					await channel.send({
-						content: `${interaction.member.toString()} sent a message to <#${
-							sentChannel.channelId
-						}>`
+						content: `${interaction.member.toString()} sent a message to <#${sentChannel.channelId}>`
 					})
 				}
 			} catch (err) {
@@ -138,8 +130,7 @@ export default {
 						} else {
 							if (!messageContent.length) {
 								return message.channel.send({
-									content:
-											'You must provide a message to send and a channel to send it to.'
+									content: 'You must provide a message to send and a channel to send it to.'
 								})
 							}
 							if (!messageCheck.value) {
@@ -147,11 +138,7 @@ export default {
 									content: `Make sure the messageID is valid and in <#${id}>`
 								})
 							}
-							if (
-								message.author.id === myID &&
-									messageCheck.value &&
-									messageContent.length
-							) {
+							if (message.author.id === myID && messageCheck.value && messageContent.length) {
 								const getChannel = client.channels.cache.get(id)
 								try {
 									const msg = await getChannel.messages.fetch(messageCheck.id)
@@ -173,11 +160,7 @@ export default {
 					const split = splitMessage(content)
 					const channelId = checkAndGetID(args[0]).id
 					const sendChannel = client.channels.cache.get(channelId)
-					if (
-						message.guild.channels.cache.has(channelId) &&
-							content &&
-							message.author.id !== myID
-					) {
+					if (message.guild.channels.cache.has(channelId) && content && message.author.id !== myID) {
 						// Has content and channel is in same server
 						split.forEach((text) => {
 							sendChannel.send({ content: text }).catch((err) => {
@@ -188,9 +171,7 @@ export default {
 							const botLogsAdminChannel = '903432222139355207'
 							const channel = message.guild.channels.cache.get(botLogsAdminChannel)
 							await channel.send({
-								content: `${message.member.toString()} sent a message to <#${
-									sendChannel.id
-								}>`
+								content: `${message.member.toString()} sent a message to <#${sendChannel.id}>`
 							})
 						}
 					}
@@ -200,11 +181,7 @@ export default {
 								catchMissingAccessError(err)
 							})
 						})
-					} else if (
-						message.author.id !== myID &&
-							content &&
-							!message.guild.channels.cache.has(checkAndGetID(args[0]).id)
-					) {
+					} else if (message.author.id !== myID && content && !message.guild.channels.cache.has(checkAndGetID(args[0]).id)) {
 						// Checks for non-owner, message content and if ID is not in same server
 						message.channel.send({
 							content: 'You are not able to send a message to a channel in another server.'

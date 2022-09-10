@@ -70,11 +70,7 @@ export default async (client, message) => {
 						])
 						.setTimestamp()
 					const banButtons = new ActionRowBuilder().addComponents([
-						new ButtonBuilder()
-							.setCustomId('Unban')
-							.setLabel('Unban')
-							.setStyle(ButtonStyle.Danger)
-							.setEmoji({ name: '🔓' }),
+						new ButtonBuilder().setCustomId('Unban').setLabel('Unban').setStyle(ButtonStyle.Danger).setEmoji({ name: '🔓' }),
 						new ButtonBuilder()
 							.setCustomId('Clear Buttons')
 							.setLabel('Clear Buttons')
@@ -87,10 +83,7 @@ export default async (client, message) => {
 						components: [banButtons]
 					})
 					const banCaseButton = new ActionRowBuilder().addComponents([
-						new ButtonBuilder()
-							.setLabel('Ban Case')
-							.setStyle(ButtonStyle.Link)
-							.setURL(banCase.url)
+						new ButtonBuilder().setLabel('Ban Case').setStyle(ButtonStyle.Link).setURL(banCase.url)
 					])
 
 					const bChannel = message.guild.channels.cache.get('624655664920395786')
@@ -159,10 +152,7 @@ export default async (client, message) => {
 					}
 				}
 			)
-			const { visCache, visContent } = await db.collection.findOne(
-				{ _id: 'Globals' },
-				{ projection: { visCache: 1, visContent: 1 } }
-			)
+			const { visCache, visContent } = await db.collection.findOne({ _id: 'Globals' }, { projection: { visCache: 1, visContent: 1 } })
 			const channels = new Set()
 			const guilds = new Set()
 			visCache.forEach((obj) => {
@@ -228,18 +218,13 @@ export default async (client, message) => {
 	}
 
 	try {
-		const commandDB = await db.collection.findOne(
-			{ _id: message.guild.id },
-			{ projection: { prefix: 1, roles: 1 } }
-		)
+		const commandDB = await db.collection.findOne({ _id: message.guild.id }, { projection: { prefix: 1, roles: 1 } })
 		if (!message.content.startsWith(commandDB.prefix)) return
 
 		const args = message.content.slice(commandDB.prefix.length).split(/ +/g)
 		const commandName = args.shift().toLowerCase()
 
-		const command =
-			client.commands.get(commandName) ||
-			client.commands.find((cmd) => cmd.aliases && cmd.aliases.includes(commandName)) // Command object
+		const command = client.commands.get(commandName) || client.commands.find((cmd) => cmd.aliases && cmd.aliases.includes(commandName)) // Command object
 
 		const aR = new Permissions('adminRole', commandDB, message)
 		const mR = new Permissions('modRole', commandDB, message)

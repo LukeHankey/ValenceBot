@@ -17,9 +17,7 @@ export default {
 		const channels = await db.channels
 		if (!perms.owner) {
 			return message.channel.send(perms.errorO).then(async () => {
-				client.channels.cache
-					.get(channels.logs)
-					.send('<@' + message.author.id + '> tried to use eval!')
+				client.channels.cache.get(channels.logs).send('<@' + message.author.id + '> tried to use eval!')
 				return message.reply({ content: 'you wish...', allowedMentions: { repliedUser: false } })
 			})
 		} else {

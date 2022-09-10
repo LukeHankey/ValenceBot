@@ -6,9 +6,7 @@ dotenv.config()
 
 export * from './users.js'
 export const getData = async (db) => {
-	const clanData = await fetch(
-		'http://services.runescape.com/m=clan-hiscores/members_lite.ws?clanName=Valence'
-	)
+	const clanData = await fetch('http://services.runescape.com/m=clan-hiscores/members_lite.ws?clanName=Valence')
 	const text = clanData.text()
 	const json = text.then((body) => csvJSON(body))
 
@@ -24,10 +22,7 @@ export const getData = async (db) => {
 		}
 
 		newData.forEach(async (clanUser) => {
-			clanUser = renameKeys(
-				{ Clanmate: 'clanMate', ' Clan Rank': 'clanRank', ' Total XP': 'totalXP', ' Kills': 'kills' },
-				clanUser
-			)
+			clanUser = renameKeys({ Clanmate: 'clanMate', ' Clan Rank': 'clanRank', ' Total XP': 'totalXP', ' Kills': 'kills' }, clanUser)
 			clanUser.discord = ''
 			clanUser.discActive = false
 			clanUser.alt = false

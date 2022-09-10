@@ -3,11 +3,7 @@ export const contextMenu = async (interaction, db, data) => {
 	const channels = await db.channels
 	switch (interaction.commandName) {
 	case 'Mark event as dead.':
-		if (
-			[data.merchChannel.channelID, data.merchChannel.otherChannelID].includes(
-				interaction.channel.id
-			)
-		) {
+		if ([data.merchChannel.channelID, data.merchChannel.otherChannelID].includes(interaction.channel.id)) {
 			try {
 				const dsfServerErrorChannel = client.channels.cache.get('884076361940078682')
 				const message = await interaction.channel.messages.fetch(interaction.targetId)

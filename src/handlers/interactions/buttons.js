@@ -202,8 +202,7 @@ export const buttons = async (interaction, db, data, cache) => {
 						.addOptions([
 							{
 								label: 'Yes, this was a password.',
-								description:
-										'Select this option to automatically remove it from our logs.',
+								description: 'Select this option to automatically remove it from our logs.',
 								value: 'yes'
 							},
 							{
@@ -233,9 +232,7 @@ export const buttons = async (interaction, db, data, cache) => {
 						.setStyle(ButtonStyle.Primary)
 				])
 				await interaction.update({ components: [row] })
-				console.log(
-					`Action: Password Button\nBy: ${interaction.user.username}\nUser: ${fetchUser.user.username}`
-				)
+				console.log(`Action: Password Button\nBy: ${interaction.user.username}\nUser: ${fetchUser.user.username}`)
 				cache.set(interaction.message.id, { ...fetchUser.user })
 				await buttonLogger.upload(userId)
 			}
@@ -282,9 +279,7 @@ export const buttons = async (interaction, db, data, cache) => {
 						.reverse()
 						.slice(0, 5)
 					await banChannel.send({
-						content: `${member.toString()} (${userId}) has been Muted.\n\n**Recent Hisory:**\n${displayFields.join(
-							'\n'
-						)}`
+						content: `${member.toString()} (${userId}) has been Muted.\n\n**Recent Hisory:**\n${displayFields.join('\n')}`
 					})
 				}
 			}
@@ -292,9 +287,7 @@ export const buttons = async (interaction, db, data, cache) => {
 		case 'Remove Merch Count':
 			{
 				if (interaction.user.bot) return
-				const item = data.merchChannel.deletions.messages.find(
-					(item) => item.messageID === interaction.message.id
-				)
+				const item = data.merchChannel.deletions.messages.find((item) => item.messageID === interaction.message.id)
 				if (item) {
 					await scouters.collection.updateOne(
 						{ userID: item.authorID },
@@ -326,9 +319,7 @@ export const buttons = async (interaction, db, data, cache) => {
 
 				try {
 					const profile = await buttonLogger.profile(userId)
-					const warningCount = profile?.warnings.filter(
-						(w) => w.button === buttonLogger.buttonName
-					)
+					const warningCount = profile?.warnings.filter((w) => w.button === buttonLogger.buttonName)
 					const displayFields = warningCount
 						.map((w) => {
 							return `${new Date(w.timestamp).toUTCString()}: ${w.content}`
@@ -374,10 +365,7 @@ export const buttons = async (interaction, db, data, cache) => {
 			break
 		case 'Open Ticket':
 			{
-				const ticketData = await db.collection.findOne(
-					{ _id: interaction.guild.id },
-					{ projection: { ticket: 1 } }
-				)
+				const ticketData = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
 				const ticket = new Ticket(interaction, ticketData, db)
 				const created = await ticket.create()
 				if (!ticket.memberIncluded) {
@@ -434,21 +422,13 @@ export const buttons = async (interaction, db, data, cache) => {
 				const banStatus = banEmbed.fields.filter((field) => field.name === 'Status')[0]
 				const updatedBanEmbed = new EmbedBuilder(banEmbed.data)
 					.setColor(Color.greenLight)
-					.spliceFields(
-						banEmbed.fields.indexOf(banStatus),
-						1,
-						Object.assign(banStatus, { value: 'Unbanned' })
-					)
+					.spliceFields(banEmbed.fields.indexOf(banStatus), 1, Object.assign(banStatus, { value: 'Unbanned' }))
 				try {
 					await interaction.guild.bans.remove(userId)
 				} catch (err) {
 					const updateErrorBanEmbed = new EmbedBuilder(banEmbed.data)
 						.setColor(Color.greenLight)
-						.spliceFields(
-							banEmbed.fields.indexOf(banStatus),
-							1,
-							Object.assign(banStatus, { value: err.message })
-						)
+						.spliceFields(banEmbed.fields.indexOf(banStatus), 1, Object.assign(banStatus, { value: err.message }))
 					interaction.reply({
 						content: `Unable to unban user: \`${err.message}\`.`,
 						ephemeral: true
@@ -465,17 +445,12 @@ export const buttons = async (interaction, db, data, cache) => {
 			break
 		case 'Create Application':
 			{
-				const ticketData = await db.collection.findOne(
-					{ _id: interaction.guild.id },
-					{ projection: { ticket: 1 } }
-				)
+				const ticketData = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
 				const ticket = new Ticket(interaction, ticketData, db)
 				if (interaction.member.id !== ticket.currentTicket.ticketStarter) {
 					return interaction.reply({ content: 'You cannot use this button.', ephemeral: true })
 				}
-				const applicationModal = new ModalBuilder()
-					.setCustomId('createApplication')
-					.setTitle('Create Application')
+				const applicationModal = new ModalBuilder().setCustomId('createApplication').setTitle('Create Application')
 
 				const instructions = new TextInputBuilder()
 					.setCustomId('instructions')
@@ -522,16 +497,11 @@ export const buttons = async (interaction, db, data, cache) => {
 			break
 		case 'Start Application':
 			{
-				const ticketData = await db.collection.findOne(
-					{ _id: interaction.guild.id },
-					{ projection: { ticket: 1 } }
-				)
+				const ticketData = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
 				const ticket = new Ticket(interaction, ticketData, db)
 
 				const applicationData = ticket.currentTicket.applicationModal
-				const applicationModal = new ModalBuilder()
-					.setCustomId(applicationData.custom_id)
-					.setTitle(applicationData.title)
+				const applicationModal = new ModalBuilder().setCustomId(applicationData.custom_id).setTitle(applicationData.title)
 
 				const actionRows = applicationData.components.map((c) => {
 					return new ActionRowBuilder().addComponents([new TextInputBuilder(c)])

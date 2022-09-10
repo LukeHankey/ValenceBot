@@ -25,10 +25,7 @@ export default {
 	run: async (client, message, args, perms, db) => {
 		const channels = await db.channels
 		const vFactsColl = new MongoCollection('Facts')
-		const { prefix } = await db.collection.findOne(
-			{ _id: message.guild.id },
-			{ projection: { prefix: 1 } }
-		)
+		const { prefix } = await db.collection.findOne({ _id: message.guild.id }, { projection: { prefix: 1 } })
 
 		const count = await vFactsColl.collection
 			.stats()
@@ -56,13 +53,9 @@ export default {
 				} else {
 					await vFactsColl.collection.insertOne({ Message: fact, number: count + 1 })
 					message.channel.send({
-						content: `Fact #${count + 1} has been added to the list!\n${code}${
-							count + 1
-						}. ${fact}${code}`
+						content: `Fact #${count + 1} has been added to the list!\n${code}${count + 1}. ${fact}${code}`
 					})
-					channels.logs.send(
-						`<@${message.author.id}> added a Fact: ${code}#${count + 1}. ${fact}${code}`
-					)
+					channels.logs.send(`<@${message.author.id}> added a Fact: ${code}#${count + 1}. ${fact}${code}`)
 				}
 			} else {
 				message.channel.send(perms.errorA)
@@ -75,16 +68,11 @@ export default {
 						await vFactsColl.collection
 							.findOne({ number: Number(args[1]) })
 							.then(async (r) => {
-								await vFactsColl.collection.updateMany(
-									{ number: { $gt: r.number } },
-									{ $inc: { number: -1 } }
-								)
+								await vFactsColl.collection.updateMany({ number: { $gt: r.number } }, { $inc: { number: -1 } })
 								message.channel.send({
 									content: `Fact #${r.number} has been deleted from the list!\n${code}${r.number}. ${r.Message}${code}`
 								})
-								channels.logs.send(
-									`<@${message.author.id}> removed a Fact: ${code}#${r.number}. ${r.Message}${code}`
-								)
+								channels.logs.send(`<@${message.author.id}> removed a Fact: ${code}#${r.number}. ${r.Message}${code}`)
 							})
 							.catch(async (err) => channels.errors.send(err))
 						await vFactsColl.collection.deleteOne({ number: Number(args[1]) })
@@ -109,16 +97,14 @@ export default {
 					await vFactsColl.collection
 						.findOneAndUpdate({ number: Number(args[1]) }, { $set: { Message: newMessage } })
 						.then(async (r) => {
-							await vFactsColl.collection
-								.findOne({ number: r.value.number })
-								.then(async (rs) => {
-									message.channel.send({
-										content: `Fact #${rs.number} has been edited successfully!\n${code}${r.value.number}. ${r.value.Message} >>> ${rs.Message}${code}`
-									})
-									channels.logs.send(
-										`<@${message.author.id}> edited Fact #${rs.number}: ${code}diff\n- ${r.value.Message}\n+ ${rs.Message}${code}`
-									)
+							await vFactsColl.collection.findOne({ number: r.value.number }).then(async (rs) => {
+								message.channel.send({
+									content: `Fact #${rs.number} has been edited successfully!\n${code}${r.value.number}. ${r.value.Message} >>> ${rs.Message}${code}`
 								})
+								channels.logs.send(
+									`<@${message.author.id}> edited Fact #${rs.number}: ${code}diff\n- ${r.value.Message}\n+ ${rs.Message}${code}`
+								)
+							})
 						})
 						.catch(async (err) => channels.errors.send(err))
 				} else if (args[1] === isNaN) {

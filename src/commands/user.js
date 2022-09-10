@@ -38,15 +38,11 @@ export default {
 			let member
 			if (type === 'id') {
 				if (user.discord !== '' && inDisc) {
-					member =
-						message.guild.members.cache.get(user.ID) ??
-						(await message.guild.members.fetch(user.ID))
+					member = message.guild.members.cache.get(user.ID) ?? (await message.guild.members.fetch(user.ID))
 				}
 			} else if (type === 'rsn') {
 				if (user.discord !== '' && user.discActive) {
-					member =
-						message.guild.members.cache.get(user.ID) ??
-						(await message.guild.members.fetch(user.ID))
+					member = message.guild.members.cache.get(user.ID) ?? (await message.guild.members.fetch(user.ID))
 				}
 			} else {
 				return
@@ -68,10 +64,7 @@ export default {
 			if (!desc) member = await message.guild.members.fetch(mem)
 			const embed = new EmbedBuilder()
 				.setTitle('User Profile - Not Found')
-				.setDescription(
-					desc ||
-						`User with Discord ID: ${mem} not found but they are in the Discord as ${member.toString()}.`
-				)
+				.setDescription(desc || `User with Discord ID: ${mem} not found but they are in the Discord as ${member.toString()}.`)
 				.setColor(Color.redLight)
 				.setTimestamp()
 			return message.channel.send({ embeds: [embed] })
@@ -81,10 +74,7 @@ export default {
 		if (args.length === 1 && checkNum(args[0], 1, Infinity)) {
 			// Discord ID
 			const userInDiscord = await message.guild.members.fetch(args[0])
-			let findUser = await usersColl.collection.findOne(
-				{ discord: args[0] },
-				{ projection: { _id: 0, kills: 0 } }
-			)
+			let findUser = await usersColl.collection.findOne({ discord: args[0] }, { projection: { _id: 0, kills: 0 } })
 			if (findUser) {
 				findUser = renameKeys(
 					{
@@ -117,10 +107,7 @@ export default {
 					'This person is not in the server but they are in the clan.'
 				)
 			} else {
-				await createEmbedForNoDB(
-					args[0],
-					'The person with this ID is not in the clan, nor in the server.'
-				)
+				await createEmbedForNoDB(args[0], 'The person with this ID is not in the clan, nor in the server.')
 			}
 		} else if (args.length >= 1 && ranks.includes(args[0].toLowerCase())) {
 			// Find by rank
@@ -163,8 +150,7 @@ export default {
 					await msg.react('◀️')
 					await msg.react('▶️')
 
-					const react = (reaction, user) =>
-						['◀️', '▶️'].includes(reaction.emoji.name) && user.id === message.author.id
+					const react = (reaction, user) => ['◀️', '▶️'].includes(reaction.emoji.name) && user.id === message.author.id
 					const collect = msg.createReactionCollector(react)
 
 					collect.on('collect', (r, u) => {
@@ -173,17 +159,13 @@ export default {
 								msg.reactions.resolve('▶️').users.remove(u.id)
 								page++
 								if (page === embeds.length) --page
-								msg.edit(
-									embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` })
-								)
+								msg.edit(embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` }))
 							}
 						} else if (r.emoji.name === '◀️') {
 							if (page !== 0) {
 								msg.reactions.resolve('◀️').users.remove(u.id)
 								--page
-								msg.edit(
-									embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` })
-								)
+								msg.edit(embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` }))
 							} else {
 								msg.reactions.resolve('◀️').users.remove(u.id)
 							}
@@ -214,30 +196,19 @@ export default {
 
 				switch (param) {
 				case 'id':
-					await usersColl.collection.updateOne(
-						{ clanMate },
-						{ $set: { discord: other.join(' '), discActive: true } }
-					)
+					await usersColl.collection.updateOne({ clanMate }, { $set: { discord: other.join(' '), discActive: true } })
 					return await message.react('✅')
 				case 'discord':
 				case 'discActive':
 					if (other.join(' ') === 'true' || other.join(' ') === 'false') {
-						await usersColl.collection.updateOne(
-							{ clanMate },
-							{ $set: { discActive: booleanConvert(other.join(' ')) } }
-						)
+						await usersColl.collection.updateOne({ clanMate }, { $set: { discActive: booleanConvert(other.join(' ')) } })
 						return await message.react('✅')
 					} else {
-						return message.channel.send(
-							'Active state must be set as either `true` or `false`.'
-						)
+						return message.channel.send('Active state must be set as either `true` or `false`.')
 					}
 				case 'alt':
 					if (other.join(' ') === 'true' || other.join(' ') === 'false') {
-						await usersColl.collection.updateOne(
-							{ clanMate },
-							{ $set: { alt: booleanConvert(other.join(' ')) } }
-						)
+						await usersColl.collection.updateOne({ clanMate }, { $set: { alt: booleanConvert(other.join(' ')) } })
 						return await message.react('✅')
 					} else {
 						return message.channel.send({

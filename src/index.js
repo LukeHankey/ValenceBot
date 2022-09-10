@@ -8,14 +8,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 const client = new Client({
-	intents: [
-		'Guilds',
-		'GuildMembers',
-		'GuildMessages',
-		'MessageContent',
-		'GuildMessageReactions',
-		'DirectMessages'
-	],
+	intents: ['Guilds', 'GuildMembers', 'GuildMessages', 'MessageContent', 'GuildMessageReactions', 'DirectMessages'],
 	partials: ['Message', 'Reaction', 'Channel']
 })
 client.commands = new Collection()

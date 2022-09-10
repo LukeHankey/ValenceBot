@@ -56,33 +56,17 @@ export default {
 			subcommand
 				.setName('add')
 				.setDescription('Adds a new event to the calendar.')
+				.addStringOption((option) => option.setName('date').setDescription('Set the date of the event.').setRequired(true))
+				.addStringOption((option) => option.setName('title').setDescription('Set the title of the event.').setRequired(true))
+				.addStringOption((option) => option.setName('time').setDescription('Set the time of the event.').setRequired(true))
 				.addStringOption((option) =>
-					option.setName('date').setDescription('Set the date of the event.').setRequired(true)
+					option.setName('announcement').setDescription('Provide the event announcement link to.').setRequired(true)
 				)
-				.addStringOption((option) =>
-					option.setName('title').setDescription('Set the title of the event.').setRequired(true)
-				)
-				.addStringOption((option) =>
-					option.setName('time').setDescription('Set the time of the event.').setRequired(true)
-				)
-				.addStringOption((option) =>
-					option
-						.setName('announcement')
-						.setDescription('Provide the event announcement link to.')
-						.setRequired(true)
-				)
-				.addUserOption((option) =>
-					option
-						.setName('member')
-						.setDescription('Set the main host of the event.')
-						.setRequired(true)
-				)
+				.addUserOption((option) => option.setName('member').setDescription('Set the main host of the event.').setRequired(true))
 				.addIntegerOption((option) =>
 					option
 						.setName('position')
-						.setDescription(
-							'If included, adds this event to the specified ordered position on the embed.'
-						)
+						.setDescription('If included, adds this event to the specified ordered position on the embed.')
 				)
 				.addStringOption((option) =>
 					option
@@ -94,14 +78,9 @@ export default {
 		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('edit')
-				.setDescription(
-					'Edit the current or specified calendar month by field name (Date|Event|Time|Announcement|Host).'
-				)
+				.setDescription('Edit the current or specified calendar month by field name (Date|Event|Time|Announcement|Host).')
 				.addIntegerOption((option) =>
-					option
-						.setName('position')
-						.setDescription('The ordered number in the calendar, top down from 1.')
-						.setRequired(true)
+					option.setName('position').setDescription('The ordered number in the calendar, top down from 1.').setRequired(true)
 				)
 				.addStringOption((option) =>
 					option
@@ -119,10 +98,7 @@ export default {
 						.setRequired(true)
 				)
 				.addStringOption((option) =>
-					option
-						.setName('value')
-						.setDescription('Set the new value for the specified field.')
-						.setRequired(true)
+					option.setName('value').setDescription('Set the new value for the specified field.').setRequired(true)
 				)
 				.addStringOption((option) =>
 					option
@@ -136,16 +112,9 @@ export default {
 				.setName('remove')
 				.setDescription('Remove an event from a specific calendar.')
 				.addIntegerOption((option) =>
-					option
-						.setName('position')
-						.setDescription('The ordered number in the calendar, top down from 1.')
-						.setRequired(true)
+					option.setName('position').setDescription('The ordered number in the calendar, top down from 1.').setRequired(true)
 				)
-				.addIntegerOption((option) =>
-					option
-						.setName('delete')
-						.setDescription('How many to delete. Defaults to 1 (current event).')
-				)
+				.addIntegerOption((option) => option.setName('delete').setDescription('How many to delete. Defaults to 1 (current event).'))
 				.addStringOption((option) =>
 					option
 						.setName('month')
@@ -158,16 +127,10 @@ export default {
 				.setName('move')
 				.setDescription('Reorder the calendar by moving events.')
 				.addIntegerOption((option) =>
-					option
-						.setName('from')
-						.setDescription('The ordered number in the calendar, top down from 1.')
-						.setRequired(true)
+					option.setName('from').setDescription('The ordered number in the calendar, top down from 1.').setRequired(true)
 				)
 				.addIntegerOption((option) =>
-					option
-						.setName('to')
-						.setDescription('The ordered number in the calendar, top down from 1.')
-						.setRequired(true)
+					option.setName('to').setDescription('The ordered number in the calendar, top down from 1.').setRequired(true)
 				)
 				.addStringOption((option) =>
 					option
@@ -426,10 +389,7 @@ export default {
 							{ _id: message.guild.id },
 							{ $set: { 'calendarID.$[month].events.$[fieldName].title': value } },
 							{
-								arrayFilters: [
-									{ 'month.month': month },
-									{ 'fieldName.title': { $ne: value } }
-								]
+								arrayFilters: [{ 'month.month': month }, { 'fieldName.title': { $ne: value } }]
 							}
 						)
 						break
@@ -449,15 +409,11 @@ export default {
 								{ _id: message.guild.id },
 								{
 									$set: {
-										'calendarID.$[month].events.$[fieldName].messageID':
-													value.split('/')[6]
+										'calendarID.$[month].events.$[fieldName].messageID': value.split('/')[6]
 									}
 								},
 								{
-									arrayFilters: [
-										{ 'month.month': month },
-										{ 'fieldName.messageID': { $ne: value } }
-									]
+									arrayFilters: [{ 'month.month': month }, { 'fieldName.messageID': { $ne: value } }]
 								}
 							)
 						}
@@ -472,10 +428,7 @@ export default {
 
 						calEmbed.spliceFields(position - 1, 1, {
 							name: existingFields.name,
-							value: existingFields.value.replace(
-								valueToReplace,
-								`${valueName}: ${value}`
-							)
+							value: existingFields.value.replace(valueToReplace, `${valueName}: ${value}`)
 						})
 						await message.edit({ embeds: [calEmbed] })
 					}
@@ -508,9 +461,9 @@ export default {
 				const log = message.embeds[0].fields.splice(position - 1, deleteNum)
 				const logValues = log.map((values) => `${values.name}\n${values.value}\n`)
 				channels.logs.send(
-					`Calendar updated - ${
-						interaction?.member.displayName
-					} removed event: \`\`\`diff\n- Removed\n${logValues.join('\n')}\`\`\``
+					`Calendar updated - ${interaction?.member.displayName} removed event: \`\`\`diff\n- Removed\n${logValues.join(
+						'\n'
+					)}\`\`\``
 				)
 
 				calEmbed.spliceFields(position - 1, deleteNum)
@@ -525,12 +478,9 @@ export default {
 					const items = item.split('\n')
 					const title = items[1].slice(7)
 					const roleId = items[5].match(/(\d+)/)[0]
-					const role =
-							message.guild.roles.cache.get(roleId) ?? (await message.guild.roles.fetch(roleId))
+					const role = message.guild.roles.cache.get(roleId) ?? (await message.guild.roles.fetch(roleId))
 					const eventTag =
-							role instanceof Collection
-								? role.first().name.slice(title.length + 2)
-								: role.name.slice(title.length + 2)
+							role instanceof Collection ? role.first().name.slice(title.length + 2) : role.name.slice(title.length + 2)
 
 					await removeEvents(interaction, db, 'calendar', dataFromDb, eventTag)
 				}
@@ -545,9 +495,7 @@ export default {
 				let monthFromDbTo
 				if (monthTo) {
 					monthFromDbTo = dataFromDb.calendarID.filter((obj) => {
-						return (
-							obj.month.toLowerCase() === monthTo.toLowerCase() && obj.year === currentYear
-						)
+						return obj.month.toLowerCase() === monthTo.toLowerCase() && obj.year === currentYear
 					})
 				}
 

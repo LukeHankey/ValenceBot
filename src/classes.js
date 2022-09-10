@@ -66,20 +66,14 @@ class Permissions {
 	}
 
 	ownerError () {
-		const embed = nEmbed(
-			'Permission Denied',
-			'You do not have permission to use this command!',
-			Color.redDark
-		).addFields([{ name: 'Only the bot owner can:', value: `<@!${this.owner}>` }])
+		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', Color.redDark).addFields([
+			{ name: 'Only the bot owner can:', value: `<@!${this.owner}>` }
+		])
 		return { embeds: [embed] }
 	}
 
 	error () {
-		const embed = nEmbed(
-			'Permission Denied',
-			'You do not have permission to use this command!',
-			Color.redDark
-		).addFields([
+		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', Color.redDark).addFields([
 			{
 				name: 'Only the following Roles & Users can:',
 				value: `${this.higherRoles().length > 0 ? this.higherRoles().join(', ') : '0'}`,
@@ -160,9 +154,7 @@ class ScouterCheck {
 	get role () {
 		return new Promise(async (resolve) => {
 			const guild = await this.guild
-			return resolve(
-				guild.roles.cache.find((r) => r.name.toLowerCase() === this.roleName.toLowerCase())
-			) // Find the guild and then find the role
+			return resolve(guild.roles.cache.find((r) => r.name.toLowerCase() === this.roleName.toLowerCase())) // Find the guild and then find the role
 		})
 	}
 
@@ -197,9 +189,9 @@ class ScouterCheck {
 		for (const values of scouts) {
 			fields.push({
 				name: `${values.author}`,
-				value: `ID: ${values.userID}\nMerch Count: ${values.count}\nOther Count: ${
-					values.otherCount
-				}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`,
+				value: `ID: ${values.userID}\nMerch Count: ${values.count}\nOther Count: ${values.otherCount}\nActive for: ${ms(
+					values.lastTimestamp - values.firstTimestamp
+				)}`,
 				inline: true
 			})
 		}

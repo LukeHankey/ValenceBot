@@ -5,10 +5,7 @@ export default async (client, role) => {
 	await db.collection.findOne({ _id: role.guild.id }).then(async (res) => {
 		if (res.adminRole === `<@&${role.id}>`) {
 			await db.collection
-				.findOneAndUpdate(
-					{ adminRole: `<@&${role.id}>` },
-					{ $set: { adminRole: res.defaultAdminRole } }
-				)
+				.findOneAndUpdate({ adminRole: `<@&${role.id}>` }, { $set: { adminRole: res.defaultAdminRole } })
 				.then((r) => {
 					client.users.cache.get(role.guild.ownerId).send({
 						content: `Your server Admin role was deleted in \`${role.guild.name}\` and has been set back to the default. Make sure to reset your Admin role to allow your server admins to use admin commands! Use \`${r.value.prefix}settings adminRole set <NEW ROLE>\` in ${role.guild.name} (Must have the Administrator permission)`

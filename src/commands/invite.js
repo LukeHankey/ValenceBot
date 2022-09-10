@@ -17,10 +17,7 @@ export default {
 			scopes: ['bot', 'applications.commands'],
 			permissions: 123212262595n
 		})
-		const embed = new EmbedBuilder()
-			.setTitle('Here is your invite link.')
-			.setURL(invite)
-			.setColor(Color.cyan)
+		const embed = new EmbedBuilder().setTitle('Here is your invite link.').setURL(invite).setColor(Color.cyan)
 		await interaction.reply({ embeds: [embed], ephemeral: true })
 	}
 }

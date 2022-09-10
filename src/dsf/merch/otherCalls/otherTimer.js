@@ -6,18 +6,12 @@ export const otherTimer = (message, db) => {
 		const channels = await db.channels
 		const {
 			merchChannel: { otherMessages }
-		} = await db.collection.findOne(
-			{ _id: message.guild.id },
-			{ projection: { 'merchChannel.otherMessages': 1 } }
-		)
+		} = await db.collection.findOne({ _id: message.guild.id }, { projection: { 'merchChannel.otherMessages': 1 } })
 		for await (const { messageID, time } of otherMessages) {
 			try {
 				if (Date.now() - time > 600_000) {
 					const fetched = await message.channel.messages.fetch(messageID)
-					await db.collection.updateOne(
-						{ _id: message.guild.id },
-						{ $pull: { 'merchChannel.otherMessages': { messageID } } }
-					)
+					await db.collection.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.otherMessages': { messageID } } })
 					await fetched.react('☠️')
 				}
 			} catch (e) {

@@ -46,8 +46,7 @@ export const vEvents = async (client, message, channels) => {
 		if (eventTitle[0].includes('Date')) return
 
 		try {
-			const filter = (reaction, user) =>
-				['❌', '✅'].includes(reaction.emoji.name) && user.id === message.author.id
+			const filter = (reaction, user) => ['❌', '✅'].includes(reaction.emoji.name) && user.id === message.author.id
 			const collectOne = await message.awaitReactions({
 				filter,
 				max: 1,
@@ -69,19 +68,13 @@ export const vEvents = async (client, message, channels) => {
 				const timeRegex =
 					/^(Time(:)?\s)+(([1-6]+(\s)?(day(s)?|week(s)?|month(s)?)(\s)?$)?|(([0-1]\d|2[0-3]):([0-5]\d)\s?)?((-|to)+\s?(([0-1]\d|2[0-3]):([0-5]\d))?)?)$/im
 				const link = `https://discord.com/channels/${last.guild.id}/${last.channel.id}/${last.id}`
-				const thisCal = await DB.calendarID.filter(
-					(prop) => prop.year === currentYear && prop.month === currentMonth
-				)
+				const thisCal = await DB.calendarID.filter((prop) => prop.year === currentYear && prop.month === currentMonth)
 				let m = await calChannel.messages.fetch(thisCal[0].messageID)
 				m = m.first()
 				let dateR, timeR
 
-				dateRegex.exec(last.content) === null
-					? (dateR = 'null')
-					: (dateR = dateRegex.exec(last.content)[0])
-				timeRegex.exec(last.content) === null
-					? (timeR = 'null')
-					: (timeR = timeRegex.exec(last.content)[0])
+				dateRegex.exec(last.content) === null ? (dateR = 'null') : (dateR = dateRegex.exec(last.content)[0])
+				timeRegex.exec(last.content) === null ? (timeR = 'null') : (timeR = timeRegex.exec(last.content)[0])
 
 				const addToCal = async (date, time) => {
 					if (date !== 'null') {

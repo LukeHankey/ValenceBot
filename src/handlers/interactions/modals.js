@@ -69,9 +69,9 @@ export const modals = async (interaction, db, data) => {
 			fields.push(
 				{
 					name: `${values.author}`,
-					value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nGame count: ${
-						values.game
-					}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`,
+					value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nGame count: ${values.game}\nActive for: ${ms(
+						values.lastTimestamp - values.firstTimestamp
+					)}`,
 					inline: true
 				},
 				{
@@ -116,8 +116,7 @@ export const modals = async (interaction, db, data) => {
 				])
 
 				await interaction.reply({
-					content:
-							'Your application is all set up! Click the `Start Application` button to view.',
+					content: 'Your application is all set up! Click the `Start Application` button to view.',
 					ephemeral: true
 				})
 
@@ -134,10 +133,7 @@ export const modals = async (interaction, db, data) => {
 			}
 			break
 		case 'startApplication': {
-			const ticketData = await db.collection.findOne(
-				{ _id: interaction.guild.id },
-				{ projection: { ticket: 1 } }
-			)
+			const ticketData = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
 			const ticket = new Ticket(interaction, ticketData, db)
 			const ticketChannel = await ticket.create()
 

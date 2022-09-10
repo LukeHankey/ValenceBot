@@ -143,9 +143,7 @@ const removeEvents = async (message, db, module, database, eventTag) => {
 		updateEmbed.spliceFields(foundIndex, 1)
 		calMessage.edit({ embeds: [updateEmbed] })
 		return channels.logs.send(
-			`Calendar updated - ${
-				message.member.displayName
-			} removed event: \`\`\`diff\n- Removed\n${removedItem.join()}\`\`\``
+			`Calendar updated - ${message.member.displayName} removed event: \`\`\`diff\n- Removed\n${removedItem.join()}\`\`\``
 		)
 	} catch (err) {
 		return channels.errors.send(err)
@@ -212,9 +210,7 @@ const paginateFollowUP = async (msg, { author }, page, embeds, client) => {
 				msg.edit({
 					embeds: [
 						embeds[page].setFooter({
-							text: `Page ${page + 1} of ${
-								embeds.length
-							} - Something wrong or missing? Let a Moderator+ know!`,
+							text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`,
 							iconURL: client.user.displayAvatarURL()
 						})
 					]
@@ -227,9 +223,7 @@ const paginateFollowUP = async (msg, { author }, page, embeds, client) => {
 				msg.edit({
 					embeds: [
 						embeds[page].setFooter({
-							text: `Page ${page + 1} of ${
-								embeds.length
-							} - Something wrong or missing? Let a Moderator+ know!`,
+							text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`,
 							iconURL: client.user.displayAvatarURL()
 						})
 					]

@@ -83,11 +83,7 @@ export default {
 			}
 
 			return message.channel.send({
-				embeds: [
-					embed
-						.setColor(Color.cyan)
-						.setDescription(`Available roles to add:\n ${allAvailableRoles}`)
-				]
+				embeds: [embed.setColor(Color.cyan).setDescription(`Available roles to add:\n ${allAvailableRoles}`)]
 			})
 		}
 
@@ -99,9 +95,7 @@ export default {
 		const removed = []
 
 		rID.forEach((e) => {
-			memberRole.cache.has(e)
-				? memberRole.remove(rID) && removed.push(rNames)
-				: memberRole.add(rID) && added.push(rNames)
+			memberRole.cache.has(e) ? memberRole.remove(rID) && removed.push(rNames) : memberRole.add(rID) && added.push(rNames)
 		})
 
 		const fieldAdd = {
@@ -126,9 +120,7 @@ export default {
 					embed
 						.setColor(Color.redLight)
 						.addFields(wrongAdd)
-						.setDescription(
-							"Can't find the role name? Use `;sa roles` for a full list of self-assignable role names."
-						)
+						.setDescription("Can't find the role name? Use `;sa roles` for a full list of self-assignable role names.")
 				]
 			  })
 			: wrong.length
@@ -136,9 +128,7 @@ export default {
 					embeds: [
 						embed
 							.addFields(fieldsPlus)
-							.setDescription(
-								"Can't find the role name? Use `;sa roles` for a full list of self-assignable role names."
-							)
+							.setDescription("Can't find the role name? Use `;sa roles` for a full list of self-assignable role names.")
 					]
 			  })
 				: message.channel.send({ embeds: [embed.addFields(fields)] })

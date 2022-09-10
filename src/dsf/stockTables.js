@@ -4,10 +4,7 @@ export const updateStockTables = async (client, db) => {
 	const {
 		merchantWishes: { range },
 		futureStock
-	} = await db.collection.findOne(
-		{ _id: '420803245758480405' },
-		{ projection: { 'merchantWishes.range': 1, futureStock: 1 } }
-	)
+	} = await db.collection.findOne({ _id: '420803245758480405' }, { projection: { 'merchantWishes.range': 1, futureStock: 1 } })
 
 	const increaseRange = (oldRange) => {
 		const split = oldRange.split(':')
