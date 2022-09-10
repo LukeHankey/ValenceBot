@@ -172,7 +172,6 @@ export default {
 			case 'scouter':
 				if (num) {
 					scout = new ScouterCheck('Scouter', parseInt(num))
-					await classVars(scout, message.guild.name, res, client, scouter)
 					scout.send(message.channel.id)
 				} else {
 					const scoutCheck = await scout._checkForScouts()
@@ -184,7 +183,6 @@ export default {
 			case 'verified':
 				if (num) {
 					vScout = new ScouterCheck('Verified Scouter', parseInt(num))
-					await classVars(vScout, message.guild.name, res, client, scouter)
 					vScout.send(message.channel.id)
 				} else {
 					const verifiedCheck = await vScout._checkForScouts()
