@@ -69,7 +69,7 @@ const removeScouters = async (options) => {
 	const THREE_MONTHS = 7.884e+9
 	const { scoutProfiles, database, tracker } = options
 	const channels = await database.channels
-	const [scouter, ..._] = scoutProfiles
+	const scouter = scoutProfiles[0]
 
 	// Includes both scouters and verified
 	const scoutersAtRisk = scouter._scouters.filter(sc => {
