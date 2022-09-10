@@ -63,6 +63,7 @@ export default {
 				return `${code}fix\n${text}${code}`
 			}
 
+			const oldScoutCheck = () => Boolean(userData[0].oldScout)
 			for (const values of userData) {
 				if (values === null) {
 					return message.channel.send('There is no profile for that Id.')
@@ -70,8 +71,10 @@ export default {
 				fields.push(
 					{
 						name: `${values.author}`,
-						value: `Merch count: ${values.count}\nOther count: ${
-							values.otherCount
+						value: `Merch count: ${values.count} ${
+							oldScoutCheck() ? `(+${values.oldScout.count})` : ''
+						}\nOther count: ${values.otherCount} ${
+							oldScoutCheck() ? `(+${values.oldScout.otherCount})` : ''
 						}\nGame count: ${values.game}\nActive for: ${ms(
 							values.lastTimestamp - values.firstTimestamp
 						)}`,
