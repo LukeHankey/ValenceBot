@@ -120,22 +120,15 @@ export const addMerchCount = async (client, message, db, scouter) => {
 				{
 					$addToSet: {
 						'merchChannel.messages': {
-							$each: [{
-								messageID: log[msgs].id,
-								content: log[msgs].content,
-								time: log[msgs].createdTimestamp,
-								author: authorName,
-								userID: userId
-							}]
-						},
-						'merchChannel.spamProtection': {
-							$each: [{
-								messageID: log[msgs].id,
-								content: log[msgs].content,
-								time: log[msgs].createdTimestamp,
-								author: authorName,
-								userID: userId
-							}]
+							$each: [
+								{
+									messageID: log[msgs].id,
+									content: log[msgs].content,
+									time: log[msgs].createdTimestamp,
+									author: authorName,
+									userID: userId
+								}
+							]
 						}
 					}
 
