@@ -65,11 +65,61 @@ const removeInactives = async (name, db, scoutTracker) => {
 	}
 }
 
+const removeScouters = async (options) => {
+	const THREE_MONTHS = 7.884e+9
+	const { scoutProfiles, database, tracker } = options
+	const channels = await database.channels
+	const [scouter, ..._] = scoutProfiles
+
+	// Includes both scouters and verified
+	const scoutersAtRisk = scouter._scouters.filter(sc => {
+		const lastThreeMonths = Date.now() - sc.lastTimestamp >= THREE_MONTHS
+		return lastThreeMonths && !sc.oldScout
+	})
+	const dsfServer = await scouter.guild
+	for (const profile of scoutersAtRisk) {
+		console.log(profile)
+		for (const scout of scoutProfiles) {
+			try {
+				// Remove both roles, if they have both
+				await dsfServer.members.removeRole(
+					{
+						user: profile.userID,
+						role: await scout.role
+					}
+				)
+			} catch (err) {
+				channels.errors.send(err)
+			}
+		}
+		// Update DB
+		await tracker.collection.updateOne(
+			{ userID: profile.userID },
+			{
+				$set: {
+					oldScout: {
+						count: profile.count,
+						otherCount: profile.otherCount,
+						firstTimestamp: profile.firstTimestamp,
+						lastTimestamp: profile.lastTimestamp,
+						firstPost: true
+					},
+					count: 0,
+					otherCount: 0,
+					assigned: [],
+					active: 0,
+					lastTimestamp: Date.now() // Give them 6 months before being cleared from DB
+				}
+			})
+	}
+}
+
 export {
 	scout,
 	vScout,
 	classVars,
 	addedRoles,
 	removedRoles,
-	removeInactives
+	removeInactives,
+	removeScouters
 }

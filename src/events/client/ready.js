@@ -2,7 +2,7 @@
 /* eslint-disable no-octal */
 import { MongoCollection } from '../../DataBase.js'
 import { codeBlock } from 'discord.js'
-import { skullTimer, otherTimer, updateStockTables, scout, vScout, classVars, addedRoles, removedRoles, removeInactives } from '../../dsf/index.js'
+import { skullTimer, otherTimer, updateStockTables, scout, vScout, classVars, addedRoles, removedRoles, removeInactives, removeScouters } from '../../dsf/index.js'
 import { sendFact, updateRoles } from '../../valence/index.js'
 import cron from 'node-cron'
 
@@ -98,6 +98,11 @@ export default async client => {
 			removedRoles(role, scoutTracker)
 		})
 		removeInactives(scout, db, scoutTracker)
+		removeScouters({
+			scoutProfiles: [scout, vScout],
+			database: db,
+			tracker: scoutTracker
+		})
 
 		// Daily Reset
 		if (new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
