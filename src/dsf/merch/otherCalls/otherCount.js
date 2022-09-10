@@ -77,17 +77,33 @@ export const addOtherCount = async (client, message, db, scouters) => {
 				return await dsfServerErrorChannel.send({ content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``, components: [buttonSelection] })
 			}
 			console.log(`Old other: ${msg[0].author.username} (${message.content})`, msg[0].author.id)
-			await scouters.collection.updateOne({ userID: findMessage.userID }, {
-				$inc: {
-					otherCount: 1
-				},
-				$set: {
-					author: msg[0].member?.nickname ?? msg[0].author.username,
-					lastTimestamp: msg[0].createdTimestamp,
-					lastTimestampReadable: new Date(msg[0].createdTimestamp),
-					active: 1
-				}
-			})
+			if (findMessage.oldScout && findMessage.oldScout.firstPost) {
+				// If a scouter was inactive and becomes active again, reset fields.
+				await scouters.collection.updateOne({ userID: findMessage.userID }, {
+					$inc: { otherCount: 1 },
+					$set: {
+						'oldScout.firstPost': false,
+						author: userN.nickname ?? userN.displayName,
+						firstTimestamp: msg[0].createdTimestamp,
+						firstTimestampReadable: new Date(msg[0].createdTimestamp),
+						lastTimestamp: msg[0].createdTimestamp,
+						lastTimestampReadable: new Date(msg[0].createdTimestamp),
+						active: 1
+					}
+				})
+			} else {
+				await scouters.collection.updateOne({ userID: findMessage.userID }, {
+					$inc: {
+						otherCount: 1
+					},
+					$set: {
+						author: msg[0].member?.nickname ?? msg[0].author.username,
+						lastTimestamp: msg[0].createdTimestamp,
+						lastTimestampReadable: new Date(msg[0].createdTimestamp),
+						active: 1
+					}
+				})
+			}
 		}
 
 		// Dupe call logging

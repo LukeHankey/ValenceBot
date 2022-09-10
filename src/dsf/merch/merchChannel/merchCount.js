@@ -91,17 +91,33 @@ export const addMerchCount = async (client, message, db, scouter) => {
 				return await dsfServerErrorChannel.send({ content: ` \`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.user.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``, components: [buttonSelection, buttonSelectionExtra] })
 			}
 			console.log(`Old: ${userN.displayName} (${message.content})`, findMessage.userID === userN.id, findMessage.userID, userN.id)
-			await scouter.collection.updateOne({ userID: findMessage.userID }, {
-				$inc: {
-					count: 1
-				},
-				$set: {
-					author: userN.nickname ?? userN.displayName,
-					lastTimestamp: msg[0].createdTimestamp,
-					lastTimestampReadable: new Date(msg[0].createdTimestamp),
-					active: 1
-				}
-			})
+			if (findMessage.oldScout && findMessage.oldScout.firstPost) {
+				// If a scouter was inactive and becomes active again, reset fields.
+				await scouter.collection.updateOne({ userID: findMessage.userID }, {
+					$inc: { count: 1 },
+					$set: {
+						'oldScout.firstPost': false,
+						author: userN.nickname ?? userN.displayName,
+						firstTimestamp: msg[0].createdTimestamp,
+						firstTimestampReadable: new Date(msg[0].createdTimestamp),
+						lastTimestamp: msg[0].createdTimestamp,
+						lastTimestampReadable: new Date(msg[0].createdTimestamp),
+						active: 1
+					}
+				})
+			} else {
+				await scouter.collection.updateOne({ userID: findMessage.userID }, {
+					$inc: {
+						count: 1
+					},
+					$set: {
+						author: userN.nickname ?? userN.displayName,
+						lastTimestamp: msg[0].createdTimestamp,
+						lastTimestampReadable: new Date(msg[0].createdTimestamp),
+						active: 1
+					}
+				})
+			}
 			if (!(await checkMemberRole(userN.id, message))) {
 				console.log(`Adding ${userN.displayName} (${userN.id}) to channel overrides.`)
 				await merchChannelID.permissionOverwrites.create(userN.id, { AddReactions: true })
