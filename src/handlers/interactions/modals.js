@@ -14,31 +14,51 @@ export const modals = async (interaction, db, data) => {
 
 			const MAX_COMPONENTS = 5
 			if (parsedData.components.length > MAX_COMPONENTS) {
-				return interaction.reply({ content: `Only ${MAX_COMPONENTS} fields are allowed, you provided ${parsedData.components.length}.\n\n\`\`\`json\n${unparsedData}\`\`\``, ephemeral: true })
+				return interaction.reply({
+					content: `Only ${MAX_COMPONENTS} fields are allowed, you provided ${parsedData.components.length}.\n\n\`\`\`json\n${unparsedData}\`\`\``,
+					ephemeral: true
+				})
 			}
 
 			return parsedData
 		} catch (err) {
-			return interaction.reply({ content: `It looks like you missed something. \`${err.name}: ${err.message}\``, ephemeral: true })
+			return interaction.reply({
+				content: `It looks like you missed something. \`${err.name}: ${err.message}\``,
+				ephemeral: true
+			})
 		}
 	}
 
 	const sendUserInfo = async (id, uData) => {
-		const botRole = interaction.guild.members.me.roles.cache.find(r => r.managed)
+		const botRole = interaction.guild.members.me.roles.cache.find((r) => r.managed)
 		const fetchedMember = await interaction.guild.members.fetch(id)
 		const embed = new EmbedBuilder()
 			.setTitle(`Member Profile - ${id}`)
 			.setDescription('Current tracked stats in this server.')
 			.setColor(Color.aqua)
 			.setThumbnail(interaction.user.displayAvatarURL())
-			.setFooter({ text: 'Something wrong or missing? Let a Moderator+ know!', iconURL: interaction.client.user.displayAvatarURL() })
+			.setFooter({
+				text: 'Something wrong or missing? Let a Moderator+ know!',
+				iconURL: interaction.client.user.displayAvatarURL()
+			})
 			.setTimestamp()
 		const userData = [await uData.collection.findOne({ userID: id })]
-		const memberAssignedRoles = fetchedMember.roles.cache.filter(r => r.id !== interaction.guild.id && r.position > botRole.position).sort((a, b) => b.position - a.position).map(role => `<@&${role.id}>`)
-		const memberSelfRoles = fetchedMember.roles.cache.filter(r => r.id !== interaction.guild.id && r.position < botRole.position).map(role => `<@&${role.id}>`)
+		const memberAssignedRoles = fetchedMember.roles.cache
+			.filter((r) => r.id !== interaction.guild.id && r.position > botRole.position)
+			.sort((a, b) => b.position - a.position)
+			.map((role) => `<@&${role.id}>`)
+		const memberSelfRoles = fetchedMember.roles.cache
+			.filter((r) => r.id !== interaction.guild.id && r.position < botRole.position)
+			.map((role) => `<@&${role.id}>`)
 		const fields = []
 
-		if (!userData.length) return new EmbedBuilder().setTitle('I found nothing...').setDescription(`${fetchedMember.displayName} does not have a scouting profile.`).setColor(Color.redLight).setTimestamp()
+		if (!userData.length) {
+			return new EmbedBuilder()
+				.setTitle('I found nothing...')
+				.setDescription(`${fetchedMember.displayName} does not have a scouting profile.`)
+				.setColor(Color.redLight)
+				.setTimestamp()
+		}
 
 		function _text (text) {
 			const code = '```'
@@ -47,10 +67,24 @@ export const modals = async (interaction, db, data) => {
 
 		for (const values of userData) {
 			fields.push(
-				{ name: `${values.author}`, value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nGame count: ${values.game}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true },
-				{ name: 'Assigned Roles:', value: `${memberAssignedRoles.join(', ') || _text('None')}`, inline: true },
+				{
+					name: `${values.author}`,
+					value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nGame count: ${
+						values.game
+					}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`,
+					inline: true
+				},
+				{
+					name: 'Assigned Roles:',
+					value: `${memberAssignedRoles.join(', ') || _text('None')}`,
+					inline: true
+				},
 				{ name: '\u200B', value: '\u200B', inline: true },
-				{ name: 'Self-Assign Roles:', value: `${memberSelfRoles.join(', ') || _text('None')}`, inline: true }
+				{
+					name: 'Self-Assign Roles:',
+					value: `${memberSelfRoles.join(', ') || _text('None')}`,
+					inline: true
+				}
 				// Think about if there is anything else to view in the user profile stats
 			)
 		}
@@ -59,15 +93,21 @@ export const modals = async (interaction, db, data) => {
 
 	try {
 		switch (interaction.customId) {
-		case 'createApplication': {
-			const applicationFields = interaction.fields.getTextInputValue('application')
-			const parsedData = validateModalApplication(applicationFields)
-			const components = parsedData.components.map((c, i) => (new ActionRowBuilder({ ...c, type: 4, custom_id: `${c.label}_${i}` })))
+		case 'createApplication':
+			{
+				const applicationFields = interaction.fields.getTextInputValue('application')
+				const parsedData = validateModalApplication(applicationFields)
+				const components = parsedData.components.map(
+					(c, i) => new ActionRowBuilder({ ...c, type: 4, custom_id: `${c.label}_${i}` })
+				)
 
-			const newModal = new ModalBuilder({ components, custom_id: 'startApplication', title: parsedData.title }).toJSON()
+				const newModal = new ModalBuilder({
+					components,
+					custom_id: 'startApplication',
+					title: parsedData.title
+				}).toJSON()
 
-			const startApplication = new ActionRowBuilder()
-				.addComponents([
+				const startApplication = new ActionRowBuilder().addComponents([
 					new ButtonBuilder()
 						.setCustomId('Start Application')
 						.setLabel('Start Application')
@@ -75,30 +115,43 @@ export const modals = async (interaction, db, data) => {
 						.setEmoji({ name: '📜' })
 				])
 
-			await interaction.reply({ content: 'Your application is all set up! Click the `Start Application` button to view.', ephemeral: true })
+				await interaction.reply({
+					content:
+							'Your application is all set up! Click the `Start Application` button to view.',
+					ephemeral: true
+				})
 
-			await interaction.message.edit({ components: [startApplication] })
+				await interaction.message.edit({ components: [startApplication] })
 
-			await db.collection.findOneAndUpdate({ _id: interaction.guild.id, 'ticket.messageId': interaction.message.id }, {
-				$set: {
-					'ticket.$.applicationModal': newModal
-				}
-			})
-		}
+				await db.collection.findOneAndUpdate(
+					{ _id: interaction.guild.id, 'ticket.messageId': interaction.message.id },
+					{
+						$set: {
+							'ticket.$.applicationModal': newModal
+						}
+					}
+				)
+			}
 			break
 		case 'startApplication': {
-			const ticketData = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
+			const ticketData = await db.collection.findOne(
+				{ _id: interaction.guild.id },
+				{ projection: { ticket: 1 } }
+			)
 			const ticket = new Ticket(interaction, ticketData, db)
 			const ticketChannel = await ticket.create()
 
 			const currentTicketComponents = ticket.currentTicket.applicationModal.components
-			const mappedComponents = currentTicketComponents.map(component => {
+			const mappedComponents = currentTicketComponents.map((component) => {
 				const inputValue = interaction.fields.getTextInputValue(component.custom_id)
 				return new EmbedBuilder()
 					.setTitle(component.label)
 					.setDescription(inputValue)
 					.setTimestamp()
-					.setAuthor({ name: interaction.member.displayName, iconURL: interaction.member.avatarURL() })
+					.setAuthor({
+						name: interaction.member.displayName,
+						iconURL: interaction.member.avatarURL()
+					})
 					.setColor(Color.cyan)
 			})
 
@@ -109,7 +162,10 @@ export const modals = async (interaction, db, data) => {
 			} else {
 				await ticketChannel.send({ embeds: [...mappedComponents] })
 			}
-			await interaction.reply({ content: `Your application has been submitted and is now being reviewed by <@&${ticket.roleId}>. Thank you!`, ephemeral: true })
+			await interaction.reply({
+				content: `Your application has been submitted and is now being reviewed by <@&${ticket.roleId}>. Thank you!`,
+				ephemeral: true
+			})
 		}
 		}
 	} catch (err) {

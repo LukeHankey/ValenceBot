@@ -6,7 +6,8 @@ export default async (client, guild) => {
 	try {
 		await db.collection.deleteOne({ _id: `${guild.id}` })
 
-		channels.logs.send(`The bot has left **${guild.name}**. The bot is in a total of ${client.guilds.cache.size} servers.
+		channels.logs
+			.send(`The bot has left **${guild.name}**. The bot is in a total of ${client.guilds.cache.size} servers.
     \n\`\`\`diff\n+ Server name: ${guild.name}
 + Server ID: ${guild.id}
 + Channel count: ${guild.channels.cache.size}

@@ -7,41 +7,51 @@ export default async (client, message) => {
 	const ticketData = await db.collection.findOne({ _id: message.guild.id }, { projection: { ticket: 1 } })
 
 	if (!ticketData || !ticketData.ticket) return
-	const [currentTicket] = ticketData.ticket.filter(t => t.messageId === message.id)
+	const [currentTicket] = ticketData.ticket.filter((t) => t.messageId === message.id)
 	if (currentTicket) {
 		if (message.id === currentTicket.messageId) {
-			return await db.collection.findOneAndUpdate({ _id: message.guild.id }, {
-				$pull: {
-					ticket: { messageId: message.id }
+			return await db.collection.findOneAndUpdate(
+				{ _id: message.guild.id },
+				{
+					$pull: {
+						ticket: { messageId: message.id }
+					}
 				}
-			})
+			)
 		}
 	}
 
-	const fullDB = await db.collection.findOne({ _id: message.guild.id, merchChannel: { $exists: true } }, { projection: { merchChannel: { messages: 1, channelID: 1 } } })
+	const fullDB = await db.collection.findOne(
+		{ _id: message.guild.id, merchChannel: { $exists: true } },
+		{ projection: { merchChannel: { messages: 1, channelID: 1 } } }
+	)
 	if (!fullDB) return
 	const merchChannelID = message.guild.channels.cache.get(fullDB.merchChannel.channelID)
 
 	const botServerChannel = await client.channels.cache.get('784543962174062608')
 	const dsfServerChannel = await client.channels.cache.get('884076361940078682')
 
-	const buttonSelection = new ActionRowBuilder()
-		.addComponents([
-			new ButtonBuilder()
-				.setCustomId('Remove Merch Count')
-				.setLabel('Remove Merch Count')
-				.setStyle(ButtonStyle.Success)
-				.setEmoji({ name: '✅' })
-		])
+	const buttonSelection = new ActionRowBuilder().addComponents([
+		new ButtonBuilder()
+			.setCustomId('Remove Merch Count')
+			.setLabel('Remove Merch Count')
+			.setStyle(ButtonStyle.Success)
+			.setEmoji({ name: '✅' })
+	])
 
 	const sendAndUpdate = async (webhook, embed, data) => {
 		const sentChannel = await webhook.send({ embeds: [embed], components: [buttonSelection] })
 		const { userID } = data
 		if (sentChannel.guild.id === message.guild.id) {
-			await db.collection.updateOne({ _id: message.guild.id }, {
-				$pull: { 'merchChannel.messages': { messageID: data.messageID } },
-				$addToSet: { 'merchChannel.deletions.messages': { messageID: sentChannel.id, authorID: userID } }
-			})
+			await db.collection.updateOne(
+				{ _id: message.guild.id },
+				{
+					$pull: { 'merchChannel.messages': { messageID: data.messageID } },
+					$addToSet: {
+						'merchChannel.deletions.messages': { messageID: sentChannel.id, authorID: userID }
+					}
+				}
+			)
 		}
 	}
 
@@ -55,7 +65,11 @@ export default async (client, message) => {
 
 	const deletionLog = fetchedLogs.entries.first()
 
-	if (!deletionLog) return console.log(`A message by ${message.author.tag} was deleted, but no relevant audit logs were found.`)
+	if (!deletionLog) {
+		return console.log(
+			`A message by ${message.author.tag} was deleted, but no relevant audit logs were found.`
+		)
+	}
 	const { executor, target } = deletionLog
 
 	const messageDeletion = (document) => {
@@ -69,23 +83,31 @@ export default async (client, message) => {
 				{ name: 'Author ID:', value: `${document.userID}`, inline: true },
 				{ name: 'Author Tag:', value: `<@!${document.userID}>`, inline: true },
 				{ name: '\u200B', value: '\u200B', inline: true },
-				{ name: 'Message Timestamp:', value: `${new Date(document.time).toString().split(' ').slice(0, -4).join(' ')}`, inline: false }
+				{
+					name: 'Message Timestamp:',
+					value: `${new Date(document.time).toString().split(' ').slice(0, -4).join(' ')}`,
+					inline: false
+				}
 			])
 		return embed
 	}
 
-	if (message.guild === null || message.author === null) return console.log('Failed to fetch data for an uncached message.')
+	if (message.guild === null || message.author === null) {
+		return console.log('Failed to fetch data for an uncached message.')
+	}
 
 	// Self deletion
 	if (target.id !== message.author.id) {
 		// Bot self delete
 		if (message.author.id === '668330399033851924') return
 
-		const checkDB = fullDB.merchChannel.messages.find(entry => entry.messageID === message.id)
-		if (checkDB === undefined) { return console.log('Deleted message was not uploaded to the DataBase.') } else {
+		const checkDB = fullDB.merchChannel.messages.find((entry) => entry.messageID === message.id)
+		if (checkDB === undefined) {
+			return console.log('Deleted message was not uploaded to the DataBase.')
+		} else {
 			const user = await message.guild.members
 				.fetch(checkDB.userID)
-				.catch(err => console.error('message delete', err))
+				.catch((err) => console.error('message delete', err))
 
 			const embed = messageDeletion(checkDB)
 				.setDescription('This message was deleted by the message author - remove merch count.')
@@ -101,15 +123,18 @@ export default async (client, message) => {
 				return getPerms.delete()
 			}
 		}
-	} else { // Someone else deleted message
+	} else {
+		// Someone else deleted message
 		// Bot deleting own posts
 		if (target.id === '668330399033851924') return
 
-		const checkDB = fullDB.merchChannel.messages.find(entry => entry.messageID === message.id)
-		if (checkDB === undefined) { return console.log('Deleted message was not uploaded to the DataBase.') } else {
+		const checkDB = fullDB.merchChannel.messages.find((entry) => entry.messageID === message.id)
+		if (checkDB === undefined) {
+			return console.log('Deleted message was not uploaded to the DataBase.')
+		} else {
 			const user = await message.guild.members
 				.fetch(checkDB.userID)
-				.catch(err => console.error('message delete own', err))
+				.catch((err) => console.error('message delete own', err))
 
 			const embed = messageDeletion(checkDB)
 				.setDescription(`This message was deleted by ${executor.username} - remove merch count.`)

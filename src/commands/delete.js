@@ -11,10 +11,9 @@ export default {
 		.setName('delete')
 		.setDescription('Deletes a number of previous messages in the current channel.')
 		.setDefaultPermission(false)
-		.addIntegerOption(option =>
-			option.setName('value')
-				.setDescription('The number of messages to delete.')
-				.setRequired(true)),
+		.addIntegerOption((option) =>
+			option.setName('value').setDescription('The number of messages to delete.').setRequired(true)
+		),
 	slash: async (interaction, _, db) => {
 		const int = interaction.options.getInteger('value')
 		const channels = await db.channels
@@ -25,9 +24,16 @@ export default {
 
 		try {
 			interaction.channel.bulkDelete(int, true)
-			return interaction.reply({ content: `${int} ${int === 1 ? 'message has' : 'messages have'} been deleted`, ephemeral: true })
+			return interaction.reply({
+				content: `${int} ${int === 1 ? 'message has' : 'messages have'} been deleted`,
+				ephemeral: true
+			})
 		} catch (err) {
-			interaction.channel.send({ content: 'There was an error trying to delete messages in this channel since they are older than 2 weeks.', ephemeral: true })
+			interaction.channel.send({
+				content:
+					'There was an error trying to delete messages in this channel since they are older than 2 weeks.',
+				ephemeral: true
+			})
 			channels.errors.send(err)
 		}
 	}

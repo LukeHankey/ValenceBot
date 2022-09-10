@@ -10,7 +10,7 @@ export class Load {
 
 	async init (handler, sub) {
 		handler = sub ? `${handler}/${sub}/` : `${handler}`
-		const files = readdirSync(`./src/${handler}`).filter(d => d.endsWith('.js'))
+		const files = readdirSync(`./src/${handler}`).filter((d) => d.endsWith('.js'))
 
 		for (const file of files) {
 			const files_ = await import(`../${handler}/${file}`)

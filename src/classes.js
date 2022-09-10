@@ -9,8 +9,8 @@ class Permissions {
 		this.name = name
 		this.db = db
 		this.msg = msg
-		this._role = this.msg.guild.roles.cache.find(role => role.id === this.roleId)
-		this._position = this.msg.guild.roles.cache.filter(roles => {
+		this._role = this.msg.guild.roles.cache.find((role) => role.id === this.roleId)
+		this._position = this.msg.guild.roles.cache.filter((roles) => {
 			return roles.rawPosition >= this._role?.rawPosition
 		})
 	}
@@ -22,32 +22,34 @@ class Permissions {
 		}
 	}
 
-	memberRole () { // abovePermModArray
+	memberRole () {
+		// abovePermModArray
 		const memberRoleArray = []
 		this._position
-			.map(role => role.id)
-			.forEach(id => {
+			.map((role) => role.id)
+			.forEach((id) => {
 				if (this.msg.member.roles.cache.has(id)) return memberRoleArray.push(id)
 			})
 		return memberRoleArray
 	}
 
-	higherRoles () { // availPermMod
+	higherRoles () {
+		// availPermMod
 		const higherRoleArray = []
 		this._position
-			.map(role => role.id)
-			.forEach(id => {
+			.map((role) => role.id)
+			.forEach((id) => {
 				if (!this.msg.member.roles.cache.has(id)) return higherRoleArray.push(id)
 			})
-		return higherRoleArray.map(id => `<@&${id}>`)
+		return higherRoleArray.map((id) => `<@&${id}>`)
 	}
 
 	modPlusRoles (num = 0) {
 		const aboveMod = []
-		this.memberRole().forEach(id => {
-			const abovePermRawMod = this.msg.guild.roles.cache.find(role => role.id === id)
+		this.memberRole().forEach((id) => {
+			const abovePermRawMod = this.msg.guild.roles.cache.find((role) => role.id === id)
 			const aboveRpMod = abovePermRawMod.rawPosition + ''
-			aboveRpMod.split().forEach(rp => {
+			aboveRpMod.split().forEach((rp) => {
 				aboveMod.push(rp)
 			})
 		})
@@ -64,17 +66,27 @@ class Permissions {
 	}
 
 	ownerError () {
-		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', Color.redDark)
-			.addFields([{ name: 'Only the bot owner can:', value: `<@!${this.owner}>` }])
+		const embed = nEmbed(
+			'Permission Denied',
+			'You do not have permission to use this command!',
+			Color.redDark
+		).addFields([{ name: 'Only the bot owner can:', value: `<@!${this.owner}>` }])
 		return { embeds: [embed] }
 	}
 
 	error () {
-		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', Color.redDark)
-			.addFields([
-				{ name: 'Only the following Roles & Users can:', value: `${this.higherRoles().length > 0 ? this.higherRoles().join(', ') : '0'}`, inline: true },
-				{ name: '\u200b', value: `<@${this.msg.guild.ownerId}>`, inline: true }
-			])
+		const embed = nEmbed(
+			'Permission Denied',
+			'You do not have permission to use this command!',
+			Color.redDark
+		).addFields([
+			{
+				name: 'Only the following Roles & Users can:',
+				value: `${this.higherRoles().length > 0 ? this.higherRoles().join(', ') : '0'}`,
+				inline: true
+			},
+			{ name: '\u200b', value: `<@${this.msg.guild.ownerId}>`, inline: true }
+		])
 		return { embeds: [embed] }
 	}
 }
@@ -119,23 +131,23 @@ class ScouterCheck {
 	}
 
 	get guildID () {
-		return this._client.guilds.cache.mapValues(x => {
+		return this._client.guilds.cache.mapValues((x) => {
 			if (x.name === this._guildName) return x.id
 		})
 	}
 
 	get guild () {
-		return this._client.guilds.fetch(this.guildID.filter(g => g).first())
+		return this._client.guilds.fetch(this.guildID.filter((g) => g).first())
 	}
 
 	get potentialScouts () {
 		let scout
 		if (this.roleName.toLowerCase() === 'scouter') {
-			scout = this._scouters.filter(val => {
+			scout = this._scouters.filter((val) => {
 				return this._checkScouts(val, this.value ?? 40, this.week)
 			})
 		} else if (this.roleName.toLowerCase() === 'verified scouter') {
-			scout = this._scouters.filter(val => {
+			scout = this._scouters.filter((val) => {
 				return this._checkVerifiedScouts(val, this.value ?? 100, this.month)
 			})
 		} else {
@@ -148,15 +160,25 @@ class ScouterCheck {
 	get role () {
 		return new Promise(async (resolve) => {
 			const guild = await this.guild
-			return resolve(guild.roles.cache.find(r => r.name.toLowerCase() === this.roleName.toLowerCase())) // Find the guild and then find the role
+			return resolve(
+				guild.roles.cache.find((r) => r.name.toLowerCase() === this.roleName.toLowerCase())
+			) // Find the guild and then find the role
 		})
 	}
 
-	_checkScouts (filter, num, time) { // Just takes merch count, not other count
-		if ((filter.count >= this.count || filter.count >= num) && filter.lastTimestamp - filter.firstTimestamp >= time && filter.assigned.length === 0) return filter
+	_checkScouts (filter, num, time) {
+		// Just takes merch count, not other count
+		if (
+			(filter.count >= this.count || filter.count >= num) &&
+			filter.lastTimestamp - filter.firstTimestamp >= time &&
+			filter.assigned.length === 0
+		) {
+			return filter
+		}
 	}
 
-	_checkVerifiedScouts (filter, num, time) { // Just takes merch count, not other count
+	_checkVerifiedScouts (filter, num, time) {
+		// Just takes merch count, not other count
 		if (filter.count >= this.count || filter.count >= num) {
 			if (filter.lastTimestamp - filter.firstTimestamp >= time) {
 				if (filter.assigned.length > 0 && filter.assigned.length < 2) {
@@ -173,7 +195,13 @@ class ScouterCheck {
 		const fields = []
 
 		for (const values of scouts) {
-			fields.push({ name: `${values.author}`, value: `ID: ${values.userID}\nMerch Count: ${values.count}\nOther Count: ${values.otherCount}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`, inline: true })
+			fields.push({
+				name: `${values.author}`,
+				value: `ID: ${values.userID}\nMerch Count: ${values.count}\nOther Count: ${
+					values.otherCount
+				}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`,
+				inline: true
+			})
 		}
 		return fields
 	}
@@ -184,12 +212,16 @@ class ScouterCheck {
 			.setTitle(`Potential Scouters - ${this.roleName}`)
 			.setDescription(`List of members who have met the minimum to obtain the <@&${role.id}> role.`)
 			.setColor(Color.orange)
-			.setFooter({ text: 'Review these members and manually assign the role to them.', iconURL: this._client.user.displayAvatarURL() })
+			.setFooter({
+				text: 'Review these members and manually assign the role to them.',
+				iconURL: this._client.user.displayAvatarURL()
+			})
 			.setTimestamp()
 
 		const fields = await this._checkForScouts()
 
-		if (fields.length) { // Perhaps look at adding something if there are > 25
+		if (fields.length) {
+			// Perhaps look at adding something if there are > 25
 			return this._client.channels.cache.get(chan).send({ embeds: [embed.addFields(fields)] })
 		}
 	}
@@ -200,10 +232,10 @@ class ScouterCheck {
 		const role = await this.role
 
 		return new Promise(async (resolve) => {
-			const userID = scouts.map(doc => doc.userID)
+			const userID = scouts.map((doc) => doc.userID)
 			const memberFetch = await guild.members.fetch({ user: userID })
 			const membersArray = []
-			memberFetch.forEach(mem => {
+			memberFetch.forEach((mem) => {
 				if (mem.roles.cache.has(role.id)) {
 					membersArray.push(mem)
 				}
@@ -217,10 +249,10 @@ class ScouterCheck {
 		const role = await this.role
 
 		return new Promise(async (resolve) => {
-			const userID = await this._scouters.map(doc => doc.userID)
+			const userID = await this._scouters.map((doc) => doc.userID)
 			const memberFetch = await guild.members.fetch({ user: userID })
 			const membersArray = []
-			memberFetch.forEach(mem => {
+			memberFetch.forEach((mem) => {
 				if (!mem.roles.cache.has(role.id)) {
 					membersArray.push(mem)
 				}
@@ -232,10 +264,10 @@ class ScouterCheck {
 	async removeInactive (scouters) {
 		return new Promise(async (resolve) => {
 			let merch = await scouters.collection.find({}).toArray()
-			merch = merch.filter(doc => {
-				const totalCount = (doc.count + (doc.otherCount ?? 0)) < 10
+			merch = merch.filter((doc) => {
+				const totalCount = doc.count + (doc.otherCount ?? 0) < 10
 				const timeGone = 1000 * 60 * 60 * 24 * 31
-				const timeNoPost = (Date.now() - doc.lastTimestamp) > timeGone
+				const timeNoPost = Date.now() - doc.lastTimestamp > timeGone
 				return timeNoPost && totalCount
 			})
 			return resolve(merch)
@@ -264,19 +296,19 @@ class GoogleSheet {
 			return full
 		} else {
 			const ranges = ['Friends', 'Boosters', 'Affiliates', 'Ranks', 'Banned']
-			if (!ranges.includes(range)) throw new Error(`Invalid range name '${range}'. Must be one of: ${ranges.join(', ')}`)
-			const rangeNames = await full.valueRanges.filter(sheet => {
+			if (!ranges.includes(range)) {
+				throw new Error(`Invalid range name '${range}'. Must be one of: ${ranges.join(', ')}`)
+			}
+			const rangeNames = await full.valueRanges.filter((sheet) => {
 				const name = sheet.range.split('!')
 				if (range.toLowerCase() === name[0].toLowerCase()) return sheet
 				else return undefined
 			})
-			if (rangeNames.length) { return rangeNames[0] }
+			if (rangeNames.length) {
+				return rangeNames[0]
+			}
 		}
 	}
 }
 
-export {
-	Permissions,
-	ScouterCheck,
-	GoogleSheet
-}
+export { Permissions, ScouterCheck, GoogleSheet }

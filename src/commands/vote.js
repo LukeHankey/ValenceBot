@@ -20,11 +20,13 @@ export default {
 			.setTimestamp()
 
 		message.delete()
-		message.channel.send({ embeds: [embed] }).then(async m => {
-			await m.react('✅')
-			await m.react('❌')
-			await m.react('❓')
-		})
-			.catch(async err => db.channels.errors.send(err))
+		message.channel
+			.send({ embeds: [embed] })
+			.then(async (m) => {
+				await m.react('✅')
+				await m.react('❌')
+				await m.react('❓')
+			})
+			.catch(async (err) => db.channels.errors.send(err))
 	}
 }

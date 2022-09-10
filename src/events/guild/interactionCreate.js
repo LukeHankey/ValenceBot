@@ -1,12 +1,22 @@
 import { MongoCollection } from '../../DataBase.js'
 import { Collection } from 'discord.js'
-import { buttons, commands, autoComplete, selectMenu, modals, contextMenu } from '../../handlers/interactions/index.js'
+import {
+	buttons,
+	commands,
+	autoComplete,
+	selectMenu,
+	modals,
+	contextMenu
+} from '../../handlers/interactions/index.js'
 
 const cache = new Collection()
 
 export default async (client, interaction) => {
 	const db = new MongoCollection('Settings')
-	const data = await db.collection.findOne({ _id: interaction.guildId }, { projection: { merchChannel: { components: 1, channelID: 1, otherChannelID: 1, deletions: 1 } } })
+	const data = await db.collection.findOne(
+		{ _id: interaction.guildId },
+		{ projection: { merchChannel: { components: 1, channelID: 1, otherChannelID: 1, deletions: 1 } } }
+	)
 
 	try {
 		if (interaction.isButton()) {

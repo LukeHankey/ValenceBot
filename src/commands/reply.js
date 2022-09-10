@@ -12,15 +12,18 @@ export default {
 
 		if (!content.length) return message.channel.send({ content: 'Error: Cannot send an empty message.' })
 
-		client.users.fetch(userID)
-			.then(user => {
+		client.users
+			.fetch(userID)
+			.then((user) => {
 				user.send({ content: content.join(' ') })
 				return message.react('✅')
 			})
-			.catch(async e => {
+			.catch(async (e) => {
 				if (e.code === 10013) {
 					return message.channel.send({ content: `Error: ${e.rawError.message}` })
-				} else { channels.errors.send(e) }
+				} else {
+					channels.errors.send(e)
+				}
 			})
 	}
 }

@@ -14,29 +14,33 @@ export default {
 		.setName('ticket')
 		.setDescription('Sets up a ticket system using private threads or channels.')
 		.setDefaultPermission(false)
-		.addRoleOption(option =>
+		.addRoleOption((option) =>
 			option
 				.setName('role')
 				.setDescription('The role that will be responding to tickets.')
 				.setRequired(true)
 		)
-		.addStringOption(option =>
+		.addStringOption((option) =>
 			option
 				.setName('prefer')
-				.setDescription('Preference of how to handle tickets. Private threads allowed if boost level is at least level 2.')
+				.setDescription(
+					'Preference of how to handle tickets. Private threads allowed if boost level is at least level 2.'
+				)
 				.setRequired(true)
-				.addChoices(...[
-					{ name: 'Threads', value: 'Threads' },
-					{ name: 'Channels', value: 'Channels' }
-				])
+				.addChoices(
+					...[
+						{ name: 'Threads', value: 'Threads' },
+						{ name: 'Channels', value: 'Channels' }
+					]
+				)
 		)
-		.addStringOption(option =>
+		.addStringOption((option) =>
 			option
 				.setName('description')
 				.setDescription('Be specific but concise of what you want users to use the tickets for.')
 				.setRequired(true)
 		)
-		.addBooleanOption(option =>
+		.addBooleanOption((option) =>
 			option
 				.setName('application')
 				.setDescription('Create a form which interfaces with users who create tickets.')
@@ -60,7 +64,9 @@ export default {
 		const prefer = interaction.options.getString('prefer')
 		const application = interaction.options.getBoolean('application')
 
-		const components = application ? [actionRow.addComponents([applicationButton])] : [actionRow.addComponents([ticketButton])]
+		const components = application
+			? [actionRow.addComponents([applicationButton])]
+			: [actionRow.addComponents([ticketButton])]
 
 		const ticketEmbed = new EmbedBuilder()
 			.setTitle(application ? 'Submit an Application!' : 'Open a Ticket!')
@@ -70,21 +76,26 @@ export default {
 
 		const message = await interaction.reply({ embeds: [ticketEmbed], components, fetchReply: true })
 
-		await db.collection.updateOne({ _id: interaction.guild.id }, {
-			$addToSet: {
-				ticket: {
-					$each: [{
-						role: role.id,
-						description,
-						prefer,
-						ticketStarter: interaction.user.id,
-						guildName: interaction.guild.name,
-						channelId: interaction.channel.id,
-						messageId: message.id,
-						application
-					}]
+		await db.collection.updateOne(
+			{ _id: interaction.guild.id },
+			{
+				$addToSet: {
+					ticket: {
+						$each: [
+							{
+								role: role.id,
+								description,
+								prefer,
+								ticketStarter: interaction.user.id,
+								guildName: interaction.guild.name,
+								channelId: interaction.channel.id,
+								messageId: message.id,
+								application
+							}
+						]
+					}
 				}
 			}
-		})
+		)
 	}
 }
