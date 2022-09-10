@@ -34,6 +34,7 @@ export default {
 		}
 
 		const allData = await db.collection.countDocuments({})
+		const oldScoutCheck = () => Boolean(user.oldScout)
 		const embedFields = [
 			{
 				name: '\u200b',
@@ -41,9 +42,13 @@ export default {
 					user.firstTimestampReadable
 				)}\n**lastTimestamp:** ${user.lastTimestamp}\n**lastTimestampReadable:** ${date(
 					user.lastTimestampReadable
-				)}\n**Merch count:** ${user.count}\n**Other count:** ${user.otherCount}\n**Active for:** ${ms(
-					user.lastTimestamp - user.firstTimestamp
-				)}\n**Active:** ${user.active ? 'True' : 'False'}\n**Warnings:** ${user.warnings.length}`,
+				)}\n**Merch count:** ${user.count} ${
+					oldScoutCheck() ? `(+${user.oldScout.count})` : ''
+				}\n**Other count:** ${user.otherCount} ${
+					oldScoutCheck() ? `(+${user.oldScout.otherCount})` : ''
+				}\n**Active for:** ${ms(user.lastTimestamp - user.firstTimestamp)}\n**Active:** ${
+					user.active ? 'True' : 'False'
+				}\n**Warnings:** ${user.warnings.length}`,
 				inline: true
 			}
 		]
