@@ -1,7 +1,7 @@
 /* eslint-disable no-shadow */
 /* eslint-disable no-useless-escape */
 import { MongoCollection } from '../DataBase.js'
-import { nEmbed, checkNum, removeMessage } from '../functions.js'
+import { nEmbed, checkNum } from '../functions.js'
 import Color from '../colors.js'
 import { ScouterCheck } from '../classes.js'
 import { classVars } from '../dsf/index.js'
@@ -14,25 +14,9 @@ import { classVars } from '../dsf/index.js'
 
 export default {
 	name: 'dsf',
-	description: [
-		'Displays all of the current stored messages.',
-		'Clears all of the current stored messages.',
-		'Shows the list of potential scouters/verified scouters with the set scout count, or count adjusted.',
-		'Add 1 or <num> merch/other/game count to the member provided.',
-		'Remove 1 or <num> merch/other/game count to the member provided.',
-		'Displays all of the current stored messages where reacts need to be cleared.',
-		'Clears all of the current stored messages where reacts are older than 1 hour.'
-	],
+	description: ['Displays all of the current stored messages.', 'Clears all of the current stored messages.', 'Shows the list of potential scouters/verified scouters with the set scout count, or count adjusted.', 'Add 1 or <num> merch/other/game count to the member provided.', 'Remove 1 or <num> merch/other/game count to the member provided.'],
 	aliases: [],
-	usage: [
-		'messages',
-		'messages clear',
-		'view scouter/verified <num (optional)>',
-		'user memberID/@member add <num (optional)> <other/game>',
-		'user memberID/@member remove <num (optional)> <other/game>',
-		'reacts',
-		'reacts clear'
-	],
+	usage: ['messages', 'messages clear', 'view scouter/verified <num (optional)>', 'user memberID/@member add <num (optional)> <other/game>', 'user memberID/@member remove <num (optional)> <other/game>'],
 	guildSpecific: ['668330890790699079', '420803245758480405'],
 	permissionLevel: 'Admin',
 	run: async (client, message, args, perms, db) => {
@@ -98,153 +82,6 @@ export default {
 				message.react('✅')
 			}
 			break
-		case 'reacts':
-			switch (args[1]) {
-			case 'clear':
-				{
-					const {
-						merchChannel: { channelID, spamProtection }
-					} = await db.collection.findOne(
-						{ _id: message.guild.id },
-						{
-							projection: {
-								'merchChannel.spamProtection': 1,
-								'merchChannel.channelID': 1
-							}
-						}
-					)
-					const channel = client.channels.cache.get(channelID)
-					const oneHour = 3_600_000
-
-					const filtered = spamProtection.filter((m) => Date.now() - m.time >= oneHour)
-
-					if (!filtered.length) return await message.react('❌')
-
-					for (const f of filtered) {
-						try {
-							const m = await channel.messages.fetch(f.messageID)
-
-							await m.reactions.removeAll()
-							await removeMessage(message, m, db.collection)
-							await m.react('☠️')
-							await message.react('✅')
-						} catch (e) {
-							if (e.code === 10008) {
-								const messageID = e.url.split('/')[8]
-								await db.collection.updateOne(
-									{ _id: message.guild.id },
-									{
-										$pull: {
-											'merchChannel.spamProtection': { messageID }
-										}
-									}
-								)
-							} else {
-								channels.errors.send(e)
-							}
-						}
-					}
-				}
-				break
-			default: {
-				const {
-					merchChannel: { spamProtection, channelID }
-				} = await db.collection.findOne(
-					{ _id: message.guild.id },
-					{ projection: { 'merchChannel.spamProtection': 1, 'merchChannel.channelID': 1 } }
-				)
-				let page = 0
-				const fields = []
-
-				for (const values of spamProtection) {
-					let date = new Date(values.time)
-					date = date.toString().split(' ')
-					fields.push({
-						name: `${values.author}`,
-						value: `**Time:** ${date.slice(0, 5).join(' ')}\n**Content:** [${
-							values.content
-						}](https://discordapp.com/channels/${message.guild.id}/${channelID}/${
-							values.messageID
-						} 'Click me to go to the message.')`,
-						inline: false
-					})
-				}
-				const paginate = (dataFields) => {
-					const pageEmbeds = []
-					const data = dataFields
-					let k = 12
-					for (let i = 0; i < data.length; i += 12) {
-						const current = data.slice(i, k)
-						k += 12
-						const info = current
-						const embed = nEmbed(
-							'List of reaction messages currently stored in the DB that have had reactions added too',
-							'There may be quite a few and if there are, clear them out using `;dsf reacts clear`.',
-							Color.cream,
-							message.member.user.displayAvatarURL(),
-							client.user.displayAvatarURL()
-						)
-						embed.setTimestamp().addFields(info)
-						pageEmbeds.push(embed)
-					}
-					return pageEmbeds
-				}
-				const embeds = paginate(fields)
-				if (!embeds.length) {
-					return message.channel.send({
-						content: 'There are no messages stored that have reactions added.'
-					})
-				}
-
-				return message.channel
-					.send({
-						embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length}` })]
-					})
-					.then(async (msg) => {
-						await msg.react('◀️')
-						await msg.react('▶️')
-
-						const react = (reaction, user) =>
-							['◀️', '▶️'].includes(reaction.emoji.name) && user.id === message.author.id
-						const collect = msg.createReactionCollector(react)
-
-						collect.on('collect', (r, u) => {
-							if (r.emoji.name === '▶️') {
-								if (page < embeds.length) {
-									msg.reactions.resolve('▶️').users.remove(u.id)
-									page++
-									if (page === embeds.length) --page
-									msg.edit({
-										embeds: [
-											embeds[page].setFooter({
-												text: `Page ${page + 1} of ${embeds.length}`
-											})
-										]
-									})
-								}
-							} else if (r.emoji.name === '◀️') {
-								if (page !== 0) {
-									msg.reactions.resolve('◀️').users.remove(u.id)
-									--page
-									msg.edit({
-										embeds: [
-											embeds[page].setFooter({
-												text: `Page ${page + 1} of ${embeds.length}`
-											})
-										]
-									})
-								} else {
-									msg.reactions.resolve('◀️').users.remove(u.id)
-								}
-							}
-						})
-					})
-					.catch(async (err) => {
-						channels.errors.send(err)
-					})
-			}
-			}
-			break
 		case 'view':
 			{
 				let scout = new ScouterCheck('Scouter')
@@ -260,33 +97,29 @@ export default {
 				case 'scouter':
 					if (num) {
 						scout = new ScouterCheck('Scouter', parseInt(num))
+						await classVars(scout, message.guild.name, res, client, scouter)
 						scout.send(message.channel.id)
 					} else {
 						const scoutCheck = await scout._checkForScouts()
 						if (!scoutCheck.length) {
 							message.channel.send({ content: 'None found.' })
-						} else {
-							return scout.send(message.channel.id)
-						}
+						} else { return scout.send(message.channel.id) }
 					}
 					break
 				case 'verified':
 					if (num) {
 						vScout = new ScouterCheck('Verified Scouter', parseInt(num))
+						await classVars(vScout, message.guild.name, res, client, scouter)
 						vScout.send(message.channel.id)
 					} else {
 						const verifiedCheck = await vScout._checkForScouts()
 						if (!verifiedCheck.length) {
 							message.channel.send({ content: 'None found.' })
-						} else {
-							return vScout.send(message.channel.id)
-						}
+						} else { return vScout.send(message.channel.id) }
 					}
 					break
 				default:
-					return message.channel.send({
-						content: 'You can view either `scouter` or `verified`'
-					})
+					return message.channel.send({ content: 'You can view either \`scouter\` or \`verified\`' })
 				}
 			}
 			break
@@ -451,14 +284,12 @@ export default {
 		}
 		default:
 			return message.channel.send({
-				embeds: [
-					nEmbed(
-						'**DSF Admin Commands List**',
-						"Here's a list of all the DSF commands you can use. Any parameter(s) in `<>` are optional:\n\n`messages|m`\n`messages|m clear`\n`view scouter <num>`\n`view verified <num>`\n`user memberID/@member add <other/game> <num>`\n`user memberID/@member remove <other/game> <num>`\n`reacts`\n`reacts clear`",
-						Color.cyan,
-						client.user.displayAvatarURL()
-					)
-				]
+				embeds: [nEmbed(
+					'**DSF Admin Commands List**',
+					'Here\'s a list of all the DSF commands you can use. Any parameter(s) in \`<>\` are optional:\n\n\`messages|m\`\n\`messages|m clear\`\n\`view scouter <num>\`\n\`view verified <num>\`\n\`user memberID/@member add <other/game> <num>\`\n\`user memberID/@member remove <other/game> <num>\`',
+					Color.cyan,
+					client.user.displayAvatarURL()
+				)]
 			})
 		}
 	}

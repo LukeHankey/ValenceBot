@@ -1,6 +1,6 @@
 import { MongoCollection } from '../../DataBase.js'
 import { EmbedBuilder } from 'discord.js'
-import { removeMessage, removeEvents } from '../../functions.js'
+import { removeEvents } from '../../functions.js'
 import Color from '../../colors.js'
 import fetch from 'node-fetch'
 
@@ -217,55 +217,6 @@ export default async (client, reaction, user) => {
 						}
 					}
 				}
-			}
-		} else if (_id === '420803245758480405') {
-			// DSF
-			const {
-				merchChannel: { channelID, spamProtection }
-			} = await db.collection.findOne(
-				{ _id: message.guild.id },
-				{
-					projection: {
-						'merchChannel.channelID': 1,
-						'merchChannel.spamProtection': 1,
-						'merchChannel.blocked': 1
-					}
-				}
-			)
-
-			switch (message.channel.id) {
-			case channelID: {
-				const channel = client.channels.cache.get(channelID)
-				const oneHour = 3_600_000
-
-				const filtered = spamProtection.filter((m) => Date.now() - m.time >= oneHour)
-
-				if (!filtered.length) return
-
-				for (const f of filtered) {
-					try {
-						const m = await channel.messages.fetch(f.messageID)
-
-						await m.reactions.removeAll()
-						await removeMessage(message, m, db.collection)
-						return await m.react('☠️')
-					} catch (e) {
-						if (e.code === 10008) {
-							const messageID = e.url.split('/')[8]
-							await db.collection.updateOne(
-								{ _id: message.guild.id },
-								{
-									$pull: {
-										'merchChannel.spamProtection': { messageID }
-									}
-								}
-							)
-						} else {
-							channels.errors.send(e)
-						}
-					}
-				}
-			}
 			}
 		}
 	}
