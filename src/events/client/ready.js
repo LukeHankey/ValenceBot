@@ -2,15 +2,27 @@
 /* eslint-disable no-octal */
 import { MongoCollection } from '../../DataBase.js'
 import { codeBlock } from 'discord.js'
-import { skullTimer, otherTimer, updateStockTables, scout, vScout, classVars, addedRoles, removedRoles, removeInactives } from '../../dsf/index.js'
+import {
+	skullTimer,
+	otherTimer,
+	updateStockTables,
+	scout,
+	vScout,
+	classVars,
+	addedRoles,
+	removedRoles,
+	removeInactives,
+	removeScouters
+} from '../../dsf/index.js'
 import { sendFact, updateRoles } from '../../valence/index.js'
 import cron from 'node-cron'
 
 const db = new MongoCollection('Settings')
 const users = new MongoCollection('Users')
 
-export default async client => {
-	console.log('Ready!')
+export default async (client) => {
+	const logger = client.logger
+	logger.info('Ready!')
 	const channels = await db.channels
 
 	client.user.setPresence({
@@ -18,11 +30,11 @@ export default async client => {
 		activities: [{ type: 'LISTENING', name: 'DMs for queries regarding the bot.' }]
 	})
 
-	const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-
 	const formatTemplate = (data) => {
 		const headers = { clanMate: 'Name', clanRank: 'Rank', totalXP: 'Total XP', kills: 'Kills' }
-		let dataChanged = data[0].potentialNewNames.map(o => { return { clanMate: o.clanMate, clanRank: o.clanRank, totalXP: o.totalXP, kills: o.kills } })
+		let dataChanged = data[0].potentialNewNames.map((o) => {
+			return { clanMate: o.clanMate, clanRank: o.clanRank, totalXP: o.totalXP, kills: o.kills }
+		})
 		dataChanged.splice(0, 0, headers)
 
 		const padding = (str, start = false, max) => {
@@ -34,10 +46,21 @@ export default async client => {
 		}
 		if (!dataChanged.length) return
 		dataChanged = dataChanged.map((profile) => {
-			return `${padding(profile.clanMate, true, Math.max(...(dataChanged.map(el => el.clanMate.length))))}${padding(profile.clanRank, false, Math.max(...(dataChanged.map(el => el.clanRank.length))))}${padding(profile.totalXP, false, Math.max(...(dataChanged.map(el => el.totalXP.length))))}${padding(profile.kills, false, Math.max(...(dataChanged.map(el => el.kills.length))))}`
+			return `${padding(profile.clanMate, true, Math.max(...dataChanged.map((el) => el.clanMate.length)))}${padding(
+				profile.clanRank,
+				false,
+				Math.max(...dataChanged.map((el) => el.clanRank.length))
+			)}${padding(profile.totalXP, false, Math.max(...dataChanged.map((el) => el.totalXP.length)))}${padding(
+				profile.kills,
+				false,
+				Math.max(...dataChanged.map((el) => el.kills.length))
+			)}`
 		})
 		dataChanged.splice(0, 0, `'${data[0].clanMate}' might have changed names to one of these potential new names.\n`)
-		dataChanged.push(' ', 'Reactions:\n✅ Takes the primary suggestion.\n❌ Not changed names or none match.\n📝 Pick another suggestion.')
+		dataChanged.push(
+			' ',
+			'Reactions:\n✅ Takes the primary suggestion.\n❌ Not changed names or none match.\n📝 Pick another suggestion.'
+		)
 		return dataChanged.join('\n')
 	}
 
@@ -50,14 +73,17 @@ export default async client => {
 		await messageSend.react('❌')
 		await messageSend.react('📝')
 
-		await db.collection.updateOne({ _id: messageSend.guild.id }, {
-			$addToSet: {
-				nameChange: {
-					messageID: messageSend.id,
-					data
+		await db.collection.updateOne(
+			{ _id: messageSend.guild.id },
+			{
+				$addToSet: {
+					nameChange: {
+						messageID: messageSend.id,
+						data
+					}
 				}
 			}
-		})
+		)
 	}
 
 	cron.schedule('0 10 * * *', async () => {
@@ -65,19 +91,21 @@ export default async client => {
 	})
 
 	const stream = users.collection.watch({ fullDocument: 'updateLookup' })
-	stream.on('change', next => {
+	stream.on('change', (next) => {
 		if (next.updateDescription) {
 			const updated = next.updateDescription.updatedFields
 			if ('potentialNewNames' in updated) {
 				postData([next.fullDocument])
 			}
 		}
-	});
+	})
 
 	// If node cycling:
-	(async function () {
+	;(async function () {
 		if (process.env.NODE_ENV === 'DEV') return
-		const { merchChannel: { channelID } } = await db.collection.findOne({ _id: '420803245758480405' }, { projection: { merchChannel: { channelID: 1 } } })
+		const {
+			merchChannel: { channelID }
+		} = await db.collection.findOne({ _id: '420803245758480405' }, { projection: { merchChannel: { channelID: 1 } } })
 		const merchantChannel = client.channels.cache.get(channelID)
 		let message = await merchantChannel.messages.fetch({ limit: 1 })
 		message = message.first()
@@ -91,13 +119,17 @@ export default async client => {
 		const scoutTracker = new MongoCollection('ScoutTracker')
 		const scouters = await scoutTracker.collection.find({ count: { $gte: 40 } }).toArray()
 		await classVars(scout, 'Deep Sea Fishing', res, client, scouters)
-		await classVars(vScout, 'Deep Sea Fishing', res, client, scouters);
-
-		[scout, vScout].forEach(role => {
+		await classVars(vScout, 'Deep Sea Fishing', res, client, scouters)
+		;[scout, vScout].forEach((role) => {
 			addedRoles(role, scoutTracker)
 			removedRoles(role, scoutTracker)
 		})
 		removeInactives(scout, db, scoutTracker)
+		removeScouters({
+			scoutProfiles: [scout, vScout],
+			database: db,
+			tracker: scoutTracker
+		})
 
 		// Daily Reset
 		if (new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
@@ -126,23 +158,33 @@ export default async client => {
 		}
 
 		// Monthly reset + 1 day
-		if (new Date().getDate() === 2 && (new Date().getHours() === 0o1 || new Date().getHours() === 0o0) && new Date().getMinutes() === 0o0) {
-			console.log(new Date().getDate(), 'Setting lottoSheet to Null')
+		if (
+			new Date().getDate() === 2 &&
+			(new Date().getHours() === 0o1 || new Date().getHours() === 0o0) &&
+			new Date().getMinutes() === 0o0
+		) {
+			client.logger.info(new Date().getDate(), 'Setting lottoSheet to Null')
 			await db.collection.updateMany({ gSheet: { $exists: true } }, { $set: { lottoSheet: null } })
 		}
 
 		// Reset Info Count back to 0 to allow use of command
-		await db.collection.find({}).toArray().then(r => {
-			r = r.filter(doc => doc.resetInfoCount >= 0)
-			for (const doc in r) {
-				if (r[doc].resetInfoCount === 1 && r[doc].resetInfoTime < r[doc].resetInfoTime + 86400000) {
-					return db.collection.updateOne({ serverName: r[doc].serverName }, {
-						$set: {
-							resetInfoCount: 0
-						}
-					})
+		await db.collection
+			.find({})
+			.toArray()
+			.then((r) => {
+				r = r.filter((doc) => doc.resetInfoCount >= 0)
+				for (const doc in r) {
+					if (r[doc].resetInfoCount === 1 && r[doc].resetInfoTime < r[doc].resetInfoTime + 86400000) {
+						return db.collection.updateOne(
+							{ serverName: r[doc].serverName },
+							{
+								$set: {
+									resetInfoCount: 0
+								}
+							}
+						)
+					}
 				}
-			}
-		})
+			})
 	})
 }

@@ -34,14 +34,29 @@ export default {
 		}
 
 		const allData = await db.collection.countDocuments({})
-		const embedFields = [{
-			name: '\u200b',
-			value: `**firstTimestamp:** ${user.firstTimestamp}\n**firstTimestampReadable:** ${date(user.firstTimestampReadable)}\n**lastTimestamp:** ${user.lastTimestamp}\n**lastTimestampReadable:** ${date(user.lastTimestampReadable)}\n**Merch count:** ${user.count}\n**Other count:** ${user.otherCount}\n**Active for:** ${ms(user.lastTimestamp - user.firstTimestamp)}\n**Active:** ${user.active ? 'True' : 'False'}\n**Warnings:** ${user.warnings.length}`,
-			inline: true
-		}]
+		const oldScoutCheck = () => Boolean(user.oldScout)
+		const embedFields = [
+			{
+				name: '\u200b',
+				value: `**firstTimestamp:** ${user.firstTimestamp}\n**firstTimestampReadable:** ${date(
+					user.firstTimestampReadable
+				)}\n**lastTimestamp:** ${user.lastTimestamp}\n**lastTimestampReadable:** ${date(
+					user.lastTimestampReadable
+				)}\n**Merch count:** ${user.count} ${oldScoutCheck() ? `(+${user.oldScout.count})` : ''}\n**Other count:** ${
+					user.otherCount
+				} ${oldScoutCheck() ? `(+${user.oldScout.otherCount})` : ''}\n**Active for:** ${ms(
+					user.lastTimestamp - user.firstTimestamp
+				)}\n**Active:** ${user.active ? 'True' : 'False'}\n**Warnings:** ${user.warnings.length}`,
+				inline: true
+			}
+		]
 
 		if (user) {
-			const embed = nEmbed(`DB Lookup - ${user.author} [${allData}]`, 'Lookup user info for DSF in the Scouter DataBase.', Color.gold)
+			const embed = nEmbed(
+				`DB Lookup - ${user.author} [${allData}]`,
+				'Lookup user info for DSF in the Scouter DataBase.',
+				Color.gold
+			)
 			return message.channel.send({ embeds: [embed.addFields(embedFields)] })
 		} else {
 			message.channel.send({ content: 'No profile found for this ID.' })

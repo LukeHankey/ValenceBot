@@ -5,8 +5,12 @@ import { buttons, commands, autoComplete, selectMenu, modals, contextMenu } from
 const cache = new Collection()
 
 export default async (client, interaction) => {
+	const start = performance.now()
 	const db = new MongoCollection('Settings')
-	const data = await db.collection.findOne({ _id: interaction.guildId }, { projection: { merchChannel: { components: 1, channelID: 1, otherChannelID: 1, deletions: 1 } } })
+	const data = await db.collection.findOne(
+		{ _id: interaction.guildId },
+		{ projection: { merchChannel: { components: 1, channelID: 1, otherChannelID: 1, deletions: 1 } } }
+	)
 
 	try {
 		if (interaction.isButton()) {
@@ -18,14 +22,17 @@ export default async (client, interaction) => {
 		} else if (interaction.isSelectMenu()) {
 			await selectMenu(interaction, db, data, cache)
 		} else if (interaction.isContextMenuCommand()) {
+			client.logger.debug('Before defer', performance.now() - start)
 			await interaction.deferReply({ ephemeral: true })
+			client.logger.debug('After defer', performance.now() - start)
 			await contextMenu(interaction, db, data)
+			client.logger.debug(8)
 		} else if (interaction.isModalSubmit()) {
 			await modals(interaction, db, data)
 		}
 	} catch (err) {
 		const channels = await db.channels
-		console.log(err)
+		client.logger.debug(interaction, 'Error in interactionCreate.')
 		channels.errors.send(err)
 	}
 }

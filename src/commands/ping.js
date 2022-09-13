@@ -12,5 +12,4 @@ export default {
 
 		m.edit({ content: `Latency is ${ping}ms. API Latency is ${Math.round(client.ws.ping)}ms` })
 	}
-
 }

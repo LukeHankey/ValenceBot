@@ -4,15 +4,31 @@ import { Client, Collection } from 'discord.js'
 import { DataBase, MongoCollection } from './DataBase.js'
 import { getData, addActive } from './scheduler/clan.js'
 import { Load } from './handlers/index.js'
+import { logger } from './logging.js'
 import dotenv from 'dotenv'
 dotenv.config()
 
-const client = new Client({ intents: ['Guilds', 'GuildMembers', 'GuildMessages', 'MessageContent', 'GuildMessageReactions', 'DirectMessages'], partials: ['Message', 'Reaction', 'Channel'] })
+const client = new Client({
+	intents: ['Guilds', 'GuildMembers', 'GuildMessages', 'MessageContent', 'GuildMessageReactions', 'DirectMessages'],
+	partials: ['Message', 'Reaction', 'Channel'],
+	sweepers: {
+		messages: {
+			interval: 600,
+			lifetime: 2700
+		},
+		reactions: {
+			interval: 600,
+			lifetime: 900,
+			filter: (r) => r.emoji.name === '☠️'
+		}
+	}
+})
+client.logger = logger
 client.commands = new Collection()
 
 const _ = new Load(client)
 process.on('unhandledRejection', (reason, p) => {
-	console.log('Unhandled Rejection at:', p, 'reason:', reason)
+	logger.error('Unhandled Rejection at:', p, 'reason:', reason)
 })
 
 client.login(process.env.NODE_ENV === 'DEV' ? process.env.DEVELOPMENT_BOT : process.env.BOT_TOKEN)
@@ -22,7 +38,7 @@ const db = new MongoCollection('Users')
 
 // Daily at 5am
 cron.schedule('0 5 * * *', async () => {
-	console.log('running')
+	logger.info('running')
 	await addActive(db)
 })
 

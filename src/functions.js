@@ -26,7 +26,7 @@ const checkDate = (id = 0, greaterOrEqualTo = 0, lowerOrEqualTo = Infinity) => {
 	}
 }
 const msCalc = (d, h, m) => {
-	return (d * 24 * 60 * 60 * 1000) + (h * 60 * 60 * 1000) + (m * 60 * 1000)
+	return d * 24 * 60 * 60 * 1000 + h * 60 * 60 * 1000 + m * 60 * 1000
 }
 const doubleDigits = (digit) => {
 	if (digit.length === 2) {
@@ -38,7 +38,7 @@ const doubleDigits = (digit) => {
 }
 const nextDay = (d) => {
 	const now = new Date()
-	now.setDate(now.getUTCDate() + (d + (7 - now.getUTCDay())) % 7)
+	now.setDate(now.getUTCDate() + ((d + (7 - now.getUTCDay())) % 7))
 	return now
 }
 const newDates = (days, hours, minutes, timer) => {
@@ -77,22 +77,29 @@ const compressArray = (original) => {
 	return compressed
 }
 const randomNum = () => {
-	return (Math.round(Math.random() * 10000) + 1)
+	return Math.round(Math.random() * 10000) + 1
 }
 const removeEvents = async (message, db, module, database, eventTag) => {
 	const channels = await db.channels
 	try {
 		const eventsChannel = message.guild.channels.cache.get(database.channels.events)
-		const [eventMessageCheck] = database.events.filter(event => { if (event.eventTag === eventTag) { return event } else return undefined })
+		const [eventMessageCheck] = database.events.filter((event) => {
+			if (event.eventTag === eventTag) {
+				return event
+			} else return undefined
+		})
 
 		// Remove from events
 		await db.collection.updateOne({ _id: message.guild.id }, { $pull: { events: { eventTag } } })
 
 		// Remove from calendar
-		await db.collection.findOneAndUpdate({ _id: message.guild.id, 'calendarID.messageID': eventMessageCheck.calendarID }, { $pull: { 'calendarID.$.events': { eventTag } } })
+		await db.collection.findOneAndUpdate(
+			{ _id: message.guild.id, 'calendarID.messageID': eventMessageCheck.calendarID },
+			{ $pull: { 'calendarID.$.events': { eventTag } } }
+		)
 
 		// Remove role from server
-		await message.guild.roles.fetch(eventMessageCheck.roleID).then(r => r.delete())
+		await message.guild.roles.fetch(eventMessageCheck.roleID).then((r) => r.delete())
 
 		const calChannel = message.guild.channels.cache.get(database.channels.calendar)
 
@@ -106,22 +113,28 @@ const removeEvents = async (message, db, module, database, eventTag) => {
 
 		// Remove the post from the calendar
 		const currentYear = new Date().getFullYear()
-		const [calendarMessage] = database.calendarID.filter(month => { if (month.month === eventMessageCheck.month && month.year === currentYear) { return month } else return undefined })
+		const [calendarMessage] = database.calendarID.filter((month) => {
+			if (month.month === eventMessageCheck.month && month.year === currentYear) {
+				return month
+			} else return undefined
+		})
 		let calMessage = await calChannel.messages.fetch(calendarMessage.messageID)
 		calMessage = calMessage instanceof Collection ? calMessage.first() : calMessage
 		const fields = calMessage.embeds[0].data.fields
 
-		const foundIndex = fields.findIndex(field => {
+		const foundIndex = fields.findIndex((field) => {
 			const roleItem = field.value.split('\n')[4]
 			const roleId = roleItem.slice(9, 27)
 			return roleId === eventMessageCheck.roleID
 		})
 
-		const removedItem = [fields[foundIndex]].map(obj => `${obj.name}\n${obj.value}`)
+		const removedItem = [fields[foundIndex]].map((obj) => `${obj.name}\n${obj.value}`)
 		const updateEmbed = new EmbedBuilder(calMessage.embeds[0].data)
 		updateEmbed.spliceFields(foundIndex, 1)
 		calMessage.edit({ embeds: [updateEmbed] })
-		return channels.logs.send(`Calendar updated - ${message.member.displayName} removed event: \`\`\`diff\n- Removed\n${removedItem.join()}\`\`\``)
+		return channels.logs.send(
+			`Calendar updated - ${message.member.displayName} removed event: \`\`\`diff\n- Removed\n${removedItem.join()}\`\`\``
+		)
 	} catch (err) {
 		return channels.errors.send(err)
 	}
@@ -146,11 +159,12 @@ const csvJSON = (csv) => {
 	return JSON.parse(JSON.stringify(result))
 }
 const renameKeys = (keysMap, object) =>
-	Object.keys(object).reduce((acc, key) => ({
-		...acc,
-		...{ [keysMap[key] || key]: object[key] }
-	}),
-	{}
+	Object.keys(object).reduce(
+		(acc, key) => ({
+			...acc,
+			...{ [keysMap[key] || key]: object[key] }
+		}),
+		{}
 	)
 const paginate = (data, { author }, text, desc = '') => {
 	const embeds = []
@@ -183,14 +197,30 @@ const paginateFollowUP = async (msg, { author }, page, embeds, client) => {
 				msg.reactions.resolve('▶️').users.remove(u.id)
 				page++
 				if (page === embeds.length) --page
-				msg.edit({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, iconURL: client.user.displayAvatarURL() })] })
+				msg.edit({
+					embeds: [
+						embeds[page].setFooter({
+							text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`,
+							iconURL: client.user.displayAvatarURL()
+						})
+					]
+				})
 			}
 		} else if (r.emoji.name === '◀️') {
 			if (page !== 0) {
 				msg.reactions.resolve('◀️').users.remove(u.id)
 				--page
-				msg.edit({ embeds: [embeds[page].setFooter({ text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`, iconURL: client.user.displayAvatarURL() })] })
-			} else { msg.reactions.resolve('◀️').users.remove(u.id) }
+				msg.edit({
+					embeds: [
+						embeds[page].setFooter({
+							text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`,
+							iconURL: client.user.displayAvatarURL()
+						})
+					]
+				})
+			} else {
+				msg.reactions.resolve('◀️').users.remove(u.id)
+			}
 		}
 	})
 }
@@ -198,18 +228,18 @@ const splitMessage = (text, { maxLength = 2_000, char = '\n', prepend = '', appe
 	if (text.length <= maxLength) return [text]
 	let splitText = [text]
 	if (Array.isArray(char)) {
-		while (char.length > 0 && splitText.some(elem => elem.length > maxLength)) {
+		while (char.length > 0 && splitText.some((elem) => elem.length > maxLength)) {
 			const currentChar = char.shift()
 			if (currentChar instanceof RegExp) {
-				splitText = splitText.flatMap(chunk => chunk.match(currentChar))
+				splitText = splitText.flatMap((chunk) => chunk.match(currentChar))
 			} else {
-				splitText = splitText.flatMap(chunk => chunk.split(currentChar))
+				splitText = splitText.flatMap((chunk) => chunk.split(currentChar))
 			}
 		}
 	} else {
 		splitText = text.split(char)
 	}
-	if (splitText.some(elem => elem.length > maxLength)) throw new RangeError('SPLIT_MAX_LEN')
+	if (splitText.some((elem) => elem.length > maxLength)) throw new RangeError('SPLIT_MAX_LEN')
 	const messages = []
 	let msg = ''
 	for (const chunk of splitText) {
@@ -219,7 +249,7 @@ const splitMessage = (text, { maxLength = 2_000, char = '\n', prepend = '', appe
 		}
 		msg += (msg && msg !== prepend ? char : '') + chunk
 	}
-	return messages.concat(msg).filter(m => m)
+	return messages.concat(msg).filter((m) => m)
 }
 
 export {

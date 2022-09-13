@@ -2,6 +2,7 @@ import Color from './colors.js'
 import { promisify } from 'util'
 import { EmbedBuilder } from 'discord.js'
 import pkg from 'mongodb'
+import { logger } from './logging.js'
 const wait = promisify(setTimeout)
 const { MongoClient } = pkg
 
@@ -24,34 +25,34 @@ export class DataBase {
 			const mongo = new MongoClient(process.env.DB_URI, DataBase.#options)
 			await mongo.connect()
 			DataBase.#db = mongo.db(DataBase.#name)
-			console.log('Database connected.')
+			logger.info('Database connected.')
 		} catch (error) {
-			console.log(error)
+			logger.error(error)
 		}
 	}
 
 	async #retry () {
-		console.log('Retrying connection...')
+		logger.warn('Retrying connection...')
 		await this.#initialize()
 		await this.collectionNames()
 	}
 
 	/**
-     * @returns {String[]} An array of collection names.
-     */
+	 * @returns {String[]} An array of collection names.
+	 */
 	async collectionNames () {
 		let collectionNames
 		try {
 			// Attempt to wait 5 seconds to connect database before any retries
 			if (!DataBase.#db) await wait(5000)
 			collectionNames = await DataBase.#db.listCollections().toArray()
-			collectionNames = collectionNames.map(c => c.name)
+			collectionNames = collectionNames.map((c) => c.name)
 		} catch (err) {
 			if (err.name === 'TypeError' && err.message.includes('listCollections')) await this.#retry()
-			else console.error(err)
+			else logger.error(err)
 			collectionNames = await DataBase.#db.listCollections().toArray()
-			collectionNames = collectionNames.map(c => c.name)
-			console.log('Retry success.')
+			collectionNames = collectionNames.map((c) => c.name)
+			logger.verbose('Retry success.')
 		}
 		return collectionNames
 	}
@@ -63,8 +64,8 @@ export class DataBase {
 
 export class MongoCollection extends DataBase {
 	/**
-     * @param  {string} collectionName The name of the collection.
-     */
+	 * @param  {string} collectionName The name of the collection.
+	 */
 	constructor (collectionName) {
 		super()
 		this.collectionName = collectionName
@@ -72,23 +73,27 @@ export class MongoCollection extends DataBase {
 	}
 
 	/**
-     * @param  {string} name The name of the collection.
-     */
+	 * @param  {string} name The name of the collection.
+	 */
 	async #validateCollectionName (name) {
 		const collectionNames = await this.collectionNames()
 
 		if (typeof name !== 'string') throw new Error(`${name} must be a string.`)
 		if (collectionNames.includes(name)) return true
-		else throw new Error(`${name} is not a valid collection name. Must be one of ${collectionNames.join(', ')}`)
+		else {
+			throw new Error(`${name} is not a valid collection name. Must be one of ${collectionNames.join(', ')}`)
+		}
 	}
 
 	/**
-     * @returns {Promise<Object>}
-     */
+	 * @returns {Promise<Object>}
+	 */
 	get channels () {
 		const getChannelsFromDB = async () => {
 			const client = await import('./index.js')
-			const { channels: { vis, errors, logs } } = await this.collection.findOne({ _id: 'Globals' }, { projection: { channels: { vis: 1, errors: 1, logs: 1 } } })
+			const {
+				channels: { vis, errors, logs }
+			} = await this.collection.findOne({ _id: 'Globals' }, { projection: { channels: { vis: 1, errors: 1, logs: 1 } } })
 			const channels = {
 				vis: {
 					id: vis,
@@ -106,7 +111,15 @@ export class MongoCollection extends DataBase {
 						const embed = new EmbedBuilder()
 							.setTitle(`An error occured in ${fileName}`)
 							.setColor(Color.redDark)
-							.addFields([{ name: `${err.message}`, value: `\`\`\`${err.stack.split('\n').filter(s => !s.includes('node_modules')).join('\n')}\`\`\`` }])
+							.addFields([
+								{
+									name: `${err.message}`,
+									value: `\`\`\`${err.stack
+										.split('\n')
+										.filter((s) => !s.includes('node_modules'))
+										.join('\n')}\`\`\``
+								}
+							])
 						return embed
 					},
 					send: function (...args) {
