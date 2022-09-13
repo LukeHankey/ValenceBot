@@ -14,9 +14,21 @@ import { classVars } from '../dsf/index.js'
 
 export default {
 	name: 'dsf',
-	description: ['Displays all of the current stored messages.', 'Clears all of the current stored messages.', 'Shows the list of potential scouters/verified scouters with the set scout count, or count adjusted.', 'Add 1 or <num> merch/other/game count to the member provided.', 'Remove 1 or <num> merch/other/game count to the member provided.'],
+	description: [
+		'Displays all of the current stored messages.',
+		'Clears all of the current stored messages.',
+		'Shows the list of potential scouters/verified scouters with the set scout count, or count adjusted.',
+		'Add 1 or <num> merch/other/game count to the member provided.',
+		'Remove 1 or <num> merch/other/game count to the member provided.'
+	],
 	aliases: [],
-	usage: ['messages', 'messages clear', 'view scouter/verified <num (optional)>', 'user memberID/@member add <num (optional)> <other/game>', 'user memberID/@member remove <num (optional)> <other/game>'],
+	usage: [
+		'messages',
+		'messages clear',
+		'view scouter/verified <num (optional)>',
+		'user memberID/@member add <num (optional)> <other/game>',
+		'user memberID/@member remove <num (optional)> <other/game>'
+	],
 	guildSpecific: ['668330890790699079', '420803245758480405'],
 	permissionLevel: 'Admin',
 	run: async (client, message, args, perms, db) => {
@@ -103,7 +115,9 @@ export default {
 						const scoutCheck = await scout._checkForScouts()
 						if (!scoutCheck.length) {
 							message.channel.send({ content: 'None found.' })
-						} else { return scout.send(message.channel.id) }
+						} else {
+							return scout.send(message.channel.id)
+						}
 					}
 					break
 				case 'verified':
@@ -115,11 +129,13 @@ export default {
 						const verifiedCheck = await vScout._checkForScouts()
 						if (!verifiedCheck.length) {
 							message.channel.send({ content: 'None found.' })
-						} else { return vScout.send(message.channel.id) }
+						} else {
+							return vScout.send(message.channel.id)
+						}
 					}
 					break
 				default:
-					return message.channel.send({ content: 'You can view either \`scouter\` or \`verified\`' })
+					return message.channel.send({ content: 'You can view either `scouter` or `verified`' })
 				}
 			}
 			break
@@ -284,12 +300,14 @@ export default {
 		}
 		default:
 			return message.channel.send({
-				embeds: [nEmbed(
-					'**DSF Admin Commands List**',
-					'Here\'s a list of all the DSF commands you can use. Any parameter(s) in \`<>\` are optional:\n\n\`messages|m\`\n\`messages|m clear\`\n\`view scouter <num>\`\n\`view verified <num>\`\n\`user memberID/@member add <other/game> <num>\`\n\`user memberID/@member remove <other/game> <num>\`',
-					Color.cyan,
-					client.user.displayAvatarURL()
-				)]
+				embeds: [
+					nEmbed(
+						'**DSF Admin Commands List**',
+						"Here's a list of all the DSF commands you can use. Any parameter(s) in `<>` are optional:\n\n`messages|m`\n`messages|m clear`\n`view scouter <num>`\n`view verified <num>`\n`user memberID/@member add <other/game> <num>`\n`user memberID/@member remove <other/game> <num>`",
+						Color.cyan,
+						client.user.displayAvatarURL()
+					)
+				]
 			})
 		}
 	}

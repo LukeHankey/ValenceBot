@@ -83,7 +83,6 @@ const removeScouters = async (options) => {
 	})
 	const dsfServer = await scouter.guild
 	for (const profile of scoutersAtRisk) {
-		console.log(profile)
 		for (const scout of scoutProfiles) {
 			try {
 				// Remove both roles, if they have both

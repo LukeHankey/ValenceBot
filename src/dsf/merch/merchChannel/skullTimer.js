@@ -25,7 +25,10 @@ export const skullTimer = (message, db) => {
 					const fetched = await message.channel.messages.fetch(messageID)
 					try {
 						await fetched.react('☠️')
-						await db.collection.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID }, 'merchChannel.spamProtection': { messageID } } })
+						await db.collection.updateOne(
+							{ _id: message.guild.id },
+							{ $pull: { 'merchChannel.messages': { messageID }, 'merchChannel.spamProtection': { messageID } } }
+						)
 						const getPerms = merchChannelID.permissionOverwrites.cache.get(userID)
 						if (getPerms) {
 							const moreThanOnce = messages.filter((obj) => obj.userID === userID && obj.messageID !== messageID)
