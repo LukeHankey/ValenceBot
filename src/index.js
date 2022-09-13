@@ -4,6 +4,7 @@ import { Client, Collection } from 'discord.js'
 import { DataBase, MongoCollection } from './DataBase.js'
 import { getData, addActive } from './scheduler/clan.js'
 import { Load } from './handlers/index.js'
+import { logger } from './logging.js'
 import dotenv from 'dotenv'
 dotenv.config()
 
@@ -22,6 +23,7 @@ const client = new Client({
 		}
 	}
 })
+client.logger = logger
 client.commands = new Collection()
 
 const _ = new Load(client)
