@@ -220,165 +220,251 @@ export default {
 		}
 
 		switch (interaction.options.getSubcommand()) {
-		case 'create':
-			{
-				// Variables
-				const monthOption = interaction.options.getString('month') ?? null
+			case 'create':
+				{
+					// Variables
+					const monthOption = interaction.options.getString('month') ?? null
 
-				// Functions
-				const createCalendar = async (monthName) => {
-					const created = await interaction.channel.send({
-						embeds: [createCalendarEmbed(`Calendar for ${monthName}`)]
-					})
+					// Functions
+					const createCalendar = async (monthName) => {
+						const created = await interaction.channel.send({
+							embeds: [createCalendarEmbed(`Calendar for ${monthName}`)]
+						})
 
-					await db.collection.findOneAndUpdate(
-						{ _id: interaction.guild.id },
-						{
-							$push: {
-								calendarID: {
-									$each: [
-										{
-											messageID: created.id,
-											month: monthName,
-											year: currentYear,
-											events: []
-										}
-									]
+						await db.collection.findOneAndUpdate(
+							{ _id: interaction.guild.id },
+							{
+								$push: {
+									calendarID: {
+										$each: [
+											{
+												messageID: created.id,
+												month: monthName,
+												year: currentYear,
+												events: []
+											}
+										]
+									}
 								}
 							}
-						}
-					)
-				}
-
-				channels.logs.send(`<@${interaction.user.id}> created a new Calendar embed.`)
-
-				monthOption ? await createCalendar(monthOption) : await createCalendar(currentMonth)
-				await interaction.reply({ content: 'Calendar has been created.', ephemeral: true })
-			}
-			break
-		case 'add':
-			{
-				// Variables
-				const date = interaction.options.getString('date')
-				const title = interaction.options.getString('title')
-				const time = interaction.options.getString('time')
-				const announcement = interaction.options.getString('announcement')
-				const member = interaction.options.getMember('member')
-				// Optionals
-				const position = interaction.options.getInteger('position')
-
-				// Function
-				const addToCalendar = async (pos) => {
-					if (!monthFromDb[0]) {
-						return await interaction.reply({
-							content: 'Unable to find that calendar.',
-							ephemeral: true
-						})
+						)
 					}
 
-					let message = await interaction.channel.messages.fetch(monthFromDb[0].messageID)
-					message = message instanceof Collection ? message.first() : message
-					const calEmbed = new EmbedBuilder(message.embeds[0].data)
+					channels.logs.send(`<@${interaction.user.id}> created a new Calendar embed.`)
 
-					// Create the new role and update the db.collection
-					const newRole = await interaction.guild.roles.create({
-						name: title.concat(` #${randomNum()}`)
-					})
+					monthOption ? await createCalendar(monthOption) : await createCalendar(currentMonth)
+					await interaction.reply({ content: 'Calendar has been created.', ephemeral: true })
+				}
+				break
+			case 'add':
+				{
+					// Variables
+					const date = interaction.options.getString('date')
+					const title = interaction.options.getString('title')
+					const time = interaction.options.getString('time')
+					const announcement = interaction.options.getString('announcement')
+					const member = interaction.options.getMember('member')
+					// Optionals
+					const position = interaction.options.getInteger('position')
 
-					if (pos) {
-						calEmbed.spliceFields(pos - 1, 0, {
-							name: date,
-							value: `Event: ${title}\nTime: ${time}\n[Announcement](${announcement})\nHost: ${member}\nRole: ${newRole}`
+					// Function
+					const addToCalendar = async (pos) => {
+						if (!monthFromDb[0]) {
+							return await interaction.reply({
+								content: 'Unable to find that calendar.',
+								ephemeral: true
+							})
+						}
+
+						let message = await interaction.channel.messages.fetch(monthFromDb[0].messageID)
+						message = message instanceof Collection ? message.first() : message
+						const calEmbed = new EmbedBuilder(message.embeds[0].data)
+
+						// Create the new role and update the db.collection
+						const newRole = await interaction.guild.roles.create({
+							name: title.concat(` #${randomNum()}`)
 						})
 
-						await message.edit({ embeds: [calEmbed] })
-						await interaction.reply({
-							content: 'The calendar has been updated with the new event.',
-							ephemeral: true
-						})
-					} else {
-						calEmbed.addFields([
-							{
+						if (pos) {
+							calEmbed.spliceFields(pos - 1, 0, {
 								name: date,
 								value: `Event: ${title}\nTime: ${time}\n[Announcement](${announcement})\nHost: ${member}\nRole: ${newRole}`
-							}
-						])
+							})
 
-						// Edit the embed with the new event
-						await message.edit({ embeds: [calEmbed] })
-						await interaction.reply({
-							content: 'The calendar has been updated with the new event.',
-							ephemeral: true
-						})
-					}
+							await message.edit({ embeds: [calEmbed] })
+							await interaction.reply({
+								content: 'The calendar has been updated with the new event.',
+								ephemeral: true
+							})
+						} else {
+							calEmbed.addFields([
+								{
+									name: date,
+									value: `Event: ${title}\nTime: ${time}\n[Announcement](${announcement})\nHost: ${member}\nRole: ${newRole}`
+								}
+							])
 
-					await db.collection.findOneAndUpdate(
-						{ _id: interaction.guild.id, 'calendarID.month': monthFromDb[0].month },
-						{
-							$push: {
-								'calendarID.$.events': {
-									messageID: announcement.split('/')[6],
-									title,
-									eventTag: newRole.name.slice(title.length + 2),
-									roleID: newRole.id
+							// Edit the embed with the new event
+							await message.edit({ embeds: [calEmbed] })
+							await interaction.reply({
+								content: 'The calendar has been updated with the new event.',
+								ephemeral: true
+							})
+						}
+
+						await db.collection.findOneAndUpdate(
+							{ _id: interaction.guild.id, 'calendarID.month': monthFromDb[0].month },
+							{
+								$push: {
+									'calendarID.$.events': {
+										messageID: announcement.split('/')[6],
+										title,
+										eventTag: newRole.name.slice(title.length + 2),
+										roleID: newRole.id
+									}
 								}
 							}
-						}
-					)
+						)
 
-					await db.collection.updateOne(
-						{ _id: interaction.guild.id },
-						{
-							$push: {
-								events: {
-									messageID: announcement.split('/')[6],
-									title,
-									eventTag: newRole.name.slice(title.length + 2),
-									roleID: newRole.id,
-									date: new Date(),
-									dateEnd: date,
-									members: [],
-									month
+						await db.collection.updateOne(
+							{ _id: interaction.guild.id },
+							{
+								$push: {
+									events: {
+										messageID: announcement.split('/')[6],
+										title,
+										eventTag: newRole.name.slice(title.length + 2),
+										roleID: newRole.id,
+										date: new Date(),
+										dateEnd: date,
+										members: [],
+										month
+									}
 								}
 							}
-						}
-					)
+						)
 
-					return channels.logs.send(
-						`Calendar updated - ${interaction.member.displayName} added an event.\n\n/${interaction.commandName} ${interaction.options._subcommand} date: ${date} title: ${title} time: ${time} announcement ${announcement} member: ${member} position: ${position} month ${month}`
-					)
-				}
-
-				position ? await addToCalendar(position) : await addToCalendar()
-
-				try {
-					const eventChannelId = announcement.split('/')[5]
-					const eventMessageId = announcement.split('/')[6]
-
-					const eventChannel = client.channels.cache.get(eventChannelId)
-					const eventMessage = await eventChannel.messages.fetch(eventMessageId)
-					await eventMessage.react('📌')
-					await eventMessage.react('🛑')
-				} catch (err) {
-					if (err.name === 'TypeError') {
-						return await interaction.followUp({
-							content: 'Error: Unknown message from Announcement link.',
-							ephemeral: true
-						})
+						return channels.logs.send(
+							`Calendar updated - ${interaction.member.displayName} added an event.\n\n/${interaction.commandName} ${interaction.options._subcommand} date: ${date} title: ${title} time: ${time} announcement ${announcement} member: ${member} position: ${position} month ${month}`
+						)
 					}
-					channels.errors.send(err)
+
+					position ? await addToCalendar(position) : await addToCalendar()
+
+					try {
+						const eventChannelId = announcement.split('/')[5]
+						const eventMessageId = announcement.split('/')[6]
+
+						const eventChannel = client.channels.cache.get(eventChannelId)
+						const eventMessage = await eventChannel.messages.fetch(eventMessageId)
+						await eventMessage.react('📌')
+						await eventMessage.react('🛑')
+					} catch (err) {
+						if (err.name === 'TypeError') {
+							return await interaction.followUp({
+								content: 'Error: Unknown message from Announcement link.',
+								ephemeral: true
+							})
+						}
+						channels.errors.send(err)
+					}
 				}
-			}
-			break
-		case 'edit':
-			{
-				// Variables
-				const position = interaction.options.getInteger('position')
-				const field = interaction.options.getString('field')
-				const value = interaction.options.getString('value')
+				break
+			case 'edit':
+				{
+					// Variables
+					const position = interaction.options.getInteger('position')
+					const field = interaction.options.getString('field')
+					const value = interaction.options.getString('value')
 
 					// Functions
 					;(async () => {
+						if (!monthFromDb[0]) {
+							return await interaction.reply({
+								content: 'Unable to find that calendar.',
+								ephemeral: true
+							})
+						}
+
+						let message = await interaction.channel.messages.fetch(monthFromDb[0].messageID)
+						message = message instanceof Collection ? message.first() : message
+						const calEmbed = new EmbedBuilder(message.embeds[0].data)
+						const existingFields = calEmbed.data.fields[position - 1]
+						const oldValues = existingFields.value.split('\n')
+						const roleId = oldValues[4].slice(9, 27)
+
+						switch (field) {
+							case 'date':
+								calEmbed.spliceFields(position - 1, 1, {
+									name: value,
+									value: existingFields.value
+								})
+								await message.edit({ embeds: [calEmbed] })
+								await db.collection.findOneAndUpdate(
+									{ _id: message.guild.id, 'events.roleID': roleId },
+									{ $set: { 'events.$.title': value } }
+								)
+								await db.collection.updateOne(
+									{ _id: message.guild.id },
+									{ $set: { 'calendarID.$[month].events.$[fieldName].title': value } },
+									{
+										arrayFilters: [{ 'month.month': month }, { 'fieldName.title': { $ne: value } }]
+									}
+								)
+								break
+							case 'announcement':
+								{
+									const annVal = oldValues[2].split('](')
+									calEmbed.spliceFields(position - 1, 1, {
+										name: existingFields.name,
+										value: existingFields.value.replace(annVal[1], `${value})`)
+									})
+									await message.edit({ embeds: [calEmbed] })
+									await db.collection.findOneAndUpdate(
+										{ _id: message.guild.id, 'events.roleID': roleId },
+										{ $set: { 'events.$.messageID': value.split('/')[6] } }
+									)
+									await db.collection.updateOne(
+										{ _id: message.guild.id },
+										{
+											$set: {
+												'calendarID.$[month].events.$[fieldName].messageID': value.split('/')[6]
+											}
+										},
+										{
+											arrayFilters: [{ 'month.month': month }, { 'fieldName.messageID': { $ne: value } }]
+										}
+									)
+								}
+								break
+							default: {
+								const [valueToReplace] = oldValues.filter((val) => {
+									if (val.toLowerCase().includes(field)) return val
+									else return undefined
+								})
+
+								const valueName = valueToReplace.split(':')[0]
+
+								calEmbed.spliceFields(position - 1, 1, {
+									name: existingFields.name,
+									value: existingFields.value.replace(valueToReplace, `${valueName}: ${value}`)
+								})
+								await message.edit({ embeds: [calEmbed] })
+							}
+						}
+
+						await interaction.reply({ content: 'The calendar has been edited.', ephemeral: true })
+						channels.logs.send(
+							`Calendar updated - ${interaction.member.displayName} edited an event.\n\n/${interaction.commandName} ${interaction.options._subcommand} position: ${position} field: ${field} value: ${value} month ${month}`
+						)
+					})()
+				}
+				break
+			case 'remove':
+				{
+					const position = interaction.options.getInteger('position')
+					const deleteNum = interaction.options.getInteger('delete') ?? 1
+
 					if (!monthFromDb[0]) {
 						return await interaction.reply({
 							content: 'Unable to find that calendar.',
@@ -389,202 +475,116 @@ export default {
 					let message = await interaction.channel.messages.fetch(monthFromDb[0].messageID)
 					message = message instanceof Collection ? message.first() : message
 					const calEmbed = new EmbedBuilder(message.embeds[0].data)
-					const existingFields = calEmbed.data.fields[position - 1]
-					const oldValues = existingFields.value.split('\n')
-					const roleId = oldValues[4].slice(9, 27)
 
-					switch (field) {
-					case 'date':
-						calEmbed.spliceFields(position - 1, 1, {
-							name: value,
-							value: existingFields.value
-						})
-						await message.edit({ embeds: [calEmbed] })
-						await db.collection.findOneAndUpdate(
-							{ _id: message.guild.id, 'events.roleID': roleId },
-							{ $set: { 'events.$.title': value } }
-						)
-						await db.collection.updateOne(
-							{ _id: message.guild.id },
-							{ $set: { 'calendarID.$[month].events.$[fieldName].title': value } },
-							{
-								arrayFilters: [{ 'month.month': month }, { 'fieldName.title': { $ne: value } }]
-							}
-						)
-						break
-					case 'announcement':
-						{
-							const annVal = oldValues[2].split('](')
-							calEmbed.spliceFields(position - 1, 1, {
-								name: existingFields.name,
-								value: existingFields.value.replace(annVal[1], `${value})`)
-							})
-							await message.edit({ embeds: [calEmbed] })
-							await db.collection.findOneAndUpdate(
-								{ _id: message.guild.id, 'events.roleID': roleId },
-								{ $set: { 'events.$.messageID': value.split('/')[6] } }
-							)
-							await db.collection.updateOne(
-								{ _id: message.guild.id },
-								{
-									$set: {
-										'calendarID.$[month].events.$[fieldName].messageID': value.split('/')[6]
-									}
-								},
-								{
-									arrayFilters: [{ 'month.month': month }, { 'fieldName.messageID': { $ne: value } }]
-								}
-							)
-						}
-						break
-					default: {
-						const [valueToReplace] = oldValues.filter((val) => {
-							if (val.toLowerCase().includes(field)) return val
-							else return undefined
-						})
-
-						const valueName = valueToReplace.split(':')[0]
-
-						calEmbed.spliceFields(position - 1, 1, {
-							name: existingFields.name,
-							value: existingFields.value.replace(valueToReplace, `${valueName}: ${value}`)
-						})
-						await message.edit({ embeds: [calEmbed] })
-					}
-					}
-
-					await interaction.reply({ content: 'The calendar has been edited.', ephemeral: true })
+					// Logging
+					const log = message.embeds[0].fields.splice(position - 1, deleteNum)
+					const logValues = log.map((values) => `${values.name}\n${values.value}\n`)
 					channels.logs.send(
-						`Calendar updated - ${interaction.member.displayName} edited an event.\n\n/${interaction.commandName} ${interaction.options._subcommand} position: ${position} field: ${field} value: ${value} month ${month}`
+						`Calendar updated - ${
+							interaction?.member.displayName
+						} removed event: \`\`\`diff\n- Removed\n${logValues.join('\n')}\`\`\``
 					)
-				})()
-			}
-			break
-		case 'remove':
-			{
-				const position = interaction.options.getInteger('position')
-				const deleteNum = interaction.options.getInteger('delete') ?? 1
 
-				if (!monthFromDb[0]) {
-					return await interaction.reply({
-						content: 'Unable to find that calendar.',
+					calEmbed.spliceFields(position - 1, deleteNum)
+					await message.edit({ embeds: [calEmbed] })
+
+					await interaction.reply({
+						content: 'That event has been removed from the calendar.',
 						ephemeral: true
 					})
-				}
 
-				let message = await interaction.channel.messages.fetch(monthFromDb[0].messageID)
-				message = message instanceof Collection ? message.first() : message
-				const calEmbed = new EmbedBuilder(message.embeds[0].data)
-
-				// Logging
-				const log = message.embeds[0].fields.splice(position - 1, deleteNum)
-				const logValues = log.map((values) => `${values.name}\n${values.value}\n`)
-				channels.logs.send(
-					`Calendar updated - ${
-						interaction?.member.displayName
-					} removed event: \`\`\`diff\n- Removed\n${logValues.join('\n')}\`\`\``
-				)
-
-				calEmbed.spliceFields(position - 1, deleteNum)
-				await message.edit({ embeds: [calEmbed] })
-
-				await interaction.reply({
-					content: 'That event has been removed from the calendar.',
-					ephemeral: true
-				})
-
-				for (const item of logValues) {
-					const items = item.split('\n')
-					const title = items[1].slice(7)
-					const roleId = items[5].match(/(\d+)/)[0]
-					const role = message.guild.roles.cache.get(roleId) ?? (await message.guild.roles.fetch(roleId))
-					const eventTag =
+					for (const item of logValues) {
+						const items = item.split('\n')
+						const title = items[1].slice(7)
+						const roleId = items[5].match(/(\d+)/)[0]
+						const role = message.guild.roles.cache.get(roleId) ?? (await message.guild.roles.fetch(roleId))
+						const eventTag =
 							role instanceof Collection
 								? role.first().name.slice(title.length + 2)
 								: role.name.slice(title.length + 2)
 
-					await removeEvents(interaction, db, 'calendar', dataFromDb, eventTag)
+						await removeEvents(interaction, db, 'calendar', dataFromDb, eventTag)
+					}
 				}
-			}
-			break
-		case 'move':
-			{
-				const from = interaction.options.getInteger('from')
-				const to = interaction.options.getInteger('to')
+				break
+			case 'move':
+				{
+					const from = interaction.options.getInteger('from')
+					const to = interaction.options.getInteger('to')
 
-				const monthTo = interaction.options.getString('month_to') ?? null
-				let monthFromDbTo
-				if (monthTo) {
-					monthFromDbTo = dataFromDb.calendarID.filter((obj) => {
-						return obj.month.toLowerCase() === monthTo.toLowerCase() && obj.year === currentYear
-					})
-				}
-
-				let message = await interaction.channel.messages.fetch(monthFromDb[0].messageID)
-				message = message instanceof Collection ? message.first() : message
-				const calEmbed = new EmbedBuilder(message.embeds[0].data)
-				const event = calEmbed.data.fields[from - 1]
-
-				if (monthTo !== null) {
-					let moveMessage = await interaction.channel.messages.fetch(monthFromDbTo[0].messageID)
-					moveMessage = moveMessage instanceof Collection ? moveMessage.first() : moveMessage
-					const calEmbedTo = new EmbedBuilder(moveMessage.embeds[0].data)
-					if (monthTo === month) {
-						calEmbedTo.spliceFields(to - 1, 0, {
-							name: event.name,
-							value: event.value
+					const monthTo = interaction.options.getString('month_to') ?? null
+					let monthFromDbTo
+					if (monthTo) {
+						monthFromDbTo = dataFromDb.calendarID.filter((obj) => {
+							return obj.month.toLowerCase() === monthTo.toLowerCase() && obj.year === currentYear
 						})
-						calEmbedTo.spliceFields(from, 1)
+					}
+
+					let message = await interaction.channel.messages.fetch(monthFromDb[0].messageID)
+					message = message instanceof Collection ? message.first() : message
+					const calEmbed = new EmbedBuilder(message.embeds[0].data)
+					const event = calEmbed.data.fields[from - 1]
+
+					if (monthTo !== null) {
+						let moveMessage = await interaction.channel.messages.fetch(monthFromDbTo[0].messageID)
+						moveMessage = moveMessage instanceof Collection ? moveMessage.first() : moveMessage
+						const calEmbedTo = new EmbedBuilder(moveMessage.embeds[0].data)
+						if (monthTo === month) {
+							calEmbedTo.spliceFields(to - 1, 0, {
+								name: event.name,
+								value: event.value
+							})
+							calEmbedTo.spliceFields(from, 1)
+						} else {
+							calEmbedTo.spliceFields(to - 1, 0, {
+								name: event.name,
+								value: event.value
+							})
+							calEmbed.spliceFields(from - 1, 1)
+							await message.edit({ embeds: [calEmbed] })
+						}
+
+						await moveMessage.edit({ embeds: [calEmbedTo] })
+
+						const item = event.value.split('\n')
+
+						const roleId = item[4].slice(9, -1)
+						const role = interaction.guild.roles.cache.get(roleId)
+						const title = item[0].slice(7)
+						const announcement = item[2].slice(15, -1)
+						const messageId = announcement.split('/')[6] ?? null
+						const eventTag = role.name.slice(title.length + 2)
+
+						await db.collection.findOneAndUpdate(
+							{ _id: interaction.guild.id, 'calendarID.month': monthFromDb[0].month },
+							{ $pull: { 'calendarID.$.events': { eventTag } } }
+						)
+
+						await db.collection.findOneAndUpdate(
+							{ _id: interaction.guild.id, 'calendarID.month': monthFromDbTo[0].month },
+							{
+								$push: {
+									'calendarID.$.events': { messageId, title, eventTag, roleId }
+								}
+							}
+						)
+
+						await db.collection.findOneAndUpdate(
+							{ _id: interaction.guild.id, 'events.roleID': roleId },
+							{ $set: { 'events.$.month': monthFromDbTo[0].month } }
+						)
 					} else {
-						calEmbedTo.spliceFields(to - 1, 0, {
+						calEmbed.spliceFields(from - 1, 1)
+						calEmbed.spliceFields(to - 1, 0, {
 							name: event.name,
 							value: event.value
 						})
-						calEmbed.spliceFields(from - 1, 1)
 						await message.edit({ embeds: [calEmbed] })
 					}
 
-					await moveMessage.edit({ embeds: [calEmbedTo] })
-
-					const item = event.value.split('\n')
-
-					const roleId = item[4].slice(9, -1)
-					const role = interaction.guild.roles.cache.get(roleId)
-					const title = item[0].slice(7)
-					const announcement = item[2].slice(15, -1)
-					const messageId = announcement.split('/')[6] ?? null
-					const eventTag = role.name.slice(title.length + 2)
-
-					await db.collection.findOneAndUpdate(
-						{ _id: interaction.guild.id, 'calendarID.month': monthFromDb[0].month },
-						{ $pull: { 'calendarID.$.events': { eventTag } } }
-					)
-
-					await db.collection.findOneAndUpdate(
-						{ _id: interaction.guild.id, 'calendarID.month': monthFromDbTo[0].month },
-						{
-							$push: {
-								'calendarID.$.events': { messageId, title, eventTag, roleId }
-							}
-						}
-					)
-
-					await db.collection.findOneAndUpdate(
-						{ _id: interaction.guild.id, 'events.roleID': roleId },
-						{ $set: { 'events.$.month': monthFromDbTo[0].month } }
-					)
-				} else {
-					calEmbed.spliceFields(from - 1, 1)
-					calEmbed.spliceFields(to - 1, 0, {
-						name: event.name,
-						value: event.value
-					})
-					await message.edit({ embeds: [calEmbed] })
+					await interaction.reply({ content: 'The event has been moved.', ephemeral: true })
 				}
-
-				await interaction.reply({ content: 'The event has been moved.', ephemeral: true })
-			}
-			break
+				break
 		}
 	}
 }

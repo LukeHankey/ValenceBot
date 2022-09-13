@@ -244,32 +244,32 @@ export default {
 				let scoutTracker = null
 				if (args[1]) {
 					switch (args[1].toLowerCase()) {
-					case 'scouter':
-						{
-							const scouter = message.guild.roles.cache.find((r) => r.name.toLowerCase() === 'scouter')
-							scoutTracker = await scouters.collection.find({ 'assigned.0': scouter.id, active: 1 }).toArray()
-						}
-						break
-					case 'verified scouter':
-					case 'verified':
-						{
-							const oneMonth = 2.628e9
-							const verified = message.guild.roles.cache.find(
-								(r) => r.name.toLowerCase() === 'verified scouter'
+						case 'scouter':
+							{
+								const scouter = message.guild.roles.cache.find((r) => r.name.toLowerCase() === 'scouter')
+								scoutTracker = await scouters.collection.find({ 'assigned.0': scouter.id, active: 1 }).toArray()
+							}
+							break
+						case 'verified scouter':
+						case 'verified':
+							{
+								const oneMonth = 2.628e9
+								const verified = message.guild.roles.cache.find(
+									(r) => r.name.toLowerCase() === 'verified scouter'
+								)
+								scoutTracker = await scouters.collection
+									.find({
+										'assigned.1': verified.id,
+										active: 1,
+										lastTimestamp: { $gte: Date.now() - oneMonth }
+									})
+									.toArray()
+							}
+							break
+						default:
+							return message.channel.send(
+								`There only criteria to check are the Scouter and Verified Scouter roles, not ${args[1]}.`
 							)
-							scoutTracker = await scouters.collection
-								.find({
-									'assigned.1': verified.id,
-									active: 1,
-									lastTimestamp: { $gte: Date.now() - oneMonth }
-								})
-								.toArray()
-						}
-						break
-					default:
-						return message.channel.send(
-							`There only criteria to check are the Scouter and Verified Scouter roles, not ${args[1]}.`
-						)
 					}
 				} else {
 					scoutTracker = await scouters.collection.find({ count: { $gte: 15 } }).toArray()

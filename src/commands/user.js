@@ -197,38 +197,38 @@ export default {
 				)
 
 				switch (param) {
-				case 'id':
-					await usersColl.collection.updateOne(
-						{ clanMate },
-						{ $set: { discord: other.join(' '), discActive: true } }
-					)
-					return await message.react('✅')
-				case 'discord':
-				case 'discActive':
-					if (other.join(' ') === 'true' || other.join(' ') === 'false') {
+					case 'id':
 						await usersColl.collection.updateOne(
 							{ clanMate },
-							{ $set: { discActive: booleanConvert(other.join(' ')) } }
+							{ $set: { discord: other.join(' '), discActive: true } }
 						)
 						return await message.react('✅')
-					} else {
-						return message.channel.send('Active state must be set as either `true` or `false`.')
-					}
-				case 'alt':
-					if (other.join(' ') === 'true' || other.join(' ') === 'false') {
-						await usersColl.collection.updateOne({ clanMate }, { $set: { alt: booleanConvert(other.join(' ')) } })
-						return await message.react('✅')
-					} else {
+					case 'discord':
+					case 'discActive':
+						if (other.join(' ') === 'true' || other.join(' ') === 'false') {
+							await usersColl.collection.updateOne(
+								{ clanMate },
+								{ $set: { discActive: booleanConvert(other.join(' ')) } }
+							)
+							return await message.react('✅')
+						} else {
+							return message.channel.send('Active state must be set as either `true` or `false`.')
+						}
+					case 'alt':
+						if (other.join(' ') === 'true' || other.join(' ') === 'false') {
+							await usersColl.collection.updateOne({ clanMate }, { $set: { alt: booleanConvert(other.join(' ')) } })
+							return await message.react('✅')
+						} else {
+							return message.channel.send({
+								content: 'Alt account must be set as either `true` or `false`.'
+							})
+						}
+					default: {
 						return message.channel.send({
-							content: 'Alt account must be set as either `true` or `false`.'
+							content:
+								'Parameters that are able to change are the Discord ID, Discord active status and Alt account status. The parameter names are: `id` | `discord`/`discActive` | `alt`'
 						})
 					}
-				default: {
-					return message.channel.send({
-						content:
-								'Parameters that are able to change are the Discord ID, Discord active status and Alt account status. The parameter names are: `id` | `discord`/`discActive` | `alt`'
-					})
-				}
 				}
 			}
 			;[...rsName] = args

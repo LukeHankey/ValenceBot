@@ -62,69 +62,69 @@ export default {
 		}
 
 		switch (subType) {
-		case 'for': {
-			const cmd = guildCommand.filter((com) => com.name === commandName)
-			const globCommands = await interaction.client.application?.commands.fetch()
-			const gcmd = globCommands.filter((com) => com.name === commandName)
+			case 'for': {
+				const cmd = guildCommand.filter((com) => com.name === commandName)
+				const globCommands = await interaction.client.application?.commands.fetch()
+				const gcmd = globCommands.filter((com) => com.name === commandName)
 
-			const displayPerms = (perms) => {
-				const permList = perms.map((p) => {
-					const suffix = '>'
-					let prefix = null
-					let permissionType = null
-					switch (p.type) {
-					case ApplicationCommandPermissionType.Role:
-						prefix = '<@&'
-						permissionType = 'Role'
-						break
-					case ApplicationCommandPermissionType.User:
-						prefix = '<@!'
-						permissionType = 'User'
-						break
-					case ApplicationCommandPermissionType.Channel:
-						prefix = '<#'
-						permissionType = 'Channel'
-					}
+				const displayPerms = (perms) => {
+					const permList = perms.map((p) => {
+						const suffix = '>'
+						let prefix = null
+						let permissionType = null
+						switch (p.type) {
+							case ApplicationCommandPermissionType.Role:
+								prefix = '<@&'
+								permissionType = 'Role'
+								break
+							case ApplicationCommandPermissionType.User:
+								prefix = '<@!'
+								permissionType = 'User'
+								break
+							case ApplicationCommandPermissionType.Channel:
+								prefix = '<#'
+								permissionType = 'Channel'
+						}
 
-					return {
-						name: `Type: ${permissionType}`,
-						value: `${prefix}${p.id}${suffix}\nAccess: ${p.permission ? '✅' : '❌'}`,
-						inline: true
-					}
-				})
-
-				const permsEmbed = new EmbedBuilder()
-					.setTitle(`Permissions for the ${commandName} command.`)
-					.setTimestamp()
-					.setColor(Color.gold)
-					.setDescription(
-						'Full list of permissions. If adding extra roles/users, keep in mind that there is a max limit of 10 users/roles per command.'
-					)
-					.addFields(permList)
-
-				return permsEmbed
-			}
-
-			try {
-				if (cmd.size) {
-					const perms = await interaction.guild.commands.permissions.fetch({
-						command: cmd.first().id
+						return {
+							name: `Type: ${permissionType}`,
+							value: `${prefix}${p.id}${suffix}\nAccess: ${p.permission ? '✅' : '❌'}`,
+							inline: true
+						}
 					})
-					return interaction.reply({ embeds: [displayPerms(perms)], ephemeral: true })
+
+					const permsEmbed = new EmbedBuilder()
+						.setTitle(`Permissions for the ${commandName} command.`)
+						.setTimestamp()
+						.setColor(Color.gold)
+						.setDescription(
+							'Full list of permissions. If adding extra roles/users, keep in mind that there is a max limit of 10 users/roles per command.'
+						)
+						.addFields(permList)
+
+					return permsEmbed
 				}
 
-				const perms = await interaction.guild.commands.permissions.fetch({
-					command: gcmd.first().id
-				})
-				return interaction.reply({ embeds: [displayPerms(perms)], ephemeral: true })
-			} catch (err) {
-				channels.errors.send(err)
-				interaction.reply({
-					content: `There was an error. ${commandName} either has no permissions set or another error occured.`,
-					ephemeral: true
-				})
+				try {
+					if (cmd.size) {
+						const perms = await interaction.guild.commands.permissions.fetch({
+							command: cmd.first().id
+						})
+						return interaction.reply({ embeds: [displayPerms(perms)], ephemeral: true })
+					}
+
+					const perms = await interaction.guild.commands.permissions.fetch({
+						command: gcmd.first().id
+					})
+					return interaction.reply({ embeds: [displayPerms(perms)], ephemeral: true })
+				} catch (err) {
+					channels.errors.send(err)
+					interaction.reply({
+						content: `There was an error. ${commandName} either has no permissions set or another error occured.`,
+						ephemeral: true
+					})
+				}
 			}
-		}
 		}
 	}
 }

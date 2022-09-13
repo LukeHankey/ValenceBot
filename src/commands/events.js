@@ -34,53 +34,53 @@ export default {
 			{ projection: { events: 1, channels: 1, calendarID: 1 } }
 		)
 		switch (interaction.options.getSubcommand()) {
-		case 'list':
-			try {
-				// Listing events
-				const link = `https://discord.com/channels/${data._id}/${data.channels.events}/`
-				const fieldHolder = data.events.map((obj) => {
-					const members = obj.members.map((mem) => {
-						return `<@!${mem}>`
+			case 'list':
+				try {
+					// Listing events
+					const link = `https://discord.com/channels/${data._id}/${data.channels.events}/`
+					const fieldHolder = data.events.map((obj) => {
+						const members = obj.members.map((mem) => {
+							return `<@!${mem}>`
+						})
+						return {
+							name: obj.title,
+							value: `ID: ${obj.eventTag}\nRole: <@&${obj.roleID}>\n[Event posted ${
+								obj.date ? 'on ' + obj.date.toString().split(' ').slice(0, 4).join(' ') : ''
+							}](${link}${obj.messageID})\nEvent ends on ${obj.dateEnd}\nInterested 📌: ${members.join(', ')}`
+						}
 					})
-					return {
-						name: obj.title,
-						value: `ID: ${obj.eventTag}\nRole: <@&${obj.roleID}>\n[Event posted ${
-							obj.date ? 'on ' + obj.date.toString().split(' ').slice(0, 4).join(' ') : ''
-						}](${link}${obj.messageID})\nEvent ends on ${obj.dateEnd}\nInterested 📌: ${members.join(', ')}`
-					}
-				})
 
-				const embed = new EmbedBuilder()
-					.setTitle('Event Listing')
-					.setColor(Color.cyan)
-					.setDescription(
-						'These are all of the events currently stored. Some may be old ones, others relatively new and ongoing. Feel free to remove events by their event ID.'
-					)
-					.addFields(fieldHolder)
-				return interaction.reply({ embeds: [embed] })
-			} catch (err) {
-				channels.errors.send(err)
-			}
-			break
-		case 'end':
-			try {
-				const tag = interaction.options.getString('tag')
-				const checkEventExists = data.events
-					.map((event) => {
-						if (event.eventTag === tag) {
-							return { value: true, message: event.messageID, role: event.roleID }
-						} else return undefined
-					})
-					.filter((valid) => valid)
-				if (checkEventExists.length && checkEventExists[0].value) {
-					await removeEvents(interaction, db, 'events', data, tag)
-					return interaction.reply({ content: 'Event has been removed.', ephemeral: true })
-				} else {
-					interaction.reply({ content: `There is no event found with ID: \`${tag}\`` })
+					const embed = new EmbedBuilder()
+						.setTitle('Event Listing')
+						.setColor(Color.cyan)
+						.setDescription(
+							'These are all of the events currently stored. Some may be old ones, others relatively new and ongoing. Feel free to remove events by their event ID.'
+						)
+						.addFields(fieldHolder)
+					return interaction.reply({ embeds: [embed] })
+				} catch (err) {
+					channels.errors.send(err)
 				}
-			} catch (err) {
-				channels.errors.send(err)
-			}
+				break
+			case 'end':
+				try {
+					const tag = interaction.options.getString('tag')
+					const checkEventExists = data.events
+						.map((event) => {
+							if (event.eventTag === tag) {
+								return { value: true, message: event.messageID, role: event.roleID }
+							} else return undefined
+						})
+						.filter((valid) => valid)
+					if (checkEventExists.length && checkEventExists[0].value) {
+						await removeEvents(interaction, db, 'events', data, tag)
+						return interaction.reply({ content: 'Event has been removed.', ephemeral: true })
+					} else {
+						interaction.reply({ content: `There is no event found with ID: \`${tag}\`` })
+					}
+				} catch (err) {
+					channels.errors.send(err)
+				}
 		}
 	},
 	run: async (client, message, args, perms, db) => {
@@ -92,55 +92,55 @@ export default {
 		)
 
 		switch (args[0]) {
-		case 'end':
-			try {
-				const tag = args[1]
-				const checkEventExists = data.events
-					.map((event) => {
-						if (event.eventTag === tag) {
-							return { value: true, message: event.messageID, role: event.roleID }
-						} else return undefined
-					})
-					.filter((valid) => valid)
-				if (checkEventExists.length && checkEventExists[0].value) {
-					await removeEvents(message, db, 'events', data, tag)
-					return message.react('✅')
-				} else {
-					message.react('❌')
-					message.channel.send({ content: `There is no event found with ID: \`${tag}\`` })
-				}
-			} catch (err) {
-				channels.errors.send(err)
-			}
-			break
-		default: {
-			try {
-				// Listing events
-				const link = `https://discord.com/channels/${data._id}/${data.channels.events}/`
-				const fieldHolder = data.events.map((obj) => {
-					const members = obj.members.map((mem) => {
-						return `<@!${mem}>`
-					})
-					return {
-						name: obj.title,
-						value: `ID: ${obj.eventTag}\nRole: <@&${obj.roleID}>\n[Event posted ${
-							obj.date ? 'on ' + obj.date.toString().split(' ').slice(0, 4).join(' ') : ''
-						}](${link}${obj.messageID})\nEvent ends on ${obj.dateEnd}\nInterested 📌: ${members.join(', ')}`
+			case 'end':
+				try {
+					const tag = args[1]
+					const checkEventExists = data.events
+						.map((event) => {
+							if (event.eventTag === tag) {
+								return { value: true, message: event.messageID, role: event.roleID }
+							} else return undefined
+						})
+						.filter((valid) => valid)
+					if (checkEventExists.length && checkEventExists[0].value) {
+						await removeEvents(message, db, 'events', data, tag)
+						return message.react('✅')
+					} else {
+						message.react('❌')
+						message.channel.send({ content: `There is no event found with ID: \`${tag}\`` })
 					}
-				})
+				} catch (err) {
+					channels.errors.send(err)
+				}
+				break
+			default: {
+				try {
+					// Listing events
+					const link = `https://discord.com/channels/${data._id}/${data.channels.events}/`
+					const fieldHolder = data.events.map((obj) => {
+						const members = obj.members.map((mem) => {
+							return `<@!${mem}>`
+						})
+						return {
+							name: obj.title,
+							value: `ID: ${obj.eventTag}\nRole: <@&${obj.roleID}>\n[Event posted ${
+								obj.date ? 'on ' + obj.date.toString().split(' ').slice(0, 4).join(' ') : ''
+							}](${link}${obj.messageID})\nEvent ends on ${obj.dateEnd}\nInterested 📌: ${members.join(', ')}`
+						}
+					})
 
-				const embed = new EmbedBuilder()
-					.setTitle('Event Listing')
-					.setColor(Color.cyan)
-					.setDescription(
-						'These are all of the events currently stored. Some may be old ones, others relatively new and ongoing. Feel free to remove events by their event ID.'
-					)
-					.addFields(fieldHolder)
-				message.channel.send({ embeds: [embed] })
-			} catch (err) {
-				channels.errors.send(err)
+					const embed = new EmbedBuilder()
+						.setTitle('Event Listing')
+						.setColor(Color.cyan)
+						.setDescription(
+							'These are all of the events currently stored. Some may be old ones, others relatively new and ongoing. Feel free to remove events by their event ID.'
+						)
+						.addFields(fieldHolder)
+					message.channel.send({ embeds: [embed] })
+				} catch (err) {
+					channels.errors.send(err)
+				}
 			}
-		}
 		}
 	}
 }

@@ -93,76 +93,76 @@ export const modals = async (interaction, db, data) => {
 
 	try {
 		switch (interaction.customId) {
-		case 'createApplication':
-			{
-				const applicationFields = interaction.fields.getTextInputValue('application')
-				const parsedData = validateModalApplication(applicationFields)
-				const components = parsedData.components.map(
-					(c, i) => new ActionRowBuilder({ ...c, type: 4, custom_id: `${c.label}_${i}` })
-				)
+			case 'createApplication':
+				{
+					const applicationFields = interaction.fields.getTextInputValue('application')
+					const parsedData = validateModalApplication(applicationFields)
+					const components = parsedData.components.map(
+						(c, i) => new ActionRowBuilder({ ...c, type: 4, custom_id: `${c.label}_${i}` })
+					)
 
-				const newModal = new ModalBuilder({
-					components,
-					custom_id: 'startApplication',
-					title: parsedData.title
-				}).toJSON()
+					const newModal = new ModalBuilder({
+						components,
+						custom_id: 'startApplication',
+						title: parsedData.title
+					}).toJSON()
 
-				const startApplication = new ActionRowBuilder().addComponents([
-					new ButtonBuilder()
-						.setCustomId('Start Application')
-						.setLabel('Start Application')
-						.setStyle(ButtonStyle.Primary)
-						.setEmoji({ name: '📜' })
-				])
+					const startApplication = new ActionRowBuilder().addComponents([
+						new ButtonBuilder()
+							.setCustomId('Start Application')
+							.setLabel('Start Application')
+							.setStyle(ButtonStyle.Primary)
+							.setEmoji({ name: '📜' })
+					])
 
-				await interaction.reply({
-					content: 'Your application is all set up! Click the `Start Application` button to view.',
-					ephemeral: true
+					await interaction.reply({
+						content: 'Your application is all set up! Click the `Start Application` button to view.',
+						ephemeral: true
+					})
+
+					await interaction.message.edit({ components: [startApplication] })
+
+					await db.collection.findOneAndUpdate(
+						{ _id: interaction.guild.id, 'ticket.messageId': interaction.message.id },
+						{
+							$set: {
+								'ticket.$.applicationModal': newModal
+							}
+						}
+					)
+				}
+				break
+			case 'startApplication': {
+				const ticketData = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
+				const ticket = new Ticket(interaction, ticketData, db)
+				const ticketChannel = await ticket.create()
+
+				const currentTicketComponents = ticket.currentTicket.applicationModal.components
+				const mappedComponents = currentTicketComponents.map((component) => {
+					const inputValue = interaction.fields.getTextInputValue(component.custom_id)
+					return new EmbedBuilder()
+						.setTitle(component.label)
+						.setDescription(inputValue)
+						.setTimestamp()
+						.setAuthor({
+							name: interaction.member.displayName,
+							iconURL: interaction.member.avatarURL()
+						})
+						.setColor(Color.cyan)
 				})
 
-				await interaction.message.edit({ components: [startApplication] })
-
-				await db.collection.findOneAndUpdate(
-					{ _id: interaction.guild.id, 'ticket.messageId': interaction.message.id },
-					{
-						$set: {
-							'ticket.$.applicationModal': newModal
-						}
-					}
-				)
+				if (interaction.guild.id === '420803245758480405') {
+					const scoutTracker = new MongoCollection('ScoutTracker')
+					const memberProfile = await sendUserInfo(interaction.member.id, scoutTracker)
+					await ticketChannel.send({ embeds: [...mappedComponents, memberProfile] })
+				} else {
+					await ticketChannel.send({ embeds: [...mappedComponents] })
+				}
+				await interaction.reply({
+					content: `Your application has been submitted and is now being reviewed by <@&${ticket.roleId}>. Thank you!`,
+					ephemeral: true
+				})
 			}
-			break
-		case 'startApplication': {
-			const ticketData = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
-			const ticket = new Ticket(interaction, ticketData, db)
-			const ticketChannel = await ticket.create()
-
-			const currentTicketComponents = ticket.currentTicket.applicationModal.components
-			const mappedComponents = currentTicketComponents.map((component) => {
-				const inputValue = interaction.fields.getTextInputValue(component.custom_id)
-				return new EmbedBuilder()
-					.setTitle(component.label)
-					.setDescription(inputValue)
-					.setTimestamp()
-					.setAuthor({
-						name: interaction.member.displayName,
-						iconURL: interaction.member.avatarURL()
-					})
-					.setColor(Color.cyan)
-			})
-
-			if (interaction.guild.id === '420803245758480405') {
-				const scoutTracker = new MongoCollection('ScoutTracker')
-				const memberProfile = await sendUserInfo(interaction.member.id, scoutTracker)
-				await ticketChannel.send({ embeds: [...mappedComponents, memberProfile] })
-			} else {
-				await ticketChannel.send({ embeds: [...mappedComponents] })
-			}
-			await interaction.reply({
-				content: `Your application has been submitted and is now being reviewed by <@&${ticket.roleId}>. Thank you!`,
-				ephemeral: true
-			})
-		}
 		}
 	} catch (err) {
 		await channels.errors.send(err)

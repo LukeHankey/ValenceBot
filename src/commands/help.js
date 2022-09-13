@@ -19,31 +19,31 @@ export default {
 				if (command?.type === 'menu') return
 				if (command.guildSpecific.includes(message.guild.id) || command.guildSpecific === 'all') {
 					switch (perms) {
-					default:
-						if (perms.owner) {
-							if (
-								command.permissionLevel === 'Owner' ||
+						default:
+							if (perms.owner) {
+								if (
+									command.permissionLevel === 'Owner' ||
 									command.permissionLevel === 'Admin' ||
 									command.permissionLevel === 'Mod' ||
 									command.permissionLevel === 'Everyone'
-							) {
-								return `\`${command.name}\``
-							}
-						} else if (perms.admin) {
-							if (
-								command.permissionLevel === 'Admin' ||
+								) {
+									return `\`${command.name}\``
+								}
+							} else if (perms.admin) {
+								if (
+									command.permissionLevel === 'Admin' ||
 									command.permissionLevel === 'Mod' ||
 									command.permissionLevel === 'Everyone'
-							) {
+								) {
+									return `\`${command.name}\``
+								}
+							} else if (perms.mod) {
+								if (command.permissionLevel === 'Mod' || command.permissionLevel === 'Everyone') {
+									return `\`${command.name}\``
+								}
+							} else if (command.permissionLevel === 'Everyone') {
 								return `\`${command.name}\``
 							}
-						} else if (perms.mod) {
-							if (command.permissionLevel === 'Mod' || command.permissionLevel === 'Everyone') {
-								return `\`${command.name}\``
-							}
-						} else if (command.permissionLevel === 'Everyone') {
-							return `\`${command.name}\``
-						}
 					}
 				}
 			})
