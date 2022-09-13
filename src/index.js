@@ -9,7 +9,18 @@ dotenv.config()
 
 const client = new Client({
 	intents: ['Guilds', 'GuildMembers', 'GuildMessages', 'MessageContent', 'GuildMessageReactions', 'DirectMessages'],
-	partials: ['Message', 'Reaction', 'Channel']
+	partials: ['Message', 'Reaction', 'Channel'],
+	sweepers: {
+		messages: {
+			interval: 600,
+			lifetime: 2700
+		},
+		reactions: {
+			interval: 600,
+			lifetime: 900,
+			filter: (r) => r.emoji.name === '☠️'
+		}
+	}
 })
 client.commands = new Collection()
 
