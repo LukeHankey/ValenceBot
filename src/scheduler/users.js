@@ -1,5 +1,6 @@
 import fetch from 'node-fetch'
 import { promisify } from 'util'
+import { logger } from '../logging.js'
 
 const wait = promisify(setTimeout)
 
@@ -12,11 +13,11 @@ export const addActive = async (db) => {
 				`https://apps.runescape.com/runemetrics/profile/profile?user=${users[index].clanMate}&activities=1`
 			)
 				.then((response) => response.json())
-				.catch((err) => console.error(`Unable to fetch RuneMetrics Profile for ${users[index].clanMate}.`, err))
+				.catch((err) => logger.error(`Unable to fetch RuneMetrics Profile for ${users[index].clanMate}.`, err))
 
 			let lastActivityDate
 			if ('error' in metricsProfile) {
-				// console.log(users[index].clanMate, metricsProfile.error);
+				// logger.log(users[index].clanMate, metricsProfile.error);
 				await db.collection.updateOne(
 					{ clanMate: users[index].clanMate },
 					{ $set: { profile: metricsProfile.error, gameActive: null } }
@@ -26,16 +27,16 @@ export const addActive = async (db) => {
 				lastActivityDate = Date.parse(lastActivityDate)
 
 				if (Date.now() - 2.628e9 > lastActivityDate) {
-					// console.log(`${users[index].clanMate} is not active`);
+					// logger.log(`${users[index].clanMate} is not active`);
 					await db.collection.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: false } })
 				} else {
-					// console.log(`${users[index].clanMate} is active`);
+					// logger.log(`${users[index].clanMate} is active`);
 					await db.collection.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: true } })
 				}
 			}
 			index++
 		} catch (err) {
-			console.error(err)
+			logger.error(err)
 		}
 
 		if (index === users.length) {
@@ -52,18 +53,18 @@ const clanCheck = async (users, db) => {
 		metricsProfile = JSON.parse(metricsProfile.slice(34, -4))
 
 		if (metricsProfile.clan && metricsProfile.clan !== 'Valence') {
-			console.log(metricsProfile.name, 'has left Valence for', metricsProfile.clan)
+			logger.info(metricsProfile.name, 'has left Valence for', metricsProfile.clan)
 			await db.collection.deleteOne({ clanMate: metricsProfile.name }, { justOne: true })
 			return false
 		} else if (metricsProfile.clan && metricsProfile.clan === 'Valence') {
-			console.log(metricsProfile.name, 'still in Valence')
+			logger.info(metricsProfile.name, 'still in Valence')
 			return true
 		} else {
-			console.log(metricsProfile.name, 'is not in any clan')
+			logger.info(metricsProfile.name, 'is not in any clan')
 			return true
 		}
 	} catch (err) {
-		console.error(err)
+		logger.error(err)
 	}
 }
 
@@ -103,7 +104,7 @@ export const nameChanges = async (missingNames, db) => {
 
 	if (nameChange.length) {
 		return nameChange.forEach(async (user) => {
-			console.log(`Updating ${user.clanMate} as they have potentially changed names`)
+			logger.info(`Updating ${user.clanMate} as they have potentially changed names`)
 			await db.collection.updateOne({ clanMate: user.clanMate }, { $set: { potentialNewNames: user.potentialNewNames } })
 		})
 	}

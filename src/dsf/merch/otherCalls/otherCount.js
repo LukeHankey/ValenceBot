@@ -66,13 +66,13 @@ export const addOtherCount = async (client, message, db, scouters) => {
 				!arrIncludesString(disallowedWords, message.content) ||
 				!alreadyCalled(message, otherMessages)
 			) {
-				console.log(`New & Spam: ${userN.displayName} (${message.content})`, userN.id)
+				client.logger.info(`New & Spam: ${userN.displayName} (${message.content})`, userN.id)
 				return await dsfServerErrorChannel.send({
 					content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``,
 					components: [buttonSelection]
 				})
 			}
-			console.log(`New other: ${msg[0].author.username} (${message.content})`, msg[0].author.id)
+			client.logger.info(`New other: ${msg[0].author.username} (${message.content})`, msg[0].author.id)
 			await scouters.collection.insertOne({
 				userID: msg[0].author.id,
 				author: msg[0].member.nickname ?? msg[0].author.username,
@@ -98,13 +98,13 @@ export const addOtherCount = async (client, message, db, scouters) => {
 						components: [buttonSelection]
 					})
 				}
-				console.log(`Old & Spam: ${userN.displayName} (${message.content})`, userN.id)
+				client.logger.info(`Old & Spam: ${userN.displayName} (${message.content})`, userN.id)
 				return await dsfServerErrorChannel.send({
 					content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``,
 					components: [buttonSelection]
 				})
 			}
-			console.log(`Old other: ${msg[0].author.username} (${message.content})`, msg[0].author.id)
+			client.logger.info(`Old other: ${msg[0].author.username} (${message.content})`, msg[0].author.id)
 			if (findMessage.oldScout && findMessage.oldScout.firstPost) {
 				// If a scouter was inactive and becomes active again, reset fields.
 				await scouters.collection.updateOne(

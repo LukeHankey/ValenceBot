@@ -53,7 +53,7 @@ export default async (client, message) => {
 			const bannedMember = message.member
 			// Check for permissions
 			try {
-				console.log(`Bannned ${bannedMember.toString()}: ${message.content}`)
+				client.logger.info(`Bannned ${bannedMember.toString()}: ${message.content}`)
 				const perms = message.guild.members.me.permissions.has('BanMembers')
 				if (perms) {
 					await bannedMember.ban({ days: 7, reason: 'Bang bang I gotcha, I gotcha in my scope' })
@@ -144,7 +144,7 @@ export default async (client, message) => {
 	if (message.guild.id === '668330890790699079' && message.channel.id === '732014449182900247') {
 		if (message.reference?.guildId === '388042222710554624') {
 			// Then msg is from Vis wax server.
-			console.log('Vis Wax Combinations: ', message.content)
+			client.logger.info('Vis Wax Combinations: ', message.content)
 			const contentArr = message.content.split('\n')
 			await db.collection.updateOne(
 				{ _id: 'Globals' },

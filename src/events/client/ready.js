@@ -21,15 +21,14 @@ const db = new MongoCollection('Settings')
 const users = new MongoCollection('Users')
 
 export default async (client) => {
-	console.log('Ready!')
+	const logger = client.logger
+	logger.info('Ready!')
 	const channels = await db.channels
 
 	client.user.setPresence({
 		status: 'idle',
 		activities: [{ type: 'LISTENING', name: 'DMs for queries regarding the bot.' }]
 	})
-
-	const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 	const formatTemplate = (data) => {
 		const headers = { clanMate: 'Name', clanRank: 'Rank', totalXP: 'Total XP', kills: 'Kills' }
@@ -164,7 +163,7 @@ export default async (client) => {
 			(new Date().getHours() === 0o1 || new Date().getHours() === 0o0) &&
 			new Date().getMinutes() === 0o0
 		) {
-			console.log(new Date().getDate(), 'Setting lottoSheet to Null')
+			client.logger.info(new Date().getDate(), 'Setting lottoSheet to Null')
 			await db.collection.updateMany({ gSheet: { $exists: true } }, { $set: { lottoSheet: null } })
 		}
 

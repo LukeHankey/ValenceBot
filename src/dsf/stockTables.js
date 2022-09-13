@@ -15,7 +15,7 @@ export const updateStockTables = async (client, db) => {
 		return `A${newNum[0]}:E${newNum[1]}`
 	}
 
-	console.log(
+	client.logger.info(
 		'Running reset tasks.',
 		`old wish range: ${range}`,
 		`new wish range: ${increaseRange(range)}`,

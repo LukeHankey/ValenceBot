@@ -2,6 +2,7 @@ import Color from './colors.js'
 import { promisify } from 'util'
 import { EmbedBuilder } from 'discord.js'
 import pkg from 'mongodb'
+import { logger } from './logging.js'
 const wait = promisify(setTimeout)
 const { MongoClient } = pkg
 
@@ -24,14 +25,14 @@ export class DataBase {
 			const mongo = new MongoClient(process.env.DB_URI, DataBase.#options)
 			await mongo.connect()
 			DataBase.#db = mongo.db(DataBase.#name)
-			console.log('Database connected.')
+			logger.info('Database connected.')
 		} catch (error) {
-			console.log(error)
+			logger.error(error)
 		}
 	}
 
 	async #retry () {
-		console.log('Retrying connection...')
+		logger.warn('Retrying connection...')
 		await this.#initialize()
 		await this.collectionNames()
 	}
@@ -48,10 +49,10 @@ export class DataBase {
 			collectionNames = collectionNames.map((c) => c.name)
 		} catch (err) {
 			if (err.name === 'TypeError' && err.message.includes('listCollections')) await this.#retry()
-			else console.error(err)
+			else logger.error(err)
 			collectionNames = await DataBase.#db.listCollections().toArray()
 			collectionNames = collectionNames.map((c) => c.name)
-			console.log('Retry success.')
+			logger.verbose('Retry success.')
 		}
 		return collectionNames
 	}

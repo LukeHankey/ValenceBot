@@ -6,38 +6,38 @@ export const contextMenu = async (interaction, db, data) => {
 		case 'Mark event as dead.':
 			if ([data.merchChannel.channelID, data.merchChannel.otherChannelID].includes(interaction.channel.id)) {
 				try {
-					console.log(1)
+					client.logger.debug(1)
 					const message = await interaction.channel.messages.fetch(interaction.targetId)
-					console.log(2)
+					client.logger.debug(2)
 					// 1st safeguard to check the cache.
 					if (message.reactions.cache.has('☠️')) {
 						return await interaction.editReply({ content: 'This call is already marked as dead.', ephemeral: true })
 					}
-					console.log(3)
+					client.logger.debug(3)
 
 					const reaction = await message.react('☠️')
 					const userReactCollection = await reaction.users.fetch()
 					const timestamp = interaction.createdAt.toString().split(' ').slice(0, 5).join(' ')
-					console.log(4)
+					client.logger.debug(4)
 
 					if (userReactCollection.size > 1) {
 						return await interaction.editReply({ content: 'This call is already marked as dead.', ephemeral: true })
 					}
-					console.log(5)
+					client.logger.debug(5)
 
 					await interaction.editReply({ content: 'Thank you for marking this call as dead.', ephemeral: true })
-					console.log(6)
+					client.logger.debug(6)
 					dsfServerErrorChannel.send({
 						content: `\`\`\`diff\n\n+ Reaction Added by ${interaction.member.displayName} - Content: ${message.content}\n- User ID: ${interaction.member.id}\n- Timestamp: ${timestamp}\`\`\``,
 						ephemeral: true
 					})
-					console.log(7)
+					client.logger.debug(7)
 				} catch (err) {
 					if (err.code === 50001) {
 						// Missing Access
 						return await interaction.editReply({ content: 'I am not able to access this channel.', ephemeral: true })
 					}
-					console.log('Error in mark event as dead.')
+					client.logger.error('Error in mark event as dead.')
 					channels.errors.send(err)
 				}
 			} else {
@@ -45,7 +45,7 @@ export const contextMenu = async (interaction, db, data) => {
 			}
 			break
 		case 'Affiliate Events': {
-			console.log(`${interaction.member.displayName} used Affiliate Events command.`)
+			client.logger.verbose(`${interaction.member.displayName} used Affiliate Events command.`)
 			const role = interaction.guild.roles.cache.find((role) => role.name === 'Affiliate Events')
 			if (interaction.channel.id !== '881320233627967508') {
 				// extra-role-pings

@@ -28,7 +28,7 @@ client.commands = new Collection()
 
 const _ = new Load(client)
 process.on('unhandledRejection', (reason, p) => {
-	console.log('Unhandled Rejection at:', p, 'reason:', reason)
+	logger.error('Unhandled Rejection at:', p, 'reason:', reason)
 })
 
 client.login(process.env.NODE_ENV === 'DEV' ? process.env.DEVELOPMENT_BOT : process.env.BOT_TOKEN)
@@ -38,7 +38,7 @@ const db = new MongoCollection('Users')
 
 // Daily at 5am
 cron.schedule('0 5 * * *', async () => {
-	console.log('running')
+	logger.info('running')
 	await addActive(db)
 })
 

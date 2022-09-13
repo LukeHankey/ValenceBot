@@ -112,7 +112,7 @@ export default {
 		const fields = [fieldAdd, fieldRemove]
 		const fieldsPlus = [...fields, wrongAdd]
 
-		console.log(added, removed, wrong)
+		client.logger.info(added, removed, wrong)
 
 		wrong.length && !added.length && !removed.length
 			? message.channel.send({

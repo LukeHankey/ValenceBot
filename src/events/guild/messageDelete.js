@@ -66,7 +66,7 @@ export default async (client, message) => {
 	const deletionLog = fetchedLogs.entries.first()
 
 	if (!deletionLog) {
-		return console.log(`A message by ${message.author.tag} was deleted, but no relevant audit logs were found.`)
+		return client.logger.info(`A message by ${message.author.tag} was deleted, but no relevant audit logs were found.`)
 	}
 	const { executor, target } = deletionLog
 
@@ -91,7 +91,7 @@ export default async (client, message) => {
 	}
 
 	if (message.guild === null || message.author === null) {
-		return console.log('Failed to fetch data for an uncached message.')
+		return client.logger.info('Failed to fetch data for an uncached message.')
 	}
 
 	// Self deletion
@@ -101,9 +101,11 @@ export default async (client, message) => {
 
 		const checkDB = fullDB.merchChannel.messages.find((entry) => entry.messageID === message.id)
 		if (checkDB === undefined) {
-			return console.log('Deleted message was not uploaded to the DataBase.')
+			return client.logger.info('Deleted message was not uploaded to the DataBase.')
 		} else {
-			const user = await message.guild.members.fetch(checkDB.userID).catch((err) => console.error('message delete', err))
+			const user = await message.guild.members
+				.fetch(checkDB.userID)
+				.catch((err) => client.logger.error('message delete', err))
 
 			const embed = messageDeletion(checkDB)
 				.setDescription('This message was deleted by the message author - remove merch count.')
@@ -115,7 +117,7 @@ export default async (client, message) => {
 
 			const getPerms = await merchChannelID.permissionOverwrites.cache.get(checkDB.userID)
 			if (getPerms) {
-				console.log(`Removing ${user.user.username} (${checkDB.userID}) from channel overrides.`)
+				client.logger.info(`Removing ${user.user.username} (${checkDB.userID}) from channel overrides.`)
 				return getPerms.delete()
 			}
 		}
@@ -126,11 +128,11 @@ export default async (client, message) => {
 
 		const checkDB = fullDB.merchChannel.messages.find((entry) => entry.messageID === message.id)
 		if (checkDB === undefined) {
-			return console.log('Deleted message was not uploaded to the DataBase.')
+			return client.logger.info('Deleted message was not uploaded to the DataBase.')
 		} else {
 			const user = await message.guild.members
 				.fetch(checkDB.userID)
-				.catch((err) => console.error('message delete own', err))
+				.catch((err) => client.logger.error('message delete own', err))
 
 			const embed = messageDeletion(checkDB)
 				.setDescription(`This message was deleted by ${executor.username} - remove merch count.`)
@@ -142,7 +144,7 @@ export default async (client, message) => {
 
 			const getPerms = await merchChannelID.permissionOverwrites.cache.get(checkDB.userID)
 			if (getPerms) {
-				console.log(`Removing ${user.user.username} (${checkDB.userID}) from channel overrides.`)
+				client.logger.info(`Removing ${user.user.username} (${checkDB.userID}) from channel overrides.`)
 				return getPerms.delete()
 			}
 		}

@@ -22,17 +22,17 @@ export default async (client, interaction) => {
 		} else if (interaction.isSelectMenu()) {
 			await selectMenu(interaction, db, data, cache)
 		} else if (interaction.isContextMenuCommand()) {
-			console.log('Before defer', performance.now() - start)
+			client.logger.debug('Before defer', performance.now() - start)
 			await interaction.deferReply({ ephemeral: true })
-			console.log('After defer', performance.now() - start)
+			client.logger.debug('After defer', performance.now() - start)
 			await contextMenu(interaction, db, data)
-			console.log(8)
+			client.logger.debug(8)
 		} else if (interaction.isModalSubmit()) {
 			await modals(interaction, db, data)
 		}
 	} catch (err) {
 		const channels = await db.channels
-		console.log(interaction, 'Error in interactionCreate.')
+		client.logger.debug(interaction, 'Error in interactionCreate.')
 		channels.errors.send(err)
 	}
 }

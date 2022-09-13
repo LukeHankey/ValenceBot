@@ -24,7 +24,7 @@ export default {
 
 		try {
 			googleClient.authorize((err) => {
-				if (err) console.error(err)
+				if (err) client.logger.error(err)
 				googleSheets(googleClient)
 			})
 

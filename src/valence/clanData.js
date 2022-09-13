@@ -46,27 +46,27 @@ export const updateRoles = async (client, dbCheck, server, channels, users) => {
 			switch (dbCheck.clanRank) {
 				case 'General':
 					await setRoles(getMember, clanRoles.general, role)
-					console.log('General:', dbCheck.clanMate, role.name, dbCheck.clanRank)
+					client.logger.info('General:', dbCheck.clanMate, role.name, dbCheck.clanRank)
 					break
 				case 'Captain':
 					await setRoles(getMember, clanRoles.captain, role)
-					console.log('Captain:', dbCheck.clanMate, role.name, dbCheck.clanRank)
+					client.logger.info('Captain:', dbCheck.clanMate, role.name, dbCheck.clanRank)
 					break
 				case 'Lieutenant':
 					await setRoles(getMember, clanRoles.lieutenant, role)
-					console.log('Lieutenant:', dbCheck.clanMate, role.name, dbCheck.clanRank)
+					client.logger.info('Lieutenant:', dbCheck.clanMate, role.name, dbCheck.clanRank)
 					break
 				case 'Sergeant':
 					await setRoles(getMember, clanRoles.sergeant, role)
-					console.log('Sergeant:', dbCheck.clanMate, role.name, dbCheck.clanRank)
+					client.logger.info('Sergeant:', dbCheck.clanMate, role.name, dbCheck.clanRank)
 					break
 				case 'Corporal':
 					await setRoles(getMember, clanRoles.corporal, role)
-					console.log('Corporal:', dbCheck.clanMate, role.name, dbCheck.clanRank)
+					client.logger.info('Corporal:', dbCheck.clanMate, role.name, dbCheck.clanRank)
 					break
 				case 'Recruit':
 					await setRoles(getMember, clanRoles.recruit, role)
-					console.log('Recruit:', dbCheck.clanMate, role.name, dbCheck.clanRank)
+					client.logger.info('Recruit:', dbCheck.clanMate, role.name, dbCheck.clanRank)
 					break
 			}
 		}

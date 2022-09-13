@@ -3,6 +3,7 @@ const { google } = require('googleapis')
 const { GoogleSheet } = require('../classes')
 const { pink } = require('../colors.json')
 const { EmbedBuilder } = require('discord.js')
+import { logger } from '../logging.js'
 
 /**
  * Update the sheet, check the Discord ID column to see if each member is still a booster.
@@ -36,7 +37,7 @@ const newBoost = async (message, boostChannel) => {
 	try {
 		if (message.type === 'USER_PREMIUM_GUILD_SUBSCRIPTION') {
 			gsheet.googleClient.authorize((err) => {
-				if (err) console.error(err)
+				if (err) logger.error(err)
 				googleSheets(gsheet.googleClient)
 			})
 			const googleSheets = async (gClient) => {
@@ -106,7 +107,7 @@ const newBoost = async (message, boostChannel) => {
 			}
 		}
 	} catch (err) {
-		console.error(err)
+		logger.error(err)
 	}
 }
 

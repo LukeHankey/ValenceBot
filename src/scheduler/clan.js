@@ -1,6 +1,7 @@
 import fetch from 'node-fetch'
 import { csvJSON, renameKeys } from '../functions.js'
 import { nameChanges } from './users.js'
+import { logger } from '../logging.js'
 import dotenv from 'dotenv'
 dotenv.config()
 
@@ -35,7 +36,7 @@ export const getData = async (db) => {
 				if (clanUser.clanMate === '') return
 				clanUser.gameActive = 'undefined'
 				await db.collection.insertOne(clanUser)
-				console.log(`New to the clan: ${clanUser.clanMate}`)
+				logger.info(`New to the clan: ${clanUser.clanMate}`)
 			} else {
 				// Updates total XP
 				await db.collection.updateOne(
@@ -55,7 +56,7 @@ export const getData = async (db) => {
 		allUsers = allUsers.map((user) => user.clanMate)
 		const newDataNames = newData.map((user) => user.Clanmate)
 		const missingNames = allUsers.filter((name) => !newDataNames.includes(name))
-		console.log('Missing names: ', missingNames)
+		logger.info('Missing names: ', missingNames)
 		await nameChanges(missingNames, db)
-	}).catch((error) => console.error(error))
+	}).catch((error) => logger.error(error))
 }

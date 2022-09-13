@@ -72,13 +72,13 @@ export const addMerchCount = async (client, message, db, scouter) => {
 						components: [buttonSelection, buttonSelectionExtra]
 					})
 				}
-				console.log(`New & Spam: ${userN.displayName} (${message.content})`, userN.id)
+				client.logger.info(`New & Spam: ${userN.displayName} (${message.content})`, userN.id)
 				return await dsfServerErrorChannel.send({
 					content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``,
 					components: [buttonSelection, buttonSelectionExtra]
 				})
 			}
-			console.log(`New: ${userN.displayName} (${message.content})`, userN.id)
+			client.logger.info(`New: ${userN.displayName} (${message.content})`, userN.id)
 			await scouter.collection.insertOne({
 				userID: userN.id,
 				author: userN.nickname ?? userN.displayName,
@@ -93,7 +93,7 @@ export const addMerchCount = async (client, message, db, scouter) => {
 				assigned: []
 			})
 			if (!(await checkMemberRole(userN.id, message))) {
-				console.log(`Adding ${userN.nickname ?? userN.displayName} (${userN.id}) to channel overrides.`)
+				client.logger.info(`Adding ${userN.nickname ?? userN.displayName} (${userN.id}) to channel overrides.`)
 				await merchChannelID.permissionOverwrites.create(userN.id, { AddReactions: true })
 			}
 		} else {
@@ -108,13 +108,13 @@ export const addMerchCount = async (client, message, db, scouter) => {
 						components: [buttonSelection, buttonSelectionExtra]
 					})
 				}
-				console.log(`Old & Spam: ${userN.displayName} (${message.content})`, userN.user.id)
+				client.logger.info(`Old & Spam: ${userN.displayName} (${message.content})`, userN.user.id)
 				return await dsfServerErrorChannel.send({
 					content: ` \`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.user.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``,
 					components: [buttonSelection, buttonSelectionExtra]
 				})
 			}
-			console.log(
+			client.logger.info(
 				`Old: ${userN.displayName} (${message.content})`,
 				findMessage.userID === userN.id,
 				findMessage.userID,
@@ -154,7 +154,7 @@ export const addMerchCount = async (client, message, db, scouter) => {
 				)
 			}
 			if (!(await checkMemberRole(userN.id, message))) {
-				console.log(`Adding ${userN.displayName} (${userN.id}) to channel overrides.`)
+				client.logger.info(`Adding ${userN.displayName} (${userN.id}) to channel overrides.`)
 				await merchChannelID.permissionOverwrites.create(userN.id, { AddReactions: true })
 			}
 		}

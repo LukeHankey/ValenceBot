@@ -13,6 +13,7 @@ import {
 import Color from '../../colors.js'
 import Ticket from '../../ticket.js'
 import camelCase from 'camelcase'
+import { logger } from '../../logging.js'
 
 class ButtonWarning {
 	UNLOGGED_NAMES = ['Clear Buttons', 'Too Slow!']
@@ -232,7 +233,7 @@ export const buttons = async (interaction, db, data, cache) => {
 							.setStyle(ButtonStyle.Primary)
 					])
 					await interaction.update({ components: [row] })
-					console.log(`Action: Password Button\nBy: ${interaction.user.username}\nUser: ${fetchUser.user.username}`)
+					logger.verbose(`Action: Password Button\nBy: ${interaction.user.username}\nUser: ${fetchUser.user.username}`)
 					cache.set(interaction.message.id, { ...fetchUser.user })
 					await buttonLogger.upload(userId)
 				}

@@ -1,3 +1,4 @@
+import { logger } from '../../../logging.js'
 import cron from 'node-cron'
 
 export const skullTimer = (message, db) => {
@@ -33,7 +34,7 @@ export const skullTimer = (message, db) => {
 					if (getPerms) {
 						const moreThanOnce = messages.filter((obj) => obj.userID === userID && obj.messageID !== messageID)
 						if (moreThanOnce.length) return
-						console.log(`Removing ${author} (${userID}) from channel overrides.`)
+						logger.info(`Removing ${author} (${userID}) from channel overrides.`)
 						getPerms.delete()
 
 						const overridesCheck = merchChannelID.permissionOverwrites.cache.filter(
@@ -47,7 +48,7 @@ export const skullTimer = (message, db) => {
 									.map((m) => m.userID)
 								if (moreThanOnce.includes(rem.id)) continue
 								const leftOverMember = await message.guild.members.fetch(rem.id)
-								console.log(`Removing remenant member: ${leftOverMember?.displayName} from channel overrides.`)
+								logger.info(`Removing remenant member: ${leftOverMember?.displayName} from channel overrides.`)
 								const userToRemove = merchChannelID.permissionOverwrites.cache.get(rem.id)
 								userToRemove.delete()
 							}
