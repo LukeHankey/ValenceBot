@@ -105,7 +105,7 @@ export default async (client, message) => {
 		} else {
 			const user = await message.guild.members
 				.fetch(checkDB.userID)
-				.catch((err) => client.logger.error('message delete', err))
+				.catch((err) => client.logger.error(`${err} \nmessage delete`))
 
 			const embed = messageDeletion(checkDB)
 				.setDescription('This message was deleted by the message author - remove merch count.')
@@ -132,7 +132,7 @@ export default async (client, message) => {
 		} else {
 			const user = await message.guild.members
 				.fetch(checkDB.userID)
-				.catch((err) => client.logger.error('message delete own', err))
+				.catch((err) => client.logger.error(`${err} \n'message delete own`))
 
 			const embed = messageDeletion(checkDB)
 				.setDescription(`This message was deleted by ${executor.username} - remove merch count.`)

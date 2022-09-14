@@ -163,7 +163,7 @@ export default async (client) => {
 			(new Date().getHours() === 0o1 || new Date().getHours() === 0o0) &&
 			new Date().getMinutes() === 0o0
 		) {
-			client.logger.info(new Date().getDate(), 'Setting lottoSheet to Null')
+			client.logger.info('Setting lottoSheet to Null')
 			await db.collection.updateMany({ gSheet: { $exists: true } }, { $set: { lottoSheet: null } })
 		}
 

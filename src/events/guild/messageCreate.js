@@ -144,7 +144,7 @@ export default async (client, message) => {
 	if (message.guild.id === '668330890790699079' && message.channel.id === '732014449182900247') {
 		if (message.reference?.guildId === '388042222710554624') {
 			// Then msg is from Vis wax server.
-			client.logger.info('Vis Wax Combinations: ', message.content)
+			client.logger.info(`Vis Wax Combinations: ${message.content}`)
 			const contentArr = message.content.split('\n')
 			await db.collection.updateOne(
 				{ _id: 'Globals' },

@@ -28,7 +28,7 @@ client.commands = new Collection()
 
 const _ = new Load(client)
 process.on('unhandledRejection', (reason, p) => {
-	logger.error('Unhandled Rejection at:', p, 'reason:', reason)
+	logger.error(`Unhandled Rejection at: ${p}\nreason: ${reason}`)
 })
 
 client.login(process.env.NODE_ENV === 'DEV' ? process.env.DEVELOPMENT_BOT : process.env.BOT_TOKEN)

@@ -13,7 +13,7 @@ export const addActive = async (db) => {
 				`https://apps.runescape.com/runemetrics/profile/profile?user=${users[index].clanMate}&activities=1`
 			)
 				.then((response) => response.json())
-				.catch((err) => logger.error(`Unable to fetch RuneMetrics Profile for ${users[index].clanMate}.`, err))
+				.catch((err) => logger.error(`Unable to fetch RuneMetrics Profile for ${users[index].clanMate}.\n${err}`))
 
 			let lastActivityDate
 			if ('error' in metricsProfile) {
@@ -53,14 +53,14 @@ const clanCheck = async (users, db) => {
 		metricsProfile = JSON.parse(metricsProfile.slice(34, -4))
 
 		if (metricsProfile.clan && metricsProfile.clan !== 'Valence') {
-			logger.info(metricsProfile.name, 'has left Valence for', metricsProfile.clan)
+			logger.info(`${metricsProfile.name} has left Valence for ${metricsProfile.clan}`)
 			await db.collection.deleteOne({ clanMate: metricsProfile.name }, { justOne: true })
 			return false
 		} else if (metricsProfile.clan && metricsProfile.clan === 'Valence') {
-			logger.info(metricsProfile.name, 'still in Valence')
+			logger.info(`${metricsProfile.name} still in Valence`)
 			return true
 		} else {
-			logger.info(metricsProfile.name, 'is not in any clan')
+			logger.info(`${metricsProfile.name} is not in any clan`)
 			return true
 		}
 	} catch (err) {
