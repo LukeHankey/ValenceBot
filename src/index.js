@@ -16,11 +16,6 @@ const client = new Client({
 			interval: 600,
 			lifetime: 2700
 		},
-		reactions: {
-			interval: 600,
-			lifetime: 900,
-			filter: (r) => r.emoji.name === '☠️'
-		}
 	}
 })
 client.logger = logger
