@@ -517,7 +517,8 @@ export const buttons = async (interaction, db, data, cache) => {
 				}
 				break
 			case 'Too Slow!':
-				await interaction.reply({ content: 'What a noob! KEKW' })
+				await interaction.update({ components: [] })
+				await interaction.followUp({ content: 'What a noob! KEKW' })
 				break
 			case 'Read The Pins':
 				await generalChannel.send({ content: `<@!${userId}>, invalid call format. Read the pins!` })
