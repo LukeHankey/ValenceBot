@@ -26,8 +26,8 @@ export const addMerchCount = async (client, message, db, scouter) => {
 		const timestamp = message.createdAt.toString().split(' ').slice(0, 5).join(' ')
 		const buttonSelection = new ActionRowBuilder().addComponents([
 			new ButtonBuilder()
-				.setCustomId(`DM ${userN.displayName}`)
-				.setLabel(`DM ${userN.displayName}`)
+				.setCustomId(`DM ${userN.user.username}`)
+				.setLabel(`DM ${userN.user.username}`)
 				.setStyle(ButtonStyle.Primary)
 				.setEmoji({ name: '✉️' }),
 			new ButtonBuilder()
@@ -68,13 +68,13 @@ export const addMerchCount = async (client, message, db, scouter) => {
 			) {
 				if (message.guild.id === '668330890790699079') {
 					return await botServerErrorChannel.send({
-						content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``,
+						content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``,
 						components: [buttonSelection, buttonSelectionExtra]
 					})
 				}
 				client.logger.info(`New & Spam: ${userN.displayName} (${message.content}) userId: ${userN.id}`)
 				return await dsfServerErrorChannel.send({
-					content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``,
+					content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``,
 					components: [buttonSelection, buttonSelectionExtra]
 				})
 			}
@@ -104,13 +104,13 @@ export const addMerchCount = async (client, message, db, scouter) => {
 			) {
 				if (message.guild.id === '668330890790699079') {
 					return await botServerErrorChannel.send({
-						content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``,
+						content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``,
 						components: [buttonSelection, buttonSelectionExtra]
 					})
 				}
 				client.logger.info(`Old & Spam: ${userN.displayName} (${message.content}) userId: ${userN.id}`)
 				return await dsfServerErrorChannel.send({
-					content: ` \`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.user.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``,
+					content: ` \`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.user.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``,
 					components: [buttonSelection, buttonSelectionExtra]
 				})
 			}

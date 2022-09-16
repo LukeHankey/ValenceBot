@@ -34,8 +34,8 @@ export const addOtherCount = async (client, message, db, scouters) => {
 
 		const buttonSelection = new ActionRowBuilder().addComponents([
 			new ButtonBuilder()
-				.setCustomId(`DM ${userN.displayName}`)
-				.setLabel(`DM ${userN.displayName}`)
+				.setCustomId(`DM ${userN.user.username}`)
+				.setLabel(`DM ${userN.user.username}`)
 				.setStyle(ButtonStyle.Primary)
 				.setEmoji({ name: '✉️' }),
 			new ButtonBuilder()
@@ -68,7 +68,7 @@ export const addOtherCount = async (client, message, db, scouters) => {
 			) {
 				client.logger.info(`New & Spam: ${userN.displayName} (${message.content}) ${userN.id}`)
 				return await dsfServerErrorChannel.send({
-					content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``,
+					content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``,
 					components: [buttonSelection]
 				})
 			}
@@ -94,7 +94,7 @@ export const addOtherCount = async (client, message, db, scouters) => {
 			) {
 				if (message.guild.id === '668330890790699079') {
 					return await botServerErrorChannel.send({
-						content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``,
+						content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``,
 						components: [buttonSelection]
 					})
 				}

@@ -15,7 +15,7 @@ const client = new Client({
 		messages: {
 			interval: 600,
 			lifetime: 2700
-		},
+		}
 	}
 })
 client.logger = logger
