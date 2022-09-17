@@ -18,7 +18,11 @@ export class Load {
 				this.client.commands.set(files_.default.name, files_.default)
 			} else {
 				const name = file.split('.')[0]
-				this.client.on(name, files_.default.bind(null, this.client))
+				if (name === 'rateLimit') {
+					this.client.rest.on(name, files_.default.bind(null, this.client))
+				} else {
+					this.client.on(name, files_.default.bind(null, this.client))
+				}
 			}
 		}
 	}
