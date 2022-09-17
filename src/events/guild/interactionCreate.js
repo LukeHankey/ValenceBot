@@ -26,7 +26,6 @@ export default async (client, interaction) => {
 			await interaction.deferReply({ ephemeral: true })
 			client.logger.debug(`After defer ${performance.now() - start}`)
 			await contextMenu(interaction, db, data)
-			client.logger.debug(8)
 		} else if (interaction.isModalSubmit()) {
 			await modals(interaction, db, data)
 		}
