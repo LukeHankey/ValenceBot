@@ -383,7 +383,7 @@ export const buttons = async (interaction, db, data, cache) => {
 						})
 					}
 					if (interaction.guild.id === '420803245758480405') {
-						await buttonLogger.upload(userId)
+						await buttonLogger.upload(interaction.member.id)
 					}
 				}
 				break
