@@ -56,7 +56,7 @@ export const getData = async (db) => {
 		allUsers = allUsers.map((user) => user.clanMate)
 		const newDataNames = newData.map((user) => user.Clanmate)
 		const missingNames = allUsers.filter((name) => !newDataNames.includes(name))
-		logger.info('Missing names: ', missingNames)
+		logger.info(`Missing names: ${missingNames}`)
 		await nameChanges(missingNames, db)
 	}).catch((error) => logger.error(error))
 }

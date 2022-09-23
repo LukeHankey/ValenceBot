@@ -1,9 +1,9 @@
+import { logger } from '../logging.js'
 const gsheet = require('../gsheets')
 const { google } = require('googleapis')
 const { GoogleSheet } = require('../classes')
 const { pink } = require('../colors.json')
 const { EmbedBuilder } = require('discord.js')
-import { logger } from '../logging.js'
 
 /**
  * Update the sheet, check the Discord ID column to see if each member is still a booster.

@@ -16,22 +16,22 @@ export const contextMenu = async (interaction, db, data) => {
 					client.logger.debug(3)
 
 					const reaction = await message.react('☠️')
-					const userReactCollection = await reaction.users.fetch()
-					const timestamp = interaction.createdAt.toString().split(' ').slice(0, 5).join(' ')
 					client.logger.debug(4)
+					const userReactCollection = await reaction.users.fetch()
+					client.logger.debug(5)
+					const timestamp = interaction.createdAt.toString().split(' ').slice(0, 5).join(' ')
+					client.logger.debug(6)
 
 					if (userReactCollection.size > 1) {
 						return await interaction.editReply({ content: 'This call is already marked as dead.', ephemeral: true })
 					}
-					client.logger.debug(5)
+					client.logger.debug(7)
 
 					await interaction.editReply({ content: 'Thank you for marking this call as dead.', ephemeral: true })
-					client.logger.debug(6)
 					dsfServerErrorChannel.send({
 						content: `\`\`\`diff\n\n+ Reaction Added by ${interaction.member.displayName} - Content: ${message.content}\n- User ID: ${interaction.member.id}\n- Timestamp: ${timestamp}\`\`\``,
 						ephemeral: true
 					})
-					client.logger.debug(7)
 				} catch (err) {
 					if (err.code === 50001) {
 						// Missing Access

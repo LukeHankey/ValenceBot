@@ -3,6 +3,7 @@ import { ButtonStyle, EmbedBuilder } from 'discord.js'
 import { ActionRowBuilder, ButtonBuilder, ModalBuilder } from '@discordjs/builders'
 import Ticket from '../../ticket.js'
 import Color from '../../colors.js'
+import { logger } from '../../logging.js'
 import ms from 'pretty-ms'
 
 export const modals = async (interaction, db, data) => {
@@ -95,6 +96,7 @@ export const modals = async (interaction, db, data) => {
 		switch (interaction.customId) {
 			case 'createApplication':
 				{
+					logger.info(`${interaction.guild.id} | ${interaction.guild.name} created an application.`)
 					const applicationFields = interaction.fields.getTextInputValue('application')
 					const parsedData = validateModalApplication(applicationFields)
 					const components = parsedData.components.map(
@@ -133,6 +135,10 @@ export const modals = async (interaction, db, data) => {
 				}
 				break
 			case 'startApplication': {
+				await interaction.deferReply({ ephemeral: true })
+				logger.info(
+					`${interaction.guild.id} | ${interaction.guild.name}: ${interaction.member.displayName} started an application.`
+				)
 				const ticketData = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
 				const ticket = new Ticket(interaction, ticketData, db)
 				const ticketChannel = await ticket.create()
@@ -158,7 +164,7 @@ export const modals = async (interaction, db, data) => {
 				} else {
 					await ticketChannel.send({ embeds: [...mappedComponents] })
 				}
-				await interaction.reply({
+				await interaction.editReply({
 					content: `Your application has been submitted and is now being reviewed by <@&${ticket.roleId}>. Thank you!`,
 					ephemeral: true
 				})

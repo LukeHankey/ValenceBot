@@ -383,7 +383,7 @@ export const buttons = async (interaction, db, data, cache) => {
 						})
 					}
 					if (interaction.guild.id === '420803245758480405') {
-						await buttonLogger.upload(userId)
+						await buttonLogger.upload(interaction.member.id)
 					}
 				}
 				break
@@ -517,7 +517,8 @@ export const buttons = async (interaction, db, data, cache) => {
 				}
 				break
 			case 'Too Slow!':
-				await interaction.reply({ content: 'What a noob! KEKW' })
+				await interaction.update({ components: [] })
+				await interaction.followUp({ content: 'What a noob! KEKW' })
 				break
 			case 'Read The Pins':
 				await generalChannel.send({ content: `<@!${userId}>, invalid call format. Read the pins!` })
