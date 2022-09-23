@@ -22,7 +22,7 @@ class ButtonWarning {
 	 *
 	 * @param {string} name
 	 */
-	constructor (interaction) {
+	constructor(interaction) {
 		this.name = interaction.customId
 		this.interaction = interaction
 		this.buttonName = this._cameliser()
@@ -32,15 +32,15 @@ class ButtonWarning {
 	 * @private
 	 * @returns string
 	 */
-	_cameliser () {
+	_cameliser() {
 		return this.name.includes('DM') ? 'password' : camelCase(this.name)
 	}
 
-	set scouters (data) {
+	set scouters(data) {
 		this._scouters = data
 	}
 
-	get scouters () {
+	get scouters() {
 		return this._scouters
 	}
 
@@ -48,7 +48,7 @@ class ButtonWarning {
 	 * @param {string} userId The Id of the user you want to find.
 	 * @returns {object} The profile found by the userId.
 	 */
-	async profile (userId) {
+	async profile(userId) {
 		if (!this.scouters) {
 			throw new Error('Unable to get scouters. You must first specify the database.')
 		}
@@ -78,7 +78,7 @@ class ButtonWarning {
 	 * @param {string} userId The Id of the user you want to add count to.
 	 * @returns {string} The button name.
 	 */
-	async addCount (userId) {
+	async addCount(userId) {
 		if (this.name in this.UNLOGGED_NAMES) {
 			return
 		}
@@ -123,7 +123,7 @@ class ButtonWarning {
 	 * @param {string} userId The Id of the user you want to add a warning to.
 	 * @param {object} warningOptions Options including the button name, content and timestamp.
 	 */
-	async addWarning (userId, { button, content, timestamp } = {}) {
+	async addWarning(userId, { button, content, timestamp } = {}) {
 		if (!timestamp) timestamp = new Date()
 		await this.scouters.collection.findOneAndUpdate(
 			{ userID: userId },
@@ -149,7 +149,7 @@ class ButtonWarning {
 	 * @param {object} data The unprocessed data.
 	 * @returns The processed data.
 	 */
-	_preprocess (data) {
+	_preprocess(data) {
 		for (const [k, v] of Object.entries(data)) {
 			if (typeof v !== 'string') continue
 			if (k === 'content') {
@@ -167,7 +167,7 @@ class ButtonWarning {
 	 * @param {string} userId The Id of the user to find and make changes to.
 	 * @param {object} data The fields if a warning is to be applied.
 	 */
-	async upload (userId, data = {}) {
+	async upload(userId, data = {}) {
 		const buttonName = await this.addCount(userId)
 		if (data.warning) {
 			data = this._preprocess(data)

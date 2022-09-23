@@ -1,24 +1,34 @@
-# This config is equivalent to both the '.circleci/extended/orb-free.yml' and the base '.circleci/config.yml'
 version: 2.1
 
 jobs:
   lint:
     docker:
-      - image: cimg/node:17.2.0
+      - image: cimg/python:3.10.7-node
     resource_class: small
     steps:
       - checkout
       - restore_cache:
           key: v1-deps-{{ checksum "package-lock.json" }}
+      - restore_cache:
+          key: pre-commit-{{ checksum ".pre-commit-config.yaml" }}
+
       - run:
           command: npm install
           name: Install dependencies
+      - run:
+          command: pip install pre-commit
+          name: Install pre-commit
+
       - save_cache:
           paths:
             - node_modules
           key: v1-deps-{{ checksum "package-lock.json" }}
+      - save_cache:
+          paths:
+            - "~/.cache/pre-commit"
+          key: pre-commit-{{ checksum ".pre-commit-config.yaml" }}
       - run:
-          command: npm run lint
+          command: pre-commit run --color=always --all-files
           name: Linting
 
 workflows:

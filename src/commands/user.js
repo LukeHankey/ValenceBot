@@ -129,7 +129,7 @@ export default {
 			const embeds = paginate(result)
 
 			// eslint-disable-next-line no-inner-declarations
-			function paginate (pageData) {
+			function paginate(pageData) {
 				const pageEmbeds = []
 				let k = 24
 				for (let i = 0; i < pageData.length; i += 24) {

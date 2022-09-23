@@ -1,14 +1,14 @@
 import { readdirSync } from 'fs'
 
 export class Load {
-	constructor (client) {
+	constructor(client) {
 		this.client = client
 		this.init('events', 'client')
 		this.init('events', 'guild')
 		this.init('commands')
 	}
 
-	async init (handler, sub) {
+	async init(handler, sub) {
 		handler = sub ? `${handler}/${sub}/` : `${handler}`
 		const files = readdirSync(`./src/${handler}`).filter((d) => d.endsWith('.js'))
 

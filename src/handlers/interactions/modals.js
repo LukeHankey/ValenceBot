@@ -61,7 +61,7 @@ export const modals = async (interaction, db, data) => {
 				.setTimestamp()
 		}
 
-		function _text (text) {
+		function _text(text) {
 			const code = '```'
 			return `${code}fix\n${text}${code}`
 		}

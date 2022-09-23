@@ -24,7 +24,7 @@ export default async (client, guild) => {
 	const owner = await guild.fetchOwner()
 
 	client.channels.cache.get('731997087721586698').send({
-		content: `The bot has been added to **${guild.name}**. The bot is in a total of ${client.guilds.cache.size} servers. 
+		content: `The bot has been added to **${guild.name}**. The bot is in a total of ${client.guilds.cache.size} servers.
     \n\`\`\`diff\n
 + Server name: ${guild.name}
 + Server ID: ${guild.id}

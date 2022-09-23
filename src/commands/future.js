@@ -32,7 +32,7 @@ export default {
 
 			const rangeName = 'TM Coupon'
 
-			async function googleSheets (gClient) {
+			async function googleSheets(gClient) {
 				const gsapi = google.sheets({ version: 'v4', auth: gClient })
 				const opt = {
 					// READ ONLY OPTIONS

@@ -15,11 +15,11 @@ export class DataBase {
 	static #db = null
 	static #name = 'Members'
 
-	constructor () {
+	constructor() {
 		if (!DataBase.#db) this.#initialize()
 	}
 
-	async #initialize () {
+	async #initialize() {
 		try {
 			// 1 Connection per event
 			const mongo = new MongoClient(process.env.DB_URI, DataBase.#options)
@@ -31,7 +31,7 @@ export class DataBase {
 		}
 	}
 
-	async #retry () {
+	async #retry() {
 		logger.warn('Retrying connection...')
 		await this.#initialize()
 		await this.collectionNames()
@@ -40,7 +40,7 @@ export class DataBase {
 	/**
 	 * @returns {String[]} An array of collection names.
 	 */
-	async collectionNames () {
+	async collectionNames() {
 		let collectionNames
 		try {
 			// Attempt to wait 5 seconds to connect database before any retries
@@ -57,7 +57,7 @@ export class DataBase {
 		return collectionNames
 	}
 
-	get collection () {
+	get collection() {
 		return DataBase.#db.collection(this.collectionName)
 	}
 }
@@ -66,7 +66,7 @@ export class MongoCollection extends DataBase {
 	/**
 	 * @param  {string} collectionName The name of the collection.
 	 */
-	constructor (collectionName) {
+	constructor(collectionName) {
 		super()
 		this.collectionName = collectionName
 		this.#validateCollectionName(collectionName)
@@ -75,7 +75,7 @@ export class MongoCollection extends DataBase {
 	/**
 	 * @param  {string} name The name of the collection.
 	 */
-	async #validateCollectionName (name) {
+	async #validateCollectionName(name) {
 		const collectionNames = await this.collectionNames()
 
 		if (typeof name !== 'string') throw new Error(`${name} must be a string.`)
@@ -88,7 +88,7 @@ export class MongoCollection extends DataBase {
 	/**
 	 * @returns {Promise<Object>}
 	 */
-	get channels () {
+	get channels() {
 		const getChannelsFromDB = async () => {
 			const client = await import('./index.js')
 			const {

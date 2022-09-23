@@ -116,17 +116,17 @@ export default {
 
 		wrong.length && !added.length && !removed.length
 			? message.channel.send({
-				embeds: [
-					embed
-						.setColor(Color.redLight)
-						.addFields(wrongAdd)
-						.setDescription(
-							"Can't find the role name? Use `;sa roles` for a full list of self-assignable role names."
-						)
-				]
+					embeds: [
+						embed
+							.setColor(Color.redLight)
+							.addFields(wrongAdd)
+							.setDescription(
+								"Can't find the role name? Use `;sa roles` for a full list of self-assignable role names."
+							)
+					]
 			  })
 			: wrong.length
-				? message.channel.send({
+			? message.channel.send({
 					embeds: [
 						embed
 							.addFields(fieldsPlus)
@@ -135,6 +135,6 @@ export default {
 							)
 					]
 			  })
-				: message.channel.send({ embeds: [embed.addFields(fields)] })
+			: message.channel.send({ embeds: [embed.addFields(fields)] })
 	}
 }

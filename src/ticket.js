@@ -1,34 +1,34 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType } from 'discord.js'
 
 export default class Ticket {
-	constructor (interaction, ticketData, database) {
+	constructor(interaction, ticketData, database) {
 		this.interaction = interaction
 		this.ticketData = ticketData
 		this.database = database
 	}
 
-	get currentTicket () {
+	get currentTicket() {
 		const [ticket] = this.ticketData.ticket.filter((t) => t.messageId === this.interaction.message.id)
 		return ticket
 	}
 
-	get preference () {
+	get preference() {
 		return this.currentTicket.prefer
 	}
 
-	get roleId () {
+	get roleId() {
 		return this.currentTicket.role
 	}
 
-	get member () {
+	get member() {
 		return this.interaction.member
 	}
 
-	isApplication () {
+	isApplication() {
 		return this.currentTicket.application
 	}
 
-	async create () {
+	async create() {
 		let newChannel
 		if (this.preference === 'Threads' && this._checkThreadsPreference()) {
 			newChannel = await this.interaction.channel.threads.create({
@@ -99,11 +99,11 @@ export default class Ticket {
 		return newChannel
 	}
 
-	_checkThreadsPreference () {
+	_checkThreadsPreference() {
 		return !![2, 3].includes(this.interaction.guild.premiumTier)
 	}
 
-	async _sendInitialResponse (channel, memberId) {
+	async _sendInitialResponse(channel, memberId) {
 		const resolveButton = new ActionRowBuilder().addComponents([
 			new ButtonBuilder()
 				.setCustomId('Resolve Issue')

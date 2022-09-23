@@ -76,7 +76,7 @@ export const skullTimer = (message, db) => {
 		messages.forEach(function (x) {
 			counts[x.messageID] = (counts[x.messageID] || 0) + 1
 		})
-		function getKeyByValue (object, value) {
+		function getKeyByValue(object, value) {
 			return Object.keys(object).find((key) => object[key] === value)
 		}
 		Object.values(counts).forEach((dupe) => {
