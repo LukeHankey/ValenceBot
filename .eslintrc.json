@@ -4,16 +4,21 @@
         "node": true
     },
     "extends": [
-        "standard"
+        "standard",
+        "prettier"
+    ],
+    "overrides": [
     ],
     "parserOptions": {
         "ecmaVersion": "latest",
         "sourceType": "module"
     },
     "rules": {
-        "indent": ["error", "tab", { "SwitchCase": 1}],
+        "indent": "off",
         "no-tabs": "off",
-        "no-unused-vars": ["warn"]
+        "no-unused-vars": ["warn"],
+        "comma-dangle": ["error", "never"],
+        "space-before-function-paren": ["error", {"asyncArrow": "always", "anonymous": "always", "named": "never"}]
     },
     "ignorePatterns": ["src/slashCommands.js"]
 }
