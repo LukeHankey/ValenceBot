@@ -6,10 +6,7 @@
   "scripts": {
     "start": "node ./src/index.js",
     "slash": "set NODE_ENV=DEV&&node ./src/slashCommands.js",
-    "lint": "eslint --fix .",
-    "dev": "set NODE_ENV=DEV&&node ./src/index.js",
-    "prepare": "husky install",
-    "format": "npx prettier --write src/"
+    "dev": "set NODE_ENV=DEV&&node ./src/index.js"
   },
   "author": "Luke",
   "license": "ISC",
@@ -18,7 +15,7 @@
     "node": "18.8.0"
   },
   "dependencies": {
-    "@discordjs/rest": "^0.1.0-canary.0",
+    "@discordjs/rest": "^1.1.0",
     "assert": "^2.0.0",
     "camelcase": "^6.3.0",
     "discord-api-types": "^0.22.0",
@@ -32,9 +29,7 @@
     "winston": "^3.8.2"
   },
   "devDependencies": {
-    "concurrently": "^6.4.0",
     "eslint": "^8.23.1",
-    "eslint-config-prettier": "^8.5.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-n": "^15.3.0",
