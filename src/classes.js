@@ -5,7 +5,7 @@ import { nEmbed } from './functions.js'
 import ms from 'pretty-ms'
 
 class Permissions {
-	constructor (name, db, msg) {
+	constructor(name, db, msg) {
 		this.name = name
 		this.db = db
 		this.msg = msg
@@ -16,13 +16,13 @@ class Permissions {
 	}
 
 	// eslint-disable-next-line getter-return
-	get roleId () {
+	get roleId() {
 		if (this.db?.roles[this.name]) {
 			return this.db?.roles[this.name].match(/\d{18,19}/)[0]
 		}
 	}
 
-	memberRole () {
+	memberRole() {
 		// abovePermModArray
 		const memberRoleArray = []
 		this._position
@@ -33,7 +33,7 @@ class Permissions {
 		return memberRoleArray
 	}
 
-	higherRoles () {
+	higherRoles() {
 		// availPermMod
 		const higherRoleArray = []
 		this._position
@@ -44,7 +44,7 @@ class Permissions {
 		return higherRoleArray.map((id) => `<@&${id}>`)
 	}
 
-	modPlusRoles (num = 0) {
+	modPlusRoles(num = 0) {
 		const aboveMod = []
 		this.memberRole().forEach((id) => {
 			const abovePermRawMod = this.msg.guild.roles.cache.find((role) => role.id === id)
@@ -56,23 +56,23 @@ class Permissions {
 		return aboveMod[num]
 	}
 
-	get owner () {
+	get owner() {
 		const id = '212668377586597888'
 		return id
 	}
 
-	botOwner () {
+	botOwner() {
 		return this.msg.member.id === this.owner
 	}
 
-	ownerError () {
+	ownerError() {
 		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', Color.redDark).addFields([
 			{ name: 'Only the bot owner can:', value: `<@!${this.owner}>` }
 		])
 		return { embeds: [embed] }
 	}
 
-	error () {
+	error() {
 		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', Color.redDark).addFields([
 			{
 				name: 'Only the following Roles & Users can:',
@@ -85,56 +85,56 @@ class Permissions {
 	}
 }
 class ScouterCheck {
-	constructor (roleName, value) {
+	constructor(roleName, value) {
 		this.month = 1000 * 60 * 60 * 24 * 31
 		this.week = 1000 * 60 * 60 * 24 * 7
 		this.roleName = roleName
 		this.value = value
 	}
 
-	set _client (c) {
+	set _client(c) {
 		this.client = c
 	}
 
-	set _db (db) {
+	set _db(db) {
 		this.db = db
 	}
 
-	set _guildName (name) {
+	set _guildName(name) {
 		this.guild_name = name
 	}
 
-	set _scouters (scouts) {
+	set _scouters(scouts) {
 		this.scouts = scouts
 	}
 
-	get _scouters () {
+	get _scouters() {
 		return this.scouts
 	}
 
-	get _client () {
+	get _client() {
 		return this.client
 	}
 
-	get _db () {
+	get _db() {
 		return this.db
 	}
 
-	get _guildName () {
+	get _guildName() {
 		return this.guild_name
 	}
 
-	get guildID () {
+	get guildID() {
 		return this._client.guilds.cache.mapValues((x) => {
 			if (x.name === this._guildName) return x.id
 		})
 	}
 
-	get guild () {
+	get guild() {
 		return this._client.guilds.fetch(this.guildID.filter((g) => g).first())
 	}
 
-	get potentialScouts () {
+	get potentialScouts() {
 		let scout
 		if (this.roleName.toLowerCase() === 'scouter') {
 			scout = this._scouters.filter((val) => {
@@ -151,14 +151,14 @@ class ScouterCheck {
 		return scout
 	}
 
-	get role () {
+	get role() {
 		return new Promise(async (resolve) => {
 			const guild = await this.guild
 			return resolve(guild.roles.cache.find((r) => r.name.toLowerCase() === this.roleName.toLowerCase())) // Find the guild and then find the role
 		})
 	}
 
-	_checkScouts (filter, num, time) {
+	_checkScouts(filter, num, time) {
 		// Just takes merch count, not other count
 		if (
 			(filter.count >= this.count || filter.count >= num) &&
@@ -169,7 +169,7 @@ class ScouterCheck {
 		}
 	}
 
-	_checkVerifiedScouts (filter, num, time) {
+	_checkVerifiedScouts(filter, num, time) {
 		// Just takes merch count, not other count
 		if (filter.count >= this.count || filter.count >= num) {
 			if (filter.lastTimestamp - filter.firstTimestamp >= time) {
@@ -182,7 +182,7 @@ class ScouterCheck {
 		}
 	}
 
-	async _checkForScouts () {
+	async _checkForScouts() {
 		const scouts = await this.potentialScouts
 		const fields = []
 
@@ -198,7 +198,7 @@ class ScouterCheck {
 		return fields
 	}
 
-	async send (chan = this._db.channels.adminChannel) {
+	async send(chan = this._db.channels.adminChannel) {
 		const role = await this.role
 		const embed = new EmbedBuilder()
 			.setTitle(`Potential Scouters - ${this.roleName}`)
@@ -218,7 +218,7 @@ class ScouterCheck {
 		}
 	}
 
-	async checkRolesAdded () {
+	async checkRolesAdded() {
 		const guild = await this.guild
 		const scouts = await this.potentialScouts
 		const role = await this.role
@@ -236,7 +236,7 @@ class ScouterCheck {
 		})
 	}
 
-	async checkRolesRemoved () {
+	async checkRolesRemoved() {
 		const guild = await this.guild
 		const role = await this.role
 
@@ -253,7 +253,7 @@ class ScouterCheck {
 		})
 	}
 
-	async removeInactive (scouters) {
+	async removeInactive(scouters) {
 		return new Promise(async (resolve) => {
 			let merch = await scouters.collection.find({}).toArray()
 			merch = merch.filter((doc) => {
@@ -267,7 +267,7 @@ class ScouterCheck {
 	}
 }
 class GoogleSheet {
-	constructor (gsapi, { spreadsheetId, ranges, valueInputOption = 'USER_ENTERED', resource = {} }) {
+	constructor(gsapi, { spreadsheetId, ranges, valueInputOption = 'USER_ENTERED', resource = {} }) {
 		this.gsapi = gsapi
 		this.spreadsheetId = spreadsheetId
 		this.ranges = ranges
@@ -277,12 +277,12 @@ class GoogleSheet {
 		this.fullData = this._getData()
 	}
 
-	async _getData () {
+	async _getData() {
 		const data = await this.gsapi.spreadsheets.values.batchGet(this.readRequest)
 		return data.data
 	}
 
-	async data (range = null) {
+	async data(range = null) {
 		const full = await this.fullData
 		if (!range) {
 			return full

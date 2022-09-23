@@ -54,7 +54,7 @@ export default {
 			}
 
 			// eslint-disable-next-line no-inner-declarations
-			async function googleSheets (gClient) {
+			async function googleSheets(gClient) {
 				const gsapi = google.sheets({ version: 'v4', auth: gClient })
 				const opt = {
 					// READ ONLY OPTIONS
@@ -433,7 +433,7 @@ export default {
 							const embeds = paginate(userData)
 
 							// eslint-disable-next-line no-inner-declarations
-							function paginate (pageData) {
+							function paginate(pageData) {
 								const pageEmbeds = []
 								let k = 24
 								for (let i = 0; i < pageData.length; i += 24) {

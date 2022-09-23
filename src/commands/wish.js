@@ -31,7 +31,7 @@ export default {
 			const rangeName = 'TM Coupon'
 
 			// eslint-disable-next-line no-inner-declarations
-			async function googleSheets (gClient) {
+			async function googleSheets(gClient) {
 				const gsapi = google.sheets({ version: 'v4', auth: gClient })
 				const opt = {
 					// READ ONLY OPTIONS

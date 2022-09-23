@@ -48,22 +48,22 @@ export default {
 					case 'set':
 						args[2]
 							? db.collection
-								.findOneAndUpdate(
-									{ _id: message.guild.id },
-									{ $set: { prefix: args[2] } },
-									{ returnOriginal: true }
-								)
-								.then(async (r) => {
-									message.channel.send({
-										content: `Prefix has been changed from \`${r.value.prefix}\` to \`${args[2]}\``
-									})
-									dbChannels.send(
-										`<@${message.author.id}> changed the bot Prefix in server: **${message.guild.name}**\n\`\`\`diff\n- ${r.value.prefix}\n+ ${args[2]}\`\`\``
+									.findOneAndUpdate(
+										{ _id: message.guild.id },
+										{ $set: { prefix: args[2] } },
+										{ returnOriginal: true }
 									)
-								})
-								.catch(async (err) => {
-									dbChannels.errors.send(err)
-								})
+									.then(async (r) => {
+										message.channel.send({
+											content: `Prefix has been changed from \`${r.value.prefix}\` to \`${args[2]}\``
+										})
+										dbChannels.send(
+											`<@${message.author.id}> changed the bot Prefix in server: **${message.guild.name}**\n\`\`\`diff\n- ${r.value.prefix}\n+ ${args[2]}\`\`\``
+										)
+									})
+									.catch(async (err) => {
+										dbChannels.errors.send(err)
+									})
 							: message.channel.send({ content: 'What do you want to set the prefix to?' })
 						break
 					default:
@@ -273,7 +273,7 @@ export default {
 							adminChannel === null
 								? message.channel.send({ content: 'Your Admin Channel is set as: `Null`' })
 								: message.channel.send({
-									content: `Your Admin Channel is set as: <#${adminChannel}>`
+										content: `Your Admin Channel is set as: <#${adminChannel}>`
 								  })
 						} else {
 							message.channel.send(
@@ -334,7 +334,7 @@ export default {
 							events === null || events === undefined
 								? message.channel.send({ content: 'Your events Channel is set as: `Null`' })
 								: message.channel.send({
-									content: `Your events Channel is set as: <#${events}>`
+										content: `Your events Channel is set as: <#${events}>`
 								  })
 						} else {
 							message.channel.send({

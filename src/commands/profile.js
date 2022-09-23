@@ -56,7 +56,7 @@ export default {
 				})
 			}
 
-			function _text (text) {
+			function _text(text) {
 				const code = '```'
 				return `${code}fix\n${text}${code}`
 			}

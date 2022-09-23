@@ -29,17 +29,17 @@ const dsf = async (client, message, db) => {
 		arrIncludesString(disallowedWords, message.content) &&
 		alreadyCalled(message, messages)
 			? message.channel
-				.send(`<@&670842187461820436> - ${message.content}`)
-				.then(async (mes) => {
-					return setTimeout(() => mes.delete(), 200)
-				})
-				.catch(async (err) => {
-					const messageID = err.url.split('/')
-					return await message.channel.messages
-						.fetch(messageID[8])
-						.then((x) => x.delete())
-						.catch(async (err) => channels.errors.send(err))
-				})
+					.send(`<@&670842187461820436> - ${message.content}`)
+					.then(async (mes) => {
+						return setTimeout(() => mes.delete(), 200)
+					})
+					.catch(async (err) => {
+						const messageID = err.url.split('/')
+						return await message.channel.messages
+							.fetch(messageID[8])
+							.then((x) => x.delete())
+							.catch(async (err) => channels.errors.send(err))
+					})
 			: setTimeout(() => message.delete(), 200)
 		skullTimer(message, db)
 	} else if (message.channel.id === otherChannelID) {
