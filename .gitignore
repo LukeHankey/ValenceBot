@@ -1,10 +1,7 @@
 node_modules
 .env
-Webhook
 .eslintrc.cjs
 client_secret.json
-test.js
 src/slashCommands.js
 archived
-*api.*
 .history/
