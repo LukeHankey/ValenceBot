@@ -2,7 +2,7 @@ import { MongoCollection } from '../../DataBase.js'
 import { merchRegex, otherCalls } from './constants.js'
 import { arrIncludesString, alreadyCalled } from './merchFunctions.js'
 import { addMerchCount, skullTimer, addOtherCount, otherTimer } from '../index.js'
-import { worlds } from './worlds.js'
+import { worldReaction, worlds } from './worlds.js'
 
 const dsf = async (client, message, db) => {
 	const channels = await db.channels
@@ -32,7 +32,6 @@ const dsf = async (client, message, db) => {
 			alreadyCalled(message, messages)
 		) {
 			const worldNumber = parseInt(/\w(\d{1,3})/.exec(message.content)[1])
-			const worldFound = worlds.filter((item) => item.world === worldNumber)
 			const freshStartWorlds = worlds.map((item) => (item.reason === 'fsw' ? item.world : null)).filter(Boolean)
 			let rolePing = '<@&670842187461820436>'
 			if (freshStartWorlds.includes(worldNumber)) {
@@ -49,9 +48,7 @@ const dsf = async (client, message, db) => {
 					.then((x) => x.delete())
 					.catch((err) => channels.errors.send(err))
 			}
-			if (worldFound.length) {
-				await message.react(worldFound[0].reaction)
-			}
+			await worldReaction(worldNumber, message)
 		} else {
 			setTimeout(() => message.delete(), 200)
 		}
@@ -64,6 +61,9 @@ const dsf = async (client, message, db) => {
 			!alreadyCalled(message, otherMessages)
 		) {
 			return setTimeout(() => message.delete(), 200)
+		} else {
+			const worldNumber = parseInt(/\w(\d{1,3})/.exec(message.content)[1])
+			await worldReaction(worldNumber, message)
 		}
 		otherTimer(message, db)
 	}

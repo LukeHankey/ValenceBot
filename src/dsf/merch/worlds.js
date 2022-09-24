@@ -83,3 +83,10 @@ export const worlds = [
 		reaction: WorldReactions.fsw
 	}
 ]
+
+export const worldReaction = async (worldNumber, message) => {
+	const worldFound = worlds.filter((item) => item.world === worldNumber)
+	if (worldFound.length) {
+		await message.react(worldFound[0].reaction)
+	}
+}
