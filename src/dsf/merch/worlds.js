@@ -6,7 +6,7 @@ const WorldReactions = {
 	fifteen_plus: '<:1500_total:1023251995211071499>',
 	twenty_plus: '<:2000_total:1023252045093933087>',
 	twenty_six_plus: '<:2600_total:1023252076324724776>',
-	laggy: '<:lag:1023264912853700719>',
+	laggy: '<:lag:1023271186047717406>',
 	dsf: '🎣',
 	fsw: '<:FSW:1023001019526946967>'
 }
