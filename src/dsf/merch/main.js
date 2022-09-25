@@ -32,7 +32,7 @@ const dsf = async (client, message, db) => {
 			arrIncludesString(disallowedWords, message.content) &&
 			alreadyCalled(message, messages)
 		) {
-			const worldNumber = parseInt(/\w(\d{1,3})/.exec(message.content)[1])
+			const worldNumber = parseInt(/\w\s?(\d{1,3})/.exec(message.content)[1])
 			// const freshStartWorlds = worlds.map((item) => (item.reason === 'fsw' ? item.world : null)).filter(Boolean)
 			const rolePing = '<@&670842187461820436>'
 			// if (freshStartWorlds.includes(worldNumber)) {
@@ -63,7 +63,7 @@ const dsf = async (client, message, db) => {
 		) {
 			return setTimeout(() => message.delete(), 200)
 		} else {
-			const worldNumber = parseInt(/\w(\d{1,3})/.exec(message.content)[1])
+			const worldNumber = parseInt(/\w\s?(\d{1,3})/.exec(message.content)[1])
 			await worldReaction(worldNumber, message)
 		}
 		otherTimer(message, db)
