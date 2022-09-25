@@ -106,6 +106,7 @@ export class MongoCollection extends DataBase {
 				errors: {
 					id: errors,
 					embed: function (err) {
+						logger.error(err.stack)
 						const filePath = import.meta.url.split('/')
 						const fileName = filePath[filePath.length - 1]
 						const embed = new EmbedBuilder()
