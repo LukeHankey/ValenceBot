@@ -70,6 +70,20 @@ const removeInactives = async (name, db, scoutTracker) => {
 	}
 }
 
+const logRemovedScouts = (scoutersAtRisk, channels) => {
+	const allItems = scoutersAtRisk.map((doc) => {
+		return `${doc.author} - ${doc.userID} (${doc.oldScout.count + doc.oldScout.otherCount} - M${
+			doc.oldScout.count
+		}). Scouter has been marked as inactive.`
+	})
+	if (allItems.length) {
+		const split = splitMessage(`${allItems.join('\n')}`)
+		return split.forEach(async (content) =>
+			channels.logs.send(`${scoutersAtRisk.length} profiles removed.\n${codeBlock(content)}`)
+		)
+	}
+}
+
 const removeScouters = async (options) => {
 	const THREE_MONTHS = 7.884e9
 	const { scoutProfiles, database, tracker } = options
@@ -115,6 +129,7 @@ const removeScouters = async (options) => {
 			}
 		)
 	}
+	logRemovedScouts(scoutersAtRisk, channels)
 }
 
 export { scout, vScout, classVars, addedRoles, removedRoles, removeInactives, removeScouters }
