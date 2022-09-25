@@ -3,8 +3,6 @@
 import { MongoCollection } from '../../DataBase.js'
 import { codeBlock } from 'discord.js'
 import {
-	skullTimer,
-	otherTimer,
 	updateStockTables,
 	scout,
 	vScout,
@@ -12,7 +10,8 @@ import {
 	addedRoles,
 	removedRoles,
 	removeInactives,
-	removeScouters
+	removeScouters,
+	startupRemoveReactionPermissions
 } from '../../dsf/index.js'
 import { sendFact, updateRoles } from '../../valence/index.js'
 import cron from 'node-cron'
@@ -100,17 +99,12 @@ export default async (client) => {
 		}
 	})
 
-	// If node cycling:
+	// Startup check for dsf messages:
 	;(async function () {
 		if (process.env.NODE_ENV === 'DEV') return
-		const {
-			merchChannel: { channelID }
-		} = await db.collection.findOne({ _id: '420803245758480405' }, { projection: { merchChannel: { channelID: 1 } } })
-		const merchantChannel = client.channels.cache.get(channelID)
-		let message = await merchantChannel.messages.fetch({ limit: 1 })
-		message = message.first()
-		skullTimer(message, db)
-		otherTimer(message, db)
+		for (const channel of ['merch', 'other']) {
+			await startupRemoveReactionPermissions(client, db, channel)
+		}
 	})()
 
 	// DSF Activity Posts //
