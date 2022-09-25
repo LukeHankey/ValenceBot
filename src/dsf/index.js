@@ -1,8 +1,8 @@
 export * from './merch/merchChannel/merchCount.js'
-export * from './merch/merchChannel/skullTimer.js'
+export * from './merch/skullTimer.js'
+export { tenMinutes } from './merch/constants.js'
 
 export * from './merch/otherCalls/otherCount.js'
-export * from './merch/otherCalls/otherTimer.js'
 
 export * from './scouts/scouters.js'
 

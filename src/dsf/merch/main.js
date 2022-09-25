@@ -1,7 +1,8 @@
+import timers from 'timers/promises'
 import { MongoCollection } from '../../DataBase.js'
 import { merchRegex, otherCalls } from './constants.js'
 import { arrIncludesString, alreadyCalled } from './merchFunctions.js'
-import { addMerchCount, skullTimer, addOtherCount, otherTimer } from '../index.js'
+import { addMerchCount, skullTimer, removeReactPermissions, addOtherCount, tenMinutes } from '../index.js'
 import { worldReaction } from './worlds.js'
 // import { worldReaction, worlds } from './worlds.js'
 
@@ -51,9 +52,11 @@ const dsf = async (client, message, db) => {
 			}
 			await worldReaction(worldNumber, message)
 		} else {
-			setTimeout(() => message.delete(), 200)
+			return setTimeout(() => message.delete(), 200)
 		}
-		skullTimer(message, db)
+		await timers.setTimeout(tenMinutes)
+		await skullTimer(message, db)
+		await removeReactPermissions(message, messages)
 	} else if (message.channel.id === otherChannelID) {
 		await addOtherCount(client, message, db, scouters)
 		if (
@@ -66,7 +69,8 @@ const dsf = async (client, message, db) => {
 			const worldNumber = parseInt(/\w(\d{1,3})/.exec(message.content)[1])
 			await worldReaction(worldNumber, message)
 		}
-		otherTimer(message, db)
+		await timers.setTimeout(tenMinutes)
+		await skullTimer(message, db, 'other')
 	}
 }
 
