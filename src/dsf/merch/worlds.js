@@ -78,6 +78,21 @@ export const worlds = [
 		reaction: WorldReactions.fsw
 	},
 	{
+		world: 212,
+		reason: 'fsw',
+		reaction: WorldReactions.fsw
+	},
+	{
+		world: 213,
+		reason: 'fsw',
+		reaction: WorldReactions.fsw
+	},
+	{
+		world: 214,
+		reason: 'fsw',
+		reaction: WorldReactions.fsw
+	},
+	{
 		world: 216,
 		reason: 'fsw',
 		reaction: WorldReactions.fsw
@@ -88,12 +103,33 @@ export const worlds = [
 		reaction: WorldReactions.fsw
 	},
 	{
+		// French
+		world: 218,
+		reason: 'fsw',
+		reaction: WorldReactions.fsw
+	},
+	{
+		world: 219,
+		reason: 'fsw',
+		reaction: WorldReactions.fsw
+	},
+	{
 		world: 226,
 		reason: 'fsw',
 		reaction: WorldReactions.fsw
 	},
 	{
-		world: 212,
+		world: 227,
+		reason: 'fsw',
+		reaction: WorldReactions.fsw
+	},
+	{
+		world: 228,
+		reason: 'fsw',
+		reaction: WorldReactions.fsw
+	},
+	{
+		world: 229,
 		reason: 'fsw',
 		reaction: WorldReactions.fsw
 	},
@@ -109,13 +145,12 @@ export const worlds = [
 		reaction: WorldReactions.fsw
 	},
 	{
-		// French
-		world: 218,
+		world: 238,
 		reason: 'fsw',
 		reaction: WorldReactions.fsw
 	},
 	{
-		// Protuguese
+		// Portuguese
 		world: 248,
 		reason: 'fsw',
 		reaction: WorldReactions.fsw
