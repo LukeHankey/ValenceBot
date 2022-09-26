@@ -73,12 +73,50 @@ export const worlds = [
 		reaction: WorldReactions.legacy
 	},
 	{
-		world: 600,
+		world: 211,
 		reason: 'fsw',
 		reaction: WorldReactions.fsw
 	},
 	{
-		world: 601,
+		world: 216,
+		reason: 'fsw',
+		reaction: WorldReactions.fsw
+	},
+	{
+		world: 217,
+		reason: 'fsw',
+		reaction: WorldReactions.fsw
+	},
+	{
+		world: 226,
+		reason: 'fsw',
+		reaction: WorldReactions.fsw
+	},
+	{
+		world: 212,
+		reason: 'fsw',
+		reaction: WorldReactions.fsw
+	},
+	{
+		world: 259,
+		reason: 'fsw',
+		reaction: WorldReactions.fsw
+	},
+	{
+		// German
+		world: 237,
+		reason: 'fsw',
+		reaction: WorldReactions.fsw
+	},
+	{
+		// French
+		world: 218,
+		reason: 'fsw',
+		reaction: WorldReactions.fsw
+	},
+	{
+		// Protuguese
+		world: 248,
 		reason: 'fsw',
 		reaction: WorldReactions.fsw
 	}
