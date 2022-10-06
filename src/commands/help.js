@@ -61,14 +61,14 @@ export default {
 						Color.cyan,
 						message.author.displayAvatarURL(),
 						client.user.displayAvatarURL()
-					).addFields([
+					).addFields(
 						{ name: '**Commands:**', value: join, inline: false },
 						{
 							name: `**The bot prefix is: ${prefix}**`,
 							value: `\nYou can send \`${prefix}help [command name]\` to get info on a specific command!`,
 							inline: false
 						}
-					])
+					)
 				]
 			})
 		} else {

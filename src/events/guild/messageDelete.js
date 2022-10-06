@@ -74,7 +74,7 @@ export default async (client, message) => {
 		const embed = new EmbedBuilder()
 			.setTitle('Message Deleted')
 			.setColor(Color.redDark)
-			.addFields([
+			.addFields(
 				{ name: 'Message ID:', value: `${document.messageID}`, inline: true },
 				{ name: 'Message Content:', value: `${document.content}`, inline: true },
 				{ name: '\u200B', value: '\u200B', inline: true },
@@ -86,7 +86,7 @@ export default async (client, message) => {
 					value: `${new Date(document.time).toString().split(' ').slice(0, -4).join(' ')}`,
 					inline: false
 				}
-			])
+			)
 		return embed
 	}
 

@@ -110,12 +110,12 @@ export default {
 					Color.greenLight,
 					message.author.displayAvatarURL(),
 					client.user.displayAvatarURL()
-				).addFields([
+				).addFields(
 					{ name: 'RuneScape Name:', value: `${rsn || undefined}`, inline: true },
 					{ name: 'Amount:', value: '500,000', inline: true },
 					{ name: 'To:', value: `${colName}`, inline: true },
 					{ name: 'Donations Updated:', value: 'N/A', inline: true }
-				])
+				)
 
 				switch (args[0]) {
 					case 'add':
@@ -172,13 +172,11 @@ export default {
 															value: `${rsn.split(/ /g).slice(0, -1).join(' ')}`,
 															inline: true
 														})
-														.addFields([
-															{
-																name: 'Double Entry:',
-																value: 'Yes',
-																inline: true
-															}
-														])
+														.addFields({
+															name: 'Double Entry:',
+															value: 'Yes',
+															inline: true
+														})
 												]
 											})
 										}
@@ -256,13 +254,11 @@ export default {
 															value: `${rsn.split(/ /g).slice(0, -1).join(' ')}`,
 															inline: true
 														})
-														.addFields([
-															{
-																name: 'Double Entry:',
-																value: 'Yes',
-																inline: true
-															}
-														])
+														.addFields({
+															name: 'Double Entry:',
+															value: 'Yes',
+															inline: true
+														})
 												]
 											})
 										}
@@ -372,12 +368,10 @@ export default {
 											client.user.displayAvatarURL()
 										)
 											.addFields(found)
-											.addFields([
-												{
-													name: 'Want to enter twice for double the chance of winning?',
-													value: 'It only costs 100 Clan Points! Let the Admins know in <#640641467798519808>!'
-												}
-											])
+											.addFields({
+												name: 'Want to enter twice for double the chance of winning?',
+												value: 'It only costs 100 Clan Points! Let the Admins know in <#640641467798519808>!'
+											})
 									]
 								})
 							} else if (nameFound && nameFound.length === 2) {
@@ -402,12 +396,10 @@ export default {
 											Color.redLight,
 											message.author.displayAvatarURL(),
 											client.user.displayAvatarURL()
-										).addFields([
-											{
-												name: 'Solution:',
-												value: 'Please let an Admin know to fix your entries!'
-											}
-										])
+										).addFields({
+											name: 'Solution:',
+											value: 'Please let an Admin know to fix your entries!'
+										})
 									]
 								})
 							} else {
@@ -419,12 +411,10 @@ export default {
 											Color.redDark,
 											message.author.displayAvatarURL(),
 											client.user.displayAvatarURL()
-										).addFields([
-											{
-												name: 'Get your lotto entry in!',
-												value: 'Message any Admin in game to pay the 500k entry fee!'
-											}
-										])
+										).addFields({
+											name: 'Get your lotto entry in!',
+											value: 'Message any Admin in game to pay the 500k entry fee!'
+										})
 									]
 								})
 							}

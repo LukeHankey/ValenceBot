@@ -234,7 +234,7 @@ export const buttons = async (interaction, db, data, cache) => {
 					])
 					await interaction.update({ components: [row] })
 					logger.verbose(`Action: Password Button\nBy: ${interaction.user.username}\nUser: ${fetchUser.user.username}`)
-					cache.set(interaction.message.id, { ...fetchUser.user })
+					cache.set(fetchUser.user.id, interaction.message.id)
 					await buttonLogger.upload(userId)
 				}
 				break
