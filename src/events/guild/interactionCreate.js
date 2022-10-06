@@ -1,8 +1,7 @@
 import { MongoCollection } from '../../DataBase.js'
-import { Collection } from 'discord.js'
 import { buttons, commands, autoComplete, selectMenu, modals, contextMenu } from '../../handlers/interactions/index.js'
 
-const cache = new Collection()
+const cache = new Map()
 
 export default async (client, interaction) => {
 	const start = performance.now()
