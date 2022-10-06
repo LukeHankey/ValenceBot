@@ -40,7 +40,7 @@ export default {
 				.setTitle('**Daily Valence Fact**')
 				.setDescription(factMessage)
 				.setColor(`#${randomColor}`)
-				.addFields([{ name: '**Sent By:**', value: '<@&685612946231263232>', inline: true }])
+				.addFields({ name: '**Sent By:**', value: '<@&685612946231263232>', inline: true })
 				.setTimestamp()
 			return embed
 		}

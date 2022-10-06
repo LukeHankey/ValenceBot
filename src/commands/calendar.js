@@ -297,12 +297,10 @@ export default {
 								ephemeral: true
 							})
 						} else {
-							calEmbed.addFields([
-								{
-									name: date,
-									value: `Event: ${title}\nTime: ${time}\n[Announcement](${announcement})\nHost: ${member}\nRole: ${newRole}`
-								}
-							])
+							calEmbed.addFields({
+								name: date,
+								value: `Event: ${title}\nTime: ${time}\n[Announcement](${announcement})\nHost: ${member}\nRole: ${newRole}`
+							})
 
 							// Edit the embed with the new event
 							await message.edit({ embeds: [calEmbed] })

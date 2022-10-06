@@ -27,10 +27,10 @@ export default async (client, message) => {
 			.setTitle('New DM Recieved')
 			.setDescription(`${dmPerson.tag} sent me a DM.`)
 			.setColor(Color.blueDark)
-			.addFields([
+			.addFields(
 				{ name: 'User ID', value: `${dmPerson.id}`, inline: false },
 				{ name: 'Message contents', value: `${dmMsg.join('\n')}` }
-			])
+			)
 			.setTimestamp()
 
 		return client.channels.cache.get('788525524782940187').send({ embeds: [embed] })
@@ -64,10 +64,10 @@ export default async (client, message) => {
 						.setDescription(
 							`Potentially dangerous content. Please don't click on or go to any links that you don't know!\n\n> ${message.content}`
 						)
-						.addFields([
+						.addFields(
 							{ name: 'User ID', value: bannedMember.id, inline: true },
 							{ name: 'Status', value: 'Banned', inline: true }
-						])
+						)
 						.setTimestamp()
 					const banButtons = new ActionRowBuilder().addComponents([
 						new ButtonBuilder()

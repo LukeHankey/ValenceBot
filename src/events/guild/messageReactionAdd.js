@@ -132,12 +132,10 @@ export default async (client, reaction, user) => {
 										`${user.username} chose ❌ on name changes. (Not changed names or none match). User has been removed from the database.`
 									)
 									.setColor(Color.redDark)
-									.addFields([
-										{
-											name: 'Users old profile',
-											value: `\`\`\`${JSON.stringify(userLeft)}\`\`\``
-										}
-									])
+									.addFields({
+										name: 'Users old profile',
+										value: `\`\`\`${JSON.stringify(userLeft)}\`\`\``
+									})
 								const channel = client.channels.cache.get(channels.errors.id)
 								channel.send(embed)
 								await usersDB.collection.deleteOne({ clanMate: userLeft.clanMate })

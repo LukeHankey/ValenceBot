@@ -423,13 +423,11 @@ export default {
 								"Here's a list of all the db.collection you can change:",
 								Color.cyan,
 								client.user.displayAvatarURL()
-							).addFields([
-								{
-									name: '**Settings**',
-									value: '`prefix`\n`adminRole`\n`modRole`\n`adminChannel`\n`eventsChannel`\n`modChannel`',
-									inline: false
-								}
-							])
+							).addFields({
+								name: '**Settings**',
+								value: '`prefix`\n`adminRole`\n`modRole`\n`adminChannel`\n`eventsChannel`\n`modChannel`',
+								inline: false
+							})
 						]
 					})
 				}

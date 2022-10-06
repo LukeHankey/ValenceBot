@@ -66,21 +66,22 @@ class Permissions {
 	}
 
 	ownerError() {
-		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', Color.redDark).addFields([
-			{ name: 'Only the bot owner can:', value: `<@!${this.owner}>` }
-		])
+		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', Color.redDark).addFields({
+			name: 'Only the bot owner can:',
+			value: `<@!${this.owner}>`
+		})
 		return { embeds: [embed] }
 	}
 
 	error() {
-		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', Color.redDark).addFields([
+		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', Color.redDark).addFields(
 			{
 				name: 'Only the following Roles & Users can:',
 				value: `${this.higherRoles().length > 0 ? this.higherRoles().join(', ') : '0'}`,
 				inline: true
 			},
 			{ name: '\u200b', value: `<@${this.msg.guild.ownerId}>`, inline: true }
-		])
+		)
 		return { embeds: [embed] }
 	}
 }
