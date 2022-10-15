@@ -15,10 +15,17 @@ export const skullTimer = async (message, db, channel = 'merch') => {
 	} catch (err) {
 		if (err.code === 10008) {
 			const errorMessageID = err.url.split('/')[8]
-			return await db.collection.updateOne(
-				{ _id: message.guild.id },
-				{ $pull: { 'merchChannel.messages': { messageID: errorMessageID } } }
-			)
+			if (channel === 'merch') {
+				return await db.collection.updateOne(
+					{ _id: message.guild.id },
+					{ $pull: { 'merchChannel.messages': { errorMessageID } } }
+				)
+			} else {
+				return await db.collection.updateOne(
+					{ _id: message.guild.id },
+					{ $pull: { 'merchChannel.otherMessages': { errorMessageID } } }
+				)
+			}
 		} else {
 			return channels.errors.send(err)
 		}
