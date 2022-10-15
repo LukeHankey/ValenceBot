@@ -1,3 +1,5 @@
+import { logger } from '../../logging.js'
+
 export const selectMenu = async (interaction, db, _, cache) => {
 	const client = interaction.client
 	const channels = await db.channels
@@ -12,6 +14,8 @@ export const selectMenu = async (interaction, db, _, cache) => {
 				await interaction.update({ components: [] })
 				const errorChannel = client.channels.cache.get('903432222139355207')
 				const cachedMessageId = cache.get(interaction.user.id)
+				logger.debug(cache)
+				logger.debug(cachedMessageId)
 				const buttonMessage = await errorChannel.messages.fetch(cachedMessageId)
 				if (interaction.values.includes('yes')) {
 					await interaction.followUp({
