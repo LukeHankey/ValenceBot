@@ -17,6 +17,8 @@ export default {
 	description: [
 		'Displays all of the current stored messages.',
 		'Clears all of the current stored messages.',
+		'Displays all of the current stored messages in other-dsf-calls.',
+		'Clears all of the current stored messages in other-dsf-calls.',
 		'Shows the list of potential scouters/verified scouters with the set scout count, or count adjusted.',
 		'Add 1 or <num> merch/other/game count to the member provided.',
 		'Remove 1 or <num> merch/other/game count to the member provided.'
@@ -25,6 +27,8 @@ export default {
 	usage: [
 		'messages',
 		'messages clear',
+		'other',
+		'other clear',
 		'view scouter/verified <num (optional)>',
 		'user memberID/@member add <num (optional)> <other/game>',
 		'user memberID/@member remove <num (optional)> <other/game>'
@@ -88,6 +92,63 @@ export default {
 							{
 								$pull: {
 									'merchChannel.messages': { time: { $gt: 0 } }
+								}
+							}
+						)
+						message.react('✅')
+				}
+				break
+			case 'o':
+			case 'other':
+				switch (args[1]) {
+					// eslint-disable-next-line default-case-last
+					default:
+						try {
+							const {
+								merchChannel: { otherMessages, otherChannelID }
+							} = await db.collection.findOne(
+								{ _id: message.guild.id },
+								{ projection: { 'merchChannel.otherMessages': 1, 'merchChannel.otherChannelID': 1 } }
+							)
+							const fields = []
+							const embed = nEmbed(
+								'List of messages currently stored in the DB',
+								"There shouldn't be too many as they get automatically deleted after 10 minutes. If the bot errors out, please clear all of them using `;dsf other clear`.",
+								Color.cream,
+								message.member.user.displayAvatarURL(),
+								client.user.displayAvatarURL()
+							)
+
+							for (const values of otherMessages) {
+								let date = new Date(values.time)
+								date = date.toString().split(' ')
+								fields.push({
+									name: `${values.author}`,
+									value: `**Time:** ${date.slice(0, 5).join(' ')}\n**Content:** [${
+										values.content
+									}](https://discordapp.com/channels/${message.guild.id}/${otherChannelID}/${
+										values.messageID
+									} 'Click me to go to the message.')`,
+									inline: false
+								})
+							}
+							return message.channel.send({ embeds: [embed.addFields(fields)] })
+						} catch (e) {
+							if (e.code === 50035) {
+								return message.channel.send({
+									content: 'Too many messages stored. Use the clear command.'
+								})
+							} else {
+								channels.errors.send(e)
+							}
+						}
+						break
+					case 'clear':
+						await db.collection.findOneAndUpdate(
+							{ _id: message.guild.id },
+							{
+								$pull: {
+									'merchChannel.otherMessages': { time: { $gt: 0 } }
 								}
 							}
 						)
@@ -303,7 +364,7 @@ export default {
 					embeds: [
 						nEmbed(
 							'**DSF Admin Commands List**',
-							"Here's a list of all the DSF commands you can use. Any parameter(s) in `<>` are optional:\n\n`messages|m`\n`messages|m clear`\n`view scouter <num>`\n`view verified <num>`\n`user memberID/@member add <other/game> <num>`\n`user memberID/@member remove <other/game> <num>`",
+							"Here's a list of all the DSF commands you can use. Any parameter(s) in `<>` are optional:\n\n`messages|m`\n`messages|m clear`\n`other|o`\n`other|o clear`\n`view scouter <num>`\n`view verified <num>`\n`user memberID/@member add <other/game> <num>`\n`user memberID/@member remove <other/game> <num>`",
 							Color.cyan,
 							client.user.displayAvatarURL()
 						)
