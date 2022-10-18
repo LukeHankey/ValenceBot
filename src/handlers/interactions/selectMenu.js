@@ -12,10 +12,8 @@ export const selectMenu = async (interaction, db, _, cache) => {
 		if (interaction.customId === `DM ${interaction.user.username}`) {
 			try {
 				await interaction.update({ components: [] })
-				const errorChannel = client.channels.cache.get('903432222139355207')
+				const errorChannel = client.channels.cache.get('794608385106509824')
 				const cachedMessageId = cache.get(interaction.user.id)
-				logger.debug(cache)
-				logger.debug(cachedMessageId)
 				const buttonMessage = await errorChannel.messages.fetch(cachedMessageId)
 				if (interaction.values.includes('yes')) {
 					await interaction.followUp({
