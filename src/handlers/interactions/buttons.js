@@ -322,6 +322,33 @@ export const buttons = async (interaction, db, data, cache) => {
 					}
 				}
 				break
+			case 'Remove Other Count':
+				{
+					if (interaction.user.bot) return
+					const item = data.merchChannel.deletions.messages.find((item) => item.messageID === interaction.message.id)
+					if (item) {
+						await scouters.collection.updateOne(
+							{ userID: item.authorID },
+							{
+								$inc: {
+									otherCount: -1
+								}
+							}
+						)
+						await db.collection.updateOne(
+							{ _id: interaction.guild.id },
+							{
+								$pull: {
+									'merchChannel.deletions.messages': { messageID: item.messageID }
+								}
+							}
+						)
+						const newEmbed = new EmbedBuilder(interaction.message.embeds[0].data)
+						newEmbed.setColor(Color.greenLight).setTitle('Message Deleted - Other Count Removed')
+						await interaction.message.edit({ embeds: [newEmbed], components: [] })
+					}
+				}
+				break
 			case 'Timeout':
 				{
 					const member = await interaction.guild.members.fetch(userId)
