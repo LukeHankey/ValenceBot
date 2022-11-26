@@ -110,7 +110,7 @@ export default async (client, message) => {
 			const embed = messageDeletion(checkDB)
 				.setDescription('This message was deleted by the message author - remove merch count.')
 				.setThumbnail(user.user.displayAvatarURL())
-				.setFooter({ text: 'Click the ✅ or use the command to remove merch count.' })
+				.setFooter({ text: 'Click the button or use the command to remove merch count.' })
 
 			await sendAndUpdate(botServerChannel, embed, checkDB)
 			await sendAndUpdate(dsfServerChannel, embed, checkDB)
