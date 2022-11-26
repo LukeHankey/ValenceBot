@@ -57,7 +57,12 @@ export const addMerchCount = async (client, message, db, scouter) => {
 				.setCustomId('Too Slow!')
 				.setLabel('Too Slow!')
 				.setStyle(ButtonStyle.Secondary)
-				.setEmoji({ name: '🐌' })
+				.setEmoji({ name: '🐌' }),
+			new ButtonBuilder()
+				.setCustomId('Read The Pins')
+				.setLabel('Read The Pins')
+				.setStyle(ButtonStyle.Success)
+				.setEmoji({ name: '📌' })
 		])
 
 		if (!findMessage) {

@@ -181,7 +181,10 @@ export const buttons = async (interaction, db, data, cache) => {
 	const channels = await db.channels
 	const scouters = new MongoCollection('ScoutTracker')
 	const buttonLogger = new ButtonWarning(interaction)
-	const generalChannel = interaction.guild.channels.cache.find((c) => c.id === '696375576881004655')
+	let generalChannel = interaction.guild.channels.cache.find((c) => c.id === '696375576881004655') // general
+	if (interaction.member.roles.cache.hasAny(['775940649802793000', '775941183716851764'])) {
+		generalChannel = interaction.guild.channels.cache.find((c) => c.id === '777598845655842836') // scouters
+	}
 	let [userId, user, content, timestamp] = interaction.message.content.split('\n').slice(3)
 	if (user) user = user.split(' ').slice(2).join(' ')
 	if (userId) userId = userId.split(' ').slice(3)[0].slice(3, -1)
@@ -219,7 +222,12 @@ export const buttons = async (interaction, db, data, cache) => {
 					const passwordDM = `${serverName}\n\nHello.\n\nWe saw you typed into the <#${data.merchChannel.channelID}> channel on ${timestamp} and the Deep Sea Fishing Admins have flagged this as a potential password which is why you are receiving this DM. That specific channel has all messages logged.\n\nYour message content: ${potentialPassowrd}\n\nIf it is a password, then we recommend that you change it ASAP, even though it got deleted straight away. Please respond with one of the selections to let our Admins know if we should also delete that message from our message logs.\n\nDSF Admin Team.`
 
 					const fetchUser = await interaction.guild.members.fetch(userId)
-					await fetchUser.send({ content: passwordDM, components: [menu] })
+					try {
+						await fetchUser.send({ content: passwordDM, components: [menu] })
+					} catch (err) {
+						await interaction.update({ components: [] })
+						return await interaction.followUp({ content: 'Unable to send messages to this user.' })
+					}
 
 					/**
 					 * components[0]: The first ActionRow
@@ -310,6 +318,33 @@ export const buttons = async (interaction, db, data, cache) => {
 						)
 						const newEmbed = new EmbedBuilder(interaction.message.embeds[0].data)
 						newEmbed.setColor(Color.greenLight).setTitle('Message Deleted - Count Removed')
+						await interaction.message.edit({ embeds: [newEmbed], components: [] })
+					}
+				}
+				break
+			case 'Remove Other Count':
+				{
+					if (interaction.user.bot) return
+					const item = data.merchChannel.deletions.messages.find((item) => item.messageID === interaction.message.id)
+					if (item) {
+						await scouters.collection.updateOne(
+							{ userID: item.authorID },
+							{
+								$inc: {
+									otherCount: -1
+								}
+							}
+						)
+						await db.collection.updateOne(
+							{ _id: interaction.guild.id },
+							{
+								$pull: {
+									'merchChannel.deletions.messages': { messageID: item.messageID }
+								}
+							}
+						)
+						const newEmbed = new EmbedBuilder(interaction.message.embeds[0].data)
+						newEmbed.setColor(Color.greenLight).setTitle('Message Deleted - Other Count Removed')
 						await interaction.message.edit({ embeds: [newEmbed], components: [] })
 					}
 				}
