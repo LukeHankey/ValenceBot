@@ -57,13 +57,26 @@ export const startupRemoveReactionPermissions = async (client, db, channel = 'me
 
 	for (const messageObj of messageCollection) {
 		const unwrappedMessageObj = (({ messageID, userID, time, author }) => ({ messageID, userID, time, author }))(messageObj)
-		const message = await channelObj.messages.fetch(unwrappedMessageObj.messageID)
-		const timePassed = Date.now() - unwrappedMessageObj.time
-		if (timePassed < tenMinutes) {
-			await timers.setTimeout(tenMinutes - (Date.now() - unwrappedMessageObj.time))
+		try {
+			const message = await channelObj.messages.fetch(unwrappedMessageObj.messageID)
+			const timePassed = Date.now() - unwrappedMessageObj.time
+			if (timePassed < tenMinutes) {
+				await timers.setTimeout(tenMinutes - (Date.now() - unwrappedMessageObj.time))
+			}
+			await skullTimer(message, db, channel)
+			if (channel !== 'merch') continue
+			await removeReactPermissions(message, messages)
+		} catch (err) {
+			console.log(err)
+			await db.collection.updateOne(
+				{ _id: '420803245758480405' },
+				{
+					$pull: {
+						'merchChannel.otherMessages': { messageID: unwrappedMessageObj.messageID },
+						'merchChannel.messages': { messageID: unwrappedMessageObj.messageID }
+					}
+				}
+			)
 		}
-		await skullTimer(message, db, channel)
-		if (channel !== 'merch') continue
-		await removeReactPermissions(message, messages)
 	}
 }
