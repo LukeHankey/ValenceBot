@@ -70,17 +70,10 @@ const removeInactives = async (name, db, scoutTracker) => {
 	}
 }
 
-const logRemovedScouts = (scoutersAtRisk, channels) => {
-	const allItems = scoutersAtRisk.map((doc) => {
-		return `${doc.author} - ${doc.userID} (${doc.oldScout.count + doc.oldScout.otherCount} - M${
-			doc.oldScout.count
-		}). Scouter has been marked as inactive.`
-	})
+const logRemovedScouts = (allItems, channels) => {
 	if (allItems.length) {
 		const split = splitMessage(`${allItems.join('\n')}`)
-		return split.forEach(async (content) =>
-			channels.logs.send(`${scoutersAtRisk.length} profiles removed.\n${codeBlock(content)}`)
-		)
+		return split.forEach(async (content) => channels.logs.send(`${allItems.length} profiles removed.\n${codeBlock(content)}`))
 	}
 }
 
@@ -96,6 +89,7 @@ const removeScouters = async (options) => {
 		return lastThreeMonths && !sc.oldScout
 	})
 	const dsfServer = await scouter.guild
+	const allItems = []
 	for (const profile of scoutersAtRisk) {
 		for (const scout of scoutProfiles) {
 			try {
@@ -128,8 +122,14 @@ const removeScouters = async (options) => {
 				}
 			}
 		)
+
+		allItems.push(
+			`${profile.author} - ${profile.userID} (${profile.oldScout.count + profile.oldScout.otherCount} - M${
+				profile.oldScout.count
+			}). Scouter has been marked as inactive.`
+		)
 	}
-	logRemovedScouts(scoutersAtRisk, channels)
+	logRemovedScouts(allItems, channels)
 }
 
 export { scout, vScout, classVars, addedRoles, removedRoles, removeInactives, removeScouters }
