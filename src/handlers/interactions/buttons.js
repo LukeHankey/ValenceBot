@@ -181,7 +181,10 @@ export const buttons = async (interaction, db, data, cache) => {
 	const channels = await db.channels
 	const scouters = new MongoCollection('ScoutTracker')
 	const buttonLogger = new ButtonWarning(interaction)
-	const generalChannel = interaction.guild.channels.cache.find((c) => c.id === '696375576881004655')
+	let generalChannel = interaction.guild.channels.cache.find((c) => c.id === '696375576881004655') // general
+	if (interaction.member.roles.cache.hasAny(['775940649802793000', '775941183716851764'])) {
+		generalChannel = interaction.guild.channels.cache.find((c) => c.id === '777598845655842836') // scouters
+	}
 	let [userId, user, content, timestamp] = interaction.message.content.split('\n').slice(3)
 	if (user) user = user.split(' ').slice(2).join(' ')
 	if (userId) userId = userId.split(' ').slice(3)[0].slice(3, -1)
