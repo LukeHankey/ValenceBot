@@ -222,7 +222,12 @@ export const buttons = async (interaction, db, data, cache) => {
 					const passwordDM = `${serverName}\n\nHello.\n\nWe saw you typed into the <#${data.merchChannel.channelID}> channel on ${timestamp} and the Deep Sea Fishing Admins have flagged this as a potential password which is why you are receiving this DM. That specific channel has all messages logged.\n\nYour message content: ${potentialPassowrd}\n\nIf it is a password, then we recommend that you change it ASAP, even though it got deleted straight away. Please respond with one of the selections to let our Admins know if we should also delete that message from our message logs.\n\nDSF Admin Team.`
 
 					const fetchUser = await interaction.guild.members.fetch(userId)
-					await fetchUser.send({ content: passwordDM, components: [menu] })
+					try {
+						await fetchUser.send({ content: passwordDM, components: [menu] })
+					} catch (err) {
+						await interaction.update({ components: [] })
+						return await interaction.followUp({ content: 'Unable to send messages to this user.' })
+					}
 
 					/**
 					 * components[0]: The first ActionRow
