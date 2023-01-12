@@ -7,8 +7,7 @@ const WorldReactions = {
 	twenty_plus: '<:2000_total:1023252045093933087>',
 	twenty_six_plus: '<:2600_total:1023252076324724776>',
 	laggy: '<:lag:1023271186047717406>',
-	dsf: '🎣',
-	fsw: '<:FSW:1023001019526946967>'
+	dsf: '🎣'
 }
 
 export const worlds = [
@@ -71,89 +70,6 @@ export const worlds = [
 		world: 137,
 		reason: 'legacy',
 		reaction: WorldReactions.legacy
-	},
-	{
-		world: 211,
-		reason: 'fsw',
-		reaction: WorldReactions.fsw
-	},
-	{
-		world: 212,
-		reason: 'fsw',
-		reaction: WorldReactions.fsw
-	},
-	{
-		world: 213,
-		reason: 'fsw',
-		reaction: WorldReactions.fsw
-	},
-	{
-		world: 214,
-		reason: 'fsw',
-		reaction: WorldReactions.fsw
-	},
-	{
-		world: 216,
-		reason: 'fsw',
-		reaction: WorldReactions.fsw
-	},
-	{
-		world: 217,
-		reason: 'fsw',
-		reaction: WorldReactions.fsw
-	},
-	{
-		// French
-		world: 218,
-		reason: 'fsw',
-		reaction: WorldReactions.fsw
-	},
-	{
-		world: 219,
-		reason: 'fsw',
-		reaction: WorldReactions.fsw
-	},
-	{
-		world: 226,
-		reason: 'fsw',
-		reaction: WorldReactions.fsw
-	},
-	{
-		world: 227,
-		reason: 'fsw',
-		reaction: WorldReactions.fsw
-	},
-	{
-		world: 228,
-		reason: 'fsw',
-		reaction: WorldReactions.fsw
-	},
-	{
-		world: 229,
-		reason: 'fsw',
-		reaction: WorldReactions.fsw
-	},
-	{
-		world: 259,
-		reason: 'fsw',
-		reaction: WorldReactions.fsw
-	},
-	{
-		// German
-		world: 237,
-		reason: 'fsw',
-		reaction: WorldReactions.fsw
-	},
-	{
-		world: 238,
-		reason: 'fsw',
-		reaction: WorldReactions.fsw
-	},
-	{
-		// Portuguese
-		world: 248,
-		reason: 'fsw',
-		reaction: WorldReactions.fsw
 	}
 ]
 

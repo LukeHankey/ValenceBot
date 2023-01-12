@@ -33,11 +33,7 @@ const dsf = async (client, message, db) => {
 			alreadyCalled(message, messages)
 		) {
 			const worldNumber = parseInt(/\w\s?(\d{1,3})/.exec(message.content)[1])
-			const freshStartWorlds = worlds.map((item) => (item.reason === 'fsw' ? item.world : null)).filter(Boolean)
-			let rolePing = '<@&670842187461820436>'
-			if (freshStartWorlds.includes(worldNumber)) {
-				rolePing = '<@&1022966016604651611>'
-			}
+			const rolePing = '<@&670842187461820436>'
 
 			const sentMessage = await message.channel.send(`${rolePing} - ${message.content}`)
 			try {
