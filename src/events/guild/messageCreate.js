@@ -191,11 +191,15 @@ export default async (client, message) => {
 							return `<@!${o.user}>`
 						})
 						.filter(Boolean)
-					await c.send({
-						content: `${usersWithSameChannel.join(
-							', '
-						)}\nSource: Vis Wax Server | <https://discord.gg/wv9Ecs4>\n${newContent.join('\n')}`
-					})
+					try {
+						await c.send({
+							content: `${usersWithSameChannel.join(
+								', '
+							)}\nSource: Vis Wax Server | <https://discord.gg/wv9Ecs4>\n${newContent.join('\n')}`
+						})
+					} catch (err) {
+						channels.errors.send(err)
+					}
 				}
 			}
 
