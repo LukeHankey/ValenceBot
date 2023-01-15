@@ -134,6 +134,9 @@ export default async (client, message) => {
 		return client.logger.info('Failed to fetch data for an uncached message.')
 	}
 
+	// No Audit logs
+	if (!deletionLog) return
+
 	// Self deletion
 	if (!('target' in deletionLog) || deletionLog.target.id !== message.author.id) {
 		// Bot self delete
