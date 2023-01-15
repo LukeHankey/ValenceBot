@@ -1,6 +1,6 @@
-import { merchRegex } from '../constants.js'
+import { merchRegex, foreignWorldsRegex } from '../constants.js'
 import { checkMemberRole, arrIncludesString, alreadyCalled } from '../merchFunctions.js'
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+import { buttonFunctions } from '../callCount.js'
 
 export const addMerchCount = async (client, message, db, scouter) => {
 	const channels = await db.channels
@@ -24,46 +24,8 @@ export const addMerchCount = async (client, message, db, scouter) => {
 		const userN = message.member
 		const findMessage = await scouter.collection.findOne({ userID: userN.id })
 		const timestamp = message.createdAt.toString().split(' ').slice(0, 5).join(' ')
-		const buttonSelection = new ActionRowBuilder().addComponents([
-			new ButtonBuilder()
-				.setCustomId(`DM ${userN.user.username}`)
-				.setLabel(`DM ${userN.user.username}`)
-				.setStyle(ButtonStyle.Primary)
-				.setEmoji({ name: '✉️' }),
-			new ButtonBuilder()
-				.setCustomId('Show How To React')
-				.setLabel('Show How To React')
-				.setStyle(ButtonStyle.Success)
-				.setEmoji({ name: '☠️' }),
-			new ButtonBuilder()
-				.setCustomId('Eyes on Merch Calls')
-				.setLabel('Eyes on Merch Calls')
-				.setStyle(ButtonStyle.Success)
-				.setEmoji({ name: '👀' }),
-			new ButtonBuilder()
-				.setCustomId('Timeout')
-				.setLabel('Timeout')
-				.setStyle(ButtonStyle.Secondary)
-				.setEmoji({ name: '⏲️' }),
-			new ButtonBuilder()
-				.setCustomId('Clear Buttons')
-				.setLabel('Clear Buttons')
-				.setStyle(ButtonStyle.Danger)
-				.setEmoji({ name: '❌' })
-		])
 
-		const buttonSelectionExtra = new ActionRowBuilder().addComponents([
-			new ButtonBuilder()
-				.setCustomId('Too Slow!')
-				.setLabel('Too Slow!')
-				.setStyle(ButtonStyle.Secondary)
-				.setEmoji({ name: '🐌' }),
-			new ButtonBuilder()
-				.setCustomId('Read The Pins')
-				.setLabel('Read The Pins')
-				.setStyle(ButtonStyle.Success)
-				.setEmoji({ name: '📌' })
-		])
+		const [buttonSelection, buttonSelectionExtra, buttonSelectionForeignWorlds] = buttonFunctions(userN, message.content)
 
 		if (!findMessage) {
 			if (
@@ -74,13 +36,17 @@ export const addMerchCount = async (client, message, db, scouter) => {
 				if (message.guild.id === '668330890790699079') {
 					return await botServerErrorChannel.send({
 						content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``,
-						components: [buttonSelection, buttonSelectionExtra]
+						components: !foreignWorldsRegex.test(message.content)
+							? [buttonSelection, buttonSelectionExtra]
+							: [buttonSelectionForeignWorlds]
 					})
 				}
 				client.logger.info(`New & Spam: ${userN.displayName} (${message.content}) userId: ${userN.id}`)
 				return await dsfServerErrorChannel.send({
 					content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``,
-					components: [buttonSelection, buttonSelectionExtra]
+					components: !foreignWorldsRegex.test(message.content)
+						? [buttonSelection, buttonSelectionExtra]
+						: [buttonSelectionForeignWorlds]
 				})
 			}
 			client.logger.info(`New: ${userN.displayName} (${message.content}) userId: ${userN.id}`)
@@ -110,13 +76,17 @@ export const addMerchCount = async (client, message, db, scouter) => {
 				if (message.guild.id === '668330890790699079') {
 					return await botServerErrorChannel.send({
 						content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``,
-						components: [buttonSelection, buttonSelectionExtra]
+						components: !foreignWorldsRegex.test(message.content)
+							? [buttonSelection, buttonSelectionExtra]
+							: [buttonSelectionForeignWorlds]
 					})
 				}
 				client.logger.info(`Old & Spam: ${userN.displayName} (${message.content}) userId: ${userN.id}`)
 				return await dsfServerErrorChannel.send({
 					content: ` \`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.user.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``,
-					components: [buttonSelection, buttonSelectionExtra]
+					components: !foreignWorldsRegex.test(message.content)
+						? [buttonSelection, buttonSelectionExtra]
+						: [buttonSelectionForeignWorlds]
 				})
 			}
 			client.logger.info(`Old: ${userN.displayName} (${message.content})`)

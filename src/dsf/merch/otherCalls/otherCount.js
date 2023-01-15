@@ -1,6 +1,6 @@
-import { otherCalls } from '../constants.js'
+import { otherCalls, foreignWorldsRegex } from '../constants.js'
 import { arrIncludesString, alreadyCalled } from '../merchFunctions.js'
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+import { buttonFunctions } from '../callCount.js'
 
 export const addOtherCount = async (client, message, db, scouters) => {
 	// Adds count for other events channel
@@ -32,33 +32,7 @@ export const addOtherCount = async (client, message, db, scouters) => {
 		const findMessage = await scouters.collection.findOne({ userID: msg[0].author.id })
 		const timestamp = message.createdAt.toString().split(' ').slice(0, 5).join(' ')
 
-		const buttonSelection = new ActionRowBuilder().addComponents([
-			new ButtonBuilder()
-				.setCustomId(`DM ${userN.user.username}`)
-				.setLabel(`DM ${userN.user.username}`)
-				.setStyle(ButtonStyle.Primary)
-				.setEmoji({ name: '✉️' }),
-			new ButtonBuilder()
-				.setCustomId('Show How To React')
-				.setLabel('Show How To React')
-				.setStyle(ButtonStyle.Success)
-				.setEmoji({ name: '☠️' }),
-			new ButtonBuilder()
-				.setCustomId('Read The Pins')
-				.setLabel('Read The Pins')
-				.setStyle(ButtonStyle.Success)
-				.setEmoji({ name: '📌' }),
-			new ButtonBuilder()
-				.setCustomId('Timeout')
-				.setLabel('Timeout')
-				.setStyle(ButtonStyle.Secondary)
-				.setEmoji({ name: '⏲️' }),
-			new ButtonBuilder()
-				.setCustomId('Clear Buttons')
-				.setLabel('Clear Buttons')
-				.setStyle(ButtonStyle.Danger)
-				.setEmoji({ name: '❌' })
-		])
+		const [buttonSelection, buttonSelectionExtra, buttonSelectionForeignWorlds] = buttonFunctions(userN, message.content)
 
 		if (!findMessage) {
 			if (
@@ -69,7 +43,9 @@ export const addOtherCount = async (client, message, db, scouters) => {
 				client.logger.info(`New & Spam: ${userN.displayName} (${message.content}) ${userN.id}`)
 				return await dsfServerErrorChannel.send({
 					content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``,
-					components: [buttonSelection]
+					components: !foreignWorldsRegex.test(message.content)
+						? [buttonSelection, buttonSelectionExtra]
+						: [buttonSelectionForeignWorlds]
 				})
 			}
 			client.logger.info(`New other: ${msg[0].author.username} (${message.content}) ${msg[0].author.id}`)
@@ -95,13 +71,17 @@ export const addOtherCount = async (client, message, db, scouters) => {
 				if (message.guild.id === '668330890790699079') {
 					return await botServerErrorChannel.send({
 						content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``,
-						components: [buttonSelection]
+						components: !foreignWorldsRegex.test(message.content)
+							? [buttonSelection, buttonSelectionExtra]
+							: [buttonSelectionForeignWorlds]
 					})
 				}
 				client.logger.info(`Old & Spam: ${userN.displayName} (${message.content}) ${userN.id}`)
 				return await dsfServerErrorChannel.send({
 					content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``,
-					components: [buttonSelection]
+					components: !foreignWorldsRegex.test(message.content)
+						? [buttonSelection, buttonSelectionExtra]
+						: [buttonSelectionForeignWorlds]
 				})
 			}
 			client.logger.info(`Old other: ${msg[0].author.username} (${message.content}) ${msg[0].author.id}`)
