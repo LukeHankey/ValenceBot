@@ -1,4 +1,4 @@
-import { merchRegex } from '../constants.js'
+import { merchRegex, foreignWorldsRegex } from '../constants.js'
 import { checkMemberRole, arrIncludesString, alreadyCalled } from '../merchFunctions.js'
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 
@@ -65,6 +65,32 @@ export const addMerchCount = async (client, message, db, scouter) => {
 				.setEmoji({ name: '📌' })
 		])
 
+		const foreignWorldFlags = {
+			'🇩🇪': [102, 121],
+			'🇫🇷': [118],
+			'🇧🇷': [47, 75, 101]
+		}
+
+		let foreignWorldNumber = 0
+		if (foreignWorldsRegex.test(message.content)) {
+			foreignWorldNumber = parseInt(/\d{2,3}/.exec(foreignWorldsRegex.exec(message.content)[0]))
+		}
+
+		const buttonSelectionForeignWorlds = new ActionRowBuilder().addComponents([
+			new ButtonBuilder()
+				.setCustomId('Foreign World')
+				.setLabel('Foreign World')
+				.setStyle(ButtonStyle.Success)
+				.setEmoji({
+					name: Object.keys(foreignWorldFlags).find((key) => foreignWorldFlags[key].includes(foreignWorldNumber))
+				}),
+			new ButtonBuilder()
+				.setCustomId('Clear Buttons')
+				.setLabel('Clear Buttons')
+				.setStyle(ButtonStyle.Danger)
+				.setEmoji({ name: '❌' })
+		])
+
 		if (!findMessage) {
 			if (
 				!merchRegex.test(message.content) ||
@@ -74,13 +100,17 @@ export const addMerchCount = async (client, message, db, scouter) => {
 				if (message.guild.id === '668330890790699079') {
 					return await botServerErrorChannel.send({
 						content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``,
-						components: [buttonSelection, buttonSelectionExtra]
+						components: !foreignWorldsRegex.test(message.content)
+							? [buttonSelection, buttonSelectionExtra]
+							: [buttonSelectionForeignWorlds]
 					})
 				}
 				client.logger.info(`New & Spam: ${userN.displayName} (${message.content}) userId: ${userN.id}`)
 				return await dsfServerErrorChannel.send({
 					content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``,
-					components: [buttonSelection, buttonSelectionExtra]
+					components: !foreignWorldsRegex.test(message.content)
+						? [buttonSelection, buttonSelectionExtra]
+						: [buttonSelectionForeignWorlds]
 				})
 			}
 			client.logger.info(`New: ${userN.displayName} (${message.content}) userId: ${userN.id}`)
@@ -110,13 +140,17 @@ export const addMerchCount = async (client, message, db, scouter) => {
 				if (message.guild.id === '668330890790699079') {
 					return await botServerErrorChannel.send({
 						content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``,
-						components: [buttonSelection, buttonSelectionExtra]
+						components: !foreignWorldsRegex.test(message.content)
+							? [buttonSelection, buttonSelectionExtra]
+							: [buttonSelectionForeignWorlds]
 					})
 				}
 				client.logger.info(`Old & Spam: ${userN.displayName} (${message.content}) userId: ${userN.id}`)
 				return await dsfServerErrorChannel.send({
 					content: ` \`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.user.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``,
-					components: [buttonSelection, buttonSelectionExtra]
+					components: !foreignWorldsRegex.test(message.content)
+						? [buttonSelection, buttonSelectionExtra]
+						: [buttonSelectionForeignWorlds]
 				})
 			}
 			client.logger.info(`Old: ${userN.displayName} (${message.content})`)
