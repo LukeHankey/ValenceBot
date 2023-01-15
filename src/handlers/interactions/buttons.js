@@ -16,7 +16,7 @@ import camelCase from 'camelcase'
 import { logger } from '../../logging.js'
 
 class ButtonWarning {
-	UNLOGGED_NAMES = ['Clear Buttons', 'Too Slow!']
+	UNLOGGED_NAMES = ['Clear Buttons', 'Too Slow!', 'Foreign World']
 
 	/**
 	 *
@@ -190,6 +190,8 @@ export const buttons = async (interaction, db, data, cache) => {
 	if (userId) userId = userId.split(' ').slice(3)[0].slice(3, -1)
 	buttonLogger.scouters = scouters
 
+	const rulesChannel = interaction.guild.channels.cache.find((c) => c.name === 'rules')
+
 	try {
 		switch (interaction.customId) {
 			/**
@@ -266,7 +268,6 @@ export const buttons = async (interaction, db, data, cache) => {
 			case 'Eyes on Call Channels':
 				{
 					const welcomeChannel = interaction.guild.channels.cache.find((c) => c.name === 'welcome')
-					const rulesChannel = interaction.guild.channels.cache.find((c) => c.name === 'rules')
 					const nonsenseMessage = `<@!${userId}>, <#${data.merchChannel.channelID}> and <#${data.merchChannel.otherChannelID}> is for calls only. Please read <#${welcomeChannel.id}> and <#${rulesChannel.id}>.`
 
 					await generalChannel.send({ content: nonsenseMessage })
@@ -529,6 +530,13 @@ export const buttons = async (interaction, db, data, cache) => {
 				break
 			case 'Read The Pins':
 				await generalChannel.send({ content: `<@!${userId}>, invalid call format. Read the pins!` })
+				await interaction.update({ components: [] })
+				await buttonLogger.upload(userId)
+				break
+			case 'Foreign World':
+				await generalChannel.send({
+					content: `<@!${userId}>, we don't call foreign server worlds. Please see <#${rulesChannel.id}> 11.`
+				})
 				await interaction.update({ components: [] })
 				await buttonLogger.upload(userId)
 		}
