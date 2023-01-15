@@ -106,37 +106,15 @@ export default async (client, message) => {
 			}
 		}
 
-		const [stockChannel, merchCalls, otherCalls, suggestions, boosters] = [
-			'770307127557357648',
-			channelID,
-			otherChannelID,
-			'872164630322118686',
-			'586267152152002562'
-		]
-
 		switch (message.channel.id) {
-			case stockChannel:
+			case '770307127557357648': // Merch stock channel
 				if (message.author.bot && message.crosspostable) {
 					message.crosspost()
 				}
 				break
-			case merchCalls:
-			case otherCalls:
+			case channelID:
+			case otherChannelID:
 				return await dsf(client, message, db)
-			case suggestions:
-				{
-					const upArrow = message.guild.emojis.cache.get('872175822725857280')
-					const downArrow = message.guild.emojis.cache.get('872175855223337060')
-					await message.react(upArrow)
-					await message.react(downArrow)
-					await message.startThread({
-						name: `Suggestion from ${message.member.nickname ?? message.author.username}`,
-						autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek
-					})
-				}
-				break
-			case boosters:
-			// await newBoost(message, boosters);
 		}
 	}
 
