@@ -1,7 +1,7 @@
 import { MongoCollection } from '../../DataBase.js'
 import {
 	ActionRowBuilder,
-	SelectMenuBuilder,
+	StringSelectMenuBuilder,
 	EmbedBuilder,
 	ButtonBuilder,
 	ButtonStyle,
@@ -200,7 +200,7 @@ export const buttons = async (interaction, db, data, cache) => {
 			case `DM ${user}`:
 				{
 					const menu = new ActionRowBuilder().addComponents([
-						new SelectMenuBuilder()
+						new StringSelectMenuBuilder()
 							.setCustomId(`DM ${user}`)
 							.setPlaceholder('Nothing selected')
 							.addOptions([
