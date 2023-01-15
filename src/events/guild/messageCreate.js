@@ -39,72 +39,11 @@ export default async (client, message) => {
 	// Deep Sea Fishing
 	if (message.guild.id === '420803245758480405' || message.guild.id === '668330890790699079') {
 		const {
-			merchChannel: { channelID, otherChannelID },
-			channels: { adminChannel }
+			merchChannel: { channelID, otherChannelID }
 		} = await db.collection.findOne(
 			{ _id: message.guild.id, merchChannel: { $exists: true } },
-			{ projection: { 'merchChannel.channelID': 1, 'merchChannel.otherChannelID': 1, channels: 1 } }
+			{ projection: { 'merchChannel.channelID': 1, 'merchChannel.otherChannelID': 1 } }
 		)
-
-		// eslint-disable-next-line no-useless-escape
-		const scamLinkRegex = /((?!.*discord)(?=.*\b(d\w{5,8}[dcl]){1}[-\./]?(give|gift|nitro))\b.*)/gi
-		const scamWordMatchRegex = /((.*? )?(nitro|free|@everyone|steam)){3}/gi
-		if (scamLinkRegex.test(message.content) || scamWordMatchRegex.test(message.content)) {
-			const bannedMember = message.member
-			// Check for permissions
-			try {
-				client.logger.info(`Bannned ${bannedMember.toString()}: ${message.content}`)
-				const perms = message.guild.members.me.permissions.has('BanMembers')
-				if (perms) {
-					await bannedMember.ban({ days: 7, reason: 'Bang bang I gotcha, I gotcha in my scope' })
-					const botLogsAdminChannel = message.guild.channels.cache.get('794608385106509824')
-					const banEmbed = new EmbedBuilder()
-						.setTitle(`${bannedMember.displayName} has been banned!`)
-						.setColor(Color.orange)
-						.setDescription(
-							`Potentially dangerous content. Please don't click on or go to any links that you don't know!\n\n> ${message.content}`
-						)
-						.addFields(
-							{ name: 'User ID', value: bannedMember.id, inline: true },
-							{ name: 'Status', value: 'Banned', inline: true }
-						)
-						.setTimestamp()
-					const banButtons = new ActionRowBuilder().addComponents([
-						new ButtonBuilder()
-							.setCustomId('Unban')
-							.setLabel('Unban')
-							.setStyle(ButtonStyle.Danger)
-							.setEmoji({ name: '🔓' }),
-						new ButtonBuilder()
-							.setCustomId('Clear Buttons')
-							.setLabel('Clear Buttons')
-							.setStyle(ButtonStyle.Success)
-							.setEmoji({ name: '✅' })
-					])
-
-					const banCase = await botLogsAdminChannel.send({
-						embeds: [banEmbed],
-						components: [banButtons]
-					})
-					const banCaseButton = new ActionRowBuilder().addComponents([
-						new ButtonBuilder().setLabel('Ban Case').setStyle(ButtonStyle.Link).setURL(banCase.url)
-					])
-
-					const bChannel = message.guild.channels.cache.get('624655664920395786')
-					return await bChannel.send({
-						content: `Banned: ${bannedMember.displayName} - ${bannedMember.id} -- Posting a scam link. Bang bang I gotcha, I gotcha in my scope.`,
-						components: [banCaseButton]
-					})
-				} else {
-					const aChannel = message.guild.channels.cache.get(adminChannel)
-					return aChannel.send({
-						content: `I am unable to ban ${message.member.displayName} as I do not have the \`BAN_MEMBERS\` permission.`
-					})
-				}
-			} catch (err) {
-				channels.logs.send(`Unable to ban ${bannedMember} because they have higher permissions.`)
-			}
-		}
 
 		if (message.channel.parent.type === ChannelType.GuildForum) {
 			// Suggestions
