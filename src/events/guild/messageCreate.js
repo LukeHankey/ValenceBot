@@ -160,10 +160,10 @@ export default async (client, message) => {
 				{ _id: 'Globals' },
 				{ projection: { visCache: 1, visContent: 1 } }
 			)
-			const channels = new Set()
+			const visChannels = new Set()
 			const guilds = new Set()
 			visCache.forEach((obj) => {
-				channels.add(obj.channel)
+				visChannels.add(obj.channel)
 				guilds.add(obj.guild)
 			})
 
@@ -181,7 +181,7 @@ export default async (client, message) => {
 			for (const guild of guilds) {
 				const g = client.guilds.cache.get(guild)
 				if (!g) continue
-				for (const channel of channels) {
+				for (const channel of visChannels) {
 					const c = g.channels.cache.get(channel)
 					if (!c) continue
 
