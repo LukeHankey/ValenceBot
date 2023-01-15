@@ -1,7 +1,7 @@
 import { MongoCollection } from '../../DataBase.js'
 import Color from '../../colors.js'
 import { Permissions } from '../../classes.js'
-import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, ThreadAutoArchiveDuration } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, ChannelType } from 'discord.js'
 import { vEvents } from '../../valence/valenceEvents.js'
 import dsf from '../../dsf/merch/main.js'
 const db = new MongoCollection('Settings')
@@ -103,6 +103,13 @@ export default async (client, message) => {
 				}
 			} catch (err) {
 				channels.logs.send(`Unable to ban ${bannedMember} because they have higher permissions.`)
+			}
+		}
+
+		if (message.channel.parent.type === ChannelType.GuildForum) {
+			// Suggestions
+			if (message.channel.parent.id === '1064189568695423117') {
+				// Do nothing. Might think of something later such as @bot close, @bot pin
 			}
 		}
 
