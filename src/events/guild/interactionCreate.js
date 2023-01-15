@@ -18,7 +18,7 @@ export default async (client, interaction) => {
 			await commands(interaction, db, data)
 		} else if (interaction.isAutocomplete()) {
 			await autoComplete(interaction)
-		} else if (interaction.isSelectMenu()) {
+		} else if (interaction.isStringSelectMenu()) {
 			await selectMenu(interaction, db, data, cache)
 		} else if (interaction.isContextMenuCommand()) {
 			client.logger.debug(`Before defer ${performance.now() - start}`)

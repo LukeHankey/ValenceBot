@@ -1,7 +1,7 @@
 import { MongoCollection } from '../../DataBase.js'
 import Color from '../../colors.js'
 import { Permissions } from '../../classes.js'
-import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, ThreadAutoArchiveDuration } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, ChannelType } from 'discord.js'
 import { vEvents } from '../../valence/valenceEvents.js'
 import dsf from '../../dsf/merch/main.js'
 const db = new MongoCollection('Settings')
@@ -106,37 +106,22 @@ export default async (client, message) => {
 			}
 		}
 
-		const [stockChannel, merchCalls, otherCalls, suggestions, boosters] = [
-			'770307127557357648',
-			channelID,
-			otherChannelID,
-			'872164630322118686',
-			'586267152152002562'
-		]
+		if (message.channel.parent.type === ChannelType.GuildForum) {
+			// Suggestions
+			if (message.channel.parent.id === '1064189568695423117') {
+				// Do nothing. Might think of something later such as @bot close, @bot pin
+			}
+		}
 
 		switch (message.channel.id) {
-			case stockChannel:
+			case '770307127557357648': // Merch stock channel
 				if (message.author.bot && message.crosspostable) {
 					message.crosspost()
 				}
 				break
-			case merchCalls:
-			case otherCalls:
+			case channelID:
+			case otherChannelID:
 				return await dsf(client, message, db)
-			case suggestions:
-				{
-					const upArrow = message.guild.emojis.cache.get('872175822725857280')
-					const downArrow = message.guild.emojis.cache.get('872175855223337060')
-					await message.react(upArrow)
-					await message.react(downArrow)
-					await message.startThread({
-						name: `Suggestion from ${message.member.nickname ?? message.author.username}`,
-						autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek
-					})
-				}
-				break
-			case boosters:
-			// await newBoost(message, boosters);
 		}
 	}
 
@@ -160,10 +145,10 @@ export default async (client, message) => {
 				{ _id: 'Globals' },
 				{ projection: { visCache: 1, visContent: 1 } }
 			)
-			const channels = new Set()
+			const visChannels = new Set()
 			const guilds = new Set()
 			visCache.forEach((obj) => {
-				channels.add(obj.channel)
+				visChannels.add(obj.channel)
 				guilds.add(obj.guild)
 			})
 
@@ -181,7 +166,7 @@ export default async (client, message) => {
 			for (const guild of guilds) {
 				const g = client.guilds.cache.get(guild)
 				if (!g) continue
-				for (const channel of channels) {
+				for (const channel of visChannels) {
 					const c = g.channels.cache.get(channel)
 					if (!c) continue
 
@@ -191,11 +176,15 @@ export default async (client, message) => {
 							return `<@!${o.user}>`
 						})
 						.filter(Boolean)
-					await c.send({
-						content: `${usersWithSameChannel.join(
-							', '
-						)}\nSource: Vis Wax Server | <https://discord.gg/wv9Ecs4>\n${newContent.join('\n')}`
-					})
+					try {
+						await c.send({
+							content: `${usersWithSameChannel.join(
+								', '
+							)}\nSource: Vis Wax Server | <https://discord.gg/wv9Ecs4>\n${newContent.join('\n')}`
+						})
+					} catch (err) {
+						channels.errors.send(err)
+					}
 				}
 			}
 
