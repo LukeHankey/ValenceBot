@@ -1,6 +1,6 @@
 import { merchRegex, foreignWorldsRegex } from '../constants.js'
 import { checkMemberRole, arrIncludesString, alreadyCalled } from '../merchFunctions.js'
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+import { buttonFunctions } from '../callCount.js'
 
 export const addMerchCount = async (client, message, db, scouter) => {
 	const channels = await db.channels
@@ -24,72 +24,8 @@ export const addMerchCount = async (client, message, db, scouter) => {
 		const userN = message.member
 		const findMessage = await scouter.collection.findOne({ userID: userN.id })
 		const timestamp = message.createdAt.toString().split(' ').slice(0, 5).join(' ')
-		const buttonSelection = new ActionRowBuilder().addComponents([
-			new ButtonBuilder()
-				.setCustomId(`DM ${userN.user.username}`)
-				.setLabel(`DM ${userN.user.username}`)
-				.setStyle(ButtonStyle.Primary)
-				.setEmoji({ name: '✉️' }),
-			new ButtonBuilder()
-				.setCustomId('Show How To React')
-				.setLabel('Show How To React')
-				.setStyle(ButtonStyle.Success)
-				.setEmoji({ name: '☠️' }),
-			new ButtonBuilder()
-				.setCustomId('Eyes on Call Channels')
-				.setLabel('Eyes on Call Channels')
-				.setStyle(ButtonStyle.Success)
-				.setEmoji({ name: '👀' }),
-			new ButtonBuilder()
-				.setCustomId('Timeout')
-				.setLabel('Timeout')
-				.setStyle(ButtonStyle.Secondary)
-				.setEmoji({ name: '⏲️' }),
-			new ButtonBuilder()
-				.setCustomId('Clear Buttons')
-				.setLabel('Clear Buttons')
-				.setStyle(ButtonStyle.Danger)
-				.setEmoji({ name: '❌' })
-		])
 
-		const buttonSelectionExtra = new ActionRowBuilder().addComponents([
-			new ButtonBuilder()
-				.setCustomId('Too Slow!')
-				.setLabel('Too Slow!')
-				.setStyle(ButtonStyle.Secondary)
-				.setEmoji({ name: '🐌' }),
-			new ButtonBuilder()
-				.setCustomId('Read The Pins')
-				.setLabel('Read The Pins')
-				.setStyle(ButtonStyle.Success)
-				.setEmoji({ name: '📌' })
-		])
-
-		const foreignWorldFlags = {
-			'🇩🇪': [102, 121],
-			'🇫🇷': [118],
-			'🇧🇷': [47, 75, 101]
-		}
-
-		let foreignWorldNumber = 0
-		if (foreignWorldsRegex.test(message.content)) {
-			foreignWorldNumber = parseInt(/\d{2,3}/.exec(foreignWorldsRegex.exec(message.content)[0]))
-		}
-
-		const buttonSelectionForeignWorlds = new ActionRowBuilder().addComponents([
-			new ButtonBuilder()
-				.setCustomId('Foreign World')
-				.setLabel('Foreign World')
-				.setStyle(ButtonStyle.Success)
-				.setEmoji({
-					name: Object.keys(foreignWorldFlags).find((key) => foreignWorldFlags[key].includes(foreignWorldNumber))
-				}),
-			new ButtonBuilder()
-				.setCustomId('Clear Buttons')
-				.setLabel('Clear Buttons')
-				.setStyle(ButtonStyle.Danger)
-				.setEmoji({ name: '❌' })
-		])
+		const [buttonSelection, buttonSelectionExtra, buttonSelectionForeignWorlds] = buttonFunctions(userN, message.content)
 
 		if (!findMessage) {
 			if (

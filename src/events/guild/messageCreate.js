@@ -1,7 +1,7 @@
 import { MongoCollection } from '../../DataBase.js'
 import Color from '../../colors.js'
 import { Permissions } from '../../classes.js'
-import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, ChannelType } from 'discord.js'
+import { EmbedBuilder, ChannelType } from 'discord.js'
 import { vEvents } from '../../valence/valenceEvents.js'
 import dsf from '../../dsf/merch/main.js'
 const db = new MongoCollection('Settings')
