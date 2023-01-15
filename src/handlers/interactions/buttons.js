@@ -263,11 +263,11 @@ export const buttons = async (interaction, db, data, cache) => {
 					await buttonLogger.upload(userId)
 				}
 				break
-			case 'Eyes on Merch Calls':
+			case 'Eyes on Call Channels':
 				{
 					const welcomeChannel = interaction.guild.channels.cache.find((c) => c.name === 'welcome')
 					const rulesChannel = interaction.guild.channels.cache.find((c) => c.name === 'rules')
-					const nonsenseMessage = `<@!${userId}>, <#${data.merchChannel.channelID}> is for calls only. Please read <#${welcomeChannel.id}> and <#${rulesChannel.id}>.`
+					const nonsenseMessage = `<@!${userId}>, <#${data.merchChannel.channelID}> and <#${data.merchChannel.otherChannelID}> is for calls only. Please read <#${welcomeChannel.id}> and <#${rulesChannel.id}>.`
 
 					await generalChannel.send({ content: nonsenseMessage })
 					await interaction.update({ components: [] })

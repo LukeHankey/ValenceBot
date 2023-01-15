@@ -36,8 +36,8 @@ export const addMerchCount = async (client, message, db, scouter) => {
 				.setStyle(ButtonStyle.Success)
 				.setEmoji({ name: '☠️' }),
 			new ButtonBuilder()
-				.setCustomId('Eyes on Merch Calls')
-				.setLabel('Eyes on Merch Calls')
+				.setCustomId('Eyes on Call Channels')
+				.setLabel('Eyes on Call Channels')
 				.setStyle(ButtonStyle.Success)
 				.setEmoji({ name: '👀' }),
 			new ButtonBuilder()
