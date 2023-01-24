@@ -45,10 +45,12 @@ export default async (client, message) => {
 			{ projection: { 'merchChannel.channelID': 1, 'merchChannel.otherChannelID': 1 } }
 		)
 
-		if (message.channel.parent.type === ChannelType.GuildForum) {
-			// Suggestions
-			if (message.channel.parent.id === '1064189568695423117') {
-				// Do nothing. Might think of something later such as @bot close, @bot pin
+		if (message.channel.parent) {
+			if (message.channel.parent.type === ChannelType.GuildForum) {
+				// Suggestions
+				if (message.channel.parent.id === '1064189568695423117') {
+					// Do nothing. Might think of something later such as @bot close, @bot pin
+				}
 			}
 		}
 
