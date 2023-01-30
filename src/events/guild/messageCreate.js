@@ -142,6 +142,40 @@ export default async (client, message) => {
 
 	if (message.author.bot) return
 
+	const { memberReact } = await db.collection.findOne(
+		{ _id: message.guild.id },
+		{
+			projection: {
+				memberReact: 1
+			}
+		}
+	)
+
+	if (memberReact) {
+		const reactMember = memberReact.filter((item) => item.member === message.author.id)
+		if (reactMember.length) {
+			try {
+				await message.react(reactMember[0].reaction)
+			} catch (err) {
+				channels.errors.send(err)
+				try {
+					const setupMember = await message.guild.members.fetch(reactMember[0].setupMember)
+					setupMember.send({
+						content: `**Unknown emoji** - ${reactMember[0].url}\n\nThe emoji you set for ${message.member.displayName} is invalid. Make sure \`Use External Emojis\` is set through channel permissions and the bot has access to that emoji.`
+					})
+				} catch (e) {
+					channels.errors.send(e)
+				}
+
+				client.logger.info(`Removing ${reactMember[0].member} | ${message.member.displayName} message reaction.`)
+				await db.collection.updateOne(
+					{ _id: message.guild.id },
+					{ $pull: { memberReact: { member: message.author.id } } }
+				)
+			}
+		}
+	}
+
 	// Valence Events Channel
 	if (message.guild.id === '472448603642920973' || message.guild.id === '668330890790699079') {
 		// Valence - Filter
