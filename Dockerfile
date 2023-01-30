@@ -8,7 +8,7 @@ RUN npm install
 
 FROM base as production
 
-RUN adduser -h /home/prod/ -s /bin/bash -D prod && chown -R prod:prod /project
+RUN useradd -q -ms /bin/bash prod && chown -R prod:prod /project
 USER prod
 
 CMD ["run start"]
