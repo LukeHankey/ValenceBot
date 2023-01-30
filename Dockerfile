@@ -1,4 +1,4 @@
-FROM node:18.13.0 as base
+FROM node:18.8.0 as base
 
 WORKDIR /project
 
@@ -8,7 +8,7 @@ RUN npm install
 
 FROM base as production
 
-RUN useradd -q -ms /bin/bash prod && chown -R prod:prod /project
+RUN useradd -ms /bin/bash prod && chown -R prod:prod /project
 USER prod
 
 CMD ["run start"]
