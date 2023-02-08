@@ -73,7 +73,9 @@ const removeInactives = async (name, db, scoutTracker) => {
 const logRemovedScouts = (allItems, channels) => {
 	if (allItems.length) {
 		const split = splitMessage(`${allItems.join('\n')}`)
-		return split.forEach(async (content) => channels.logs.send(`${allItems.length} profiles removed.\n${codeBlock(content)}`))
+		return split.forEach(async (content) =>
+			channels.dsfOwners.send(`${allItems.length} profiles removed.\n${codeBlock(content)}`)
+		)
 	}
 }
 
@@ -118,14 +120,15 @@ const removeScouters = async (options) => {
 					otherCount: 0,
 					assigned: [],
 					active: 0,
-					lastTimestamp: Date.now() // Give them 6 months before being cleared from DB
+					lastTimestamp: Date.now(), // Give them 6 months before being cleared from DB
+					lastTimestampReadble: new Date(Date.now())
 				}
 			}
 		)
 
 		allItems.push(
-			`${profile.author} - ${profile.userID} (${profile.oldScout.count + profile.oldScout.otherCount} - M${
-				profile.oldScout.count
+			`${profile.author} - ${profile.userID} (${profile.count + profile.otherCount} - M${
+				profile.count
 			}). Scouter has been marked as inactive.`
 		)
 	}
