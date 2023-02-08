@@ -28,6 +28,24 @@ const addedRoles = async (name, scoutTracker) => {
 				}
 			}
 		)
+		// Add a check to see if they have the oldScout. If they do, re-add count once verified scouter
+		if (name.roleName === 'Verified Scouter') {
+			const trackerProfile = await scoutTracker.collection.findOne({ userID: x.id })
+			if (trackerProfile.oldScout) {
+				await scoutTracker.collection.updateOne(
+					{ userID: trackerProfile.userID },
+					{
+						$set: {
+							count: trackerProfile.count + trackerProfile.oldScout.count,
+							otherCount: trackerProfile.otherCount + trackerProfile.oldScout.otherCount
+						},
+						$unset: {
+							oldScout: 1
+						}
+					}
+				)
+			}
+		}
 	})
 }
 const removedRoles = async (name, scoutTracker) => {
