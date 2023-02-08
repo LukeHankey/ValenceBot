@@ -132,6 +132,13 @@ export class MongoCollection extends DataBase {
 						const channel = client.default.channels.cache.get(this.id)
 						return channel.send({ content, ...rest })
 					}
+				},
+				dsfOwners: {
+					id: '781145730710503434',
+					send: function (content) {
+						const channel = client.default.channels.cache.get(this.id)
+						return channel.send(content)
+					}
 				}
 			}
 			return channels
