@@ -2,9 +2,11 @@ version: '3'
 
 services:
   development:
+    tty: true
     build:
       context: .
       dockerfile: Dockerfile
       target: base
     env_file:
       - .env
+    command: npm run start
