@@ -35,7 +35,7 @@ export default {
 				const gsapi = google.sheets({ version: 'v4', auth: gClient })
 				const opt = {
 					// READ ONLY OPTIONS
-					spreadsheetId: '1c1LBKEYKE3N3lgYLByQo4MZRp2FqMEPHMGxuS7Ozxvw',
+					spreadsheetId: '1WjVboaTCj_HfJFoJRF86ZgnrTXfZLS21',
 					range: `${rangeName}!${merchantWishes.range}`
 				}
 
