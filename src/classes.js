@@ -65,6 +65,10 @@ class Permissions {
 		return this.msg.member.id === this.owner
 	}
 
+	botUser() {
+		return this.msg.member.id === '668330399033851924'
+	}
+
 	ownerError() {
 		const embed = nEmbed('Permission Denied', 'You do not have permission to use this command!', Color.redDark).addFields({
 			name: 'Only the bot owner can:',
