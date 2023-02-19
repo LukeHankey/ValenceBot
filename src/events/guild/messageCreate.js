@@ -167,9 +167,11 @@ export default async (client, message) => {
 		const aR = new Permissions('adminRole', commandDB, message)
 		const mR = new Permissions('modRole', commandDB, message)
 		const owner = new Permissions('owner', commandDB, message)
+		const bot = new Permissions('bot', commandDB, message)
 
 		const perms = {
 			owner: owner.botOwner(),
+			bot: bot.botUser(),
 			admin:
 				message.member.roles.cache.has(aR.memberRole()[0]) ||
 				message.member.roles.cache.has(aR.roleID) ||
