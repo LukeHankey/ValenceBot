@@ -7,3 +7,5 @@ export * from './merch/otherCalls/otherCount.js'
 export * from './scouts/scouters.js'
 
 export * from './stockTables.js'
+
+export { getAllSlots, getRuneDate, stockEmojis } from './merchStock.js'
