@@ -162,10 +162,8 @@ const updateTables = async (client, message, channels, args, document) => {
 
 	const embeds = stockRange(client, message, channels, args)
 
-	console.log(document)
 	try {
 		const embedTitles = []
-		console.log(embedIds)
 		for (const [embed, msgId] of embeds.map((e, i) => [e, embedIds[i]])) {
 			const msg = await channel.messages.fetch(msgId)
 			await msg.edit({ embeds: [new EmbedBuilder(embed.data)] })
