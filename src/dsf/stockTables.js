@@ -3,5 +3,6 @@ export const updateStockTables = async (client, db) => {
 	const commands = commandCollection.first()
 
 	client.logger.info('Updating stock tables.')
-	await commands[0].run(client, null, ['update'], null, db)
+	await commands.run(client, null, ['update'], { bot: true }, db)
+	client.logger.info('Stock tables have been updated.')
 }
