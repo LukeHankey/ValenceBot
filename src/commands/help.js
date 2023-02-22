@@ -15,8 +15,6 @@ export default {
 		if (!args.length) {
 			// eslint-disable-next-line array-callback-return
 			const com = commands.map((command) => {
-				// eslint-disable-next-line array-callback-return
-				if (command?.type === 'menu') return
 				if (command.guildSpecific.includes(message.guild.id) || command.guildSpecific === 'all') {
 					switch (perms) {
 						default:
