@@ -190,6 +190,15 @@ export default async (client, message) => {
 			command.guildSpecific === 'all' || command.guildSpecific.includes(message.guild.id)
 				? command.run(client, message, args, perms, db)
 				: message.channel.send({ content: 'You cannot use that command in this server.' })
+
+			const lookupCommand = `commands.${commandName}`
+			const dbData = await db.collection.updateOne(
+				{ _id: 'Globals', [lookupCommand]: { $exists: 1 } },
+				{ $inc: { [lookupCommand]: 1 } }
+			)
+			if (!dbData.matchedCount) {
+				await db.collection.updateOne({ _id: 'Globals' }, { $set: { [lookupCommand]: 1 } })
+			}
 		} catch (error) {
 			if (commandName !== command) return
 		}
