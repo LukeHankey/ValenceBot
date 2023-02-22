@@ -6,26 +6,19 @@ export const contextMenu = async (interaction, db, data) => {
 		case 'Mark event as dead.':
 			if ([data.merchChannel.channelID, data.merchChannel.otherChannelID].includes(interaction.channel.id)) {
 				try {
-					client.logger.debug(1)
 					const message = await interaction.channel.messages.fetch(interaction.targetId)
-					client.logger.debug(2)
 					// 1st safeguard to check the cache.
 					if (message.reactions.cache.has('☠️')) {
 						return await interaction.editReply({ content: 'This call is already marked as dead.', ephemeral: true })
 					}
-					client.logger.debug(3)
 
 					const reaction = await message.react('☠️')
-					client.logger.debug(4)
 					const userReactCollection = await reaction.users.fetch()
-					client.logger.debug(5)
 					const timestamp = interaction.createdAt.toString().split(' ').slice(0, 5).join(' ')
-					client.logger.debug(6)
 
 					if (userReactCollection.size > 1) {
 						return await interaction.editReply({ content: 'This call is already marked as dead.', ephemeral: true })
 					}
-					client.logger.debug(7)
 
 					await interaction.editReply({ content: 'Thank you for marking this call as dead.', ephemeral: true })
 					dsfServerErrorChannel.send({
