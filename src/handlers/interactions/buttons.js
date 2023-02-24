@@ -16,7 +16,7 @@ import camelCase from 'camelcase'
 import { logger } from '../../logging.js'
 
 class ButtonWarning {
-	UNLOGGED_NAMES = ['Clear Buttons', 'Too Slow!', 'Foreign World']
+	UNLOGGED_NAMES = ['Clear Buttons', 'Silly Fun', 'Foreign World']
 
 	/**
 	 *
@@ -528,9 +528,15 @@ export const buttons = async (interaction, db, data, cache) => {
 					await interaction.showModal(applicationModal)
 				}
 				break
-			case 'Too Slow!':
-				await interaction.update({ components: [] })
-				await interaction.followUp({ content: 'What a noob! KEKW' })
+			case 'Silly Fun':
+				{
+					const { buttonResponses } = await db.collection.findOne(
+						{ _id: interaction.guild.id },
+						{ projection: { buttonResponses: 1 } }
+					)
+					const randomResponse = buttonResponses[Math.floor(Math.random() * buttonResponses.length)]
+					await interaction.followUp({ content: randomResponse })
+				}
 				break
 			case 'Read The Pins':
 				await generalChannel.send({

@@ -34,8 +34,8 @@ export const buttonFunctions = (userN, content) => {
 
 	const buttonSelectionExtra = new ActionRowBuilder().addComponents([
 		new ButtonBuilder()
-			.setCustomId('Too Slow!')
-			.setLabel('Too Slow!')
+			.setCustomId('Silly Fun')
+			.setLabel('Silly Fun')
 			.setStyle(ButtonStyle.Secondary)
 			.setEmoji({ name: '🐌' }),
 		new ButtonBuilder()
