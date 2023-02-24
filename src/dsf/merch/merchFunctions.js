@@ -10,22 +10,25 @@ const checkMemberRole = async (user, message) => {
 }
 
 const arrIncludesString = (array, msg) => {
-	return !array.some((value) => msg.includes(value))
+	return array.some((value) => msg.includes(value))
 }
 const alreadyCalled = (message, messages) => {
+	const numFromContent = parseInt(message.content.replace(/^\D+|\D.*$/g, ''))
+
 	const result = messages.filter((obj) => {
 		const str = obj.content
-		const numFromDb = str.replace(/^\D+|\D.*$/g, '')
-		const numFromContent = message.content.replace(/^\D+|\D.*$/g, '')
+		const numFromDb = parseInt(str.replace(/^\D+|\D.*$/g, ''))
 		if (numFromDb === numFromContent) {
 			return obj
-		} else return undefined
+		}
+		return null
 	})
+
 	// If already called, result.length > 0. Return false to delete the message.
-	if (result.length) {
-		return false
-	} else {
+	if (result.some((el) => el !== null)) {
 		return true
+	} else {
+		return false
 	}
 }
 

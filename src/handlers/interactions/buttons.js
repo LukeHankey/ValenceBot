@@ -16,7 +16,7 @@ import camelCase from 'camelcase'
 import { logger } from '../../logging.js'
 
 class ButtonWarning {
-	UNLOGGED_NAMES = ['Clear Buttons', 'Too Slow!', 'Foreign World']
+	UNLOGGED_NAMES = ['Clear Buttons', 'Silly Fun', 'Foreign World']
 
 	/**
 	 *
@@ -528,12 +528,20 @@ export const buttons = async (interaction, db, data, cache) => {
 					await interaction.showModal(applicationModal)
 				}
 				break
-			case 'Too Slow!':
-				await interaction.update({ components: [] })
-				await interaction.followUp({ content: 'What a noob! KEKW' })
+			case 'Silly Fun':
+				{
+					const { buttonResponses } = await db.collection.findOne(
+						{ _id: interaction.guild.id },
+						{ projection: { buttonResponses: 1 } }
+					)
+					const randomResponse = buttonResponses[Math.floor(Math.random() * buttonResponses.length)]
+					await interaction.reply({ content: randomResponse })
+				}
 				break
 			case 'Read The Pins':
-				await generalChannel.send({ content: `<@!${userId}>, invalid call format. Read the pins!` })
+				await generalChannel.send({
+					content: `<@!${userId}>, invalid call format. Read the pins in <#${data.merchChannel.channelID}> and <#${data.merchChannel.otherChannelID}> for acceptable formats!`
+				})
 				await interaction.update({ components: [] })
 				await buttonLogger.upload(userId)
 				break
@@ -543,6 +551,11 @@ export const buttons = async (interaction, db, data, cache) => {
 				})
 				await interaction.update({ components: [] })
 				await buttonLogger.upload(userId)
+				break
+			case 'Call Already Posted':
+				await generalChannel.send({
+					content: `<@${userId}>, thanks for the call but \`${content}\` has already been posted!`
+				})
 		}
 	} catch (err) {
 		channels.errors.send(err)

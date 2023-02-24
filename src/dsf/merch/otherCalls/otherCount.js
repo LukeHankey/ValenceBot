@@ -32,20 +32,23 @@ export const addOtherCount = async (client, message, db, scouters) => {
 		const findMessage = await scouters.collection.findOne({ userID: msg[0].author.id })
 		const timestamp = message.createdAt.toString().split(' ').slice(0, 5).join(' ')
 
-		const [buttonSelection, buttonSelectionExtra, buttonSelectionForeignWorlds] = buttonFunctions(userN, message.content)
+		const [buttonSelection, buttonSelectionExtra, buttonSelectionForeignWorlds, buttonSelectionAlreadyCalled] =
+			buttonFunctions(userN, message.content)
 
 		if (!findMessage) {
 			if (
 				!otherCalls.test(message.content) ||
-				!arrIncludesString(disallowedWords, message.content) ||
-				!alreadyCalled(message, otherMessages)
+				arrIncludesString(disallowedWords, message.content) ||
+				alreadyCalled(message, otherMessages)
 			) {
 				client.logger.info(`New & Spam: ${userN.displayName} (${message.content}) ${userN.id}`)
 				return await dsfServerErrorChannel.send({
 					content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``,
-					components: !foreignWorldsRegex.test(message.content)
-						? [buttonSelection, buttonSelectionExtra]
-						: [buttonSelectionForeignWorlds]
+					components: foreignWorldsRegex.test(message.content)
+						? [buttonSelectionForeignWorlds]
+						: alreadyCalled(message, otherMessages)
+						? [buttonSelectionAlreadyCalled]
+						: [buttonSelection, buttonSelectionExtra]
 				})
 			}
 			client.logger.info(`New other: ${msg[0].author.username} (${message.content}) ${msg[0].author.id}`)
@@ -65,23 +68,27 @@ export const addOtherCount = async (client, message, db, scouters) => {
 		} else {
 			if (
 				!otherCalls.test(message.content) ||
-				!arrIncludesString(disallowedWords, message.content) ||
-				!alreadyCalled(message, otherMessages)
+				arrIncludesString(disallowedWords, message.content) ||
+				alreadyCalled(message, otherMessages)
 			) {
 				if (message.guild.id === '668330890790699079') {
 					return await botServerErrorChannel.send({
 						content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``,
-						components: !foreignWorldsRegex.test(message.content)
-							? [buttonSelection, buttonSelectionExtra]
-							: [buttonSelectionForeignWorlds]
+						components: foreignWorldsRegex.test(message.content)
+							? [buttonSelectionForeignWorlds]
+							: alreadyCalled(message, otherMessages)
+							? [buttonSelectionAlreadyCalled]
+							: [buttonSelection, buttonSelectionExtra]
 					})
 				}
 				client.logger.info(`Old & Spam: ${userN.displayName} (${message.content}) ${userN.id}`)
 				return await dsfServerErrorChannel.send({
 					content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``,
-					components: !foreignWorldsRegex.test(message.content)
-						? [buttonSelection, buttonSelectionExtra]
-						: [buttonSelectionForeignWorlds]
+					components: foreignWorldsRegex.test(message.content)
+						? [buttonSelectionForeignWorlds]
+						: alreadyCalled(message, otherMessages)
+						? [buttonSelectionAlreadyCalled]
+						: [buttonSelection, buttonSelectionExtra]
 				})
 			}
 			client.logger.info(`Old other: ${msg[0].author.username} (${message.content}) ${msg[0].author.id}`)

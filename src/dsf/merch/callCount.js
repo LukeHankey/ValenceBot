@@ -34,10 +34,10 @@ export const buttonFunctions = (userN, content) => {
 
 	const buttonSelectionExtra = new ActionRowBuilder().addComponents([
 		new ButtonBuilder()
-			.setCustomId('Too Slow!')
-			.setLabel('Too Slow!')
+			.setCustomId('Silly Fun')
+			.setLabel('Silly Fun')
 			.setStyle(ButtonStyle.Secondary)
-			.setEmoji({ name: '🐌' }),
+			.setEmoji({ name: '🪅' }),
 		new ButtonBuilder()
 			.setCustomId('Read The Pins')
 			.setLabel('Read The Pins')
@@ -65,5 +65,18 @@ export const buttonFunctions = (userN, content) => {
 			.setEmoji({ name: '❌' })
 	])
 
-	return [buttonSelection, buttonSelectionExtra, buttonSelectionForeignWorlds]
+	const buttonSelectionAlreadyCalled = new ActionRowBuilder().addComponents([
+		new ButtonBuilder()
+			.setCustomId('Call Already Posted')
+			.setLabel('Call Already Posted')
+			.setStyle(ButtonStyle.Success)
+			.setEmoji({ name: '©️' }),
+		new ButtonBuilder()
+			.setCustomId('Clear Buttons')
+			.setLabel('Clear Buttons')
+			.setStyle(ButtonStyle.Danger)
+			.setEmoji({ name: '❌' })
+	])
+
+	return [buttonSelection, buttonSelectionExtra, buttonSelectionForeignWorlds, buttonSelectionAlreadyCalled]
 }
