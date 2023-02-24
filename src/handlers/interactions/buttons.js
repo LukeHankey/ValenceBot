@@ -533,7 +533,9 @@ export const buttons = async (interaction, db, data, cache) => {
 				await interaction.followUp({ content: 'What a noob! KEKW' })
 				break
 			case 'Read The Pins':
-				await generalChannel.send({ content: `<@!${userId}>, invalid call format. Read the pins!` })
+				await generalChannel.send({
+					content: `<@!${userId}>, invalid call format. Read the pins in <#${data.merchChannel.channelID}> and <#${data.merchChannel.otherChannelID}> for acceptable formats!`
+				})
 				await interaction.update({ components: [] })
 				await buttonLogger.upload(userId)
 				break
