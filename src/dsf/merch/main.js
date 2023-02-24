@@ -3,7 +3,7 @@ import { MongoCollection } from '../../DataBase.js'
 import { merchRegex, otherCalls } from './constants.js'
 import { arrIncludesString, alreadyCalled } from './merchFunctions.js'
 import { addMerchCount, skullTimer, removeReactPermissions, addOtherCount, tenMinutes } from '../index.js'
-import { worldReaction, worlds } from './worlds.js'
+import { worldReaction } from './worlds.js'
 
 const dsf = async (client, message, db) => {
 	const channels = await db.channels
@@ -32,10 +32,9 @@ const dsf = async (client, message, db) => {
 			arrIncludesString(disallowedWords, message.content) &&
 			alreadyCalled(message, messages)
 		) {
-			const worldNumber = parseInt(/\w\s?(\d{1,3})/.exec(message.content)[1])
 			const rolePing = '<@&670842187461820436>'
-
 			const sentMessage = await message.channel.send(`${rolePing} - ${message.content}`)
+
 			try {
 				setTimeout(() => sentMessage.delete(), 200)
 			} catch (err) {
@@ -45,7 +44,7 @@ const dsf = async (client, message, db) => {
 					.then((x) => x.delete())
 					.catch((err) => channels.errors.send(err))
 			}
-			await worldReaction(worldNumber, message)
+			await worldReaction(message)
 		} else {
 			return setTimeout(() => message.delete(), 200)
 		}
@@ -61,8 +60,7 @@ const dsf = async (client, message, db) => {
 		) {
 			return setTimeout(() => message.delete(), 200)
 		} else {
-			const worldNumber = parseInt(/\w\s?(\d{1,3})/.exec(message.content)[1])
-			await worldReaction(worldNumber, message)
+			await worldReaction(message)
 		}
 		await timers.setTimeout(tenMinutes)
 		await skullTimer(message, db, 'other')
