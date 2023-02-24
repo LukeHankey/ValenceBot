@@ -535,7 +535,7 @@ export const buttons = async (interaction, db, data, cache) => {
 						{ projection: { buttonResponses: 1 } }
 					)
 					const randomResponse = buttonResponses[Math.floor(Math.random() * buttonResponses.length)]
-					await interaction.followUp({ content: randomResponse })
+					await interaction.reply({ content: randomResponse })
 				}
 				break
 			case 'Read The Pins':
