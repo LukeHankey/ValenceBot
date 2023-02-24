@@ -29,8 +29,8 @@ const dsf = async (client, message, db) => {
 		await addMerchCount(client, message, db, scouters)
 		if (
 			merchRegex.test(message.content) &&
-			arrIncludesString(disallowedWords, message.content) &&
-			alreadyCalled(message, messages)
+			!arrIncludesString(disallowedWords, message.content) &&
+			!alreadyCalled(message, messages)
 		) {
 			const rolePing = '<@&670842187461820436>'
 			const sentMessage = await message.channel.send(`${rolePing} - ${message.content}`)
@@ -55,8 +55,8 @@ const dsf = async (client, message, db) => {
 		await addOtherCount(client, message, db, scouters)
 		if (
 			!otherCalls.test(message.content) ||
-			!arrIncludesString(disallowedWords, message.content) ||
-			!alreadyCalled(message, otherMessages)
+			arrIncludesString(disallowedWords, message.content) ||
+			alreadyCalled(message, otherMessages)
 		) {
 			return setTimeout(() => message.delete(), 200)
 		} else {

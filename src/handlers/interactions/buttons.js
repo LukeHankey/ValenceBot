@@ -545,6 +545,11 @@ export const buttons = async (interaction, db, data, cache) => {
 				})
 				await interaction.update({ components: [] })
 				await buttonLogger.upload(userId)
+				break
+			case 'Call Already Posted':
+				await generalChannel.send({
+					content: `<@${userId}>, thanks for the call but \`${content}\` has already been posted!`
+				})
 		}
 	} catch (err) {
 		channels.errors.send(err)

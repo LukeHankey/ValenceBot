@@ -65,5 +65,18 @@ export const buttonFunctions = (userN, content) => {
 			.setEmoji({ name: '❌' })
 	])
 
-	return [buttonSelection, buttonSelectionExtra, buttonSelectionForeignWorlds]
+	const buttonSelectionAlreadyCalled = new ActionRowBuilder().addComponents([
+		new ButtonBuilder()
+			.setCustomId('Call Already Posted')
+			.setLabel('Call Already Posted')
+			.setStyle(ButtonStyle.Success)
+			.setEmoji({ name: '©️' }),
+		new ButtonBuilder()
+			.setCustomId('Clear Buttons')
+			.setLabel('Clear Buttons')
+			.setStyle(ButtonStyle.Danger)
+			.setEmoji({ name: '❌' })
+	])
+
+	return [buttonSelection, buttonSelectionExtra, buttonSelectionForeignWorlds, buttonSelectionAlreadyCalled]
 }
