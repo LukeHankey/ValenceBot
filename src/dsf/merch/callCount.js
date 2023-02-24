@@ -37,7 +37,7 @@ export const buttonFunctions = (userN, content) => {
 			.setCustomId('Silly Fun')
 			.setLabel('Silly Fun')
 			.setStyle(ButtonStyle.Secondary)
-			.setEmoji({ name: '🐌' }),
+			.setEmoji({ name: '🪅' }),
 		new ButtonBuilder()
 			.setCustomId('Read The Pins')
 			.setLabel('Read The Pins')
