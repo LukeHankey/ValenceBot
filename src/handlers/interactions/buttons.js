@@ -14,6 +14,7 @@ import Color from '../../colors.js'
 import Ticket from '../../ticket.js'
 import camelCase from 'camelcase'
 import { logger } from '../../logging.js'
+import { getWorldNumber } from '../../dsf/index.js'
 
 class ButtonWarning {
 	UNLOGGED_NAMES = ['Clear Buttons', 'Silly Fun', 'Foreign World']
@@ -554,7 +555,7 @@ export const buttons = async (interaction, db, data, cache) => {
 				break
 			case 'Call Already Posted':
 				await generalChannel.send({
-					content: `<@${userId}>, thanks for the call but \`${content.split(': ')[1]}\` has already been posted!`
+					content: `<@${userId}>, thanks for the call but \`m${getWorldNumber({ content })}\` has already been posted!`
 				})
 				await interaction.update({ components: [] })
 		}
