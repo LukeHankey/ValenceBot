@@ -91,9 +91,11 @@ export const addMerchCount = async (client, message, db, scouter) => {
 				client.logger.info(`Old & Spam: ${userN.displayName} (${message.content}) userId: ${userN.id}`)
 				return await dsfServerErrorChannel.send({
 					content: ` \`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.user.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${merchChannelID.name}\`\`\``,
-					components: !foreignWorldsRegex.test(message.content)
-						? [buttonSelection, buttonSelectionExtra]
-						: [buttonSelectionForeignWorlds]
+					components: foreignWorldsRegex.test(message.content)
+						? [buttonSelectionForeignWorlds]
+						: alreadyCalled(message, messages)
+						? [buttonSelectionAlreadyCalled]
+						: [buttonSelection, buttonSelectionExtra]
 				})
 			}
 			client.logger.info(`Old: ${userN.displayName} (${message.content})`)
