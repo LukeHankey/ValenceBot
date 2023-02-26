@@ -9,3 +9,5 @@ export * from './scouts/scouters.js'
 export * from './stockTables.js'
 
 export { getAllSlots, getRuneDate, stockEmojis } from './merchStock.js'
+
+export { getWorldNumber } from './merch/worlds.js'

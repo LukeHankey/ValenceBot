@@ -72,6 +72,11 @@ export const buttonFunctions = (userN, content) => {
 			.setStyle(ButtonStyle.Success)
 			.setEmoji({ name: '©️' }),
 		new ButtonBuilder()
+			.setCustomId('Show How To React')
+			.setLabel('Show How To React')
+			.setStyle(ButtonStyle.Success)
+			.setEmoji({ name: '☠️' }),
+		new ButtonBuilder()
 			.setCustomId('Clear Buttons')
 			.setLabel('Clear Buttons')
 			.setStyle(ButtonStyle.Danger)
