@@ -184,7 +184,8 @@ export const buttons = async (interaction, db, data, cache) => {
 	const buttonLogger = new ButtonWarning(interaction)
 	let generalChannel = interaction.guild.channels.cache.find((c) => c.id === '696375576881004655') // general
 	let [userId, user, content, timestamp, channelName] = interaction.message.content.split('\n').slice(3)
-	channelName = channelName.slice(0, -3).split(': ')[1]
+	console.log(channelName)
+	if (channelName) channelName = channelName.slice(0, -3).split(': ')[1]
 	if (user) user = user.split(' ').slice(2).join(' ')
 	if (userId) userId = userId.split(' ').slice(3)[0].slice(3, -1)
 	buttonLogger.scouters = scouters
