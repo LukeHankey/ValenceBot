@@ -107,10 +107,3 @@ export const getAllSlots = (runedate, { includeMap = false } = {}) => {
 	}
 	return Object.assign(stock, stockRest)
 }
-
-export const getRuneDate = () => {
-	const initialRuneDate = Date.parse('27 Feb 2002') // 0
-	const now = new Date()
-
-	return parseInt((now - initialRuneDate) / (1000 * 3600 * 24))
-}

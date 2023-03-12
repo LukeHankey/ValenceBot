@@ -252,6 +252,13 @@ const splitMessage = (text, { maxLength = 2_000, char = '\n', prepend = '', appe
 	return messages.concat(msg).filter((m) => m)
 }
 
+const getRuneDate = () => {
+	const initialRuneDate = Date.parse('27 Feb 2002') // 0
+	const now = new Date()
+
+	return parseInt((now - initialRuneDate) / (1000 * 3600 * 24))
+}
+
 export {
 	nEmbed,
 	checkNum,
@@ -268,7 +275,8 @@ export {
 	renameKeys,
 	paginate,
 	paginateFollowUP,
-	splitMessage
+	splitMessage,
+	getRuneDate
 }
 
 export default newDates
