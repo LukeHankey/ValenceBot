@@ -15,6 +15,7 @@ import Ticket from '../../ticket.js'
 import camelCase from 'camelcase'
 import { logger } from '../../logging.js'
 import { getWorldNumber } from '../../dsf/index.js'
+import timers from 'timers/promises'
 
 class ButtonWarning {
 	UNLOGGED_NAMES = ['Clear Buttons', 'Silly Fun', 'Foreign World']
@@ -184,7 +185,6 @@ export const buttons = async (interaction, db, data, cache) => {
 	const buttonLogger = new ButtonWarning(interaction)
 	let generalChannel = interaction.guild.channels.cache.find((c) => c.id === '696375576881004655') // general
 	let [userId, user, content, timestamp, channelName] = interaction.message.content.split('\n').slice(3)
-	console.log(channelName)
 	if (channelName) channelName = channelName.slice(0, -3).split(': ')[1]
 	if (user) user = user.split(' ').slice(2).join(' ')
 	if (userId) userId = userId.split(' ').slice(3)[0].slice(3, -1)
@@ -556,7 +556,6 @@ export const buttons = async (interaction, db, data, cache) => {
 				await buttonLogger.upload(userId)
 				break
 			case 'Call Already Posted':
-				console.log(channelName)
 				await generalChannel.send({
 					content: `<@${userId}>, thanks for the call but world \`${getWorldNumber({
 						content
@@ -565,6 +564,11 @@ export const buttons = async (interaction, db, data, cache) => {
 					}>`
 				})
 				await interaction.update({ components: [] })
+				break
+			case 'Jagex-DSF Scouting Partnership':
+				await interaction.reply({ ephemeral: true, content: '<https://www.youtube.com/watch?v=dQw4w9WgXcQ>' })
+				await timers.setTimeout(7_500)
+				await interaction.followUp({ ephemeral: true, content: "You've been rick rolled. Happy April Fools Day!" })
 		}
 	} catch (err) {
 		channels.errors.send(err)
