@@ -4,7 +4,6 @@ import { buttons, commands, autoComplete, selectMenu, modals, contextMenu } from
 const cache = new Map()
 
 export default async (client, interaction) => {
-	const start = performance.now()
 	const db = new MongoCollection('Settings')
 	const data = await db.collection.findOne(
 		{ _id: interaction.guildId },
@@ -21,9 +20,7 @@ export default async (client, interaction) => {
 		} else if (interaction.isStringSelectMenu()) {
 			await selectMenu(interaction, db, data, cache)
 		} else if (interaction.isContextMenuCommand()) {
-			client.logger.debug(`Before defer ${performance.now() - start}`)
 			await interaction.deferReply({ ephemeral: true })
-			client.logger.debug(`After defer ${performance.now() - start}`)
 			await contextMenu(interaction, db, data)
 		} else if (interaction.isModalSubmit()) {
 			await modals(interaction, db, data)
