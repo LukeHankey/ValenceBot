@@ -569,6 +569,14 @@ export const buttons = async (interaction, db, data, cache) => {
 				await interaction.reply({ ephemeral: true, content: '<https://www.youtube.com/watch?v=dQw4w9WgXcQ>' })
 				await timers.setTimeout(7_500)
 				await interaction.followUp({ ephemeral: true, content: "You've been rick rolled. Happy April Fools Day!" })
+				console.log(interaction.guild.id, interaction.member.id)
+				await db.collection.updateOne(
+					{ _id: interaction.guild.id },
+					{
+						$inc: { aprilFools: { count: 1 } },
+						$addToSet: { aprilFools: { fools: interaction.member.id } }
+					}
+				)
 		}
 	} catch (err) {
 		channels.errors.send(err)
