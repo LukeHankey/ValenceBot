@@ -7,7 +7,8 @@ const WorldReactions = {
 	twenty_plus: '<:2000_total:1023252045093933087>',
 	twenty_six_plus: '<:2600_total:1023252076324724776>',
 	laggy: '<:lag:1023271186047717406>',
-	dsf: '🎣'
+	dsf: '🎣',
+	sixty_nine: '<:nice:1120443938206122116>'
 }
 
 export const worlds = [
@@ -70,6 +71,11 @@ export const worlds = [
 		world: 137,
 		reason: 'legacy',
 		reaction: WorldReactions.legacy
+	},
+	{
+		world: 69,
+		reason: 'Fun',
+		reaction: WorldReactions.sixty_nine
 	}
 ]
 
