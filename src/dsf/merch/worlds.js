@@ -84,6 +84,14 @@ export const getWorldNumber = (message) => parseInt(/\w\s?(\d{1,3})/.exec(messag
 export const worldReaction = async (message) => {
 	const worldFound = worlds.filter((item) => item.world === getWorldNumber(message))
 	if (worldFound.length) {
+		if (Array.isArray(worldFound[0].reaction.match(/^<:.*:\d.*>$/))) {
+			const reactionString = worldFound[0].reaction
+
+			// Get the emoji Id from the cache
+			const reactionId = reactionString.split(':').at(-1).slice(0, -1)
+			const emoji = message.client.emojis.cache.get(reactionId)
+			return await message.react(emoji)
+		}
 		await message.react(worldFound[0].reaction)
 	}
 }
