@@ -152,8 +152,6 @@ export const vEvents = async (client, message, channels) => {
 				await collectOneReaction.message.reactions.removeAll()
 				await last.react('📌')
 				await last.react('🛑')
-			} else {
-				return
 			}
 		} catch (err) {
 			client.logger.error(err)
