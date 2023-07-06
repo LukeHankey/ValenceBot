@@ -200,7 +200,7 @@ export default async (client, message) => {
 				await db.collection.updateOne({ _id: 'Globals' }, { $set: { [lookupCommand]: 1 } })
 			}
 		} catch (error) {
-			if (commandName !== command) return
+			channels.errors.send(error)
 		}
 	} catch (err) {
 		channels.errors.send(err)
