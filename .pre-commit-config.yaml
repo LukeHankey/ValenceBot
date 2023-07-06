@@ -17,9 +17,9 @@ repos:
     hooks:
     -   id: eslint
         additional_dependencies:
-          - eslint@8.23.1
-          - eslint-config-standard@17.0.0
-          - eslint-plugin-import@2.26.0
-          - eslint-plugin-n@15.3.0
-          - eslint-plugin-promise@6.0.1
-          - eslint-config-prettier@8.5.0
+          - eslint@8.44.0
+          - eslint-config-standard@17.1.0
+          - eslint-plugin-import@2.27.5
+          - eslint-plugin-n@16.0.1
+          - eslint-plugin-promise@6.1.1
+          - eslint-config-prettier@8.8.0
