@@ -187,6 +187,8 @@ export default async (client, message) => {
 		}
 
 		try {
+			if (!command) return // No valid command found, or alias
+			if (!command.run) return // Must be a slash command
 			command.guildSpecific === 'all' || command.guildSpecific.includes(message.guild.id)
 				? command.run(client, message, args, perms, db)
 				: message.channel.send({ content: 'You cannot use that command in this server.' })

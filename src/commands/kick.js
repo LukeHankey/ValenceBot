@@ -4,7 +4,6 @@ import { checkNum } from '../functions.js'
 export default {
 	name: 'kick',
 	description: ['Kicks a member from the server by ID or mention.'],
-	aliases: [''],
 	usage: ['ID/@mention'],
 	guildSpecific: 'all',
 	permissionLevel: 'Mod',

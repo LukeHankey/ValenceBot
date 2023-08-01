@@ -6,7 +6,6 @@ import Color from '../colors.js'
 export default {
 	name: 'ticket',
 	description: ['Sets up a ticket system using private threads.'],
-	aliases: [],
 	usage: [''],
 	guildSpecific: 'all',
 	permissionLevel: 'Admin',

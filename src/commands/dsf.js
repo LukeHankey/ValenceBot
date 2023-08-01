@@ -23,7 +23,6 @@ export default {
 		'Add 1 or <num> merch/other/game count to the member provided.',
 		'Remove 1 or <num> merch/other/game count to the member provided.'
 	],
-	aliases: [],
 	usage: [
 		'messages',
 		'messages clear',

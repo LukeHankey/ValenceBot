@@ -3,7 +3,6 @@ import { getRuneDate } from '../functions.js'
 export default {
 	name: 'raven',
 	description: ['Lets you know if there is a raven today or when the next raven is.'],
-	aliases: [''],
 	usage: [''],
 	guildSpecific: 'all',
 	permissionLevel: 'Everyone',
