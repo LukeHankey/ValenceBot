@@ -14,38 +14,42 @@ export default {
 
 		if (!args.length) {
 			// eslint-disable-next-line array-callback-return
-			const com = commands.map((command) => {
+			const slashCommands = []
+			const messageCommands = []
+
+			const cTypePush = (cType, name) => {
+				if (cType === 'slash') {
+					slashCommands.push(name)
+				} else {
+					messageCommands.push(name)
+				}
+			}
+
+			commands.forEach((command) => {
 				if (command.guildSpecific.includes(message.guild.id) || command.guildSpecific === 'all') {
-					switch (perms) {
-						default:
-							if (perms.owner) {
-								if (
-									command.permissionLevel === 'Owner' ||
-									command.permissionLevel === 'Admin' ||
-									command.permissionLevel === 'Mod' ||
-									command.permissionLevel === 'Everyone'
-								) {
-									return `\`${command.name}\``
-								}
-							} else if (perms.admin) {
-								if (
-									command.permissionLevel === 'Admin' ||
-									command.permissionLevel === 'Mod' ||
-									command.permissionLevel === 'Everyone'
-								) {
-									return `\`${command.name}\``
-								}
-							} else if (perms.mod) {
-								if (command.permissionLevel === 'Mod' || command.permissionLevel === 'Everyone') {
-									return `\`${command.name}\``
-								}
-							} else if (command.permissionLevel === 'Everyone') {
-								return `\`${command.name}\``
-							}
+					const commandType = command.slash ? 'slash' : 'message'
+
+					if (perms.owner) {
+						cTypePush(commandType, `\`${command.name}\``)
+					} else if (perms.admin) {
+						if (
+							command.permissionLevel === 'Admin' ||
+							command.permissionLevel === 'Mod' ||
+							command.permissionLevel === 'Everyone'
+						) {
+							cTypePush(commandType, `\`${command.name}\``)
+						}
+					} else if (perms.mod) {
+						if (command.permissionLevel === 'Mod' || command.permissionLevel === 'Everyone') {
+							cTypePush(commandType, `\`${command.name}\``)
+						}
+					} else if (command.permissionLevel === 'Everyone') {
+						cTypePush(commandType, `\`${command.name}\``)
 					}
 				}
 			})
-			const join = com.filter((x) => x).join('|')
+			const joinSlash = slashCommands.filter((x) => x).join('|')
+			const joinMessage = messageCommands.filter((x) => x).join('|')
 
 			/**
 			 * Check if permission level of the user using the command is equal to that of the permission level for each command per guild.
@@ -60,7 +64,8 @@ export default {
 						message.author.displayAvatarURL(),
 						client.user.displayAvatarURL()
 					).addFields(
-						{ name: '**Commands:**', value: join, inline: false },
+						{ name: '**Slash Commands (/):**', value: joinSlash, inline: false },
+						{ name: `**Message Commands (${prefix}):**`, value: joinMessage, inline: false },
 						{
 							name: `**The bot prefix is: ${prefix}**`,
 							value: `\nYou can send \`${prefix}help [command name]\` to get info on a specific command!`,
