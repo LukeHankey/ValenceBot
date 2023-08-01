@@ -8,7 +8,6 @@ import { codeBlock } from 'discord.js'
 export default {
 	name: 'db',
 	description: ['Looks stuff up in the database'],
-	aliases: [''],
 	usage: ['<code>'],
 	guildSpecific: ['668330890790699079'],
 	permissionLevel: 'Owner',

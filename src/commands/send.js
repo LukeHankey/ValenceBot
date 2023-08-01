@@ -8,7 +8,6 @@ export default {
 		'Sends a message to a channel.',
 		'Edits a message by providing the channel and message ID and overwrite the previous post with new content.'
 	],
-	aliases: [''],
 	usage: ['<channel Tag/ID> <message content>', 'edit <channel Tag/ID> <message ID> <new message content>'],
 	guildSpecific: 'all',
 	permissionLevel: 'Admin',

@@ -159,6 +159,10 @@ export default async (client) => {
 		) {
 			client.logger.info('Setting lottoSheet to Null')
 			await db.collection.updateMany({ gSheet: { $exists: true } }, { $set: { lottoSheet: null } })
+
+			// Send message reminder for DSF Verified Scouter draws
+			const dsfOwnersChannel = client.channels.cache.get(channels.dsfOwners.id)
+			await dsfOwnersChannel.send('Reminder to roll the giveaway for Verified Scouters!')
 		}
 
 		// Reset Info Count back to 0 to allow use of command

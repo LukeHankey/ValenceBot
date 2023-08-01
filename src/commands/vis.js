@@ -12,7 +12,6 @@ const description = [
 export default {
 	name: 'vis',
 	description,
-	aliases: [],
 	usage: ['', '<image URL or discord message link>', 'new'],
 	guildSpecific: 'all',
 	permissionLevel: 'Everyone',

@@ -9,7 +9,6 @@ import { splitMessage } from '../functions.js'
 export default {
 	name: 'eval',
 	description: ['Evaluates code.'],
-	aliases: [''],
 	usage: ['<code>'],
 	guildSpecific: ['668330890790699079'],
 	permissionLevel: 'Owner',

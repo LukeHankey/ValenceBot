@@ -4,7 +4,6 @@ import Color from '../colors.js'
 export default {
 	name: 'vote',
 	description: ['Poll a message in which people can react with ✅ or ❌ or ❓.'],
-	aliases: [],
 	usage: ['<question>'],
 	guildSpecific: 'all',
 	permissionLevel: 'Mod',

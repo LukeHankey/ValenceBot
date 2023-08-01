@@ -1,7 +1,6 @@
 export default {
 	name: 'reply',
 	description: ['Replies to the specified DM.'],
-	aliases: [],
 	usage: ['<user ID> <message>'],
 	guildSpecific: '668330890790699079',
 	permissionLevel: 'Owner',

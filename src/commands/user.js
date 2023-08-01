@@ -11,7 +11,6 @@ export default {
 		'Lookup a clan member by their RSN.',
 		'Set the Discord ID/Active/Alt status of a clan member.'
 	],
-	aliases: [''],
 	usage: ['<Discord ID>', '<Rank name>', '<RSN>', '<RSN> set <discord/active/alt> <new value>'],
 	guildSpecific: ['472448603642920973', '668330890790699079'],
 	permissionLevel: 'Mod',

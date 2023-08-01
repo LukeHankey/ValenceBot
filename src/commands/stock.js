@@ -10,7 +10,6 @@ export default {
 		'Gets the <num> days stock from the past/future.',
 		'Gets the last <num> days stock from the past/future.'
 	],
-	aliases: [],
 	usage: ['', 'past/future <num>', 'past/future range <num>'],
 	guildSpecific: 'all',
 	permissionLevel: 'Everyone',

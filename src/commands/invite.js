@@ -7,7 +7,6 @@ const data = new SlashCommandBuilder().setName('invite').setDescription('Invite 
 export default {
 	name: 'invite',
 	description: ['Provides a link to invite the bot to your server.'],
-	aliases: [],
 	usage: [''],
 	guildSpecific: 'all',
 	permissionLevel: 'Everyone',
