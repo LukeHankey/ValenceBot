@@ -105,7 +105,7 @@ export default {
 				embeds: [
 					nEmbed(
 						`**Command:** ${cName}`,
-						`**Aliases:** ${command.aliases.join(', ') || '[NO ALIASES]'}\n**Permission Level:** ${
+						`**Aliases:** ${command.aliases ? command?.aliases.join(', ') : '[NO ALIASES]'}\n**Permission Level:** ${
 							command.permissionLevel
 						}\n**Usage:**`,
 						Color.aqua,
