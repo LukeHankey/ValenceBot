@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import cron from 'node-cron'
 import { Client, Collection } from 'discord.js'
-import { DataBase, MongoCollection } from './DataBase.js'
+import { MongoCollection } from './DataBase.js'
 import { getData, addActive } from './scheduler/clan.js'
 import { Load } from './handlers/index.js'
 import { logger } from './logging.js'
@@ -26,10 +26,9 @@ process.on('unhandledRejection', (reason, p) => {
 	logger.error(`Unhandled Rejection at: ${p}\nreason: ${reason}`)
 })
 
-client.login(process.env.NODE_ENV === 'DEV' ? process.env.DEVELOPMENT_BOT : process.env.BOT_TOKEN)
-
-const __ = new DataBase()
 const db = new MongoCollection('Users')
+
+client.login(process.env.NODE_ENV === 'DEV' ? process.env.DEVELOPMENT_BOT : process.env.BOT_TOKEN)
 
 // Daily at 5am
 cron.schedule('0 5 * * *', async () => {
