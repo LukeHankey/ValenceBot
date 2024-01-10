@@ -1,40 +1,31 @@
 import Color from './colors.js'
-import { promisify } from 'util'
 import { EmbedBuilder } from 'discord.js'
 import pkg from 'mongodb'
 import { logger } from './logging.js'
-const wait = promisify(setTimeout)
+import dotenv from 'dotenv'
 const { MongoClient } = pkg
+dotenv.config()
 
-export class DataBase {
-	static #options = {
-		useNewUrlParser: true,
-		useUnifiedTopology: true
+const dataBaseOptions = {
+	useNewUrlParser: true,
+	useUnifiedTopology: true
+}
+const dataBaseURI = process.env.DB_URI
+
+export class MongoCollection {
+	/**
+	 * @param  {string} collectionName The name of the collection.
+	 */
+	constructor(collectionName) {
+		this.collectionName = collectionName
+		this.client = new MongoClient(dataBaseURI, dataBaseOptions)
+		this.#connect()
+		this.#validateConnection(collectionName)
 	}
 
-	static #db = null
-	static #name = 'Members'
-
-	constructor() {
-		if (!DataBase.#db) this.#initialize()
-	}
-
-	async #initialize() {
-		try {
-			// 1 Connection per event
-			const mongo = new MongoClient(process.env.DB_URI, DataBase.#options)
-			await mongo.connect()
-			DataBase.#db = mongo.db(DataBase.#name)
-			logger.info('Database connected.')
-		} catch (error) {
-			logger.error(error)
-		}
-	}
-
-	async #retry() {
-		logger.warn('Retrying connection...')
-		await this.#initialize()
-		await this.collectionNames()
+	#connect() {
+		this.client.connect()
+		this.db = this.client.db('Members')
 	}
 
 	/**
@@ -43,14 +34,11 @@ export class DataBase {
 	async collectionNames() {
 		let collectionNames
 		try {
-			// Attempt to wait 5 seconds to connect database before any retries
-			if (!DataBase.#db) await wait(5000)
-			collectionNames = await DataBase.#db.listCollections().toArray()
+			collectionNames = await this.db.listCollections().toArray()
 			collectionNames = collectionNames.map((c) => c.name)
 		} catch (err) {
-			if (err.name === 'TypeError' && err.message.includes('listCollections')) await this.#retry()
-			else logger.error(err)
-			collectionNames = await DataBase.#db.listCollections().toArray()
+			logger.error(err)
+			collectionNames = this.db.listCollections().toArray()
 			collectionNames = collectionNames.map((c) => c.name)
 			logger.verbose('Retry success.')
 		}
@@ -58,24 +46,13 @@ export class DataBase {
 	}
 
 	get collection() {
-		return DataBase.#db.collection(this.collectionName)
-	}
-}
-
-export class MongoCollection extends DataBase {
-	/**
-	 * @param  {string} collectionName The name of the collection.
-	 */
-	constructor(collectionName) {
-		super()
-		this.collectionName = collectionName
-		this.#validateCollectionName(collectionName)
+		return this.db.collection(this.collectionName)
 	}
 
 	/**
 	 * @param  {string} name The name of the collection.
 	 */
-	async #validateCollectionName(name) {
+	async #validateConnection(name) {
 		const collectionNames = await this.collectionNames()
 
 		if (typeof name !== 'string') throw new Error(`${name} must be a string.`)
