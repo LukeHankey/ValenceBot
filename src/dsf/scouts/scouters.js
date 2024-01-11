@@ -20,7 +20,7 @@ const addedRoles = async (name, scoutTracker) => {
 	const members = await name.checkRolesAdded()
 	members.map(async (x) => {
 		const role = await name.role
-		await scoutTracker.collection.updateOne(
+		await scoutTracker.updateOne(
 			{ userID: x.id },
 			{
 				$addToSet: {
@@ -30,9 +30,9 @@ const addedRoles = async (name, scoutTracker) => {
 		)
 		// Add a check to see if they have the oldScout. If they do, re-add count once verified scouter
 		if (name.roleName === 'Verified Scouter') {
-			const trackerProfile = await scoutTracker.collection.findOne({ userID: x.id })
+			const trackerProfile = await scoutTracker.findOne({ userID: x.id })
 			if (trackerProfile.oldScout) {
-				await scoutTracker.collection.updateOne(
+				await scoutTracker.updateOne(
 					{ userID: trackerProfile.userID },
 					{
 						$set: {
@@ -52,7 +52,7 @@ const removedRoles = async (name, scoutTracker) => {
 	const checkRoles = await name.checkRolesRemoved()
 	checkRoles.map(async (x) => {
 		const role = await name.role
-		await scoutTracker.collection.updateOne(
+		await scoutTracker.updateOne(
 			{ userID: x.id },
 			{
 				$pull: {
@@ -73,13 +73,13 @@ const removeInactives = async (name, db, scoutTracker) => {
 		if (doc.active === 0 && Date.now() - doc.lastTimestamp > sixMonths) {
 			removed.push(doc.author)
 			allItems.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}).`)
-			await scoutTracker.collection.deleteOne({ userID: doc.userID })
+			await scoutTracker.deleteOne({ userID: doc.userID })
 		} else {
 			if (!doc.active) return
 			allItems.push(
 				`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}). User has been marked as inactive.`
 			)
-			await scoutTracker.collection.updateOne({ userID: doc.userID }, { $set: { active: 0 } })
+			await scoutTracker.updateOne({ userID: doc.userID }, { $set: { active: 0 } })
 		}
 	})
 	if (allItems.length) {
@@ -123,7 +123,7 @@ const removeScouters = async (options) => {
 			}
 		}
 		// Update DB
-		await tracker.collection.updateOne(
+		await tracker.updateOne(
 			{ userID: profile.userID },
 			{
 				$set: {
