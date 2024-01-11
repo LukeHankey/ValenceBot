@@ -7,59 +7,44 @@ const { MongoClient } = pkg
 dotenv.config()
 
 const dataBaseOptions = {
-	useNewUrlParser: true,
-	useUnifiedTopology: true
+	compressors: ['snappy']
 }
 const dataBaseURI = process.env.DB_URI
 
-export class MongoCollection {
-	/**
-	 * @param  {string} collectionName The name of the collection.
-	 */
-	constructor(collectionName) {
-		this.collectionName = collectionName
-		this.client = new MongoClient(dataBaseURI, dataBaseOptions)
-		this.#connect()
-		this.#validateConnection(collectionName)
+export class MongoDataBase {
+	constructor(databaseName) {
+		this.databaseName = databaseName
 	}
 
-	#connect() {
-		this.client.connect()
-		this.db = this.client.db('Members')
+	get client() {
+		return new MongoClient(dataBaseURI, dataBaseOptions)
 	}
 
-	/**
-	 * @returns {String[]} An array of collection names.
-	 */
-	async collectionNames() {
-		let collectionNames
-		try {
-			collectionNames = await this.db.listCollections().toArray()
-			collectionNames = collectionNames.map((c) => c.name)
-		} catch (err) {
-			logger.error(err)
-			collectionNames = this.db.listCollections().toArray()
-			collectionNames = collectionNames.map((c) => c.name)
-			logger.verbose('Retry success.')
-		}
-		return collectionNames
+	async connect() {
+		await this.client.connect()
+
+		console.log('Connected to the DataBase.')
+		this.db = this.client.db(this.databaseName)
 	}
 
-	get collection() {
-		return this.db.collection(this.collectionName)
+	collection(name) {
+		return this.db.collection(name)
 	}
 
-	/**
-	 * @param  {string} name The name of the collection.
-	 */
-	async #validateConnection(name) {
-		const collectionNames = await this.collectionNames()
+	get settings() {
+		return this.collection('Settings')
+	}
 
-		if (typeof name !== 'string') throw new Error(`${name} must be a string.`)
-		if (collectionNames.includes(name)) return true
-		else {
-			throw new Error(`${name} is not a valid collection name. Must be one of ${collectionNames.join(', ')}`)
-		}
+	get users() {
+		return this.collection('Users')
+	}
+
+	get facts() {
+		return this.collection('Facts')
+	}
+
+	get scoutTracker() {
+		return this.collection('ScoutTracker')
 	}
 
 	/**
