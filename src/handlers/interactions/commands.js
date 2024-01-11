@@ -1,9 +1,9 @@
 import { Permissions } from '../../classes.js'
 
-export const commands = async (interaction, db, data) => {
-	const client = interaction.client
-	const channels = await db.channels
-	const commandDB = await db.collection.findOne({ _id: interaction.channel.guild.id }, { projection: { prefix: 1, roles: 1 } })
+export const commands = async (client, interaction, data) => {
+	const db = client.database.settings
+	const channels = await client.database.channels
+	const commandDB = await db.findOne({ _id: interaction.channel.guild.id }, { projection: { prefix: 1, roles: 1 } })
 	const command = client.commands.get(interaction.commandName)
 	if (!command) return
 

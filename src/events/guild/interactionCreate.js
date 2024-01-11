@@ -1,29 +1,28 @@
-import { MongoCollection } from '../../DataBase.js'
 import { buttons, commands, autoComplete, selectMenu, modals, contextMenu } from '../../handlers/interactions/index.js'
 
 const cache = new Map()
 
 export default async (client, interaction) => {
-	const db = new MongoCollection('Settings')
-	const data = await db.collection.findOne(
+	const db = client.database.settings
+	const data = await db.findOne(
 		{ _id: interaction.guildId },
 		{ projection: { merchChannel: { components: 1, channelID: 1, otherChannelID: 1, deletions: 1 } } }
 	)
 
 	try {
 		if (interaction.isButton()) {
-			await buttons(interaction, db, data, cache)
+			await buttons(client, interaction, data, cache)
 		} else if (interaction.isChatInputCommand()) {
-			await commands(interaction, db, data)
+			await commands(client, interaction, data)
 		} else if (interaction.isAutocomplete()) {
 			await autoComplete(interaction)
 		} else if (interaction.isStringSelectMenu()) {
-			await selectMenu(interaction, db, data, cache)
+			await selectMenu(client, interaction, cache)
 		} else if (interaction.isContextMenuCommand()) {
 			await interaction.deferReply({ ephemeral: true })
-			await contextMenu(interaction, db, data)
+			await contextMenu(client, interaction, data)
 		} else if (interaction.isModalSubmit()) {
-			await modals(interaction, db, data)
+			await modals(client, interaction)
 		}
 	} catch (err) {
 		const channels = await db.channels

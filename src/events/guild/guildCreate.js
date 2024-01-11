@@ -1,8 +1,6 @@
-import { MongoCollection } from '../../DataBase.js'
-
 export default async (client, guild) => {
-	const db = new MongoCollection('Settings')
-	await db.collection.insertOne(
+	const db = client.database.settings
+	await db.insertOne(
 		{
 			_id: `${guild.id}`,
 			serverName: `${guild.name}`,

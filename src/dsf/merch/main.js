@@ -1,17 +1,17 @@
 import timers from 'timers/promises'
-import { MongoCollection } from '../../DataBase.js'
 import { merchRegex, otherCalls } from './constants.js'
 import { arrIncludesString, alreadyCalled } from './merchFunctions.js'
 import { addMerchCount, skullTimer, removeReactPermissions, addOtherCount, tenMinutes } from '../index.js'
 import { worldReaction } from './worlds.js'
 
-const dsf = async (client, message, db) => {
-	const channels = await db.channels
-	const scouters = new MongoCollection('ScoutTracker')
+const dsf = async (client, message) => {
+	const db = client.database.settings
+	const channels = await client.database.channels
+	const scouters = client.database.scoutTracker
 	const {
 		merchChannel: { channelID, otherChannelID, messages, otherMessages },
 		disallowedWords
-	} = await db.collection.findOne(
+	} = await db.findOne(
 		{ _id: message.guild.id, merchChannel: { $exists: true } },
 		{
 			projection: {

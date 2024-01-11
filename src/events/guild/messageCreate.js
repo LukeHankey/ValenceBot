@@ -1,13 +1,12 @@
-import { MongoCollection } from '../../DataBase.js'
 import Color from '../../colors.js'
 import { Permissions } from '../../classes.js'
 import { EmbedBuilder, ChannelType } from 'discord.js'
 import { vEvents } from '../../valence/valenceEvents.js'
 import dsf from '../../dsf/merch/main.js'
-const db = new MongoCollection('Settings')
 
 export default async (client, message) => {
-	const channels = await db.channels
+	const channels = await client.database.channels
+	const db = client.database.settings
 
 	// Handling DMs
 	if (message.guild === null || message.channel.type === 'DM') {
@@ -40,7 +39,7 @@ export default async (client, message) => {
 	if (message.guild.id === '420803245758480405' || message.guild.id === '668330890790699079') {
 		const {
 			merchChannel: { channelID, otherChannelID }
-		} = await db.collection.findOne(
+		} = await db.findOne(
 			{ _id: message.guild.id, merchChannel: { $exists: true } },
 			{ projection: { 'merchChannel.channelID': 1, 'merchChannel.otherChannelID': 1 } }
 		)
@@ -62,7 +61,7 @@ export default async (client, message) => {
 				break
 			case channelID:
 			case otherChannelID:
-				return await dsf(client, message, db)
+				return await dsf(client, message)
 		}
 	}
 
@@ -72,7 +71,7 @@ export default async (client, message) => {
 			// Then msg is from Vis wax server.
 			client.logger.info(`Vis Wax Combinations: ${message.content}`)
 			const contentArr = message.content.split('\n')
-			await db.collection.updateOne(
+			await db.updateOne(
 				{ _id: 'Globals' },
 				{
 					$set: {
@@ -82,10 +81,7 @@ export default async (client, message) => {
 					}
 				}
 			)
-			const { visCache, visContent } = await db.collection.findOne(
-				{ _id: 'Globals' },
-				{ projection: { visCache: 1, visContent: 1 } }
-			)
+			const { visCache, visContent } = await db.findOne({ _id: 'Globals' }, { projection: { visCache: 1, visContent: 1 } })
 			const visChannels = new Set()
 			const guilds = new Set()
 			visCache.forEach((obj) => {
@@ -129,7 +125,7 @@ export default async (client, message) => {
 				}
 			}
 
-			await db.collection.updateOne(
+			await db.updateOne(
 				{ _id: 'Globals' },
 				{
 					$set: {
@@ -155,7 +151,7 @@ export default async (client, message) => {
 	}
 
 	try {
-		const commandDB = await db.collection.findOne({ _id: message.guild.id }, { projection: { prefix: 1, roles: 1 } })
+		const commandDB = await db.findOne({ _id: message.guild.id }, { projection: { prefix: 1, roles: 1 } })
 		if (!message.content.startsWith(commandDB.prefix)) return
 
 		const args = message.content.slice(commandDB.prefix.length).split(/ +/g)
@@ -194,12 +190,12 @@ export default async (client, message) => {
 				: message.channel.send({ content: 'You cannot use that command in this server.' })
 
 			const lookupCommand = `commands.${commandName}`
-			const dbData = await db.collection.updateOne(
+			const dbData = await db.updateOne(
 				{ _id: 'Globals', [lookupCommand]: { $exists: 1 } },
 				{ $inc: { [lookupCommand]: 1 } }
 			)
 			if (!dbData.matchedCount) {
-				await db.collection.updateOne({ _id: 'Globals' }, { $set: { [lookupCommand]: 1 } })
+				await db.updateOne({ _id: 'Globals' }, { $set: { [lookupCommand]: 1 } })
 			}
 		} catch (error) {
 			channels.errors.send(error)

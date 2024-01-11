@@ -1,6 +1,5 @@
-export const contextMenu = async (interaction, db, data) => {
-	const client = interaction.client
-	const channels = await db.channels
+export const contextMenu = async (client, interaction, data) => {
+	const channels = await client.database.channels
 	const dsfServerErrorChannel = client.channels.cache.get('884076361940078682')
 	switch (interaction.commandName) {
 		case 'Mark event as dead.':

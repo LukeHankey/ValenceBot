@@ -1,4 +1,3 @@
-import { MongoCollection } from '../../DataBase.js'
 import {
 	ActionRowBuilder,
 	StringSelectMenuBuilder,
@@ -54,11 +53,11 @@ class ButtonWarning {
 		if (!this.scouters) {
 			throw new Error('Unable to get scouters. You must first specify the database.')
 		}
-		const profile = await this.scouters.collection.findOne({ userID: userId })
+		const profile = await this.scouters.findOne({ userID: userId })
 		if (profile === null) {
 			const member = await this.interaction.guild.members.fetch(userId)
 			const message = this.interaction.message
-			const x = await this.scouters.collection.insertOne({
+			const x = await this.scouters.insertOne({
 				userID: userId,
 				author: member.nickname ?? member.user.username,
 				firstTimestamp: message.createdTimestamp,
@@ -90,7 +89,7 @@ class ButtonWarning {
 		const buttonName = `buttons.${button}`
 
 		if (!user.buttons) {
-			await this.scouters.collection.findOneAndUpdate(
+			await this.scouters.findOneAndUpdate(
 				{ userID: userId },
 				{
 					$set: {
@@ -99,7 +98,7 @@ class ButtonWarning {
 				}
 			)
 		} else if (user.buttons && !(button in user.buttons)) {
-			await this.scouters.collection.findOneAndUpdate(
+			await this.scouters.findOneAndUpdate(
 				{ userID: userId },
 				{
 					$set: {
@@ -108,7 +107,7 @@ class ButtonWarning {
 				}
 			)
 		} else {
-			await this.scouters.collection.findOneAndUpdate(
+			await this.scouters.findOneAndUpdate(
 				{ userID: userId },
 				{
 					$inc: {
@@ -127,7 +126,7 @@ class ButtonWarning {
 	 */
 	async addWarning(userId, { button, content, timestamp } = {}) {
 		if (!timestamp) timestamp = new Date()
-		await this.scouters.collection.findOneAndUpdate(
+		await this.scouters.findOneAndUpdate(
 			{ userID: userId },
 			{
 				$addToSet: {
@@ -179,9 +178,10 @@ class ButtonWarning {
 	}
 }
 
-export const buttons = async (interaction, db, data, cache) => {
-	const channels = await db.channels
-	const scouters = new MongoCollection('ScoutTracker')
+export const buttons = async (client, interaction, data, cache) => {
+	const channels = await client.database.channels
+	const db = client.database.settings
+	const scouters = client.database.scoutTracker
 	const buttonLogger = new ButtonWarning(interaction)
 	let generalChannel = interaction.guild.channels.cache.find((c) => c.id === '696375576881004655') // general
 	let [userId, user, content, timestamp, channelName] = interaction.message.content.split('\n').slice(3)
@@ -308,7 +308,7 @@ export const buttons = async (interaction, db, data, cache) => {
 					if (interaction.user.bot) return
 					const item = data.merchChannel.deletions.messages.find((item) => item.messageID === interaction.message.id)
 					if (item) {
-						await scouters.collection.updateOne(
+						await scouters.updateOne(
 							{ userID: item.authorID },
 							{
 								$inc: {
@@ -316,7 +316,7 @@ export const buttons = async (interaction, db, data, cache) => {
 								}
 							}
 						)
-						await db.collection.updateOne(
+						await db.updateOne(
 							{ _id: interaction.guild.id },
 							{
 								$pull: {
@@ -335,7 +335,7 @@ export const buttons = async (interaction, db, data, cache) => {
 					if (interaction.user.bot) return
 					const item = data.merchChannel.deletions.messages.find((item) => item.messageID === interaction.message.id)
 					if (item) {
-						await scouters.collection.updateOne(
+						await scouters.updateOne(
 							{ userID: item.authorID },
 							{
 								$inc: {
@@ -343,7 +343,7 @@ export const buttons = async (interaction, db, data, cache) => {
 								}
 							}
 						)
-						await db.collection.updateOne(
+						await db.updateOne(
 							{ _id: interaction.guild.id },
 							{
 								$pull: {
@@ -411,7 +411,7 @@ export const buttons = async (interaction, db, data, cache) => {
 				break
 			case 'Open Ticket':
 				{
-					const ticketData = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
+					const ticketData = await db.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
 					const ticket = new Ticket(interaction, ticketData, db)
 					const created = await ticket.create()
 					if (!ticket.memberIncluded) {
@@ -463,7 +463,7 @@ export const buttons = async (interaction, db, data, cache) => {
 				break
 			case 'Create Application':
 				{
-					const ticketData = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
+					const ticketData = await db.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
 					const ticket = new Ticket(interaction, ticketData, db)
 					if (interaction.member.id !== ticket.currentTicket.ticketStarter) {
 						return interaction.reply({ content: 'You cannot use this button.', ephemeral: true })
@@ -515,7 +515,7 @@ export const buttons = async (interaction, db, data, cache) => {
 				break
 			case 'Start Application':
 				{
-					const ticketData = await db.collection.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
+					const ticketData = await db.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
 					const ticket = new Ticket(interaction, ticketData, db)
 
 					const applicationData = ticket.currentTicket.applicationModal
@@ -533,7 +533,7 @@ export const buttons = async (interaction, db, data, cache) => {
 				break
 			case 'Silly Fun':
 				{
-					const { buttonResponses } = await db.collection.findOne(
+					const { buttonResponses } = await db.findOne(
 						{ _id: interaction.guild.id },
 						{ projection: { buttonResponses: 1 } }
 					)
@@ -569,7 +569,7 @@ export const buttons = async (interaction, db, data, cache) => {
 				await interaction.reply({ ephemeral: true, content: '<https://www.youtube.com/watch?v=dQw4w9WgXcQ>' })
 				await timers.setTimeout(7_500)
 				await interaction.followUp({ ephemeral: true, content: "You've been rick rolled. Happy April Fools Day!" })
-				await db.collection.updateOne(
+				await db.updateOne(
 					{ _id: interaction.guild.id },
 					{
 						$inc: { 'aprilFools.count': 1 },
