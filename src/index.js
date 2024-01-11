@@ -21,13 +21,13 @@ const client = new Client({
 client.logger = logger
 client.commands = new Collection()
 
+const database = new MongoDataBase('Members')
+client.database = database
+
 const _ = new Load(client)
 process.on('unhandledRejection', (reason, p) => {
 	logger.error(`Unhandled Rejection at: ${p}\nreason: ${reason}`)
 })
-
-const database = new MongoDataBase('Members')
-client.database = database
 
 client.login(process.env.NODE_ENV === 'DEV' ? process.env.DEVELOPMENT_BOT : process.env.BOT_TOKEN)
 
