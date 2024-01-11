@@ -45,7 +45,7 @@ export const removeReactPermissions = async (message, allMessages) => {
 export const startupRemoveReactionPermissions = async (client, db, channel = 'merch') => {
 	const {
 		merchChannel: { channelID, messages, otherMessages, otherChannelID }
-	} = await db.collection.findOne(
+	} = await db.findOne(
 		{ _id: '420803245758480405' },
 		{ projection: { merchChannel: { channelID: 1, messages: 1, otherMessages: 1, otherChannelID: 1 } } }
 	)
@@ -66,7 +66,7 @@ export const startupRemoveReactionPermissions = async (client, db, channel = 'me
 			await removeReactPermissions(message, messages)
 		} catch (err) {
 			console.log(err)
-			await db.collection.updateOne(
+			await db.updateOne(
 				{ _id: '420803245758480405' },
 				{
 					$pull: {
