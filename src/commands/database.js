@@ -1,4 +1,5 @@
 import { codeBlock } from 'discord.js'
+import { splitMessage } from '../functions.js'
 
 /**
  * 668330890790699079 - Valence Bot Server
@@ -11,18 +12,19 @@ export default {
 	usage: ['<code>'],
 	guildSpecific: ['668330890790699079'],
 	permissionLevel: 'Owner',
-	run: async (client, message, args, perms, db) => {
+	run: async (client, message, args, perms) => {
 		if (!perms.owner) return message.channel.send(perms.errorO)
+		const db = client.database.settings
 
 		const [identifier, project] = args
 		if (!identifier) return message.channel.send('Make sure there is an identifier.')
 		if (identifier === 'all') {
-			const info = await db.collection.find({}).toArray()
+			const info = await db.find({}).toArray()
 			const IDs = info.map((data) => {
 				return `${data._id} - ${data.serverName}`
 			})
-			const content = codeBlock('diff', `All server IDs\n\n+ ${IDs.join('\n+ ')}`)
-			return message.channel.send({ content })
+			const content = `All server IDs\n\n+ ${IDs.join('\n+ ')}`
+			return splitMessage(content).forEach((msgContent) => message.channel.send({ content: codeBlock('diff', msgContent) }))
 		}
 
 		let result
@@ -30,18 +32,18 @@ export default {
 
 		switch (project) {
 			case 'serverName':
-				result = await db.collection.findOne({ _id: identifier }, { projection: { serverName: 1 } })
+				result = await db.findOne({ _id: identifier }, { projection: { serverName: 1 } })
 				content = codeBlock('diff', `${result._id}\n\n+ ${result.serverName}`)
 				message.channel.send({ content })
 				break
 			case 'prefix':
-				result = await db.collection.findOne({ _id: identifier }, { projection: { prefix: 1 } })
+				result = await db.findOne({ _id: identifier }, { projection: { prefix: 1 } })
 				content = codeBlock('diff', `- ${result._id}\n\n+ ${result.prefix}`)
 				message.channel.send({ content })
 				break
 			case 'roles':
 				{
-					result = await db.collection.findOne({ _id: identifier }, { projection: { roles: 1 } })
+					result = await db.findOne({ _id: identifier }, { projection: { roles: 1 } })
 					let roles = Object.entries(result.roles)
 					roles = roles.map(([role, id]) => {
 						return `${role} - ${id}`
@@ -52,7 +54,7 @@ export default {
 				break
 			case 'channels':
 				{
-					result = await db.collection.findOne({ _id: identifier }, { projection: { channels: 1 } })
+					result = await db.findOne({ _id: identifier }, { projection: { channels: 1 } })
 					let channels = Object.entries(result.channels)
 					channels = channels.map(([ch, id]) => {
 						return `${ch} - ${id}`

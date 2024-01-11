@@ -2,26 +2,24 @@ import timers from 'timers/promises'
 import { logger } from '../../logging.js'
 import { tenMinutes } from './constants.js'
 
-export const skullTimer = async (message, db, channel = 'merch') => {
+export const skullTimer = async (client, message, channel = 'merch') => {
 	const messageID = message.id
-	const channels = await db.channels
+	const db = client.database.settings
+	const channels = await client.database.channels
 	try {
 		await message.react('☠️')
 		if (channel === 'merch') {
-			await db.collection.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID } } })
+			await db.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID } } })
 		} else {
-			await db.collection.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.otherMessages': { messageID } } })
+			await db.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.otherMessages': { messageID } } })
 		}
 	} catch (err) {
 		if (err.code === 10008) {
 			const errorMessageID = err.url.split('/')[8]
 			if (channel === 'merch') {
-				return await db.collection.updateOne(
-					{ _id: message.guild.id },
-					{ $pull: { 'merchChannel.messages': { errorMessageID } } }
-				)
+				return await db.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { errorMessageID } } })
 			} else {
-				return await db.collection.updateOne(
+				return await db.updateOne(
 					{ _id: message.guild.id },
 					{ $pull: { 'merchChannel.otherMessages': { errorMessageID } } }
 				)
@@ -47,7 +45,7 @@ export const removeReactPermissions = async (message, allMessages) => {
 export const startupRemoveReactionPermissions = async (client, db, channel = 'merch') => {
 	const {
 		merchChannel: { channelID, messages, otherMessages, otherChannelID }
-	} = await db.collection.findOne(
+	} = await db.findOne(
 		{ _id: '420803245758480405' },
 		{ projection: { merchChannel: { channelID: 1, messages: 1, otherMessages: 1, otherChannelID: 1 } } }
 	)
@@ -68,7 +66,7 @@ export const startupRemoveReactionPermissions = async (client, db, channel = 'me
 			await removeReactPermissions(message, messages)
 		} catch (err) {
 			console.log(err)
-			await db.collection.updateOne(
+			await db.updateOne(
 				{ _id: '420803245758480405' },
 				{
 					$pull: {

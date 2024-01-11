@@ -30,14 +30,15 @@ export default {
 	],
 	guildSpecific: 'all',
 	permissionLevel: 'Admin',
-	run: async (client, message, args, perms, db) => {
-		const dbChannels = await db.channels
+	run: async (client, message, args, perms) => {
+		const db = client.database.settings
+		const dbChannels = await client.database.channels
 		if (!perms.admin) return message.channel.send(perms.errorA)
 		const {
 			prefix,
 			roles: { modRole, adminRole },
 			channels: { adminChannel, events, mod }
-		} = await db.collection.findOne({ _id: message.guild.id }, { projection: { prefix: 1, roles: 1, channels: 1 } })
+		} = await db.findOne({ _id: message.guild.id }, { projection: { prefix: 1, roles: 1, channels: 1 } })
 		const [...rName] = args.slice(2)
 		const roleName = message.guild.roles.cache.find((role) => role.name === rName.join(' '))
 		const channelTag = []
@@ -47,7 +48,7 @@ export default {
 				switch (args[1]) {
 					case 'set':
 						args[2]
-							? db.collection
+							? db
 									.findOneAndUpdate(
 										{ _id: message.guild.id },
 										{ $set: { prefix: args[2] } },
@@ -82,28 +83,28 @@ export default {
 							message.guild.roles.cache.get(`${args[2]}`).permissions.has('Administrator')
 						) {
 							// Setting role by ID
-							const found = await db.collection.findOneAndUpdate(
+							const found = await db.findOneAndUpdate(
 								{ _id: message.guild.id },
 								{ $set: { 'roles.adminRole': `<@&${args[2]}>` } },
 								{ returnOriginal: true }
 							)
 							message.channel.send({
 								content: `The Admin Role has been changed to: <@&${args[2]}>`,
-								allowedMentions: false
+								allowedMentions: { parse: [] }
 							})
 							dbChannels.send(
 								`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n\`\`\`diff\n- ${found.value.roles.adminRole}\n+ <@&${args[2]}>\`\`\``
 							)
 						} else if (roleName && message.guild.roles.cache.get(roleName.id).permissions.has('Administrator')) {
 							// Setting role by name
-							const found = await db.collection.findOneAndUpdate(
+							const found = await db.findOneAndUpdate(
 								{ _id: message.guild.id },
 								{ $set: { 'roles.adminRole': `<@&${roleName.id}>` } },
 								{ returnOriginal: true }
 							)
 							message.channel.send({
 								content: `The Admin Role has been changed to: <@&${roleName.id}>`,
-								allowedMentions: false
+								allowedMentions: { parse: [] }
 							})
 							dbChannels.send(
 								`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n\`\`\`diff\n- ${found.value.roles.adminRole}\n+ ${roleName.id}\`\`\``
@@ -113,14 +114,14 @@ export default {
 							message.guild.roles.cache.get(message.mentions.roles.first().id).permissions.has('Administrator')
 						) {
 							// Setting role by mention
-							const found = await db.collection.findOneAndUpdate(
+							const found = await db.findOneAndUpdate(
 								{ _id: message.guild.id },
 								{ $set: { 'roles.adminRole': args[2] } },
 								{ returnOriginal: true }
 							)
 							message.channel.send({
 								content: `The Admin Role has been changed to: ${args[2]}`,
-								allowedMentions: false
+								allowedMentions: { parse: [] }
 							})
 							dbChannels.send(
 								`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n\`\`\`diff\n- ${found.value.roles.adminRole}\n+ ${args[2]}\`\`\``
@@ -139,7 +140,7 @@ export default {
 						if (!args[1]) {
 							message.channel.send({
 								content: `Your Admin Role is set as: ${adminRole}`,
-								allowedMentions: false
+								allowedMentions: { parse: [] }
 							})
 						}
 				}
@@ -154,14 +155,14 @@ export default {
 							message.guild.roles.cache.get(`${args[2]}`).permissions.has(['KickMembers', 'BanMembers'])
 						) {
 							// Setting role by ID
-							const found = await db.collection.findOneAndUpdate(
+							const found = await db.findOneAndUpdate(
 								{ _id: message.guild.id },
 								{ $set: { 'roles.modRole': `<@&${args[2]}>` } },
 								{ returnOriginal: true }
 							)
 							message.channel.send({
 								content: `The Mod Role has been changed to: <@&${args[2]}>`,
-								allowedMentions: false
+								allowedMentions: { parse: [] }
 							})
 							dbChannels.send(
 								`<@${message.author.id}> changed the modRole in server: **${message.guild.name}**\n\`\`\`diff\n- ${found.value.roles.modRole}\n+ <@&${args[2]}>\`\`\``
@@ -171,14 +172,14 @@ export default {
 							message.guild.roles.cache.get(roleName.id).permissions.has(['KickMembers', 'BanMembers'])
 						) {
 							// Setting role by name
-							const found = await db.collection.findOneAndUpdate(
+							const found = await db.findOneAndUpdate(
 								{ _id: message.guild.id },
 								{ $set: { 'roles.modRole': `<@&${roleName.id}>` } },
 								{ returnOriginal: true }
 							)
 							message.channel.send({
 								content: `The Mod Role has been changed to: <@&${roleName.id}>`,
-								allowedMentions: false
+								allowedMentions: { parse: [] }
 							})
 							dbChannels.send(
 								`<@${message.author.id}> changed the modRole in server: **${message.guild.name}**\n\`\`\`diff\n- ${found.value.roles.modRole}\n+ ${roleName}\`\`\``
@@ -190,14 +191,14 @@ export default {
 								.permissions.has(['KickMembers', 'BanMembers'])
 						) {
 							// Setting role by mention
-							const found = await db.collection.findOneAndUpdate(
+							const found = await db.findOneAndUpdate(
 								{ _id: message.guild.id },
 								{ $set: { 'roles.modRole': args[2] } },
 								{ returnOriginal: true }
 							)
 							message.channel.send({
 								content: `The Mod Role has been changed to: ${args[2]}`,
-								allowedMentions: false
+								allowedMentions: { parse: [] }
 							})
 							dbChannels.send(
 								`<@${message.author.id}> changed the modRole in server: **${message.guild.name}**\n\`\`\`diff\n- ${found.value.roles.modRole}\n+ ${args[2]}\`\`\``
@@ -216,7 +217,7 @@ export default {
 						if (!args[1]) {
 							message.channel.send({
 								content: `Your Mod Role is set as: ${modRole}`,
-								allowedMentions: false
+								allowedMentions: { parse: [] }
 							})
 						}
 				}
@@ -235,7 +236,7 @@ export default {
 							message.guild.id !== args[2]
 						) {
 							// Check by ID
-							const found = await db.collection.findOneAndUpdate(
+							const found = await db.findOneAndUpdate(
 								{ _id: message.guild.id },
 								{ $set: { 'channels.adminChannel': args[2] } },
 								{ returnOriginal: true }
@@ -248,7 +249,7 @@ export default {
 							)
 						} else if (checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) {
 							// Check by #Channel
-							const found = await db.collection.findOneAndUpdate(
+							const found = await db.findOneAndUpdate(
 								{ _id: message.guild.id },
 								{ $set: { 'channels.adminChannel': channelTag[0] } },
 								{ returnOriginal: true }
@@ -296,7 +297,7 @@ export default {
 							message.guild.id !== args[2]
 						) {
 							// Check by ID
-							const found = await db.collection.findOneAndUpdate(
+							const found = await db.findOneAndUpdate(
 								{ _id: message.guild.id },
 								{ $set: { 'channels.events': args[2] } },
 								{ returnOriginal: true }
@@ -309,7 +310,7 @@ export default {
 							)
 						} else if (checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) {
 							// Check by #Channel
-							const found = await db.collection.findOneAndUpdate(
+							const found = await db.findOneAndUpdate(
 								{ _id: message.guild.id },
 								{ $set: { 'channels.events': channelTag[0] } },
 								{ returnOriginal: true }
@@ -363,7 +364,7 @@ export default {
 							message.guild.id !== args[2]
 						) {
 							// Check by ID
-							const found = await db.collection.findOneAndUpdate(
+							const found = await db.findOneAndUpdate(
 								{ _id: message.guild.id },
 								{ $set: { 'channels.mod': args[2] } },
 								{ returnOriginal: true }
@@ -376,7 +377,7 @@ export default {
 							)
 						} else if (checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) {
 							// Check by #Channel
-							const found = await db.collection.findOneAndUpdate(
+							const found = await db.findOneAndUpdate(
 								{ _id: message.guild.id },
 								{ $set: { 'channels.mod': channelTag[0] } },
 								{ returnOriginal: true }
@@ -420,7 +421,7 @@ export default {
 						embeds: [
 							nEmbed(
 								'**Settings List**',
-								"Here's a list of all the db.collection you can change:",
+								"Here's a list of all the db collections you can change:",
 								Color.cyan,
 								client.user.displayAvatarURL()
 							).addFields({

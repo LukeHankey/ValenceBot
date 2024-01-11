@@ -1,16 +1,15 @@
-import { MongoCollection } from '../../DataBase.js'
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, AuditLogEvent } from 'discord.js'
 import Color from '../../colors.js'
 
 export default async (client, message) => {
-	const db = new MongoCollection('Settings')
-	const ticketData = await db.collection.findOne({ _id: message.guild.id }, { projection: { ticket: 1 } })
+	const db = client.database.settings
+	const ticketData = await db.findOne({ _id: message.guild.id }, { projection: { ticket: 1 } })
 
 	if (!ticketData || !ticketData.ticket) return
 	const [currentTicket] = ticketData.ticket.filter((t) => t.messageId === message.id)
 	if (currentTicket) {
 		if (message.id === currentTicket.messageId) {
-			return await db.collection.findOneAndUpdate(
+			return await db.findOneAndUpdate(
 				{ _id: message.guild.id },
 				{
 					$pull: {
@@ -21,7 +20,7 @@ export default async (client, message) => {
 		}
 	}
 
-	const fullDB = await db.collection.findOne(
+	const fullDB = await db.findOne(
 		{ _id: message.guild.id, merchChannel: { $exists: true } },
 		{ projection: { merchChannel: { messages: 1, channelID: 1, otherChannelID: 1, otherMessages: 1 } } }
 	)
@@ -52,7 +51,7 @@ export default async (client, message) => {
 		const sentChannel = await webhook.send({ embeds: [embed], components: [button] })
 		const { userID } = data
 		if (sentChannel.guild.id === message.guild.id) {
-			await db.collection.updateOne(
+			await db.updateOne(
 				{ _id: message.guild.id },
 				{
 					$pull: {

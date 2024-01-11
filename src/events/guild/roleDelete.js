@@ -1,10 +1,8 @@
-import { MongoCollection } from '../../DataBase.js'
-const db = new MongoCollection('Settings')
-
 export default async (client, role) => {
-	await db.collection.findOne({ _id: role.guild.id }).then(async (res) => {
+	const db = client.database.settings
+	await db.findOne({ _id: role.guild.id }).then(async (res) => {
 		if (res.adminRole === `<@&${role.id}>`) {
-			await db.collection
+			await db
 				.findOneAndUpdate({ adminRole: `<@&${role.id}>` }, { $set: { adminRole: res.defaultAdminRole } })
 				.then((r) => {
 					client.users.cache.get(role.guild.ownerId).send({

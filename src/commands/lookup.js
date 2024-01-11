@@ -1,4 +1,3 @@
-import { MongoCollection } from '../DataBase.js'
 import { nEmbed } from '../functions.js'
 import Color from '../colors.js'
 import ms from 'pretty-ms'
@@ -16,7 +15,7 @@ export default {
 	guildSpecific: ['420803245758480405', '668330890790699079'],
 	permissionLevel: 'Admin',
 	run: async (client, message, args, perms) => {
-		const db = new MongoCollection('ScoutTracker')
+		const db = client.database.scoutTracker
 		if (!perms.admin) return message.channel.send(perms.errorA)
 		if (!args[0]) return message.channel.send({ content: 'Please provide a User ID' })
 
@@ -26,14 +25,14 @@ export default {
 			return date.slice(0, 5).join(' ')
 		}
 
-		const user = await db.collection.findOne({ userID: args[0] }, { projection: { _id: 0 } })
+		const user = await db.findOne({ userID: args[0] }, { projection: { _id: 0 } })
 		if (!user) return message.channel.send({ content: `<@!${args[0]}> is not in the database.` })
 
 		if (!user.warnings) {
 			user.warnings = []
 		}
 
-		const allData = await db.collection.countDocuments({})
+		const allData = await db.countDocuments({})
 		const oldScoutCheck = () => Boolean(user.oldScout)
 		const embedFields = [
 			{

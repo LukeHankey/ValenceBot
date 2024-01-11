@@ -260,7 +260,7 @@ class ScouterCheck {
 
 	async removeInactive(scouters) {
 		return new Promise(async (resolve) => {
-			let merch = await scouters.collection.find({}).toArray()
+			let merch = await scouters.find({}).toArray()
 			merch = merch.filter((doc) => {
 				const totalCount = doc.count + (doc.otherCount ?? 0) < 10
 				const timeGone = 1000 * 60 * 60 * 24 * 31

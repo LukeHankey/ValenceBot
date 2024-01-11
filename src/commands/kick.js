@@ -7,8 +7,8 @@ export default {
 	usage: ['ID/@mention'],
 	guildSpecific: 'all',
 	permissionLevel: 'Mod',
-	run: async (client, message, args, perms, db) => {
-		const channels = await db.channels
+	run: async (client, message, args, perms) => {
+		const channels = await client.database.channels
 		if (!perms.mod) return message.channel.send(perms.errorM)
 
 		const memberToKick = args[0]

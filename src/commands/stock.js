@@ -13,13 +13,11 @@ export default {
 	usage: ['', 'past/future <num>', 'past/future range <num>'],
 	guildSpecific: 'all',
 	permissionLevel: 'Everyone',
-	run: async (client, message, args, perms, db) => {
-		const channels = await db.channels
+	run: async (client, message, args, perms) => {
+		const db = client.database.settings
+		const channels = await client.database.channels
 		if ((perms.bot || perms.owner) && args[0] === 'update') {
-			const merchDB = await db.collection.findOne(
-				{ _id: '420803245758480405' },
-				{ projection: { merchantWishes: 1, futureStock: 1 } }
-			)
+			const merchDB = await db.findOne({ _id: '420803245758480405' }, { projection: { merchantWishes: 1, futureStock: 1 } })
 			for (const [document, type] of [
 				[merchDB.merchantWishes, 'past'],
 				[merchDB.futureStock, 'future']

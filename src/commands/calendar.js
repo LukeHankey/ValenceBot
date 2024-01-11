@@ -164,7 +164,7 @@ export default {
 						.addChoices(...monthChoices)
 				)
 		),
-	slash: async (interaction, _, db) => {
+	slash: async (client, interaction, _) => {
 		const months = [
 			'January',
 			'February',
@@ -181,13 +181,13 @@ export default {
 		]
 
 		// Variables
-		const client = interaction.client
+		const db = client.database.settings
 		const monthIndex = new Date().getUTCMonth()
 		const currentYear = new Date().getFullYear()
 		const currentMonth = months[monthIndex]
-		const channels = await db.channels
+		const channels = await client.database.channels
 
-		const dataFromDb = await db.collection.findOne(
+		const dataFromDb = await db.findOne(
 			{ _id: interaction.guild.id },
 			{ projection: { events: 1, channels: 1, calendarID: 1 } }
 		)
@@ -231,7 +231,7 @@ export default {
 							embeds: [createCalendarEmbed(`Calendar for ${monthName}`)]
 						})
 
-						await db.collection.findOneAndUpdate(
+						await db.findOneAndUpdate(
 							{ _id: interaction.guild.id },
 							{
 								$push: {
@@ -310,7 +310,7 @@ export default {
 							})
 						}
 
-						await db.collection.findOneAndUpdate(
+						await db.findOneAndUpdate(
 							{ _id: interaction.guild.id, 'calendarID.month': monthFromDb[0].month },
 							{
 								$push: {
@@ -324,7 +324,7 @@ export default {
 							}
 						)
 
-						await db.collection.updateOne(
+						await db.updateOne(
 							{ _id: interaction.guild.id },
 							{
 								$push: {
@@ -398,11 +398,11 @@ export default {
 									value: existingFields.value
 								})
 								await message.edit({ embeds: [calEmbed] })
-								await db.collection.findOneAndUpdate(
+								await db.findOneAndUpdate(
 									{ _id: message.guild.id, 'events.roleID': roleId },
 									{ $set: { 'events.$.title': value } }
 								)
-								await db.collection.updateOne(
+								await db.updateOne(
 									{ _id: message.guild.id },
 									{ $set: { 'calendarID.$[month].events.$[fieldName].title': value } },
 									{
@@ -418,11 +418,11 @@ export default {
 										value: existingFields.value.replace(annVal[1], `${value})`)
 									})
 									await message.edit({ embeds: [calEmbed] })
-									await db.collection.findOneAndUpdate(
+									await db.findOneAndUpdate(
 										{ _id: message.guild.id, 'events.roleID': roleId },
 										{ $set: { 'events.$.messageID': value.split('/')[6] } }
 									)
-									await db.collection.updateOne(
+									await db.updateOne(
 										{ _id: message.guild.id },
 										{
 											$set: {
@@ -501,7 +501,7 @@ export default {
 								? role.first().name.slice(title.length + 2)
 								: role.name.slice(title.length + 2)
 
-						await removeEvents(interaction, db, 'calendar', dataFromDb, eventTag)
+						await removeEvents(client, interaction, 'calendar', dataFromDb, eventTag)
 					}
 				}
 				break
@@ -553,12 +553,12 @@ export default {
 						const messageId = announcement.split('/')[6] ?? null
 						const eventTag = role.name.slice(title.length + 2)
 
-						await db.collection.findOneAndUpdate(
+						await db.findOneAndUpdate(
 							{ _id: interaction.guild.id, 'calendarID.month': monthFromDb[0].month },
 							{ $pull: { 'calendarID.$.events': { eventTag } } }
 						)
 
-						await db.collection.findOneAndUpdate(
+						await db.findOneAndUpdate(
 							{ _id: interaction.guild.id, 'calendarID.month': monthFromDbTo[0].month },
 							{
 								$push: {
@@ -567,7 +567,7 @@ export default {
 							}
 						)
 
-						await db.collection.findOneAndUpdate(
+						await db.findOneAndUpdate(
 							{ _id: interaction.guild.id, 'events.roleID': roleId },
 							{ $set: { 'events.$.month': monthFromDbTo[0].month } }
 						)

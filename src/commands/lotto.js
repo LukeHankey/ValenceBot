@@ -21,9 +21,10 @@ export default {
 	usage: ['', 'total', 'sheet <Google Sheet Name>', '<user>', 'add <amount> <collector> / <clanmate> / double (optional)'],
 	guildSpecific: ['472448603642920973', '668330890790699079'],
 	permissionLevel: 'Everyone',
-	run: async (client, message, args, perms, db) => {
-		const database = await db.collection.findOne({ _id: message.guild.id })
-		const channels = await db.channels
+	run: async (client, message, args, perms) => {
+		const db = client.database.settings
+		const database = await db.findOne({ _id: message.guild.id })
+		const channels = await client.database.channels
 
 		const months = [
 			'January',
@@ -330,13 +331,10 @@ export default {
 						if (perms.mod) {
 							const newSheet = args.slice(1).join(' ')
 							if (newSheet) {
-								await db.collection.findOneAndUpdate(
-									{ _id: message.guild.id },
-									{ $set: { lottoSheet: newSheet } }
-								)
+								await db.findOneAndUpdate({ _id: message.guild.id }, { $set: { lottoSheet: newSheet } })
 								await message.react('✅')
 							} else {
-								const newName = await db.collection.findOne({ _id: message.guild.id })
+								const newName = await db.findOne({ _id: message.guild.id })
 								return message.channel.send({
 									content: `The current Lotto Sheet name is : \`${newName.lottoSheet}\``
 								})

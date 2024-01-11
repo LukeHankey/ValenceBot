@@ -1,10 +1,8 @@
-import { MongoCollection } from '../../DataBase.js'
-
 export default async (client, guild) => {
-	const db = new MongoCollection('Settings')
-	const channels = await db.channels
+	const db = client.database.settings
+	const channels = await client.database.channels
 	try {
-		await db.collection.deleteOne({ _id: `${guild.id}` })
+		await db.deleteOne({ _id: `${guild.id}` })
 
 		channels.logs.send(`The bot has left **${guild.name}**. The bot is in a total of ${client.guilds.cache.size} servers.
     \n\`\`\`diff\n+ Server name: ${guild.name}

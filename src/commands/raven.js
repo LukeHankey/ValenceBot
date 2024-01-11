@@ -6,7 +6,7 @@ export default {
 	usage: [''],
 	guildSpecific: 'all',
 	permissionLevel: 'Everyone',
-	run: async (client, message, args, perms, db) => {
+	run: async (client, message, args, perms) => {
 		const currentRunedate = getRuneDate()
 
 		if (currentRunedate % 13 === 0) {
