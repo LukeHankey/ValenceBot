@@ -5,7 +5,7 @@ import { logger } from '../logging.js'
 const wait = promisify(setTimeout)
 
 export const addActive = async (db) => {
-	const users = await db.collection.find({}).toArray()
+	const users = await db.find({}).toArray()
 	let index = 0
 	const interval = setInterval(async () => {
 		try {
@@ -18,7 +18,7 @@ export const addActive = async (db) => {
 			let lastActivityDate
 			if ('error' in metricsProfile) {
 				// logger.log(users[index].clanMate, metricsProfile.error);
-				await db.collection.updateOne(
+				await db.updateOne(
 					{ clanMate: users[index].clanMate },
 					{ $set: { profile: metricsProfile.error, gameActive: null } }
 				)
@@ -28,10 +28,10 @@ export const addActive = async (db) => {
 
 				if (Date.now() - 2.628e9 > lastActivityDate) {
 					// logger.log(`${users[index].clanMate} is not active`);
-					await db.collection.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: false } })
+					await db.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: false } })
 				} else {
 					// logger.log(`${users[index].clanMate} is active`);
-					await db.collection.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: true } })
+					await db.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: true } })
 				}
 			}
 			index++

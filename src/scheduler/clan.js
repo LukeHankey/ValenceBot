@@ -31,15 +31,15 @@ export const getData = async (db) => {
 			clanUser.discActive = false
 			clanUser.alt = false
 			clanUser.gameActive = false
-			const dbCheck = await db.collection.findOne({ clanMate: clanUser.clanMate })
+			const dbCheck = await db.findOne({ clanMate: clanUser.clanMate })
 			if (!dbCheck) {
 				if (clanUser.clanMate === '') return
 				clanUser.gameActive = 'undefined'
-				await db.collection.insertOne(clanUser)
+				await db.insertOne(clanUser)
 				logger.info(`New to the clan: ${clanUser.clanMate}`)
 			} else {
 				// Updates total XP
-				await db.collection.updateOne(
+				await db.updateOne(
 					{ clanMate: clanUser.clanMate },
 					{
 						$set: {
@@ -52,7 +52,7 @@ export const getData = async (db) => {
 			}
 		})
 
-		let allUsers = await db.collection.find({}).project({ clanMate: 1, _id: 0 }).toArray()
+		let allUsers = await db.find({}).project({ clanMate: 1, _id: 0 }).toArray()
 		allUsers = allUsers.map((user) => user.clanMate)
 		const newDataNames = newData.map((user) => user.Clanmate)
 		const missingNames = allUsers.filter((name) => !newDataNames.includes(name))
