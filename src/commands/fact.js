@@ -1,6 +1,5 @@
 import { EmbedBuilder, codeBlock } from 'discord.js'
 import { checkNum, splitMessage } from '../functions.js'
-import { MongoCollection } from '../DataBase.js'
 const randomColor = Math.floor(Math.random() * 16777215).toString(16)
 
 /**
@@ -22,12 +21,13 @@ export default {
 	usage: ['', 'add <fact>', 'remove <number>', 'edit <number>', 'list'],
 	guildSpecific: ['668330890790699079', '472448603642920973'],
 	permissionLevel: 'Mod',
-	run: async (client, message, args, perms, db) => {
-		const channels = await db.channels
-		const vFactsColl = new MongoCollection('Facts')
-		const { prefix } = await db.collection.findOne({ _id: message.guild.id }, { projection: { prefix: 1 } })
+	run: async (client, message, args, perms) => {
+		const db = client.database.settings
+		const channels = await client.database.channels
+		const vFactsColl = client.database.facts
+		const { prefix } = await db.findOne({ _id: message.guild.id }, { projection: { prefix: 1 } })
 
-		const count = await vFactsColl.collection
+		const count = await vFactsColl
 			.stats()
 			.then((r) => r.count)
 			.catch(async (err) => channels.errors.send(err))
@@ -51,7 +51,7 @@ export default {
 					if (!args[1]) {
 						message.channel.send({ content: 'Write a message to add to the DataBase.' })
 					} else {
-						await vFactsColl.collection.insertOne({ Message: fact, number: count + 1 })
+						await vFactsColl.insertOne({ Message: fact, number: count + 1 })
 						message.channel.send({
 							content: `Fact #${count + 1} has been added to the list!\n${code}${count + 1}. ${fact}${code}`
 						})
@@ -65,13 +65,10 @@ export default {
 				if (perms.admin) {
 					if (args[1]) {
 						if (checkNum(args[1], 1, count)) {
-							await vFactsColl.collection
+							await vFactsColl
 								.findOne({ number: Number(args[1]) })
 								.then(async (r) => {
-									await vFactsColl.collection.updateMany(
-										{ number: { $gt: r.number } },
-										{ $inc: { number: -1 } }
-									)
+									await vFactsColl.updateMany({ number: { $gt: r.number } }, { $inc: { number: -1 } })
 									message.channel.send({
 										content: `Fact #${r.number} has been deleted from the list!\n${code}${r.number}. ${r.Message}${code}`
 									})
@@ -80,7 +77,7 @@ export default {
 									)
 								})
 								.catch(async (err) => channels.errors.send(err))
-							await vFactsColl.collection.deleteOne({ number: Number(args[1]) })
+							await vFactsColl.deleteOne({ number: Number(args[1]) })
 						} else {
 							message.channel.send({
 								content: `Invalid Fact ID! The ID should be between 1 & ${count}.`
@@ -99,10 +96,10 @@ export default {
 				if (perms.admin) {
 					const newMessage = args.slice(2).join(' ')
 					if (args[1] && args[2]) {
-						await vFactsColl.collection
+						await vFactsColl
 							.findOneAndUpdate({ number: Number(args[1]) }, { $set: { Message: newMessage } })
 							.then(async (r) => {
-								await vFactsColl.collection.findOne({ number: r.value.number }).then(async (rs) => {
+								await vFactsColl.findOne({ number: r.value.number }).then(async (rs) => {
 									message.channel.send({
 										content: `Fact #${rs.number} has been edited successfully!\n${code}${r.value.number}. ${r.value.Message} >>> ${rs.Message}${code}`
 									})
@@ -122,7 +119,7 @@ export default {
 			case 'list':
 				if (perms.mod) {
 					const list = []
-					await vFactsColl.collection
+					await vFactsColl
 						.find({})
 						.sort({ number: 1 })
 						.forEach((x) => list.push(`${x.number}. ${x.Message}\n`))
@@ -134,7 +131,7 @@ export default {
 				break
 			default:
 				if (perms.admin) {
-					await vFactsColl.collection
+					await vFactsColl
 						.findOne({ number: random })
 						.then(async (r) => {
 							message.delete()

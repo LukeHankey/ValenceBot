@@ -1,10 +1,9 @@
-import { MongoCollection } from '../DataBase.js'
 import { EmbedBuilder } from 'discord.js'
 import { randomNum } from '../functions.js'
 
 export const vEvents = async (client, message, channels) => {
-	const db = new MongoCollection('Settings')
-	const DB = await db.collection.findOne(
+	const db = client.databse.settings
+	const DB = await db.findOne(
 		{ _id: message.guild.id, 'channels.events': { $exists: true } },
 		{ projection: { channels: 1, calendarID: 1 } }
 	)
@@ -116,7 +115,7 @@ export const vEvents = async (client, message, channels) => {
 					addToCal(dateR, timeR)
 				}
 
-				await db.collection.updateOne(
+				await db.updateOne(
 					{ _id: message.guild.id },
 					{
 						$push: {
@@ -135,7 +134,7 @@ export const vEvents = async (client, message, channels) => {
 					}
 				)
 
-				await db.collection.findOneAndUpdate(
+				await db.findOneAndUpdate(
 					{ _id: message.guild.id, 'calendarID.messageID': m.id },
 					{
 						$push: {

@@ -1,6 +1,5 @@
 /* eslint-disable no-shadow */
 /* eslint-disable no-useless-escape */
-import { MongoCollection } from '../DataBase.js'
 import { nEmbed, checkNum } from '../functions.js'
 import Color from '../colors.js'
 import { ScouterCheck } from '../classes.js'
@@ -34,10 +33,11 @@ export default {
 	],
 	guildSpecific: ['668330890790699079', '420803245758480405'],
 	permissionLevel: 'Admin',
-	run: async (client, message, args, perms, db) => {
+	run: async (client, message, args, perms) => {
 		if (!perms.admin) return message.channel.send(perms.errorA)
-		const channels = await db.channels
-		const scouters = new MongoCollection('ScoutTracker')
+		const db = client.database.settings
+		const channels = await client.database.channels
+		const scouters = client.database.scoutTracker
 
 		switch (args[0]) {
 			case 'm':
@@ -48,7 +48,7 @@ export default {
 						try {
 							const {
 								merchChannel: { messages, channelID }
-							} = await db.collection.findOne(
+							} = await db.findOne(
 								{ _id: message.guild.id },
 								{ projection: { 'merchChannel.messages': 1, 'merchChannel.channelID': 1 } }
 							)
@@ -86,7 +86,7 @@ export default {
 						}
 						break
 					case 'clear':
-						await db.collection.findOneAndUpdate(
+						await db.findOneAndUpdate(
 							{ _id: message.guild.id },
 							{
 								$pull: {
@@ -105,7 +105,7 @@ export default {
 						try {
 							const {
 								merchChannel: { otherMessages, otherChannelID }
-							} = await db.collection.findOne(
+							} = await db.findOne(
 								{ _id: message.guild.id },
 								{ projection: { 'merchChannel.otherMessages': 1, 'merchChannel.otherChannelID': 1 } }
 							)
@@ -143,7 +143,7 @@ export default {
 						}
 						break
 					case 'clear':
-						await db.collection.findOneAndUpdate(
+						await db.findOneAndUpdate(
 							{ _id: message.guild.id },
 							{
 								$pull: {
@@ -159,8 +159,8 @@ export default {
 					let scout = new ScouterCheck('Scouter')
 					let vScout = new ScouterCheck('Verified Scouter')
 
-					const res = await db.collection.find({}).toArray()
-					const scouter = await scouters.collection.find({ count: { $gte: 40 } }).toArray()
+					const res = await db.find({}).toArray()
+					const scouter = await scouters.find({ count: { $gte: 40 } }).toArray()
 					await classVars(vScout, message.guild.name, res, client, scouter)
 					await classVars(scout, message.guild.name, res, client, scouter)
 					const num = args[2]
@@ -226,7 +226,7 @@ export default {
 				switch (param) {
 					case 'add':
 						if (!num) {
-							await scouters.collection.updateOne(
+							await scouters.updateOne(
 								{ userID: userMention },
 								{
 									$inc: {
@@ -237,7 +237,7 @@ export default {
 							if (reaction) return message.react('✅')
 							else return message.react('❌')
 						} else if (num === 'other') {
-							await scouters.collection.updateOne(
+							await scouters.updateOne(
 								{ userID: userMention },
 								{
 									$inc: {
@@ -248,7 +248,7 @@ export default {
 							if (reaction) return message.react('✅')
 							else return message.react('❌')
 						} else if (num === 'game') {
-							await scouters.collection.updateOne(
+							await scouters.updateOne(
 								{ userID: userMention },
 								{
 									$inc: {
@@ -266,7 +266,7 @@ export default {
 							}
 							const other = args.slice(4)
 							if (other[0] === 'other') {
-								await scouters.collection.updateOne(
+								await scouters.updateOne(
 									{ userID: userMention },
 									{
 										$inc: {
@@ -277,7 +277,7 @@ export default {
 								if (reaction) return message.react('✅')
 								else return message.react('❌')
 							} else {
-								await scouters.collection.updateOne(
+								await scouters.updateOne(
 									{ userID: userMention },
 									{
 										$inc: {
@@ -291,7 +291,7 @@ export default {
 						}
 					case 'remove':
 						if (!num) {
-							await scouters.collection.updateOne(
+							await scouters.updateOne(
 								{ userID: userMention },
 								{
 									$inc: {
@@ -302,7 +302,7 @@ export default {
 							if (reaction) return message.react('✅')
 							else return message.react('❌')
 						} else if (num === 'other') {
-							await scouters.collection.updateOne(
+							await scouters.updateOne(
 								{ userID: userMention },
 								{
 									$inc: {
@@ -313,7 +313,7 @@ export default {
 							if (reaction) return message.react('✅')
 							else return message.react('❌')
 						} else if (num === 'game') {
-							await scouters.collection.updateOne(
+							await scouters.updateOne(
 								{ userID: userMention },
 								{
 									$inc: {
@@ -331,7 +331,7 @@ export default {
 							}
 							const other = args.slice(4)
 							if (other[0] === 'other') {
-								await scouters.collection.updateOne(
+								await scouters.updateOne(
 									{ userID: userMention },
 									{
 										$inc: {
@@ -342,7 +342,7 @@ export default {
 								if (reaction) return message.react('✅')
 								else return message.react('❌')
 							} else {
-								await scouters.collection.updateOne(
+								await scouters.updateOne(
 									{ userID: userMention },
 									{
 										$inc: {
