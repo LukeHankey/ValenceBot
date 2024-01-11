@@ -1,4 +1,5 @@
 import { codeBlock } from 'discord.js'
+import { splitMessage } from '../functions.js'
 
 /**
  * 668330890790699079 - Valence Bot Server
@@ -22,8 +23,8 @@ export default {
 			const IDs = info.map((data) => {
 				return `${data._id} - ${data.serverName}`
 			})
-			const content = codeBlock('diff', `All server IDs\n\n+ ${IDs.join('\n+ ')}`)
-			return message.channel.send({ content })
+			const content = `All server IDs\n\n+ ${IDs.join('\n+ ')}`
+			return splitMessage(content).forEach((msgContent) => message.channel.send({ content: codeBlock('diff', msgContent) }))
 		}
 
 		let result

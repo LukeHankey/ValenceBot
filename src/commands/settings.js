@@ -90,7 +90,7 @@ export default {
 							)
 							message.channel.send({
 								content: `The Admin Role has been changed to: <@&${args[2]}>`,
-								allowedMentions: false
+								allowedMentions: { parse: [] }
 							})
 							dbChannels.send(
 								`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n\`\`\`diff\n- ${found.value.roles.adminRole}\n+ <@&${args[2]}>\`\`\``
@@ -104,7 +104,7 @@ export default {
 							)
 							message.channel.send({
 								content: `The Admin Role has been changed to: <@&${roleName.id}>`,
-								allowedMentions: false
+								allowedMentions: { parse: [] }
 							})
 							dbChannels.send(
 								`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n\`\`\`diff\n- ${found.value.roles.adminRole}\n+ ${roleName.id}\`\`\``
@@ -121,7 +121,7 @@ export default {
 							)
 							message.channel.send({
 								content: `The Admin Role has been changed to: ${args[2]}`,
-								allowedMentions: false
+								allowedMentions: { parse: [] }
 							})
 							dbChannels.send(
 								`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n\`\`\`diff\n- ${found.value.roles.adminRole}\n+ ${args[2]}\`\`\``
@@ -140,7 +140,7 @@ export default {
 						if (!args[1]) {
 							message.channel.send({
 								content: `Your Admin Role is set as: ${adminRole}`,
-								allowedMentions: false
+								allowedMentions: { parse: [] }
 							})
 						}
 				}
@@ -162,7 +162,7 @@ export default {
 							)
 							message.channel.send({
 								content: `The Mod Role has been changed to: <@&${args[2]}>`,
-								allowedMentions: false
+								allowedMentions: { parse: [] }
 							})
 							dbChannels.send(
 								`<@${message.author.id}> changed the modRole in server: **${message.guild.name}**\n\`\`\`diff\n- ${found.value.roles.modRole}\n+ <@&${args[2]}>\`\`\``
@@ -179,7 +179,7 @@ export default {
 							)
 							message.channel.send({
 								content: `The Mod Role has been changed to: <@&${roleName.id}>`,
-								allowedMentions: false
+								allowedMentions: { parse: [] }
 							})
 							dbChannels.send(
 								`<@${message.author.id}> changed the modRole in server: **${message.guild.name}**\n\`\`\`diff\n- ${found.value.roles.modRole}\n+ ${roleName}\`\`\``
@@ -198,7 +198,7 @@ export default {
 							)
 							message.channel.send({
 								content: `The Mod Role has been changed to: ${args[2]}`,
-								allowedMentions: false
+								allowedMentions: { parse: [] }
 							})
 							dbChannels.send(
 								`<@${message.author.id}> changed the modRole in server: **${message.guild.name}**\n\`\`\`diff\n- ${found.value.roles.modRole}\n+ ${args[2]}\`\`\``
@@ -217,7 +217,7 @@ export default {
 						if (!args[1]) {
 							message.channel.send({
 								content: `Your Mod Role is set as: ${modRole}`,
-								allowedMentions: false
+								allowedMentions: { parse: [] }
 							})
 						}
 				}
