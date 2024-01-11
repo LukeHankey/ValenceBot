@@ -2,13 +2,14 @@ import { merchRegex, foreignWorldsRegex } from '../constants.js'
 import { checkMemberRole, arrIncludesString, alreadyCalled } from '../merchFunctions.js'
 import { buttonFunctions } from '../callCount.js'
 
-export const addMerchCount = async (client, message, db, scouter) => {
-	const channels = await db.channels
+export const addMerchCount = async (client, message, scouter) => {
+	const channels = await client.database.channels
+	const db = client.database.settings
 	try {
 		const {
 			merchChannel: { channelID, messages },
 			disallowedWords
-		} = await db.collection.findOne(
+		} = await db.findOne(
 			{ _id: message.guild.id },
 			{ projection: { 'merchChannel.channelID': 1, 'merchChannel.messages': 1, disallowedWords: 1 } }
 		)
@@ -22,7 +23,7 @@ export const addMerchCount = async (client, message, db, scouter) => {
 		const msg = logOne.map((val) => val)
 
 		const userN = message.member
-		const findMessage = await scouter.collection.findOne({ userID: userN.id })
+		const findMessage = await scouter.findOne({ userID: userN.id })
 		const timestamp = message.createdAt.toString().split(' ').slice(0, 5).join(' ')
 
 		const [buttonSelection, buttonSelectionExtra, buttonSelectionForeignWorlds, buttonSelectionAlreadyCalled] =
@@ -55,7 +56,7 @@ export const addMerchCount = async (client, message, db, scouter) => {
 				})
 			}
 			client.logger.info(`New: ${userN.displayName} (${message.content}) userId: ${userN.id}`)
-			await scouter.collection.insertOne({
+			await scouter.insertOne({
 				userID: userN.id,
 				author: userN.nickname ?? userN.displayName,
 				firstTimestamp: msg[0].createdTimestamp,
@@ -101,7 +102,7 @@ export const addMerchCount = async (client, message, db, scouter) => {
 			client.logger.info(`Old: ${userN.displayName} (${message.content})`)
 			if (findMessage.oldScout && findMessage.oldScout.firstPost) {
 				// If a scouter was inactive and becomes active again, reset fields.
-				await scouter.collection.updateOne(
+				await scouter.updateOne(
 					{ userID: findMessage.userID },
 					{
 						$inc: { count: 1 },
@@ -117,7 +118,7 @@ export const addMerchCount = async (client, message, db, scouter) => {
 					}
 				)
 			} else {
-				await scouter.collection.updateOne(
+				await scouter.updateOne(
 					{ userID: findMessage.userID },
 					{
 						$inc: {
@@ -146,7 +147,7 @@ export const addMerchCount = async (client, message, db, scouter) => {
 			const authorName = log[msgs].member?.displayName
 			const userId = log[msgs].member?.id ?? log[msgs].author.id
 			if (!authorName || userId === '668330399033851924') return
-			await db.collection.findOneAndUpdate(
+			await db.findOneAndUpdate(
 				{ _id: message.guild.id },
 				{
 					$addToSet: {

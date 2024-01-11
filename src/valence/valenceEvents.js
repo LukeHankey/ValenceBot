@@ -1,8 +1,9 @@
 import { EmbedBuilder } from 'discord.js'
 import { randomNum } from '../functions.js'
 
-export const vEvents = async (client, message, channels) => {
+export const vEvents = async (client, message) => {
 	const db = client.databse.settings
+	const channels = client.database.channels
 	const DB = await db.findOne(
 		{ _id: message.guild.id, 'channels.events': { $exists: true } },
 		{ projection: { channels: 1, calendarID: 1 } }

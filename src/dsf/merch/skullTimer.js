@@ -2,26 +2,24 @@ import timers from 'timers/promises'
 import { logger } from '../../logging.js'
 import { tenMinutes } from './constants.js'
 
-export const skullTimer = async (message, db, channel = 'merch') => {
+export const skullTimer = async (client, message, channel = 'merch') => {
 	const messageID = message.id
-	const channels = await db.channels
+	const db = client.database.settings
+	const channels = await client.database.channels
 	try {
 		await message.react('☠️')
 		if (channel === 'merch') {
-			await db.collection.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID } } })
+			await db.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID } } })
 		} else {
-			await db.collection.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.otherMessages': { messageID } } })
+			await db.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.otherMessages': { messageID } } })
 		}
 	} catch (err) {
 		if (err.code === 10008) {
 			const errorMessageID = err.url.split('/')[8]
 			if (channel === 'merch') {
-				return await db.collection.updateOne(
-					{ _id: message.guild.id },
-					{ $pull: { 'merchChannel.messages': { errorMessageID } } }
-				)
+				return await db.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { errorMessageID } } })
 			} else {
-				return await db.collection.updateOne(
+				return await db.updateOne(
 					{ _id: message.guild.id },
 					{ $pull: { 'merchChannel.otherMessages': { errorMessageID } } }
 				)

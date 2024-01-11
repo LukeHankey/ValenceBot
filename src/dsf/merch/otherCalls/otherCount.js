@@ -2,14 +2,15 @@ import { otherCalls, foreignWorldsRegex } from '../constants.js'
 import { arrIncludesString, alreadyCalled } from '../merchFunctions.js'
 import { buttonFunctions } from '../callCount.js'
 
-export const addOtherCount = async (client, message, db, scouters) => {
+export const addOtherCount = async (client, message, scouters) => {
 	// Adds count for other events channel
-	const channels = await db.channels
+	const channels = await client.database.channels
+	const db = client.database.settings
 	try {
 		const {
 			merchChannel: { otherChannelID, otherMessages },
 			disallowedWords
-		} = await db.collection.findOne(
+		} = await db.findOne(
 			{ _id: message.guild.id },
 			{
 				projection: {
@@ -29,7 +30,7 @@ export const addOtherCount = async (client, message, db, scouters) => {
 		const msg = logOne.map((val) => val)
 
 		const userN = message.member
-		const findMessage = await scouters.collection.findOne({ userID: msg[0].author.id })
+		const findMessage = await scouters.findOne({ userID: msg[0].author.id })
 		const timestamp = message.createdAt.toString().split(' ').slice(0, 5).join(' ')
 
 		const [buttonSelection, buttonSelectionExtra, buttonSelectionForeignWorlds, buttonSelectionAlreadyCalled] =
@@ -52,7 +53,7 @@ export const addOtherCount = async (client, message, db, scouters) => {
 				})
 			}
 			client.logger.info(`New other: ${msg[0].author.username} (${message.content}) ${msg[0].author.id}`)
-			await scouters.collection.insertOne({
+			await scouters.insertOne({
 				userID: msg[0].author.id,
 				author: msg[0].member.nickname ?? msg[0].author.username,
 				firstTimestamp: msg[0].createdTimestamp,
@@ -94,7 +95,7 @@ export const addOtherCount = async (client, message, db, scouters) => {
 			client.logger.info(`Old other: ${msg[0].author.username} (${message.content}) ${msg[0].author.id}`)
 			if (findMessage.oldScout && findMessage.oldScout.firstPost) {
 				// If a scouter was inactive and becomes active again, reset fields.
-				await scouters.collection.updateOne(
+				await scouters.updateOne(
 					{ userID: findMessage.userID },
 					{
 						$inc: { otherCount: 1 },
@@ -110,7 +111,7 @@ export const addOtherCount = async (client, message, db, scouters) => {
 					}
 				)
 			} else {
-				await scouters.collection.updateOne(
+				await scouters.updateOne(
 					{ userID: findMessage.userID },
 					{
 						$inc: {
@@ -138,7 +139,7 @@ export const addOtherCount = async (client, message, db, scouters) => {
 			const authorName = log[msgs].member?.displayName
 			const userId = log[msgs].author.id
 			if (authorName === null) return
-			await db.collection.findOneAndUpdate(
+			await db.findOneAndUpdate(
 				{ _id: message.guild.id },
 				{
 					$addToSet: {

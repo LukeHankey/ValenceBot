@@ -147,7 +147,7 @@ export default async (client, message) => {
 		})
 
 		if (blocked.length > 0) message.delete()
-		await vEvents(client, message, await db.channels)
+		await vEvents(client, message)
 	}
 
 	try {

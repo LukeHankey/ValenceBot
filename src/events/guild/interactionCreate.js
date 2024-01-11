@@ -25,7 +25,7 @@ export default async (client, interaction) => {
 			await modals(client, interaction)
 		}
 	} catch (err) {
-		const channels = await db.channels
+		const channels = await client.database.channels
 		client.logger.debug(`${interaction} \nError in interactionCreate.`)
 		channels.errors.send(err)
 	}

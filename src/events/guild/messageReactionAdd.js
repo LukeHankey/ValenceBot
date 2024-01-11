@@ -33,7 +33,7 @@ export default async (client, reaction, user) => {
 
 						const [event] = data.events.filter((e) => e.messageID === message.id)
 
-						await removeEvents(message, db, 'messageReactionAdd', data, event.eventTag)
+						await removeEvents(client, message, 'messageReactionAdd', data, event.eventTag)
 					} else if (reaction.emoji.name === '📌') {
 						const userFetch = await message.guild.members.fetch(user.id)
 						const eventFound = data.events.find((e) => e.messageID === message.id)

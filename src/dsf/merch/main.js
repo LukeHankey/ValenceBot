@@ -26,7 +26,7 @@ const dsf = async (client, message) => {
 
 	if (message.author.bot) return
 	if (message.channel.id === channelID) {
-		await addMerchCount(client, message, db, scouters)
+		await addMerchCount(client, message, scouters)
 		if (
 			merchRegex.test(message.content) &&
 			!arrIncludesString(disallowedWords, message.content) &&
@@ -49,10 +49,10 @@ const dsf = async (client, message) => {
 			return setTimeout(() => message.delete(), 200)
 		}
 		await timers.setTimeout(tenMinutes)
-		await skullTimer(message, db)
+		await skullTimer(client, message)
 		await removeReactPermissions(message, messages)
 	} else if (message.channel.id === otherChannelID) {
-		await addOtherCount(client, message, db, scouters)
+		await addOtherCount(client, message, scouters)
 		if (
 			!otherCalls.test(message.content) ||
 			arrIncludesString(disallowedWords, message.content) ||
@@ -63,7 +63,7 @@ const dsf = async (client, message) => {
 			await worldReaction(message)
 		}
 		await timers.setTimeout(tenMinutes)
-		await skullTimer(message, db, 'other')
+		await skullTimer(client, message, 'other')
 	}
 }
 

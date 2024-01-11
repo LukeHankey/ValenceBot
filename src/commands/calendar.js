@@ -501,7 +501,7 @@ export default {
 								? role.first().name.slice(title.length + 2)
 								: role.name.slice(title.length + 2)
 
-						await removeEvents(interaction, db, 'calendar', dataFromDb, eventTag)
+						await removeEvents(client, interaction, 'calendar', dataFromDb, eventTag)
 					}
 				}
 				break

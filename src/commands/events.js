@@ -71,7 +71,7 @@ export default {
 						})
 						.filter((valid) => valid)
 					if (checkEventExists.length && checkEventExists[0].value) {
-						await removeEvents(interaction, db, 'events', data, tag)
+						await removeEvents(client, interaction, 'events', data, tag)
 						return interaction.reply({ content: 'Event has been removed.', ephemeral: true })
 					} else {
 						interaction.reply({ content: `There is no event found with ID: \`${tag}\`` })
@@ -99,7 +99,7 @@ export default {
 						})
 						.filter((valid) => valid)
 					if (checkEventExists.length && checkEventExists[0].value) {
-						await removeEvents(message, db, 'events', data, tag)
+						await removeEvents(client, message, 'events', data, tag)
 						return message.react('✅')
 					} else {
 						message.react('❌')

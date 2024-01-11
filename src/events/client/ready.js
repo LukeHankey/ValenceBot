@@ -118,7 +118,7 @@ export default async (client) => {
 			addedRoles(role, scoutTracker)
 			removedRoles(role, scoutTracker)
 		})
-		removeInactives(scout, db, scoutTracker)
+		removeInactives(client, scout, scoutTracker)
 		removeScouters({
 			scoutProfiles: [scout, vScout],
 			database: db,

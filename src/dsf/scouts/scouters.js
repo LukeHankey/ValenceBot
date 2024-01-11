@@ -63,9 +63,9 @@ const removedRoles = async (name, scoutTracker) => {
 	})
 }
 
-const removeInactives = async (name, db, scoutTracker) => {
+const removeInactives = async (client, name, scoutTracker) => {
 	const inactives = await name.removeInactive(scoutTracker)
-	const channels = await db.channels
+	const channels = await client.database.channels
 	const removed = []
 	const allItems = []
 	const sixMonths = 1.577e10
