@@ -14,9 +14,9 @@ export default {
 		.addIntegerOption((option) =>
 			option.setName('value').setDescription('The number of messages to delete.').setRequired(true)
 		),
-	slash: async (interaction, _, db) => {
+	slash: async (client, interaction, _) => {
 		const int = interaction.options.getInteger('value')
-		const channels = await db.channels
+		const channels = await client.database.channels
 
 		if (int > 100 || int < 1) {
 			return interaction.reply({ content: 'Number must be between 1 and 100.', ephemeral: true })

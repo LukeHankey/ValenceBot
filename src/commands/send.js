@@ -31,7 +31,7 @@ export default {
 					option.setName('edit_message').setDescription('If editing a message, provide the message ID.')
 				)
 		),
-	slash: async (interaction, perms) => {
+	slash: async (_, interaction, perms) => {
 		if (!perms.admin) return interaction.reply(perms.errorA)
 		if (interaction.options.getSubcommand() === 'to') {
 			const options = interaction.options
@@ -73,8 +73,8 @@ export default {
 			}
 		}
 	},
-	run: async (client, message, args, perms, db) => {
-		const channels = await db.channels
+	run: async (client, message, args, perms) => {
+		const channels = await client.database.channels
 		const myID = '212668377586597888'
 		const content = args.slice(1).join(' ')
 		if (!perms.admin) return message.channel.send(perms.errorA)

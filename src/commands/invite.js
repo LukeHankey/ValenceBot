@@ -11,8 +11,8 @@ export default {
 	guildSpecific: 'all',
 	permissionLevel: 'Everyone',
 	data,
-	slash: async (interaction) => {
-		const invite = interaction.client.generateInvite({
+	slash: async (client, interaction, _) => {
+		const invite = client.generateInvite({
 			scopes: ['bot', 'applications.commands'],
 			permissions: 123212262595n
 		})

@@ -39,7 +39,8 @@ export default {
 		.addBooleanOption((option) =>
 			option.setName('application').setDescription('Create a form which interfaces with users who create tickets.')
 		),
-	slash: async (interaction, _, db) => {
+	slash: async (client, interaction, _) => {
+		const db = client.database.settings
 		const actionRow = new ActionRowBuilder()
 		const ticketButton = new ButtonBuilder()
 			.setCustomId('Open Ticket')
@@ -70,7 +71,7 @@ export default {
 
 		const message = await interaction.reply({ embeds: [ticketEmbed], components, fetchReply: true })
 
-		await db.collection.updateOne(
+		await db.updateOne(
 			{ _id: interaction.guild.id },
 			{
 				$addToSet: {

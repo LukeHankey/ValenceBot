@@ -20,7 +20,6 @@ export default {
 	guildSpecific: ['420803245758480405', '668330890790699079'],
 	permissionLevel: 'Everyone',
 	run: async (client, message, args, perms) => {
-		const db = client.database.settings
 		const scouters = client.database.scoutTracker
 		const channels = await client.database.channels
 		const memberID = message.member.id

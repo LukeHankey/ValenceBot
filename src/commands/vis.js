@@ -34,9 +34,10 @@ export default {
 	// 		.addChoice('File', 'file_upload')
 	// 		.addChoice('Message Link', 'message_link')
 	// 		.addChoice('Image URL', 'image_url')));
-	slash: async (interaction, perms, db) => {
-		const channels = await db.channels
-		const { visTime, vis, visContent } = await db.collection.findOne(
+	slash: async (client, interaction, perms) => {
+		const db = client.database.settings
+		const channels = await client.database.channels
+		const { visTime, vis, visContent } = await db.findOne(
 			{ _id: 'Globals' },
 			{ projection: { visTime: 1, vis: 1, visContent: 1 } }
 		)
@@ -52,7 +53,7 @@ export default {
 					content:
 						'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command. I will ping you when the stock is out.'
 				})
-				return await db.collection.updateOne(
+				return await db.updateOne(
 					{ _id: 'Globals' },
 					{
 						$set: {
@@ -74,7 +75,7 @@ export default {
 				)
 			}
 			if (vis === null && visContent.length === 0) {
-				await db.collection.updateOne(
+				await db.updateOne(
 					{ _id: 'Globals' },
 					{
 						$addToSet: {
@@ -127,7 +128,7 @@ export default {
 					ephemeral: true
 				})
 			} else {
-				await db.collection.updateOne(
+				await db.updateOne(
 					{ _id: 'Globals' },
 					{
 						$set: {
@@ -141,8 +142,9 @@ export default {
 			}
 		}
 	},
-	run: async (client, message, args, _, db) => {
-		const channels = await db.channels
+	run: async (client, message, args, _) => {
+		const db = client.database.settings
+		const channels = await client.database.channels
 		const [...attachment] = args
 
 		const embed = new EmbedBuilder()
@@ -156,7 +158,7 @@ export default {
 			.setThumbnail(message.author.displayAvatarURL())
 			.setColor(Color.cream)
 
-		const { visTime, vis, visContent } = await db.collection.findOne(
+		const { visTime, vis, visContent } = await db.findOne(
 			{ _id: 'Globals' },
 			{ projection: { visTime: 1, vis: 1, visContent: 1 } }
 		)
@@ -173,7 +175,7 @@ export default {
 						content:
 							'No current Vis out yet! Use `;vis [Image URL or Message Link]` to update the command. I will ping you when the stock is out.'
 					})
-					await db.collection.updateOne(
+					await db.updateOne(
 						{ _id: 'Globals' },
 						{
 							$set: {
@@ -182,7 +184,7 @@ export default {
 							}
 						}
 					)
-					return await db.collection.updateOne(
+					return await db.updateOne(
 						{ _id: 'Globals' },
 						{
 							$addToSet: {
@@ -197,7 +199,7 @@ export default {
 				}
 
 				if (vis === null && visContent.length === 0) {
-					await db.collection.updateOne(
+					await db.updateOne(
 						{ _id: 'Globals' },
 						{
 							$addToSet: {
@@ -239,7 +241,7 @@ export default {
 					})
 				}
 			} catch (err) {
-				await db.collection.updateOne(
+				await db.updateOne(
 					{ _id: 'Globals' },
 					{
 						$addToSet: {
@@ -264,7 +266,7 @@ export default {
 				return channels.vis
 					.send({ embeds: [embed.setImage(message.attachments.first().url)] })
 					.then(async () => {
-						return await db.collection.updateOne(
+						return await db.updateOne(
 							{ _id: 'Globals' },
 							{
 								$set: {
@@ -280,7 +282,7 @@ export default {
 				return channels.vis
 					.send({ embeds: [embed.setImage(attachment[0])] })
 					.then(async () => {
-						return await db.collection.updateOne(
+						return await db.updateOne(
 							{ _id: 'Globals' },
 							{
 								$set: {
@@ -303,7 +305,7 @@ export default {
 					const newEmbed = embed.setImage(`${messageFetch.attachments.first().attachment}`)
 					channels.vis.send({ embeds: [newEmbed] })
 					message.react('✅')
-					return await db.collection.updateOne(
+					return await db.updateOne(
 						{ _id: 'Globals' },
 						{
 							$set: {

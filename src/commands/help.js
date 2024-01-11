@@ -8,9 +8,10 @@ export default {
 	usage: ['command name'],
 	guildSpecific: 'all',
 	permissionLevel: 'Everyone',
-	run: async (client, message, args, perms, db) => {
+	run: async (client, message, args, perms) => {
+		const db = client.databset.settings
 		const { commands } = message.client
-		const { prefix } = await db.collection.findOne({ _id: message.guild.id }, { projection: { prefix: 1 } })
+		const { prefix } = await db.findOne({ _id: message.guild.id }, { projection: { prefix: 1 } })
 
 		if (!args.length) {
 			// eslint-disable-next-line array-callback-return

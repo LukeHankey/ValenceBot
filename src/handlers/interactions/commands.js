@@ -35,7 +35,7 @@ export const commands = async (client, interaction, data) => {
 		) {
 			return interaction.reply({ content: 'Please use the bot commands channel.', ephemeral: true })
 		} else {
-			await command.slash(interaction, perms, db)
+			await command.slash(client, interaction, perms)
 		}
 	} catch (error) {
 		channels.errors.send(error)

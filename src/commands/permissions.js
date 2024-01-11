@@ -30,16 +30,16 @@ export default {
 		],
 		default_permission: undefined
 	},
-	slash: async (interaction, perms, db) => {
-		const channels = await db.channels
+	slash: async (client, interaction, perms) => {
+		const channels = await client.database.channels
 		if (!perms.admin) return interaction.reply(perms.errorA)
 		const subType = interaction.options.getSubcommand()
 		const commandName = interaction.options.getString('command')
 
 		const commandArray = []
 		// let guild = true
-		let guildCommand = await interaction.client.guilds.cache.get(interaction.guild.id)?.commands.fetch()
-		const globalCommands = await interaction.client.application?.commands.fetch()
+		let guildCommand = await client.guilds.cache.get(interaction.guild.id)?.commands.fetch()
+		const globalCommands = await client.application?.commands.fetch()
 		guildCommand = guildCommand.filter((com) => {
 			commandArray.push(com.name)
 			if (com.name === commandName) {
@@ -64,7 +64,7 @@ export default {
 		switch (subType) {
 			case 'for': {
 				const cmd = guildCommand.filter((com) => com.name === commandName)
-				const globCommands = await interaction.client.application?.commands.fetch()
+				const globCommands = await client.application?.commands.fetch()
 				const gcmd = globCommands.filter((com) => com.name === commandName)
 
 				const displayPerms = (perms) => {

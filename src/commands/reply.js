@@ -4,8 +4,8 @@ export default {
 	usage: ['<user ID> <message>'],
 	guildSpecific: '668330890790699079',
 	permissionLevel: 'Owner',
-	run: async (client, message, args, perms, db) => {
-		const channels = await db.channels
+	run: async (client, message, args, perms) => {
+		const channels = await client.database.channels
 		if (!perms.owner) return message.channel.send(perms.errorO)
 		const [userID, ...content] = args
 
