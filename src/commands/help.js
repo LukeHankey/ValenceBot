@@ -9,7 +9,7 @@ export default {
 	guildSpecific: 'all',
 	permissionLevel: 'Everyone',
 	run: async (client, message, args, perms) => {
-		const db = client.databset.settings
+		const db = client.database.settings
 		const { commands } = message.client
 		const { prefix } = await db.findOne({ _id: message.guild.id }, { projection: { prefix: 1 } })
 

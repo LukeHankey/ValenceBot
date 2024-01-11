@@ -55,7 +55,7 @@ export class MongoDataBase {
 			const client = await import('./index.js')
 			const {
 				channels: { vis, errors, logs }
-			} = await this.collection.findOne({ _id: 'Globals' }, { projection: { channels: { vis: 1, errors: 1, logs: 1 } } })
+			} = await this.settings.findOne({ _id: 'Globals' }, { projection: { channels: { vis: 1, errors: 1, logs: 1 } } })
 			const channels = {
 				vis: {
 					id: vis,

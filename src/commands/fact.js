@@ -27,8 +27,8 @@ export default {
 		const vFactsColl = client.database.facts
 		const { prefix } = await db.findOne({ _id: message.guild.id }, { projection: { prefix: 1 } })
 
-		const count = await vFactsColl
-			.stats()
+		const count = await client.database.db
+			.command({ collStats: 'Facts' })
 			.then((r) => r.count)
 			.catch(async (err) => channels.errors.send(err))
 		const random = Math.floor(Math.random() * count + 1)
