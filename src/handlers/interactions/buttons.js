@@ -69,8 +69,7 @@ class ButtonWarning {
 				otherCount: 0,
 				assigned: []
 			})
-			const [profile] = x.ops
-			return profile
+			return await this.scouters.findOne({ _id: x.insertedId })
 		}
 		return profile
 	}
