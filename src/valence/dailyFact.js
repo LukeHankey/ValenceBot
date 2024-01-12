@@ -1,5 +1,4 @@
 import { EmbedBuilder } from 'discord.js'
-import { MongoCollection } from '../DataBase.js'
 const randomColor = Math.floor(Math.random() * 16777215).toString(16)
 
 const factEmbed = (factMessage) => {
@@ -13,12 +12,12 @@ const factEmbed = (factMessage) => {
 }
 
 export const sendFact = async (client) => {
-	const vFactsColl = new MongoCollection('Facts')
-	const count = await vFactsColl.collection.stats().then((res) => {
+	const vFactsColl = client.database.facts
+	const count = await vFactsColl.stats().then((res) => {
 		return res.count
 	})
 	const random = Math.floor(Math.random() * count + 1)
 
-	const factDB = await vFactsColl.collection.findOne({ number: random })
+	const factDB = await vFactsColl.findOne({ number: random })
 	client.channels.cache.get('473235620991336468').send({ embeds: [factEmbed(factDB.Message)] })
 }

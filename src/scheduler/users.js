@@ -5,7 +5,7 @@ import { logger } from '../logging.js'
 const wait = promisify(setTimeout)
 
 export const addActive = async (db) => {
-	const users = await db.collection.find({}).toArray()
+	const users = await db.find({}).toArray()
 	let index = 0
 	const interval = setInterval(async () => {
 		try {
@@ -18,7 +18,7 @@ export const addActive = async (db) => {
 			let lastActivityDate
 			if ('error' in metricsProfile) {
 				// logger.log(users[index].clanMate, metricsProfile.error);
-				await db.collection.updateOne(
+				await db.updateOne(
 					{ clanMate: users[index].clanMate },
 					{ $set: { profile: metricsProfile.error, gameActive: null } }
 				)
@@ -28,10 +28,10 @@ export const addActive = async (db) => {
 
 				if (Date.now() - 2.628e9 > lastActivityDate) {
 					// logger.log(`${users[index].clanMate} is not active`);
-					await db.collection.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: false } })
+					await db.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: false } })
 				} else {
 					// logger.log(`${users[index].clanMate} is active`);
-					await db.collection.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: true } })
+					await db.updateOne({ clanMate: users[index].clanMate }, { $set: { gameActive: true } })
 				}
 			}
 			index++
@@ -54,7 +54,7 @@ const clanCheck = async (users, db) => {
 
 		if (metricsProfile.clan && metricsProfile.clan !== 'Valence') {
 			logger.info(`${metricsProfile.name} has left Valence for ${metricsProfile.clan}`)
-			await db.collection.deleteOne({ clanMate: metricsProfile.name }, { justOne: true })
+			await db.deleteOne({ clanMate: metricsProfile.name }, { justOne: true })
 			return false
 		} else if (metricsProfile.clan && metricsProfile.clan === 'Valence') {
 			logger.info(`${metricsProfile.name} still in Valence`)
@@ -72,12 +72,12 @@ export const nameChanges = async (missingNames, db) => {
 	const nameChange = []
 
 	for (const names of missingNames) {
-		const potentialChangers = await db.collection.findOne({ clanMate: names })
+		const potentialChangers = await db.findOne({ clanMate: names })
 		/**
 		 * Find any clan member who has the same rank, kills and has gameActive as undefined.
 		 * gameActive: undefined since these will be the members who are "new to the clan"
 		 */
-		const potentialNewNames = await db.collection
+		const potentialNewNames = await db
 			.find({
 				clanRank: potentialChangers.clanRank,
 				kills: potentialChangers.kills,
@@ -105,7 +105,7 @@ export const nameChanges = async (missingNames, db) => {
 	if (nameChange.length) {
 		return nameChange.forEach(async (user) => {
 			logger.info(`Updating ${user.clanMate} as they have potentially changed names`)
-			await db.collection.updateOne({ clanMate: user.clanMate }, { $set: { potentialNewNames: user.potentialNewNames } })
+			await db.updateOne({ clanMate: user.clanMate }, { $set: { potentialNewNames: user.potentialNewNames } })
 		})
 	}
 }

@@ -1,6 +1,6 @@
-export const selectMenu = async (interaction, db, _, cache) => {
-	const client = interaction.client
-	const channels = await db.channels
+export const selectMenu = async (client, interaction, cache) => {
+	const db = client.database.settings
+	const channels = await client.database.channels
 
 	if (interaction.guild === null) {
 		// DSF Specific
@@ -33,7 +33,7 @@ export const selectMenu = async (interaction, db, _, cache) => {
 	} else {
 		const [...keys] = interaction.values
 		for (const key of keys) {
-			await db.collection.updateOne(
+			await db.updateOne(
 				{ _id: interaction.guild.id },
 				{
 					$pull: {

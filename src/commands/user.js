@@ -1,7 +1,6 @@
 import { EmbedBuilder } from 'discord.js'
 import { checkNum, renameKeys, nEmbed } from '../functions.js'
 import Color from '../colors.js'
-import { MongoCollection } from '../DataBase.js'
 
 export default {
 	name: 'user',
@@ -14,10 +13,10 @@ export default {
 	usage: ['<Discord ID>', '<Rank name>', '<RSN>', '<RSN> set <discord/active/alt> <new value>'],
 	guildSpecific: ['472448603642920973', '668330890790699079'],
 	permissionLevel: 'Mod',
-	run: async (client, message, args, perms, db) => {
-		const channels = await db.channels
+	run: async (client, message, args, perms) => {
+		const channels = await client.database.channels
 		if (!perms.mod) return message.channel.send(perms.errorM)
-		const usersColl = new MongoCollection('Users')
+		const usersColl = client.database.users
 		const ranks = [
 			'recruit',
 			'corporal',
@@ -75,7 +74,7 @@ export default {
 		if (args.length === 1 && checkNum(args[0], 1, Infinity)) {
 			// Discord ID
 			const userInDiscord = await message.guild.members.fetch(args[0])
-			let findUser = await usersColl.collection.findOne({ discord: args[0] }, { projection: { _id: 0, kills: 0 } })
+			let findUser = await usersColl.findOne({ discord: args[0] }, { projection: { _id: 0, kills: 0 } })
 			if (findUser) {
 				findUser = renameKeys(
 					{
@@ -113,7 +112,7 @@ export default {
 		} else if (args.length >= 1 && ranks.includes(args[0].toLowerCase())) {
 			// Find by rank
 			const rankArg = args[0].toLowerCase()
-			const findGroup = await usersColl.collection
+			const findGroup = await usersColl
 				.find({ $text: { $search: rankArg, $caseSensitive: false } })
 				.project({ _id: 0, kills: 0, totalXP: 0 })
 			for await (const doc of findGroup) {
@@ -190,32 +189,26 @@ export default {
 					if (string === 'true') return true
 					else return false
 				}
-				const { clanMate } = await usersColl.collection.findOne(
+				const { clanMate } = await usersColl.findOne(
 					{ $text: { $search: fullRSN, $caseSensitive: false } },
 					{ projection: { _id: 0, clanMate: 1 } }
 				)
 
 				switch (param) {
 					case 'id':
-						await usersColl.collection.updateOne(
-							{ clanMate },
-							{ $set: { discord: other.join(' '), discActive: true } }
-						)
+						await usersColl.updateOne({ clanMate }, { $set: { discord: other.join(' '), discActive: true } })
 						return await message.react('✅')
 					case 'discord':
 					case 'discActive':
 						if (other.join(' ') === 'true' || other.join(' ') === 'false') {
-							await usersColl.collection.updateOne(
-								{ clanMate },
-								{ $set: { discActive: booleanConvert(other.join(' ')) } }
-							)
+							await usersColl.updateOne({ clanMate }, { $set: { discActive: booleanConvert(other.join(' ')) } })
 							return await message.react('✅')
 						} else {
 							return message.channel.send('Active state must be set as either `true` or `false`.')
 						}
 					case 'alt':
 						if (other.join(' ') === 'true' || other.join(' ') === 'false') {
-							await usersColl.collection.updateOne({ clanMate }, { $set: { alt: booleanConvert(other.join(' ')) } })
+							await usersColl.updateOne({ clanMate }, { $set: { alt: booleanConvert(other.join(' ')) } })
 							return await message.react('✅')
 						} else {
 							return message.channel.send({
@@ -232,7 +225,7 @@ export default {
 			}
 			;[...rsName] = args
 
-			let findUser = await usersColl.collection.findOne(
+			let findUser = await usersColl.findOne(
 				{ $text: { $search: rsName.join(' '), $caseSensitive: false } },
 				{ projection: { _id: 0, kills: 0 } }
 			)

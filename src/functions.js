@@ -79,8 +79,9 @@ const compressArray = (original) => {
 const randomNum = () => {
 	return Math.round(Math.random() * 10000) + 1
 }
-const removeEvents = async (message, db, module, database, eventTag) => {
-	const channels = await db.channels
+const removeEvents = async (client, message, module, database, eventTag) => {
+	const db = client.database.settings
+	const channels = await client.database.channels
 	try {
 		const eventsChannel = message.guild.channels.cache.get(database.channels.events)
 		const [eventMessageCheck] = database.events.filter((event) => {
@@ -90,10 +91,10 @@ const removeEvents = async (message, db, module, database, eventTag) => {
 		})
 
 		// Remove from events
-		await db.collection.updateOne({ _id: message.guild.id }, { $pull: { events: { eventTag } } })
+		await db.updateOne({ _id: message.guild.id }, { $pull: { events: { eventTag } } })
 
 		// Remove from calendar
-		await db.collection.findOneAndUpdate(
+		await db.findOneAndUpdate(
 			{ _id: message.guild.id, 'calendarID.messageID': eventMessageCheck.calendarID },
 			{ $pull: { 'calendarID.$.events': { eventTag } } }
 		)

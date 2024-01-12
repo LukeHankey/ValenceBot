@@ -1,17 +1,17 @@
 import timers from 'timers/promises'
-import { MongoCollection } from '../../DataBase.js'
 import { merchRegex, otherCalls } from './constants.js'
 import { arrIncludesString, alreadyCalled } from './merchFunctions.js'
 import { addMerchCount, skullTimer, removeReactPermissions, addOtherCount, tenMinutes } from '../index.js'
 import { worldReaction } from './worlds.js'
 
-const dsf = async (client, message, db) => {
-	const channels = await db.channels
-	const scouters = new MongoCollection('ScoutTracker')
+const dsf = async (client, message) => {
+	const db = client.database.settings
+	const channels = await client.database.channels
+	const scouters = client.database.scoutTracker
 	const {
 		merchChannel: { channelID, otherChannelID, messages, otherMessages },
 		disallowedWords
-	} = await db.collection.findOne(
+	} = await db.findOne(
 		{ _id: message.guild.id, merchChannel: { $exists: true } },
 		{
 			projection: {
@@ -26,7 +26,7 @@ const dsf = async (client, message, db) => {
 
 	if (message.author.bot) return
 	if (message.channel.id === channelID) {
-		await addMerchCount(client, message, db, scouters)
+		await addMerchCount(client, message, scouters)
 		if (
 			merchRegex.test(message.content) &&
 			!arrIncludesString(disallowedWords, message.content) &&
@@ -49,10 +49,10 @@ const dsf = async (client, message, db) => {
 			return setTimeout(() => message.delete(), 200)
 		}
 		await timers.setTimeout(tenMinutes)
-		await skullTimer(message, db)
+		await skullTimer(client, message)
 		await removeReactPermissions(message, messages)
 	} else if (message.channel.id === otherChannelID) {
-		await addOtherCount(client, message, db, scouters)
+		await addOtherCount(client, message, scouters)
 		if (
 			!otherCalls.test(message.content) ||
 			arrIncludesString(disallowedWords, message.content) ||
@@ -63,7 +63,7 @@ const dsf = async (client, message, db) => {
 			await worldReaction(message)
 		}
 		await timers.setTimeout(tenMinutes)
-		await skullTimer(message, db, 'other')
+		await skullTimer(client, message, 'other')
 	}
 }
 

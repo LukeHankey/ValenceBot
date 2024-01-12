@@ -1,6 +1,5 @@
 /* eslint-disable no-shadow */
 /* eslint-disable no-inline-comments */
-import { MongoCollection } from '../DataBase.js'
 import { EmbedBuilder } from 'discord.js'
 import Color from '../colors.js'
 import ms from 'pretty-ms'
@@ -20,11 +19,11 @@ export default {
 	usage: ['', '<member ID>', '<@member/@role>', 'all', 'active scouter/verified', 'inactive'],
 	guildSpecific: ['420803245758480405', '668330890790699079'],
 	permissionLevel: 'Everyone',
-	run: async (client, message, args, perms, db) => {
-		const scouters = new MongoCollection('ScoutTracker')
-		const channels = await db.channels
+	run: async (client, message, args, perms) => {
+		const scouters = client.database.scoutTracker
+		const channels = await client.database.channels
 		const memberID = message.member.id
-		const data = await scouters.collection.findOne({ userID: memberID })
+		const data = await scouters.findOne({ userID: memberID })
 		const botRole = message.guild.members.me.roles.cache.find((r) => r.managed)
 		const memberRoles = message.member.roles.highest.position
 
@@ -40,7 +39,7 @@ export default {
 					iconURL: client.user.displayAvatarURL()
 				})
 				.setTimestamp()
-			const userData = [await uData.scoutTracker.collection.findOne({ userID: id })]
+			const userData = [await uData.scoutTracker.findOne({ userID: id })]
 			const memberAssignedRoles = fetchedMember.roles.cache
 				.filter((r) => r.id !== message.guild.id && r.position > botRole.position)
 				.sort((a, b) => b.position - a.position)
@@ -109,7 +108,7 @@ export default {
 			const fetchRole = message.guild.roles.cache.get(id) ?? (await message.guild.roles.fetch(id))
 			const allMem = await message.guild.members.fetch()
 			const fetchAllMem = allMem.filter((mem) => mem.roles.cache.find((r) => r.id === roleObj.id))
-			const memCollection = fetchAllMem.map((mem) => mem.id) || fetchRole.members.map((mem) => mem.id)
+			const me = fetchAllMem.map((mem) => mem.id) || fetchRole.members.map((mem) => mem.id)
 
 			if (botRole.position > roleObj.position) {
 				return message.channel.send({ content: `You can't view the stats for \`${roleObj.name}\`.` })
@@ -122,8 +121,8 @@ export default {
 
 			let newArr = []
 			const fields = []
-			rData = await rData.scoutTracker.collection
-			memCollection.forEach((id) => {
+			rData = await rData.scoutTracker
+			me.forEach((id) => {
 				const x = rData.findOne({ userID: id })
 				newArr.push(x)
 			})
@@ -152,7 +151,7 @@ export default {
 					.then(async (col) => {
 						col = col.first()
 						if (col.content === 'yes') {
-							await scouters.collection.insertOne({
+							await scouters.insertOne({
 								userID: col.author.id,
 								author: col.member.nickname ?? col.author.username,
 								firstTimestamp: col.createdTimestamp,
@@ -209,7 +208,7 @@ export default {
 					? sendUserInfo(userMention.id)
 					: message.channel.send({ content: "You don't have permission to use this command." })
 			} else if (args[0] === 'all') {
-				const scoutTracker = await scouters.collection.find({ count: { $gte: 15 } }).toArray()
+				const scoutTracker = await scouters.find({ count: { $gte: 15 } }).toArray()
 				const items = scoutTracker.sort((a, b) => b.count - a.count)
 				let fields = []
 
@@ -247,7 +246,7 @@ export default {
 						case 'scouter':
 							{
 								const scouter = message.guild.roles.cache.find((r) => r.name.toLowerCase() === 'scouter')
-								scoutTracker = await scouters.collection.find({ 'assigned.0': scouter.id, active: 1 }).toArray()
+								scoutTracker = await scouters.find({ 'assigned.0': scouter.id, active: 1 }).toArray()
 							}
 							break
 						case 'verified scouter':
@@ -257,7 +256,7 @@ export default {
 								const verified = message.guild.roles.cache.find(
 									(r) => r.name.toLowerCase() === 'verified scouter'
 								)
-								scoutTracker = await scouters.collection
+								scoutTracker = await scouters
 									.find({
 										'assigned.1': verified.id,
 										active: 1,
@@ -272,7 +271,7 @@ export default {
 							)
 					}
 				} else {
-					scoutTracker = await scouters.collection.find({ count: { $gte: 15 } }).toArray()
+					scoutTracker = await scouters.find({ count: { $gte: 15 } }).toArray()
 				}
 				const items = scoutTracker.filter((profile) => profile.active).sort((a, b) => b.count - a.count)
 				let fields = []
@@ -305,7 +304,7 @@ export default {
 					.catch(async (err) => channels.errors.send(err))
 			} else if (args[0] === 'inactive') {
 				if (memberRoles < botRole.position) return
-				const scoutTracker = await scouters.collection.find({ count: { $gte: 15 } }).toArray()
+				const scoutTracker = await scouters.find({ count: { $gte: 15 } }).toArray()
 				const items = scoutTracker.filter((profile) => !profile.active).sort((a, b) => a.lastTimestamp - b.lastTimestamp)
 				let fields = []
 

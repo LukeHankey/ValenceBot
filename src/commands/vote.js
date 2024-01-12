@@ -7,8 +7,9 @@ export default {
 	usage: ['<question>'],
 	guildSpecific: 'all',
 	permissionLevel: 'Mod',
-	run: async (client, message, args, perms, db) => {
+	run: async (client, message, args, perms) => {
 		if (!perms.mod) return message.channel.send(perms.errorM)
+		const channels = client.database.channels
 		const content = args.join(' ')
 		if (!content) return message.channel.send({ content: 'Add some context regarding the vote.' })
 
@@ -22,6 +23,6 @@ export default {
 				await m.react('❌')
 				await m.react('❓')
 			})
-			.catch(async (err) => db.channels.errors.send(err))
+			.catch(async (err) => channels.errors.send(err))
 	}
 }
