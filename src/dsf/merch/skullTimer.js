@@ -40,6 +40,25 @@ export const skullTimer = async (client, message, channel = 'merch') => {
 	}
 }
 
+export const mistyEventTimer = (content) => {
+	const timeSplit = /(?<time>\d{1,2}:\d{1,2})/
+	const time = timeSplit.exec(content)?.groups.time
+
+	// Get the type of event and corresponding event duration
+	const callMatch = allEvents.exec(content)?.groups
+	const maxEventTime = eventTimes[Object.entries(callMatch).find(([key, val]) => val !== undefined)?.[0]]
+
+	// All time values are less than 10 minutes so the format will always be X:XX
+	if (time === undefined || time.length > 4) {
+		return maxEventTime
+	} else {
+		const [minute, seconds] = time.split(':')
+		const totalMilliseconds = (Number(minute) * 60 + Number(seconds)) * 1_000
+
+		return maxEventTime - totalMilliseconds
+	}
+}
+
 export const removeReactPermissions = async (message, allMessages) => {
 	const merchChannel = message.channel
 	const channelPermissions = merchChannel.permissionOverwrites.cache.get(message.author.id)
