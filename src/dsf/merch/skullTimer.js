@@ -1,6 +1,16 @@
 import timers from 'timers/promises'
 import { logger } from '../../logging.js'
-import { tenMinutes } from './constants.js'
+import { tenMinutes, allEvents } from './constants.js'
+
+const eventTimes = {
+	merchant: tenMinutes,
+	whirlpool: tenMinutes / 2,
+	sea_monster: tenMinutes / 5,
+	jellyfish: tenMinutes / 5,
+	whale: tenMinutes / 5,
+	treasure_turtle: tenMinutes / 2,
+	arkaneo: 39_000
+}
 
 export const skullTimer = async (client, message, channel = 'merch') => {
 	const messageID = message.id
