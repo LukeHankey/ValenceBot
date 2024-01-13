@@ -1,7 +1,7 @@
 import timers from 'timers/promises'
 import { merchRegex, otherCalls } from './constants.js'
 import { arrIncludesString, alreadyCalled } from './merchFunctions.js'
-import { addMerchCount, skullTimer, removeReactPermissions, addOtherCount, tenMinutes } from '../index.js'
+import { addMerchCount, skullTimer, removeReactPermissions, addOtherCount, mistyEventTimer } from '../index.js'
 import { worldReaction } from './worlds.js'
 
 const dsf = async (client, message) => {
@@ -48,7 +48,8 @@ const dsf = async (client, message) => {
 		} else {
 			return setTimeout(() => message.delete(), 200)
 		}
-		await timers.setTimeout(tenMinutes)
+
+		await timers.setTimeout(mistyEventTimer(message.content))
 		await skullTimer(client, message)
 		await removeReactPermissions(message, messages)
 	} else if (message.channel.id === otherChannelID) {
@@ -62,7 +63,7 @@ const dsf = async (client, message) => {
 		} else {
 			await worldReaction(message)
 		}
-		await timers.setTimeout(tenMinutes)
+		await timers.setTimeout(mistyEventTimer(message.content))
 		await skullTimer(client, message, 'other')
 	}
 }
