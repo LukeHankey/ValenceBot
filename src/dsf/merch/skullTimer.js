@@ -1,6 +1,16 @@
 import timers from 'timers/promises'
 import { logger } from '../../logging.js'
-import { tenMinutes } from './constants.js'
+import { tenMinutes, allEvents } from './constants.js'
+
+const eventTimes = {
+	merchant: tenMinutes,
+	whirlpool: tenMinutes / 2,
+	sea_monster: tenMinutes / 5,
+	jellyfish: tenMinutes / 5,
+	whale: tenMinutes / 5,
+	treasure_turtle: tenMinutes / 2,
+	arkaneo: 39_000
+}
 
 export const skullTimer = async (client, message, channel = 'merch') => {
 	const messageID = message.id
@@ -27,6 +37,25 @@ export const skullTimer = async (client, message, channel = 'merch') => {
 		} else {
 			return channels.errors.send(err)
 		}
+	}
+}
+
+export const mistyEventTimer = (content) => {
+	const timeSplit = /(?<time>\d{1,2}:\d{1,2})/
+	const time = timeSplit.exec(content)?.groups.time
+
+	// Get the type of event and corresponding event duration
+	const callMatch = allEvents.exec(content)?.groups
+	const maxEventTime = eventTimes[Object.entries(callMatch).find(([key, val]) => val !== undefined)?.[0]]
+
+	// All time values are less than 10 minutes so the format will always be X:XX
+	if (time === undefined || time.length > 4) {
+		return maxEventTime
+	} else {
+		const [minute, seconds] = time.split(':')
+		const totalMilliseconds = (Number(minute) * 60 + Number(seconds)) * 1_000
+
+		return maxEventTime - totalMilliseconds
 	}
 }
 
