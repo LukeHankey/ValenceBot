@@ -6,3 +6,5 @@ export const otherCalls =
 export const foreignWorldsRegex =
 	/(^(?:m|merch|merchant|w|world|wp|j|jf|wh|sm|tt|a|ark|whirlpool|whale|jelly|jellyfish|pool|sea monster|treasure turtle|turtle|arkaneo|sailfish){1}\s?((47|75|10[12]|118|121)(([,.\s]|ua|f)?|\s[\W\w\+]*)*)$)/i
 export const tenMinutes = 600_000
+export const allEvents =
+	/^((?<merchant>m|merch|merchant|w|world)|(?<whirlpool>wp|whirlpool|pool)|(?<sea_monster>sm|sea monster)|(?<jellyfish>j|jf|jelly|jellyfish)|(?<whale>wh|whale)|(?<treasure_turtle>tt|turtle|treasure turtle)|(?<arkaneo>a|ark|arkaneo|sailfish))\s?\d{1,3}.*$/i
