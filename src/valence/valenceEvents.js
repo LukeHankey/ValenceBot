@@ -58,9 +58,7 @@ export const vEvents = async (client, message) => {
 			if (collectOneReaction.emoji.name === '❌') {
 				return collectOneReaction.message.reactions.removeAll()
 			} else if (collectOneReaction.emoji.name === '✅') {
-				const newRole = await message.guild.roles.create({
-					name: eventTitle[0].concat(` #${randomNum()}`)
-				})
+				const eventTag = randomNum()
 
 				const calChannel = message.guild.channels.cache.get(calChannelId)
 				const dateRegex =
@@ -102,7 +100,7 @@ export const vEvents = async (client, message) => {
 					const editEmbed = new EmbedBuilder(m.embeds[0].data)
 					editEmbed.addFields({
 						name: date,
-						value: `Event: ${eventTitle[0]}\nTime: ${time}\n[Announcement](${link})\nHost: ${last.author}\nRole: ${newRole}`
+						value: `Event: ${eventTitle[0]}\nTime: ${time}\n[Announcement](${link})\nHost: ${last.author}`
 					})
 					m.edit({ embeds: [editEmbed] })
 					channels.logs.send(
@@ -123,8 +121,7 @@ export const vEvents = async (client, message) => {
 							events: {
 								messageID: last.id,
 								title: eventTitle[0],
-								eventTag: newRole.name.slice(eventTitle[0].length + 2),
-								roleID: newRole.id,
+								eventTag,
 								date: new Date(),
 								dateEnd: dateR,
 								members: [],
@@ -142,15 +139,13 @@ export const vEvents = async (client, message) => {
 							'calendarID.$.events': {
 								messageID: last.id,
 								title: eventTitle[0],
-								eventTag: newRole.name.slice(eventTitle[0].length + 2),
-								roleID: newRole.id
+								eventTag
 							}
 						}
 					}
 				)
 
 				await collectOneReaction.message.reactions.removeAll()
-				await last.react('📌')
 				await last.react('🛑')
 			}
 		} catch (err) {
