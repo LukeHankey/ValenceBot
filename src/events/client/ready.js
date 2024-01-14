@@ -29,74 +29,8 @@ export default async (client) => {
 		activities: [{ type: 'LISTENING', name: 'DMs for queries regarding the bot.' }]
 	})
 
-	const formatTemplate = (data) => {
-		const headers = { clanMate: 'Name', clanRank: 'Rank', totalXP: 'Total XP', kills: 'Kills' }
-		let dataChanged = data[0].potentialNewNames.map((o) => {
-			return { clanMate: o.clanMate, clanRank: o.clanRank, totalXP: o.totalXP, kills: o.kills }
-		})
-		dataChanged.splice(0, 0, headers)
-
-		const padding = (str, start = false, max) => {
-			if (start) {
-				str = str.padStart(str.length, '| ')
-			}
-			const strMax = str.padEnd(max, ' ')
-			return strMax.concat(' | ')
-		}
-		if (!dataChanged.length) return
-		dataChanged = dataChanged.map((profile) => {
-			return `${padding(profile.clanMate, true, Math.max(...dataChanged.map((el) => el.clanMate.length)))}${padding(
-				profile.clanRank,
-				false,
-				Math.max(...dataChanged.map((el) => el.clanRank.length))
-			)}${padding(profile.totalXP, false, Math.max(...dataChanged.map((el) => el.totalXP.length)))}${padding(
-				profile.kills,
-				false,
-				Math.max(...dataChanged.map((el) => el.kills.length))
-			)}`
-		})
-		dataChanged.splice(0, 0, `'${data[0].clanMate}' might have changed names to one of these potential new names.\n`)
-		dataChanged.push(
-			' ',
-			'Reactions:\n✅ Takes the primary suggestion.\n❌ Not changed names or none match.\n📝 Pick another suggestion.'
-		)
-		return dataChanged.join('\n')
-	}
-
-	const postData = async (data) => {
-		if (!data) return
-		const valenceChannels = await db.findOne({ _id: '472448603642920973' }, { projection: { channels: 1 } })
-		const valenceAdminChannel = client.channels.cache.get(valenceChannels.channels.adminChannel)
-		const messageSend = await valenceAdminChannel.send({ content: `${codeBlock(formatTemplate(data))}` })
-		await messageSend.react('✅')
-		await messageSend.react('❌')
-		await messageSend.react('📝')
-
-		await db.updateOne(
-			{ _id: messageSend.guild.id },
-			{
-				$addToSet: {
-					nameChange: {
-						messageID: messageSend.id,
-						data
-					}
-				}
-			}
-		)
-	}
-
 	cron.schedule('0 10 * * *', async () => {
 		sendFact(client)
-	})
-
-	const stream = users.watch({ fullDocument: 'updateLookup' })
-	stream.on('change', (next) => {
-		if (next.updateDescription) {
-			const updated = next.updateDescription.updatedFields
-			if ('potentialNewNames' in updated) {
-				postData([next.fullDocument])
-			}
-		}
 	})
 
 	// Startup check for dsf messages:
