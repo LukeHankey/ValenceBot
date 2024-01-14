@@ -12,7 +12,7 @@ import {
 	removeScouters,
 	startupRemoveReactionPermissions
 } from '../../dsf/index.js'
-import { sendFact, updateRoles } from '../../valence/index.js'
+import { sendFact } from '../../valence/index.js'
 import cron from 'node-cron'
 
 export default async (client) => {
@@ -134,21 +134,6 @@ export default async (client) => {
 		if (new Date().getDay() === 3 && new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
 			scout.send()
 			vScout.send()
-			const allUsers = await users.find({}).toArray()
-			// Flood the cache to make only 1 API request
-			const server = client.guilds.cache.get('472448603642920973')
-			await server.members.fetch()
-
-			let index = 0
-			const interval = setInterval(() => {
-				updateRoles(client, allUsers[index], server, channels, users)
-				index++
-
-				if (index === allUsers.length) {
-					clearInterval(interval)
-					server.members.cache.clear()
-				}
-			}, 1000)
 		}
 
 		// Monthly reset + 1 day
