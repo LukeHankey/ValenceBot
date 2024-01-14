@@ -280,15 +280,12 @@ export default {
 						message = message instanceof Collection ? message.first() : message
 						const calEmbed = new EmbedBuilder(message.embeds[0].data)
 
-						// Create the new role and update the db.collection
-						const newRole = await interaction.guild.roles.create({
-							name: title.concat(` #${randomNum()}`)
-						})
+						const eventTag = String(randomNum())
 
 						if (pos) {
 							calEmbed.spliceFields(pos - 1, 0, {
 								name: date,
-								value: `Event: ${title}\nTime: ${time}\n[Announcement](${announcement})\nHost: ${member}\nRole: ${newRole}`
+								value: `Event: ${title}\nTime: ${time}\n[Announcement](${announcement})\nHost: ${member}`
 							})
 
 							await message.edit({ embeds: [calEmbed] })
@@ -299,7 +296,7 @@ export default {
 						} else {
 							calEmbed.addFields({
 								name: date,
-								value: `Event: ${title}\nTime: ${time}\n[Announcement](${announcement})\nHost: ${member}\nRole: ${newRole}`
+								value: `Event: ${title}\nTime: ${time}\n[Announcement](${announcement})\nHost: ${member}`
 							})
 
 							// Edit the embed with the new event
@@ -317,8 +314,7 @@ export default {
 									'calendarID.$.events': {
 										messageID: announcement.split('/')[6],
 										title,
-										eventTag: newRole.name.slice(title.length + 2),
-										roleID: newRole.id
+										eventTag
 									}
 								}
 							}
@@ -331,11 +327,9 @@ export default {
 									events: {
 										messageID: announcement.split('/')[6],
 										title,
-										eventTag: newRole.name.slice(title.length + 2),
-										roleID: newRole.id,
+										eventTag,
 										date: new Date(),
 										dateEnd: date,
-										members: [],
 										month
 									}
 								}
@@ -355,7 +349,6 @@ export default {
 
 						const eventChannel = client.channels.cache.get(eventChannelId)
 						const eventMessage = await eventChannel.messages.fetch(eventMessageId)
-						await eventMessage.react('📌')
 						await eventMessage.react('🛑')
 					} catch (err) {
 						if (err.name === 'TypeError') {
@@ -389,7 +382,16 @@ export default {
 						const calEmbed = new EmbedBuilder(message.embeds[0].data)
 						const existingFields = calEmbed.data.fields[position - 1]
 						const oldValues = existingFields.value.split('\n')
-						const roleId = oldValues[4].slice(9, 27)
+
+						const eventPostTitle = oldValues[0].slice(7).trim()
+						const eventPostMessageId = oldValues[2].split('/')[6].slice(0, -1)
+						const eventPostDate = existingFields.name.trim()
+						const eventPost = dataFromDb.events.filter(
+							(event) =>
+								event.messageID === eventPostMessageId &&
+								event.title.trim() === eventPostTitle &&
+								eventPostDate === event.dateEnd.trim()
+						)[0]
 
 						switch (field) {
 							case 'date':
@@ -399,15 +401,8 @@ export default {
 								})
 								await message.edit({ embeds: [calEmbed] })
 								await db.findOneAndUpdate(
-									{ _id: message.guild.id, 'events.roleID': roleId },
-									{ $set: { 'events.$.title': value } }
-								)
-								await db.updateOne(
-									{ _id: message.guild.id },
-									{ $set: { 'calendarID.$[month].events.$[fieldName].title': value } },
-									{
-										arrayFilters: [{ 'month.month': month }, { 'fieldName.title': { $ne: value } }]
-									}
+									{ _id: message.guild.id, 'events.eventTag': eventPost.eventTag },
+									{ $set: { 'events.$.dateEnd': value } }
 								)
 								break
 							case 'announcement':
@@ -419,7 +414,7 @@ export default {
 									})
 									await message.edit({ embeds: [calEmbed] })
 									await db.findOneAndUpdate(
-										{ _id: message.guild.id, 'events.roleID': roleId },
+										{ _id: message.guild.id, 'events.eventTag': eventPost.eventTag },
 										{ $set: { 'events.$.messageID': value.split('/')[6] } }
 									)
 									await db.updateOne(
@@ -448,6 +443,12 @@ export default {
 									value: existingFields.value.replace(valueToReplace, `${valueName}: ${value}`)
 								})
 								await message.edit({ embeds: [calEmbed] })
+								if (valueName === 'Event') {
+									await db.findOneAndUpdate(
+										{ _id: message.guild.id, 'events.eventTag': eventPost.eventTag },
+										{ $set: { 'events.$.title': value } }
+									)
+								}
 							}
 						}
 
@@ -492,16 +493,18 @@ export default {
 					})
 
 					for (const item of logValues) {
-						const items = item.split('\n')
-						const title = items[1].slice(7)
-						const roleId = items[5].match(/(\d+)/)[0]
-						const role = message.guild.roles.cache.get(roleId) ?? (await message.guild.roles.fetch(roleId))
-						const eventTag =
-							role instanceof Collection
-								? role.first().name.slice(title.length + 2)
-								: role.name.slice(title.length + 2)
+						const itemSplit = item.split('\n')
+						const eventPostMessageId = itemSplit[3].split('/')[6].slice(0, -1)
+						const eventPostTitle = itemSplit[1].slice(7).trim()
+						const eventPostDate = itemSplit[0].trim()
+						const eventPost = dataFromDb.events.filter(
+							(event) =>
+								event.messageID === eventPostMessageId &&
+								event.title.trim() === eventPostTitle &&
+								eventPostDate === event.dateEnd.trim()
+						)[0]
 
-						await removeEvents(client, interaction, 'calendar', dataFromDb, eventTag)
+						await removeEvents(client, interaction, 'calendar', dataFromDb, eventPost.eventTag)
 					}
 				}
 				break
@@ -546,29 +549,33 @@ export default {
 
 						const item = event.value.split('\n')
 
-						const roleId = item[4].slice(9, -1)
-						const role = interaction.guild.roles.cache.get(roleId)
-						const title = item[0].slice(7)
+						const title = item[0].slice(7).trim()
 						const announcement = item[2].slice(15, -1)
 						const messageId = announcement.split('/')[6] ?? null
-						const eventTag = role.name.slice(title.length + 2)
+						const eventPostDate = event.name.trim()
+						const eventPost = dataFromDb.events.filter(
+							(event) =>
+								event.messageID === messageId &&
+								event.title.trim() === title &&
+								eventPostDate === event.dateEnd.trim()
+						)[0]
 
 						await db.findOneAndUpdate(
 							{ _id: interaction.guild.id, 'calendarID.month': monthFromDb[0].month },
-							{ $pull: { 'calendarID.$.events': { eventTag } } }
+							{ $pull: { 'calendarID.$.events': { eventTag: eventPost.eventTag } } }
 						)
 
 						await db.findOneAndUpdate(
 							{ _id: interaction.guild.id, 'calendarID.month': monthFromDbTo[0].month },
 							{
 								$push: {
-									'calendarID.$.events': { messageId, title, eventTag, roleId }
+									'calendarID.$.events': { messageId, title, eventTag: eventPost.eventTag }
 								}
 							}
 						)
 
 						await db.findOneAndUpdate(
-							{ _id: interaction.guild.id, 'events.roleID': roleId },
+							{ _id: interaction.guild.id, eventTag: eventPost.eventTag },
 							{ $set: { 'events.$.month': monthFromDbTo[0].month } }
 						)
 					} else {

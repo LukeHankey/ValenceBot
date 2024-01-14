@@ -1,9 +1,9 @@
-import { EmbedBuilder } from 'discord.js'
+import { EmbedBuilder, Collection } from 'discord.js'
 import { randomNum } from '../functions.js'
 
 export const vEvents = async (client, message) => {
 	const db = client.database.settings
-	const channels = client.database.channels
+	const channels = await client.database.channels
 	const DB = await db.findOne(
 		{ _id: message.guild.id, 'channels.events': { $exists: true } },
 		{ projection: { channels: 1, calendarID: 1 } }
@@ -58,9 +58,7 @@ export const vEvents = async (client, message) => {
 			if (collectOneReaction.emoji.name === '❌') {
 				return collectOneReaction.message.reactions.removeAll()
 			} else if (collectOneReaction.emoji.name === '✅') {
-				const newRole = await message.guild.roles.create({
-					name: eventTitle[0].concat(` #${randomNum()}`)
-				})
+				const eventTag = String(randomNum())
 
 				const calChannel = message.guild.channels.cache.get(calChannelId)
 				const dateRegex =
@@ -70,7 +68,7 @@ export const vEvents = async (client, message) => {
 				const link = `https://discord.com/channels/${last.guild.id}/${last.channel.id}/${last.id}`
 				const thisCal = await DB.calendarID.filter((prop) => prop.year === currentYear && prop.month === currentMonth)
 				let m = await calChannel.messages.fetch(thisCal[0].messageID)
-				m = m.first()
+				m = m instanceof Collection ? m.first() : m
 				let dateR, timeR
 
 				dateRegex.exec(last.content) === null ? (dateR = 'null') : (dateR = dateRegex.exec(last.content)[0])
@@ -102,7 +100,7 @@ export const vEvents = async (client, message) => {
 					const editEmbed = new EmbedBuilder(m.embeds[0].data)
 					editEmbed.addFields({
 						name: date,
-						value: `Event: ${eventTitle[0]}\nTime: ${time}\n[Announcement](${link})\nHost: ${last.author}\nRole: ${newRole}`
+						value: `Event: ${eventTitle[0]}\nTime: ${time}\n[Announcement](${link})\nHost: ${last.author}`
 					})
 					m.edit({ embeds: [editEmbed] })
 					channels.logs.send(
@@ -123,11 +121,9 @@ export const vEvents = async (client, message) => {
 							events: {
 								messageID: last.id,
 								title: eventTitle[0],
-								eventTag: newRole.name.slice(eventTitle[0].length + 2),
-								roleID: newRole.id,
+								eventTag,
 								date: new Date(),
-								dateEnd: dateR,
-								members: [],
+								dateEnd: dateR.slice(6),
 								month: currentMonth,
 								calendarID: m.id
 							}
@@ -142,15 +138,13 @@ export const vEvents = async (client, message) => {
 							'calendarID.$.events': {
 								messageID: last.id,
 								title: eventTitle[0],
-								eventTag: newRole.name.slice(eventTitle[0].length + 2),
-								roleID: newRole.id
+								eventTag
 							}
 						}
 					}
 				)
 
 				await collectOneReaction.message.reactions.removeAll()
-				await last.react('📌')
 				await last.react('🛑')
 			}
 		} catch (err) {

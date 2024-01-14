@@ -13,7 +13,7 @@ const factEmbed = (factMessage) => {
 
 export const sendFact = async (client) => {
 	const vFactsColl = client.database.facts
-	const count = await vFactsColl.stats().then((res) => {
+	const count = await client.database.db.command({ collStats: 'Facts' }).then((res) => {
 		return res.count
 	})
 	const random = Math.floor(Math.random() * count + 1)
