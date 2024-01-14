@@ -1,9 +1,9 @@
-import { EmbedBuilder } from 'discord.js'
+import { EmbedBuilder, Collection } from 'discord.js'
 import { randomNum } from '../functions.js'
 
 export const vEvents = async (client, message) => {
 	const db = client.database.settings
-	const channels = client.database.channels
+	const channels = await client.database.channels
 	const DB = await db.findOne(
 		{ _id: message.guild.id, 'channels.events': { $exists: true } },
 		{ projection: { channels: 1, calendarID: 1 } }
@@ -68,7 +68,7 @@ export const vEvents = async (client, message) => {
 				const link = `https://discord.com/channels/${last.guild.id}/${last.channel.id}/${last.id}`
 				const thisCal = await DB.calendarID.filter((prop) => prop.year === currentYear && prop.month === currentMonth)
 				let m = await calChannel.messages.fetch(thisCal[0].messageID)
-				m = m.first()
+				m = m instanceof Collection ? m.first() : m
 				let dateR, timeR
 
 				dateRegex.exec(last.content) === null ? (dateR = 'null') : (dateR = dateRegex.exec(last.content)[0])
@@ -124,7 +124,6 @@ export const vEvents = async (client, message) => {
 								eventTag,
 								date: new Date(),
 								dateEnd: dateR,
-								members: [],
 								month: currentMonth,
 								calendarID: m.id
 							}

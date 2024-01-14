@@ -99,9 +99,6 @@ const removeEvents = async (client, message, module, database, eventTag) => {
 			{ $pull: { 'calendarID.$.events': { eventTag } } }
 		)
 
-		// Remove role from server
-		await message.guild.roles.fetch(eventMessageCheck.roleID).then((r) => r.delete())
-
 		const calChannel = message.guild.channels.cache.get(database.channels.calendar)
 
 		if (eventMessageCheck.messageID) {
@@ -124,9 +121,16 @@ const removeEvents = async (client, message, module, database, eventTag) => {
 		const fields = calMessage.embeds[0].data.fields
 
 		const foundIndex = fields.findIndex((field) => {
-			const roleItem = field.value.split('\n')[4]
-			const roleId = roleItem.slice(9, 27)
-			return roleId === eventMessageCheck.roleID
+			const eventItems = field.value.split('\n')
+			const title = eventItems[0].slice(7)
+			const messageId = eventItems[2].split('/')[6].slice(0, -1)
+			const date = field.name
+
+			return (
+				title === eventMessageCheck.title &&
+				messageId === eventMessageCheck.messageID &&
+				date === eventMessageCheck.dateEnd.slice(6)
+			)
 		})
 
 		const removedItem = [fields[foundIndex]].map((obj) => `${obj.name}\n${obj.value}`)
