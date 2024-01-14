@@ -58,7 +58,7 @@ export const vEvents = async (client, message) => {
 			if (collectOneReaction.emoji.name === '❌') {
 				return collectOneReaction.message.reactions.removeAll()
 			} else if (collectOneReaction.emoji.name === '✅') {
-				const eventTag = randomNum()
+				const eventTag = String(randomNum())
 
 				const calChannel = message.guild.channels.cache.get(calChannelId)
 				const dateRegex =

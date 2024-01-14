@@ -37,14 +37,11 @@ export default {
 					// Listing events
 					const link = `https://discord.com/channels/${data._id}/${data.channels.events}/`
 					const fieldHolder = data.events.map((obj) => {
-						const members = obj.members.map((mem) => {
-							return `<@!${mem}>`
-						})
 						return {
 							name: obj.title,
-							value: `ID: ${obj.eventTag}\nRole: <@&${obj.roleID}>\n[Event posted ${
+							value: `ID: ${obj.eventTag}\n[Event posted ${
 								obj.date ? 'on ' + obj.date.toString().split(' ').slice(0, 4).join(' ') : ''
-							}](${link}${obj.messageID})\nEvent ends on ${obj.dateEnd}\nInterested 📌: ${members.join(', ')}`
+							}](${link}${obj.messageID})\nEvent ends on ${obj.dateEnd}`
 						}
 					})
 
@@ -70,6 +67,7 @@ export default {
 							} else return undefined
 						})
 						.filter((valid) => valid)
+
 					if (checkEventExists.length && checkEventExists[0].value) {
 						await removeEvents(client, interaction, 'events', data, tag)
 						return interaction.reply({ content: 'Event has been removed.', ephemeral: true })
@@ -98,6 +96,7 @@ export default {
 							} else return undefined
 						})
 						.filter((valid) => valid)
+
 					if (checkEventExists.length && checkEventExists[0].value) {
 						await removeEvents(client, message, 'events', data, tag)
 						return message.react('✅')
@@ -114,14 +113,11 @@ export default {
 					// Listing events
 					const link = `https://discord.com/channels/${data._id}/${data.channels.events}/`
 					const fieldHolder = data.events.map((obj) => {
-						const members = obj.members.map((mem) => {
-							return `<@!${mem}>`
-						})
 						return {
 							name: obj.title,
-							value: `ID: ${obj.eventTag}\nRole: <@&${obj.roleID}>\n[Event posted ${
+							value: `ID: ${obj.eventTag}\n[Event posted ${
 								obj.date ? 'on ' + obj.date.toString().split(' ').slice(0, 4).join(' ') : ''
-							}](${link}${obj.messageID})\nEvent ends on ${obj.dateEnd}\nInterested 📌: ${members.join(', ')}`
+							}](${link}${obj.messageID})\nEvent ends on ${obj.dateEnd}`
 						}
 					})
 
