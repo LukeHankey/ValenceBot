@@ -1,8 +1,6 @@
 /* eslint-disable no-unused-vars */
-import cron from 'node-cron'
 import { Client, Collection } from 'discord.js'
 import { MongoDataBase } from './DataBase.js'
-import { getData, addActive } from './scheduler/clan.js'
 import { Load } from './handlers/index.js'
 import { logger } from './logging.js'
 import dotenv from 'dotenv'
@@ -30,16 +28,5 @@ process.on('unhandledRejection', (reason, p) => {
 })
 
 client.login(process.env.NODE_ENV === 'DEV' ? process.env.DEVELOPMENT_BOT : process.env.BOT_TOKEN)
-
-// Daily at 5am
-cron.schedule('0 5 * * *', async () => {
-	logger.info('running')
-	await addActive(client.database.users)
-})
-
-// Daily at 10am
-cron.schedule('0 10 * * *', async () => {
-	await getData(client.database.users)
-})
 
 export default client
