@@ -123,7 +123,7 @@ export const vEvents = async (client, message) => {
 								title: eventTitle[0],
 								eventTag,
 								date: new Date(),
-								dateEnd: dateR,
+								dateEnd: dateR.slice(6),
 								month: currentMonth,
 								calendarID: m.id
 							}
