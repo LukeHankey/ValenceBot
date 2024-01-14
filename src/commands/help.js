@@ -69,7 +69,7 @@ export default {
 						{ name: `**Message Commands (${prefix}):**`, value: joinMessage, inline: false },
 						{
 							name: `**The bot prefix is: ${prefix}**`,
-							value: `\nYou can send \`${prefix}help [command name]\` to get info on a specific command!`,
+							value: `\nYou can send \`${prefix}help [command name]\` to get info on a specific command!\n\n[Privacy Policy](https://github.com/LukeHankey/ValenceBot/blob/main/PRIVACY_POLICY.md) | [Terms of Service](https://github.com/LukeHankey/ValenceBot/blob/main/TOS.md)`,
 							inline: false
 						}
 					)
