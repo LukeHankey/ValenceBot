@@ -129,7 +129,7 @@ const removeEvents = async (client, message, module, database, eventTag) => {
 			return (
 				title === eventMessageCheck.title &&
 				messageId === eventMessageCheck.messageID &&
-				date === eventMessageCheck.dateEnd.slice(6)
+				date === eventMessageCheck.dateEnd
 			)
 		})
 

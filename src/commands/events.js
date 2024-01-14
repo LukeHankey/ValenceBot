@@ -63,7 +63,7 @@ export default {
 					const checkEventExists = data.events
 						.map((event) => {
 							if (event.eventTag === tag) {
-								return { value: true, message: event.messageID, role: event.roleID }
+								return { value: true, message: event.messageID }
 							} else return undefined
 						})
 						.filter((valid) => valid)
@@ -92,7 +92,7 @@ export default {
 					const checkEventExists = data.events
 						.map((event) => {
 							if (event.eventTag === tag) {
-								return { value: true, message: event.messageID, role: event.roleID }
+								return { value: true, message: event.messageID }
 							} else return undefined
 						})
 						.filter((valid) => valid)
