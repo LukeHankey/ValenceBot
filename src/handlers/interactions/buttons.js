@@ -189,8 +189,8 @@ export const buttons = async (client, interaction, data, cache) => {
 	if (userId) userId = userId.split(' ').slice(3)[0].slice(3, -1)
 	buttonLogger.scouters = scouters
 
-	const guildMember = await interaction.guild.members.fetch(userId)
 	if (userId) {
+		const guildMember = interaction.guild.members.cache.get(userId)
 		if (guildMember.roles.cache.hasAny('775940649802793000', '775941183716851764')) {
 			generalChannel = interaction.guild.channels.cache.find((c) => c.id === '777598845655842836') // scouters
 		}
