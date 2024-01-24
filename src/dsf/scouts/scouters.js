@@ -139,7 +139,7 @@ const removeScouters = async (options) => {
 					assigned: [],
 					active: 0,
 					lastTimestamp: Date.now(), // Give them 6 months before being cleared from DB
-					lastTimestampReadble: new Date(Date.now())
+					lastTimestampReadable: new Date(Date.now())
 				}
 			}
 		)
