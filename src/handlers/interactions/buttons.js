@@ -14,7 +14,6 @@ import Ticket from '../../ticket.js'
 import camelCase from 'camelcase'
 import { logger } from '../../logging.js'
 import { getWorldNumber } from '../../dsf/index.js'
-import timers from 'timers/promises'
 
 class ButtonWarning {
 	UNLOGGED_NAMES = ['Clear Buttons', 'Silly Fun', 'Foreign World']
@@ -189,8 +188,10 @@ export const buttons = async (client, interaction, data, cache) => {
 	if (userId) userId = userId.split(' ').slice(3)[0].slice(3, -1)
 	buttonLogger.scouters = scouters
 
+	// Bot user. This will be overwritten in buttons where userId is required.
+	let guildMember = interaction.guild.members.cache.get('668330399033851924')
 	if (userId) {
-		const guildMember = interaction.guild.members.cache.get(userId)
+		guildMember = interaction.guild.members.cache.get(userId)
 		if (guildMember.roles.cache.hasAny('775940649802793000', '775941183716851764')) {
 			generalChannel = interaction.guild.channels.cache.find((c) => c.id === '777598845655842836') // scouters
 		}
@@ -229,9 +230,8 @@ export const buttons = async (client, interaction, data, cache) => {
 					const potentialPassowrd = content.split(' ').slice(2).join(' ')
 					const passwordDM = `${serverName}\n\nHello.\n\nWe saw you typed into the <#${data.merchChannel.channelID}> channel on ${timestamp} and the Deep Sea Fishing Admins have flagged this as a potential password which is why you are receiving this DM. That specific channel has all messages logged.\n\nYour message content: ${potentialPassowrd}\n\nIf it is a password, then we recommend that you change it ASAP, even though it got deleted straight away. Please respond with one of the selections to let our Admins know if we should also delete that message from our message logs.\n\nDSF Admin Team.`
 
-					const fetchUser = await interaction.guild.members.fetch(userId)
 					try {
-						await fetchUser.send({ content: passwordDM, components: [menu] })
+						await guildMember.send({ content: passwordDM, components: [menu] })
 					} catch (err) {
 						await interaction.update({ components: [] })
 						return await interaction.followUp({ content: 'Unable to send messages to this user.' })
@@ -249,8 +249,10 @@ export const buttons = async (client, interaction, data, cache) => {
 							.setStyle(ButtonStyle.Primary)
 					])
 					await interaction.update({ components: [row] })
-					logger.verbose(`Action: Password Button\nBy: ${interaction.user.username}\nUser: ${fetchUser.user.username}`)
-					cache.set(fetchUser.user.id, interaction.message.id)
+					logger.verbose(
+						`Action: Password Button\nBy: ${interaction.user.username}\nUser: ${guildMember.user.username}`
+					)
+					cache.set(guildMember.user.id, interaction.message.id)
 					await buttonLogger.upload(userId)
 				}
 				break
@@ -285,9 +287,8 @@ export const buttons = async (client, interaction, data, cache) => {
 					const warningCount = profile?.warnings.filter((w) => w.button === buttonLogger.buttonName)
 					if (warningCount.length >= 3) {
 						const banChannel = interaction.guild.channels.cache.get('624655664920395786')
-						const member = await interaction.guild.members.fetch(userId)
 						const mutedRole = interaction.guild.roles.cache.find((r) => r.name === 'Muted')
-						member.roles.add(mutedRole)
+						guildMember.roles.add(mutedRole)
 						const displayFields = warningCount
 							.map((w) => {
 								return `${new Date(w.timestamp).toUTCString()}: ${w.content}`
@@ -295,7 +296,7 @@ export const buttons = async (client, interaction, data, cache) => {
 							.reverse()
 							.slice(0, 5)
 						await banChannel.send({
-							content: `${member.toString()} (${userId}) has been Muted.\n\n**Recent Hisory:**\n${displayFields.join(
+							content: `${guildMember.toString()} (${userId}) has been Muted.\n\n**Recent Hisory:**\n${displayFields.join(
 								'\n'
 							)}`
 						})
@@ -358,7 +359,6 @@ export const buttons = async (client, interaction, data, cache) => {
 				break
 			case 'Timeout':
 				{
-					const member = await interaction.guild.members.fetch(userId)
 					const bansChannel = interaction.guild.channels.cache.get('624655664920395786')
 					await buttonLogger.upload(userId, { content, timestamp, warning: true })
 
@@ -385,12 +385,12 @@ export const buttons = async (client, interaction, data, cache) => {
 							default:
 								minutes = 1440
 						}
-						await member.disableCommunicationUntil(
+						await guildMember.disableCommunicationUntil(
 							Date.now() + minutes * 60 * 1000,
-							`${interaction.member.displayName}: Timeout ${member.displayName} for 10 minutes.`
+							`${interaction.member.displayName}: Timeout ${guildMember.displayName} for 10 minutes.`
 						)
 						await bansChannel.send({
-							content: `${member.toString()} has been timed out by ${
+							content: `${guildMember.toString()} has been timed out by ${
 								interaction.member.displayName
 							} for ${minutes} minutes.\n\n**Recent Hisory:**\n${displayFields.join('\n')}`
 						})
@@ -399,7 +399,7 @@ export const buttons = async (client, interaction, data, cache) => {
 						if (err.code === 50013) {
 							// Missing Permissions
 							interaction.reply({
-								content: `Unable to timeout ${member.displayName}. Missing Permissions.`
+								content: `Unable to timeout ${guildMember.displayName}. Missing Permissions.`
 							})
 						} else {
 							channels.errors.send(err)
@@ -564,17 +564,6 @@ export const buttons = async (client, interaction, data, cache) => {
 				})
 				await interaction.update({ components: [] })
 				break
-			case 'Jagex-DSF Scouting Partnership':
-				await interaction.reply({ ephemeral: true, content: '<https://www.youtube.com/watch?v=dQw4w9WgXcQ>' })
-				await timers.setTimeout(7_500)
-				await interaction.followUp({ ephemeral: true, content: "You've been rick rolled. Happy April Fools Day!" })
-				await db.updateOne(
-					{ _id: interaction.guild.id },
-					{
-						$inc: { 'aprilFools.count': 1 },
-						$addToSet: { 'aprilFools.fools': interaction.member.id }
-					}
-				)
 		}
 	} catch (err) {
 		channels.errors.send(err)

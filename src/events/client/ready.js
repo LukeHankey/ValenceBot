@@ -19,7 +19,6 @@ export default async (client) => {
 	await client.database.connect()
 
 	const db = client.database.settings
-	const users = client.database.users
 	const logger = client.logger
 	logger.info('Ready!')
 	const channels = await client.database.channels

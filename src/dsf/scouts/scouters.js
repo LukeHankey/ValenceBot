@@ -91,8 +91,8 @@ const removeInactives = async (client, name, scoutTracker) => {
 const logRemovedScouts = (allItems, channels) => {
 	if (allItems.length) {
 		const split = splitMessage(`${allItems.join('\n')}`)
-		return split.forEach(async (content) =>
-			channels.dsfOwners.send(`${allItems.length} profiles removed.\n${codeBlock(content)}`)
+		return split.forEach(
+			async (content) => await channels.dsfOwners.send(`${allItems.length} profiles removed.\n${codeBlock(content)}`)
 		)
 	}
 }
