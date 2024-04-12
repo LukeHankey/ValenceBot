@@ -276,7 +276,7 @@ export const buttons = async (client, interaction, data, cache) => {
 			case 'Eyes on Call Channels':
 				{
 					const welcomeChannel = interaction.guild.channels.cache.find((c) => c.name === 'welcome')
-					const nonsenseMessage = `<@!${userId}>, <#${data.merchChannel.channelID}> and <#${data.merchChannel.otherChannelID}> is for calls only. Please read <#${welcomeChannel.id}> and <#${rulesChannel.id}>.`
+					const nonsenseMessage = `<@!${userId}>, <#${data.merchChannel.channelID}> and <#${data.merchChannel.otherChannelID}> are for calls only. Please read <#${welcomeChannel.id}> and <#${rulesChannel.id}>.`
 
 					await generalChannel.send({ content: nonsenseMessage })
 					await interaction.update({ components: [] })
