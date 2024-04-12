@@ -429,7 +429,7 @@ export const buttons = async (client, interaction, data, cache) => {
 					}
 				}
 				break
-			case 'Resolve Issue':
+			case 'Close Ticket':
 				{
 					const buttonDisabled = new ActionRowBuilder().addComponents([
 						new ButtonBuilder(interaction.message.components[0].components[0].data)
