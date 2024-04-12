@@ -106,8 +106,8 @@ export default class Ticket {
 	async _sendInitialResponse(channel, memberId) {
 		const resolveButton = new ActionRowBuilder().addComponents([
 			new ButtonBuilder()
-				.setCustomId('Resolve Issue')
-				.setLabel('Resolve Issue')
+				.setCustomId('Close Ticket')
+				.setLabel('Close Ticket')
 				.setStyle(ButtonStyle.Success)
 				.setEmoji({ name: '❗' })
 		])
