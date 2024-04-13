@@ -8,3 +8,5 @@ export const foreignWorldsRegex =
 export const tenMinutes = 600_000
 export const allEvents =
 	/^((?<merchant>m|merch|merchant|w|world)|(?<whirlpool>wp|whirlpool|pool)|(?<sea_monster>sm|sea monster)|(?<jellyfish>j|jf|jelly|jellyfish)|(?<whale>wh|whale)|(?<treasure_turtle>tt|turtle|treasure turtle)|(?<arkaneo>a|ark|arkaneo|sailfish))\s?\d{1,3}.*$/i
+export const worldFullMessage =
+	'Hello everyone! There are currently some worlds full. If there are merchants called and the world is full, when you try to join the server, you will be disconnected. To fix this problem, lobby first, then join the world. You will be placed in a queue to join the world.'

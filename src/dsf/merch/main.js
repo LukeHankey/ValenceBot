@@ -1,8 +1,8 @@
 import timers from 'timers/promises'
-import { merchRegex, otherCalls } from './constants.js'
+import { merchRegex, otherCalls, worldFullMessage } from './constants.js'
 import { arrIncludesString, alreadyCalled } from './merchFunctions.js'
 import { addMerchCount, skullTimer, removeReactPermissions, addOtherCount, mistyEventTimer } from '../index.js'
-import { worldReaction } from './worlds.js'
+import { worldReaction, getWorldNumber } from './worlds.js'
 
 const dsf = async (client, message) => {
 	const db = client.database.settings
@@ -47,6 +47,10 @@ const dsf = async (client, message) => {
 			await worldReaction(message)
 		} else {
 			return setTimeout(() => message.delete(), 200)
+		}
+
+		if (getWorldNumber(message) === 84) {
+			await message.channel.send({ content: worldFullMessage })
 		}
 
 		await timers.setTimeout(mistyEventTimer(message.content))
