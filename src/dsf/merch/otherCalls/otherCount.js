@@ -61,7 +61,6 @@ export const addOtherCount = async (client, message, scouters) => {
 				lastTimestamp: msg[0].createdTimestamp,
 				lastTimestampReadable: new Date(msg[0].createdTimestamp),
 				count: 0,
-				game: 0,
 				otherCount: 1,
 				active: 1,
 				assigned: []

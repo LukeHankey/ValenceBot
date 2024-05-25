@@ -72,7 +72,7 @@ export default {
 							oldScoutCheck() ? `(+${values.oldScout.count})` : ''
 						}\nOther count: ${values.otherCount} ${
 							oldScoutCheck() ? `(+${values.oldScout.otherCount})` : ''
-						}\nGame count: ${values.game}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`,
+						}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`,
 						inline: true
 					},
 					{
@@ -159,7 +159,6 @@ export default {
 								lastTimestamp: col.createdTimestamp,
 								lastTimestampReadable: new Date(col.createdTimestamp),
 								count: 0,
-								game: 0,
 								active: 1,
 								otherCount: 0,
 								assigned: []

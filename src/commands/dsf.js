@@ -19,8 +19,8 @@ export default {
 		'Displays all of the current stored messages in other-dsf-calls.',
 		'Clears all of the current stored messages in other-dsf-calls.',
 		'Shows the list of potential scouters/verified scouters with the set scout count, or count adjusted.',
-		'Add 1 or <num> merch/other/game count to the member provided.',
-		'Remove 1 or <num> merch/other/game count to the member provided.'
+		'Add 1 or <num> merch/other to the member provided.',
+		'Remove 1 or <num> merch/other to the member provided.'
 	],
 	usage: [
 		'messages',
@@ -28,8 +28,8 @@ export default {
 		'other',
 		'other clear',
 		'view scouter/verified <num (optional)>',
-		'user memberID/@member add <num (optional)> <other/game>',
-		'user memberID/@member remove <num (optional)> <other/game>'
+		'user memberID/@member add <num (optional)> <other>',
+		'user memberID/@member remove <num (optional)> <other>'
 	],
 	guildSpecific: ['668330890790699079', '420803245758480405'],
 	permissionLevel: 'Admin',
@@ -247,17 +247,6 @@ export default {
 							)
 							if (reaction) return message.react('✅')
 							else return message.react('❌')
-						} else if (num === 'game') {
-							await scouters.updateOne(
-								{ userID: userMention },
-								{
-									$inc: {
-										game: 1
-									}
-								}
-							)
-							if (reaction) return message.react('✅')
-							else return message.react('❌')
 						} else {
 							if (isNaN(parseInt(num))) {
 								return message.channel.send({ content: `\`${num}\` is not a number.` })
@@ -312,17 +301,6 @@ export default {
 							)
 							if (reaction) return message.react('✅')
 							else return message.react('❌')
-						} else if (num === 'game') {
-							await scouters.updateOne(
-								{ userID: userMention },
-								{
-									$inc: {
-										game: -1
-									}
-								}
-							)
-							if (reaction) return message.react('✅')
-							else return message.react('❌')
 						} else {
 							if (isNaN(parseInt(num))) {
 								return message.channel.send(`\`${num}\` is not a number.`)
@@ -363,7 +341,7 @@ export default {
 					embeds: [
 						nEmbed(
 							'**DSF Admin Commands List**',
-							"Here's a list of all the DSF commands you can use. Any parameter(s) in `<>` are optional:\n\n`messages|m`\n`messages|m clear`\n`other|o`\n`other|o clear`\n`view scouter <num>`\n`view verified <num>`\n`user memberID/@member add <other/game> <num>`\n`user memberID/@member remove <other/game> <num>`",
+							"Here's a list of all the DSF commands you can use. Any parameter(s) in `<>` are optional:\n\n`messages|m`\n`messages|m clear`\n`other|o`\n`other|o clear`\n`view scouter <num>`\n`view verified <num>`\n`user memberID/@member add <other> <num>`\n`user memberID/@member remove <other> <num>`",
 							Color.cyan,
 							client.user.displayAvatarURL()
 						)

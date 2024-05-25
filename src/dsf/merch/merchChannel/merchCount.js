@@ -64,7 +64,6 @@ export const addMerchCount = async (client, message, scouter) => {
 				lastTimestamp: msg[0].createdTimestamp,
 				lastTimestampReadable: new Date(msg[0].createdTimestamp),
 				count: 1,
-				game: 0,
 				otherCount: 0,
 				active: 1,
 				assigned: []
