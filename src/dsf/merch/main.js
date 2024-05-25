@@ -67,6 +67,11 @@ const dsf = async (client, message) => {
 		} else {
 			await worldReaction(message)
 		}
+
+		if (getWorldNumber(message) === 84) {
+			await message.channel.send({ content: worldFullMessage })
+		}
+
 		await timers.setTimeout(mistyEventTimer(message.content))
 		await skullTimer(client, message, 'other')
 	}
