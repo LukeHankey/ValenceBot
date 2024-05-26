@@ -64,7 +64,6 @@ class ButtonWarning {
 				lastTimestamp: message.createdTimestamp,
 				lastTimestampReadable: new Date(message.createdTimestamp),
 				count: 0,
-				game: 0,
 				otherCount: 0,
 				assigned: []
 			})
