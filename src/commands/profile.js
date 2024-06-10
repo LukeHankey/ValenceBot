@@ -334,6 +334,21 @@ export default {
 						await paginateFollowUP(msg, message, page, embeds, client)
 					})
 					.catch(async (err) => channels.errors.send(err))
+			} else if (args[0] === 'raffle') {
+				const oneMonth = 2.628e9
+				const verified = message.guild.roles.cache.find((r) => r.name.toLowerCase() === 'verified scouter')
+				const scoutTracker = await scouters
+					.find({
+						'assigned.1': verified.id,
+						active: 1,
+						lastTimestamp: { $gte: Date.now() - oneMonth }
+					})
+					.toArray()
+
+				const sortedTracker = scoutTracker.filter((profile) => profile.active).sort((a, b) => b.count - a.count)
+				const names = sortedTracker.map((profile) => profile.author)
+
+				await message.channel.send({ content: `List of eligible members for the monthly raffle!\n${names.join('\n')}` })
 			} else {
 				message.channel.send({
 					content: `Unable to find \`${args[0]}\` as a member ID/mention or role mention.`
