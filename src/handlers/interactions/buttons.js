@@ -16,7 +16,7 @@ import { logger } from '../../logging.js'
 import { getWorldNumber } from '../../dsf/index.js'
 
 class ButtonWarning {
-	UNLOGGED_NAMES = ['Clear Buttons', 'Silly Fun', 'Foreign World']
+	UNLOGGED_NAMES = ['Clear Buttons', 'Foreign World']
 
 	/**
 	 *
@@ -527,16 +527,6 @@ export const buttons = async (client, interaction, data, cache) => {
 
 					applicationModal.addComponents(actionRows)
 					await interaction.showModal(applicationModal)
-				}
-				break
-			case 'Silly Fun':
-				{
-					const { buttonResponses } = await db.findOne(
-						{ _id: interaction.guild.id },
-						{ projection: { buttonResponses: 1 } }
-					)
-					const randomResponse = buttonResponses[Math.floor(Math.random() * buttonResponses.length)]
-					await interaction.reply({ content: randomResponse })
 				}
 				break
 			case 'Read The Pins':

@@ -34,11 +34,6 @@ export const buttonFunctions = (userN, content) => {
 
 	const buttonSelectionExtra = new ActionRowBuilder().addComponents([
 		new ButtonBuilder()
-			.setCustomId('Silly Fun')
-			.setLabel('Silly Fun')
-			.setStyle(ButtonStyle.Secondary)
-			.setEmoji({ name: '🪅' }),
-		new ButtonBuilder()
 			.setCustomId('Read The Pins')
 			.setLabel('Read The Pins')
 			.setStyle(ButtonStyle.Success)
