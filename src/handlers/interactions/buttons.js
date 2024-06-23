@@ -545,9 +545,9 @@ export const buttons = async (client, interaction, data, cache) => {
 				break
 			case 'Call Already Posted':
 				await generalChannel.send({
-					content: `<@${userId}>, thanks for the call but world \`${getWorldNumber({
+					content: `<@${userId}>, thanks for the call but world \`${getWorldNumber(
 						content
-					})}\` has already been posted! <#${
+					)}\` has already been posted! <#${
 						channelName === 'other-dsf-calls' ? data.merchChannel.otherChannelID : data.merchChannel.channelID
 					}>`
 				})

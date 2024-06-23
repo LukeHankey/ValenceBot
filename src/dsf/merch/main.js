@@ -49,7 +49,7 @@ const dsf = async (client, message) => {
 			return setTimeout(() => message.delete(), 200)
 		}
 
-		if (getWorldNumber(message) === 84) {
+		if (getWorldNumber(message.content) === 84) {
 			await message.channel.send({ content: worldFullMessage })
 		}
 
@@ -68,7 +68,7 @@ const dsf = async (client, message) => {
 			await worldReaction(message)
 		}
 
-		if (getWorldNumber(message) === 84) {
+		if (getWorldNumber(message.content) === 84) {
 			await message.channel.send({ content: worldFullMessage })
 		}
 

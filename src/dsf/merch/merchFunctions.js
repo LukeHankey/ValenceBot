@@ -14,7 +14,7 @@ const messageInArray = (msg, array) => {
 	return array.some((value) => msg.includes(value))
 }
 const worldAlreadyCalled = (message, messages) => {
-	const numFromContent = getWorldNumber(message)
+	const numFromContent = getWorldNumber(message.content)
 
 	const result = messages.filter((obj) => {
 		const str = obj.content
