@@ -1,5 +1,5 @@
 import { otherCallsRegex, foreignWorldsRegex } from '../constants.js'
-import { messageInArray, alreadyCalled } from '../merchFunctions.js'
+import { messageInArray, worldAlreadyCalled } from '../merchFunctions.js'
 import { buttonFunctions } from '../callCount.js'
 
 export const addOtherCount = async (client, message, scouters) => {
@@ -34,14 +34,14 @@ export const addOtherCount = async (client, message, scouters) => {
 			if (
 				!otherCallsRegex.test(message.content) ||
 				messageInArray(message.content, disallowedWords) ||
-				alreadyCalled(message, otherMessages)
+				worldAlreadyCalled(message, otherMessages)
 			) {
 				client.logger.info(`New & Spam: ${userN.displayName} (${message.content}) ${userN.id}`)
 				return await dsfServerErrorChannel.send({
 					content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has not posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``,
 					components: foreignWorldsRegex.test(message.content)
 						? [buttonSelectionForeignWorlds]
-						: alreadyCalled(message, otherMessages)
+						: worldAlreadyCalled(message, otherMessages)
 						? [buttonSelectionAlreadyCalled]
 						: [buttonSelection, buttonSelectionExtra]
 				})
@@ -63,14 +63,14 @@ export const addOtherCount = async (client, message, scouters) => {
 			if (
 				!otherCallsRegex.test(message.content) ||
 				messageInArray(message.content, disallowedWords) ||
-				alreadyCalled(message, otherMessages)
+				worldAlreadyCalled(message, otherMessages)
 			) {
 				if (message.guild.id === '668330890790699079') {
 					return await botServerErrorChannel.send({
 						content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.user.username}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``,
 						components: foreignWorldsRegex.test(message.content)
 							? [buttonSelectionForeignWorlds]
-							: alreadyCalled(message, otherMessages)
+							: worldAlreadyCalled(message, otherMessages)
 							? [buttonSelectionAlreadyCalled]
 							: [buttonSelection, buttonSelectionExtra]
 					})
@@ -80,7 +80,7 @@ export const addOtherCount = async (client, message, scouters) => {
 					content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has posted before)\n\n- User ID: <@!${userN.id}>\n- User: ${userN.displayName}\n- Content: ${message.content}\n- Timestamp: ${timestamp}\n- Channel: ${otherChannel.name}\`\`\``,
 					components: foreignWorldsRegex.test(message.content)
 						? [buttonSelectionForeignWorlds]
-						: alreadyCalled(message, otherMessages)
+						: worldAlreadyCalled(message, otherMessages)
 						? [buttonSelectionAlreadyCalled]
 						: [buttonSelection, buttonSelectionExtra]
 				})

@@ -1,3 +1,4 @@
+import { getWorldNumber } from './worlds'
 const checkMemberRole = async (user, message) => {
 	const mem = message.guild.members.cache.get(user) ?? (await message.guild.members.fetch(user))
 	const allowedRoles = ['Scouter', 'Verified Scouter', 'Staff', 'Moderator (Bronze Star)', 'Administrator (Silver Star)']
@@ -12,8 +13,8 @@ const checkMemberRole = async (user, message) => {
 const messageInArray = (msg, array) => {
 	return array.some((value) => msg.includes(value))
 }
-const alreadyCalled = (message, messages) => {
-	const numFromContent = parseInt(message.content.replace(/^\D+|\D.*$/g, ''))
+const worldAlreadyCalled = (message, messages) => {
+	const numFromContent = getWorldNumber(message)
 
 	const result = messages.filter((obj) => {
 		const str = obj.content
@@ -32,4 +33,4 @@ const alreadyCalled = (message, messages) => {
 	}
 }
 
-export { checkMemberRole, messageInArray, alreadyCalled }
+export { checkMemberRole, messageInArray, worldAlreadyCalled }
