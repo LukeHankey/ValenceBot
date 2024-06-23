@@ -2,7 +2,7 @@ import Color from '../../colors.js'
 import { Permissions } from '../../classes.js'
 import { EmbedBuilder, ChannelType } from 'discord.js'
 import { vEvents } from '../../valence/valenceEvents.js'
-import dsf from '../../dsf/merch/main.js'
+import dsf from '../../dsf/calls/main.js'
 
 export default async (client, message) => {
 	const channels = await client.database.channels

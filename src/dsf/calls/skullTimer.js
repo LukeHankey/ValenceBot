@@ -1,14 +1,14 @@
 import timers from 'timers/promises'
 import { logger } from '../../logging.js'
-import { tenMinutes, allEvents } from './constants.js'
+import { TEN_MINUTES, ALL_EVENTS_REGEX } from './constants.js'
 
 const eventTimes = {
-	merchant: tenMinutes,
-	whirlpool: tenMinutes / 2,
-	sea_monster: tenMinutes / 5,
-	jellyfish: tenMinutes / 5,
-	whale: tenMinutes / 5,
-	treasure_turtle: tenMinutes / 2,
+	merchant: TEN_MINUTES,
+	whirlpool: TEN_MINUTES / 2,
+	sea_monster: TEN_MINUTES / 5,
+	jellyfish: TEN_MINUTES / 5,
+	whale: TEN_MINUTES / 5,
+	treasure_turtle: TEN_MINUTES / 2,
 	arkaneo: 39_000
 }
 
@@ -45,7 +45,7 @@ export const mistyEventTimer = (content) => {
 	const time = timeSplit.exec(content)?.groups.time
 
 	// Get the type of event and corresponding event duration
-	const callMatch = allEvents.exec(content)?.groups
+	const callMatch = ALL_EVENTS_REGEX.exec(content)?.groups
 	const maxEventTime = eventTimes[Object.entries(callMatch).find(([key, val]) => val !== undefined)?.[0]]
 
 	// All time values are less than 10 minutes so the format will always be X:XX
@@ -87,8 +87,8 @@ export const startupRemoveReactionPermissions = async (client, db, channel = 'me
 		try {
 			const message = await channelObj.messages.fetch(unwrappedMessageObj.messageID)
 			const timePassed = Date.now() - unwrappedMessageObj.time
-			if (timePassed < tenMinutes) {
-				await timers.setTimeout(tenMinutes - (Date.now() - unwrappedMessageObj.time))
+			if (timePassed < TEN_MINUTES) {
+				await timers.setTimeout(TEN_MINUTES - (Date.now() - unwrappedMessageObj.time))
 			}
 			await skullTimer(message, db, channel)
 			if (channel !== 'merch') continue
