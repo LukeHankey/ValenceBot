@@ -1,4 +1,4 @@
-import { otherCalls, foreignWorldsRegex } from '../constants.js'
+import { otherCallsRegex, foreignWorldsRegex } from '../constants.js'
 import { arrIncludesString, alreadyCalled } from '../merchFunctions.js'
 import { buttonFunctions } from '../callCount.js'
 
@@ -38,7 +38,7 @@ export const addOtherCount = async (client, message, scouters) => {
 
 		if (!findMessage) {
 			if (
-				!otherCalls.test(message.content) ||
+				!otherCallsRegex.test(message.content) ||
 				arrIncludesString(disallowedWords, message.content) ||
 				alreadyCalled(message, otherMessages)
 			) {
@@ -67,7 +67,7 @@ export const addOtherCount = async (client, message, scouters) => {
 			})
 		} else {
 			if (
-				!otherCalls.test(message.content) ||
+				!otherCallsRegex.test(message.content) ||
 				arrIncludesString(disallowedWords, message.content) ||
 				alreadyCalled(message, otherMessages)
 			) {

@@ -1,5 +1,5 @@
 import timers from 'timers/promises'
-import { merchRegex, otherCalls, worldFullMessage } from './constants.js'
+import { merchRegex, otherCallsRegex, worldFullMessage } from './constants.js'
 import { arrIncludesString, alreadyCalled } from './merchFunctions.js'
 import { addMerchCount, skullTimer, removeReactPermissions, addOtherCount, mistyEventTimer } from '../index.js'
 import { worldReaction, getWorldNumber } from './worlds.js'
@@ -59,7 +59,7 @@ const dsf = async (client, message) => {
 	} else if (message.channel.id === otherChannelID) {
 		await addOtherCount(client, message, scouters)
 		if (
-			!otherCalls.test(message.content) ||
+			!otherCallsRegex.test(message.content) ||
 			arrIncludesString(disallowedWords, message.content) ||
 			alreadyCalled(message, otherMessages)
 		) {
