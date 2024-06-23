@@ -6,7 +6,7 @@ import {
 	addCount,
 	getWorldNumber,
 	worldReaction,
-	worldFullMessage
+	WORLD_FULL_MESSAGE
 } from '../index.js'
 
 const dsf = async (client, message) => {
@@ -58,7 +58,7 @@ const dsf = async (client, message) => {
 		await worldReaction(message)
 
 		if (getWorldNumber(message.content) === 84) {
-			await message.channel.send({ content: worldFullMessage })
+			await message.channel.send({ content: WORLD_FULL_MESSAGE })
 		}
 
 		await timers.setTimeout(mistyEventTimer(message.content))

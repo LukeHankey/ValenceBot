@@ -1,4 +1,4 @@
-import { merchRegex, otherCallsRegex, foreignWorldsRegex } from './constants.js'
+import { MERCH_REGEX, OTHER_CALLS_REGEX, FOREIGN_WORLD_REGEX } from './constants.js'
 import { checkMemberRole, messageInArray, worldAlreadyCalled } from './merchFunctions.js'
 import { buttonFunctions } from './callCount.js'
 
@@ -28,12 +28,12 @@ export const addCount = async (client, message, scoutersCollection, channelName)
 		let callChannel, callRegex, callDataBaseMessages
 		if (channelName === 'merch') {
 			callChannel = client.channels.cache.get(channelID)
-			callRegex = merchRegex
+			callRegex = MERCH_REGEX
 			callDataBaseMessages = messages
 		} else {
 			// other
 			callChannel = client.channels.cache.get(otherChannelID)
-			callRegex = otherCallsRegex
+			callRegex = OTHER_CALLS_REGEX
 			callDataBaseMessages = otherMessages
 		}
 
@@ -74,7 +74,7 @@ export const addCount = async (client, message, scoutersCollection, channelName)
 			}posted before)\n\n- User ID: <@!${callerMember.id}>\n- User: ${callerMember.user.username}\n- Content: ${
 				message.content
 			}\n- Timestamp: ${timestamp}\n- Channel: ${callChannel.name}\`\`\``,
-			components: foreignWorldsRegex.test(message.content)
+			components: FOREIGN_WORLD_REGEX.test(message.content)
 				? [buttonSelectionForeignWorlds]
 				: worldAlreadyCalled(message, messages)
 				? [buttonSelectionAlreadyCalled]

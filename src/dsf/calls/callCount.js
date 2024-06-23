@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
-import { foreignWorldsRegex } from './constants.js'
+import { FOREIGN_WORLD_REGEX } from './constants.js'
 
 const foreignWorldFlags = {
 	'🇩🇪': [102, 121],
@@ -41,8 +41,8 @@ export const buttonFunctions = (userN, content) => {
 	])
 
 	let foreignWorldNumber = 0
-	if (foreignWorldsRegex.test(content)) {
-		foreignWorldNumber = parseInt(/\d{2,3}/.exec(foreignWorldsRegex.exec(content)[0]))
+	if (FOREIGN_WORLD_REGEX.test(content)) {
+		foreignWorldNumber = parseInt(/\d{2,3}/.exec(FOREIGN_WORLD_REGEX.exec(content)[0]))
 	}
 
 	const buttonSelectionForeignWorlds = new ActionRowBuilder().addComponents([

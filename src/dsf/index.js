@@ -1,6 +1,6 @@
 export * from './calls/counts.js'
 export * from './calls/skullTimer.js'
-export { tenMinutes, worldFullMessage } from './calls/constants.js'
+export { TEN_MINUTES, WORLD_FULL_MESSAGE } from './calls/constants.js'
 
 export * from './scouts/scouters.js'
 
