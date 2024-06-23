@@ -1,6 +1,6 @@
 import timers from 'timers/promises'
 import { merchRegex, otherCallsRegex, worldFullMessage } from './constants.js'
-import { arrIncludesString, alreadyCalled } from './merchFunctions.js'
+import { messageInArray, alreadyCalled } from './merchFunctions.js'
 import { addMerchCount, skullTimer, removeReactPermissions, addOtherCount, mistyEventTimer } from '../index.js'
 import { worldReaction, getWorldNumber } from './worlds.js'
 
@@ -29,7 +29,7 @@ const dsf = async (client, message) => {
 		await addMerchCount(client, message, scouters)
 		if (
 			merchRegex.test(message.content) &&
-			!arrIncludesString(disallowedWords, message.content) &&
+			!messageInArray(message.content, disallowedWords) &&
 			!alreadyCalled(message, messages)
 		) {
 			const rolePing = '<@&670842187461820436>'
@@ -60,7 +60,7 @@ const dsf = async (client, message) => {
 		await addOtherCount(client, message, scouters)
 		if (
 			!otherCallsRegex.test(message.content) ||
-			arrIncludesString(disallowedWords, message.content) ||
+			messageInArray(message.content, disallowedWords) ||
 			alreadyCalled(message, otherMessages)
 		) {
 			return setTimeout(() => message.delete(), 200)

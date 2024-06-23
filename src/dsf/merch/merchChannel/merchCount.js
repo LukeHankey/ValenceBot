@@ -1,5 +1,5 @@
 import { merchRegex, foreignWorldsRegex } from '../constants.js'
-import { checkMemberRole, arrIncludesString, alreadyCalled } from '../merchFunctions.js'
+import { checkMemberRole, messageInArray, alreadyCalled } from '../merchFunctions.js'
 import { buttonFunctions } from '../callCount.js'
 
 export const addMerchCount = async (client, message, scouter) => {
@@ -32,7 +32,7 @@ export const addMerchCount = async (client, message, scouter) => {
 		if (!findMessage) {
 			if (
 				!merchRegex.test(message.content) ||
-				arrIncludesString(disallowedWords, message.content) ||
+				messageInArray(message.content, disallowedWords) ||
 				alreadyCalled(message, messages)
 			) {
 				if (message.guild.id === '668330890790699079') {
@@ -75,7 +75,7 @@ export const addMerchCount = async (client, message, scouter) => {
 		} else {
 			if (
 				!merchRegex.test(message.content) ||
-				arrIncludesString(disallowedWords, message.content) ||
+				messageInArray(message.content, disallowedWords) ||
 				alreadyCalled(message, messages)
 			) {
 				if (message.guild.id === '668330890790699079') {

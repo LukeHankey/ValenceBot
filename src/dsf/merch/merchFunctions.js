@@ -9,7 +9,7 @@ const checkMemberRole = async (user, message) => {
 	}
 }
 
-const arrIncludesString = (array, msg) => {
+const messageInArray = (msg, array) => {
 	return array.some((value) => msg.includes(value))
 }
 const alreadyCalled = (message, messages) => {
@@ -32,4 +32,4 @@ const alreadyCalled = (message, messages) => {
 	}
 }
 
-export { checkMemberRole, arrIncludesString, alreadyCalled }
+export { checkMemberRole, messageInArray, alreadyCalled }

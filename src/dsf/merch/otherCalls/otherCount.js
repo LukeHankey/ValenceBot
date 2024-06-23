@@ -1,5 +1,5 @@
 import { otherCallsRegex, foreignWorldsRegex } from '../constants.js'
-import { arrIncludesString, alreadyCalled } from '../merchFunctions.js'
+import { messageInArray, alreadyCalled } from '../merchFunctions.js'
 import { buttonFunctions } from '../callCount.js'
 
 export const addOtherCount = async (client, message, scouters) => {
@@ -12,13 +12,7 @@ export const addOtherCount = async (client, message, scouters) => {
 			disallowedWords
 		} = await db.findOne(
 			{ _id: message.guild.id },
-			{
-				projection: {
-					disallowedWords: 1,
-					'merchChannel.otherMessages': 1,
-					'merchChannel.otherChannelID': 1
-				}
-			}
+			{ projection: { 'merchChannel.channelID': 1, 'merchChannel.messages': 1, disallowedWords: 1 } }
 		)
 		const otherChannel = client.channels.cache.get(otherChannelID)
 		const dsfServerErrorChannel = await client.channels.cache.get('794608385106509824')
@@ -39,7 +33,7 @@ export const addOtherCount = async (client, message, scouters) => {
 		if (!findMessage) {
 			if (
 				!otherCallsRegex.test(message.content) ||
-				arrIncludesString(disallowedWords, message.content) ||
+				messageInArray(message.content, disallowedWords) ||
 				alreadyCalled(message, otherMessages)
 			) {
 				client.logger.info(`New & Spam: ${userN.displayName} (${message.content}) ${userN.id}`)
@@ -68,7 +62,7 @@ export const addOtherCount = async (client, message, scouters) => {
 		} else {
 			if (
 				!otherCallsRegex.test(message.content) ||
-				arrIncludesString(disallowedWords, message.content) ||
+				messageInArray(message.content, disallowedWords) ||
 				alreadyCalled(message, otherMessages)
 			) {
 				if (message.guild.id === '668330890790699079') {
