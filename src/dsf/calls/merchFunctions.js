@@ -15,7 +15,13 @@ const messageInArray = (msg, array) => {
 	return array.some((value) => msg.includes(value))
 }
 const worldAlreadyCalled = (message, messages) => {
-	const worldNumber = getWorldNumber(message.content)
+	let worldNumber
+	try {
+		worldNumber = getWorldNumber(message.content)
+	} catch (err) {
+		// If there is no number in the content
+		return false
+	}
 
 	const result = messages.filter((obj) => {
 		const numFromDb = getWorldNumber(obj.content)
