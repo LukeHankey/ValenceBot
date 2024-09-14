@@ -47,7 +47,7 @@ export default {
 			.setTimestamp()
 			.setColor(Color.greenLight)
 			.setFooter({
-				text: `${client.user.username} created by Luke_#1838`,
+				text: `${client.user.username} created by luke.h`,
 				iconURL: message.guild.iconURL()
 			})
 
