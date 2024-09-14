@@ -1,6 +1,8 @@
 import timers from 'timers/promises'
 import { logger } from '../../logging.js'
 import { TEN_MINUTES, ALL_EVENTS_REGEX } from './constants.js'
+import { nEmbed } from '../../functions.js'
+import Color from '../../colors.js'
 
 const eventTimes = {
 	merchant: TEN_MINUTES,
@@ -13,29 +15,38 @@ const eventTimes = {
 }
 
 export const skullTimer = async (client, message, channel = 'merch') => {
-	const messageID = message.id
+	let messageID = message.id
 	const db = client.database.settings
 	const channels = await client.database.channels
+
 	try {
 		await message.react('☠️')
+	} catch (err) {
+		if ([10008, 90001].includes(err.code)) {
+			messageID = err.url.split('/')[8]
+
+			const embed = nEmbed(
+				err.rawError.message,
+				err.code === 90001
+					? `${message.member.displayName} has blocked the bot. The bot is unable to react to their messages.`
+					: `${message.member.displayName} message is no longer available to react to.`,
+				Color.redDark,
+				message.member.displayAvatarURL()
+			).addFields({
+				name: 'Message:',
+				value: `https://discord.com/channels/${message.guild.id}/${message.channel.id}/${messageID}`
+			})
+
+			// DSF Bot Logs
+			const botLogsChannel = await client.channels.cache.get('884076361940078682')
+			await botLogsChannel.send({ embeds: [embed] })
+		}
+		channels.errors.send(err)
+	} finally {
 		if (channel === 'merch') {
 			await db.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID } } })
 		} else {
 			await db.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.otherMessages': { messageID } } })
-		}
-	} catch (err) {
-		if (err.code === 10008) {
-			const errorMessageID = err.url.split('/')[8]
-			if (channel === 'merch') {
-				return await db.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { errorMessageID } } })
-			} else {
-				return await db.updateOne(
-					{ _id: message.guild.id },
-					{ $pull: { 'merchChannel.otherMessages': { errorMessageID } } }
-				)
-			}
-		} else {
-			return channels.errors.send(err)
 		}
 	}
 }
