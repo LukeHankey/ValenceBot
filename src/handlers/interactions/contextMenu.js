@@ -28,6 +28,12 @@ export const contextMenu = async (client, interaction, data) => {
 					if (err.code === 50001) {
 						// Missing Access
 						return await interaction.editReply({ content: 'I am not able to access this channel.', ephemeral: true })
+					} else if (err.code === 90001) {
+						// Reaction Blocked
+						return await interaction.editReply({
+							content: 'Unable to react. This person has blocked the bot.',
+							ephemeral: true
+						})
 					}
 					client.logger.error('Error in mark event as dead.')
 					channels.errors.send(err)
