@@ -206,7 +206,7 @@ export default {
 				.setThumbnail(interaction.guild.iconURL())
 				.setTimestamp()
 				.setFooter({
-					text: 'Valence Bot created by Luke_#1838',
+					text: 'Valence Bot created by luke.h',
 					iconURL: client.user.displayAvatarURL()
 				})
 			return embed

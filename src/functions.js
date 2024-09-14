@@ -8,7 +8,7 @@ const nEmbed = (title, description, color = Color.cyan, thumbnail = null, guildI
 		.setColor(color)
 		.setThumbnail(thumbnail)
 		.setTimestamp()
-		.setFooter({ text: 'Valence Bot created by Luke_#1838', iconURL: guildIcon })
+		.setFooter({ text: 'Valence Bot created by luke.h', iconURL: guildIcon })
 	return embed
 }
 const checkNum = (id = 0, greaterOrEqualTo = 1, lowerOrEqualTo = Infinity) => {
