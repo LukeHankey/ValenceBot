@@ -37,7 +37,8 @@ const addedRoles = async (name, scoutTracker) => {
 					{
 						$set: {
 							count: trackerProfile.count + trackerProfile.oldScout.count,
-							otherCount: trackerProfile.otherCount + trackerProfile.oldScout.otherCount
+							otherCount: trackerProfile.otherCount + trackerProfile.oldScout.otherCount,
+							firstTimestamp: trackerProfile.oldScout.firstTimestamp
 						},
 						$unset: {
 							oldScout: 1
