@@ -39,7 +39,7 @@ export const skullTimer = async (client, message, channel = 'merch') => {
 
 			// DSF Bot Logs
 			const botLogsChannel = await client.channels.cache.get('884076361940078682')
-			await botLogsChannel.send({ embeds: [embed] })
+			return await botLogsChannel.send({ embeds: [embed] })
 		}
 		channels.errors.send(err)
 	} finally {
