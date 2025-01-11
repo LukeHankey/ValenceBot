@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-octal */
-import { codeBlock } from 'discord.js'
 import {
 	updateStockTables,
 	scout,
