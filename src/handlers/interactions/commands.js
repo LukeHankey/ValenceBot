@@ -18,11 +18,11 @@ export const commands = async (client, interaction, data) => {
 		owner: owner.botOwner(),
 		admin:
 			interaction.member.roles.cache.has(aR.memberRole()[0]) ||
-			interaction.member.roles.cache.has(aR.roleID) ||
+			interaction.member.roles.cache.has(aR.roleId) ||
 			interaction.member.id === interaction.channel.guild.ownerId,
 		mod:
 			interaction.member.roles.cache.has(mR.memberRole()[0]) ||
-			interaction.member.roles.cache.has(mR.roleID) ||
+			interaction.member.roles.cache.has(mR.roleId) ||
 			mR.modPlusRoles() >= mR._role.rawPosition ||
 			interaction.member.id === interaction.channel.guild.ownerId,
 		errorO: owner.ownerError(),
