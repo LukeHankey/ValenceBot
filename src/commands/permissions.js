@@ -69,7 +69,7 @@ export default {
 
 				const displayPerms = (perms) => {
 					const permList = perms.map((p) => {
-						const suffix = '>'
+						let suffix = '>'
 						let prefix = null
 						let permissionType = null
 						switch (p.type) {
@@ -81,9 +81,17 @@ export default {
 								prefix = '<@!'
 								permissionType = 'User'
 								break
-							case ApplicationCommandPermissionType.Channel:
+							case ApplicationCommandPermissionType.Channel: {
 								prefix = '<#'
 								permissionType = 'Channel'
+								const lastNum = Number(interaction.guild.id.slice(-1))
+								const allChannelsId = interaction.guild.id.replace(/.$/, lastNum - 1)
+								if (p.id === allChannelsId) {
+									prefix = 'All Channels'
+									p.id = ''
+									suffix = ''
+								}
+							}
 						}
 
 						return {
@@ -98,7 +106,7 @@ export default {
 						.setTimestamp()
 						.setColor(Color.gold)
 						.setDescription(
-							'Full list of permissions. If adding extra roles/users, keep in mind that there is a max limit of 10 users/roles per command.'
+							'Full list of permissions. If no Channel type permissions, then the command can be used in all channels. If adding extra roles/users, keep in mind that there is a max limit of 10 users/roles per command.'
 						)
 						.addFields(permList)
 
@@ -118,9 +126,19 @@ export default {
 					})
 					return interaction.reply({ embeds: [displayPerms(perms)], ephemeral: true })
 				} catch (err) {
+					if (err.code === 10066) {
+						const perms = [
+							{
+								type: ApplicationCommandPermissionType.Role,
+								id: interaction.guild.id,
+								permission: true
+							}
+						]
+						return interaction.reply({ embeds: [displayPerms(perms)], ephemeral: true })
+					}
 					channels.errors.send(err)
 					interaction.reply({
-						content: `There was an error. ${commandName} either has no permissions set or another error occured.`,
+						content: `There was an error fetching the permissions of ${commandName}.`,
 						ephemeral: true
 					})
 				}

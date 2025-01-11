@@ -3,6 +3,9 @@ import { Permissions } from '../../classes.js'
 export const commands = async (client, interaction, data) => {
 	const db = client.database.settings
 	const channels = await client.database.channels
+	if (interaction.channel === null) {
+		client.logger.error(`Interaction.channel is null in src/handlers/interactions/commands.js:6 ${interaction}`)
+	}
 	const commandDB = await db.findOne({ _id: interaction.channel.guild.id }, { projection: { prefix: 1, roles: 1 } })
 	const command = client.commands.get(interaction.commandName)
 	if (!command) return
@@ -15,11 +18,11 @@ export const commands = async (client, interaction, data) => {
 		owner: owner.botOwner(),
 		admin:
 			interaction.member.roles.cache.has(aR.memberRole()[0]) ||
-			interaction.member.roles.cache.has(aR.roleID) ||
+			interaction.member.roles.cache.has(aR.roleId) ||
 			interaction.member.id === interaction.channel.guild.ownerId,
 		mod:
 			interaction.member.roles.cache.has(mR.memberRole()[0]) ||
-			interaction.member.roles.cache.has(mR.roleID) ||
+			interaction.member.roles.cache.has(mR.roleId) ||
 			mR.modPlusRoles() >= mR._role.rawPosition ||
 			interaction.member.id === interaction.channel.guild.ownerId,
 		errorO: owner.ownerError(),

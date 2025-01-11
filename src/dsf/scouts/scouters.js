@@ -37,7 +37,8 @@ const addedRoles = async (name, scoutTracker) => {
 					{
 						$set: {
 							count: trackerProfile.count + trackerProfile.oldScout.count,
-							otherCount: trackerProfile.otherCount + trackerProfile.oldScout.otherCount
+							otherCount: trackerProfile.otherCount + trackerProfile.oldScout.otherCount,
+							firstTimestamp: trackerProfile.oldScout.firstTimestamp
 						},
 						$unset: {
 							oldScout: 1
@@ -72,7 +73,11 @@ const removeInactives = async (client, name, scoutTracker) => {
 	inactives.map(async (doc) => {
 		if (doc.active === 0 && Date.now() - doc.lastTimestamp > sixMonths) {
 			removed.push(doc.author)
-			allItems.push(`${doc.author} - ${doc.userID} (${doc.count + doc.otherCount} - M${doc.count}).`)
+			allItems.push(
+				`${doc.author} - ${doc.userID} (${
+					doc.count + doc.otherCount + (doc?.oldScout?.count || 0) + (doc?.oldScout?.otherCount || 0)
+				} - M${doc.count + (doc?.oldScout?.count || 0)}).`
+			)
 			await scoutTracker.deleteOne({ userID: doc.userID })
 		} else {
 			if (!doc.active) return
