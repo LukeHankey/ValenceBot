@@ -60,6 +60,8 @@ export default async (client) => {
 		// Daily Reset
 		if (new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
 			updateStockTables(client, db)
+			const virtualFisherChannel = client.channels.cache.get('1320188062139158538')
+			await virtualFisherChannel.send('<@&1320188185480925204> Dailies!')
 		}
 
 		// Weekly reset
