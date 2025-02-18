@@ -83,25 +83,5 @@ export default async (client) => {
 			const dsfOwnersChannel = client.channels.cache.get(channels.dsfOwners.id)
 			await dsfOwnersChannel.send('Reminder to roll the giveaway for Verified Scouters!')
 		}
-
-		// Reset Info Count back to 0 to allow use of command
-		await db
-			.find({})
-			.toArray()
-			.then((r) => {
-				r = r.filter((doc) => doc.resetInfoCount >= 0)
-				for (const doc in r) {
-					if (r[doc].resetInfoCount === 1 && r[doc].resetInfoTime < r[doc].resetInfoTime + 86400000) {
-						return db.updateOne(
-							{ serverName: r[doc].serverName },
-							{
-								$set: {
-									resetInfoCount: 0
-								}
-							}
-						)
-					}
-				}
-			})
 	})
 }

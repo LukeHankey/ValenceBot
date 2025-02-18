@@ -44,7 +44,7 @@ export default {
 		const monthIndex = new Date().getUTCMonth()
 		try {
 			googleClient.authorize((err) => {
-				if (err) client.logger.error(err)
+				if (err) client.logger.error(`2: ${err}`)
 				googleSheets(googleClient)
 			})
 			let rangeName

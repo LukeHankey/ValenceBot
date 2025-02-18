@@ -109,7 +109,7 @@ export default async (client, message) => {
 
 		const user = await message.guild.members
 			.fetch(checkDB.userID)
-			.catch((err) => client.logger.error(`${err} \n${deletedBy ? 'message delete' : 'message delete own'}`))
+			.catch((err) => client.logger.error(`5: ${err} \n${deletedBy ? 'message delete' : 'message delete own'}`))
 
 		const embed = messageDeletion(checkDB)
 			// eslint-disable-next-line no-unneeded-ternary

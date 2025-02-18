@@ -37,7 +37,7 @@ const newBoost = async (message, boostChannel) => {
 	try {
 		if (message.type === 'USER_PREMIUM_GUILD_SUBSCRIPTION') {
 			gsheet.googleClient.authorize((err) => {
-				if (err) logger.error(err)
+				if (err) logger.error(`3: ${err}`)
 				googleSheets(gsheet.googleClient)
 			})
 			const googleSheets = async (gClient) => {
@@ -107,7 +107,7 @@ const newBoost = async (message, boostChannel) => {
 			}
 		}
 	} catch (err) {
-		logger.error(err)
+		logger.error(`4: ${err}`)
 	}
 }
 

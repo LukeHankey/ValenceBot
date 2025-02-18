@@ -148,7 +148,7 @@ export const vEvents = async (client, message) => {
 				await last.react('🛑')
 			}
 		} catch (err) {
-			client.logger.error(err)
+			client.logger.error(`8: ${err}`)
 			if (err.code === 50035) {
 				message.guild.channels.cache.get(DB.channels.mod).send({
 					content: `${message.member} reacted with ✅ but the Event Title (1st line) is too long. Max of 100 characters.`
