@@ -35,7 +35,7 @@ export const contextMenu = async (client, interaction, data) => {
 							ephemeral: true
 						})
 					}
-					client.logger.error('Error in mark event as dead.')
+					client.logger.error('7: Error in mark event as dead.')
 					channels.errors.send(err)
 				}
 			} else {
