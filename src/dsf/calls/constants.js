@@ -9,4 +9,4 @@ export const TEN_MINUTES = 600_000
 export const ALL_EVENTS_REGEX =
 	/^((?<merchant>m|merch|merchant|w|world)|(?<whirlpool>wp|whirlpool|pool)|(?<sea_monster>sm|sea monster)|(?<jellyfish>j|jf|jelly|jellyfish)|(?<whale>wh|whale)|(?<treasure_turtle>tt|turtle|treasure turtle)|(?<arkaneo>a|ark|arkaneo|sailfish))\s?\d{1,3}.*$/i
 export const WORLD_FULL_MESSAGE =
-	'Hello everyone! There are currently some worlds full. If there is an event called and the world is full, when you try to join the server, you will be disconnected. To fix this problem, lobby first, then join the world. You will be placed in a queue to join the world.'
+	'World 84 has just been called, but unfortunately, it is often full. If you are already on another world, it is advisable that you lobby first, then attempt to join the world, to prevent being disconnected when you try and hop worlds. This way, if the world is full, you will be placed in a queue.'
