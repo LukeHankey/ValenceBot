@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-octal */
+import { updateAllMemberDataBaseRankRoles } from '../../alt1.js'
 import {
 	updateStockTables,
 	scout,
@@ -14,11 +15,20 @@ import {
 import { sendFact } from '../../valence/index.js'
 import cron from 'node-cron'
 
+const initScouterDataBase = async (client, db) => {
+	const res = await db.find({}).toArray()
+	const scoutTracker = client.database.scoutTracker
+	const scouters = await scoutTracker.find({ count: { $gte: 40 } }).toArray()
+	await classVars(scout, 'Deep Sea Fishing', res, client, scouters)
+	await classVars(vScout, 'Deep Sea Fishing', res, client, scouters)
+}
+
 export default async (client) => {
 	await client.database.connect()
 
 	const db = client.database.settings
 	const logger = client.logger
+	await initScouterDataBase(client, db)
 	logger.info('Ready!')
 	const channels = await client.database.channels
 
@@ -41,11 +51,8 @@ export default async (client) => {
 
 	// DSF Activity Posts //
 	cron.schedule('0 */6 * * *', async () => {
-		const res = await db.find({}).toArray()
 		const scoutTracker = client.database.scoutTracker
-		const scouters = await scoutTracker.find({ count: { $gte: 40 } }).toArray()
-		await classVars(scout, 'Deep Sea Fishing', res, client, scouters)
-		await classVars(vScout, 'Deep Sea Fishing', res, client, scouters)
+		await initScouterDataBase(client, db)
 		;[scout, vScout].forEach((role) => {
 			addedRoles(role, scoutTracker)
 			removedRoles(role, scoutTracker)
@@ -56,6 +63,7 @@ export default async (client) => {
 			database: db,
 			tracker: scoutTracker
 		})
+		await updateAllMemberDataBaseRankRoles(client, scout)
 
 		// Daily Reset
 		if (new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
