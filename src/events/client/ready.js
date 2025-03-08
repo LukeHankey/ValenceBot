@@ -19,8 +19,8 @@ const initScouterDataBase = async (client, db) => {
 	const res = await db.find({}).toArray()
 	const scoutTracker = client.database.scoutTracker
 	const scouters = await scoutTracker.find({ count: { $gte: 40 } }).toArray()
-	await classVars(scout, 'Valence Clan Bot - Test', res, client, scouters)
-	await classVars(vScout, 'Valence Clan Bot - Test', res, client, scouters)
+	await classVars(scout, 'Deep Sea Fishing', res, client, scouters)
+	await classVars(vScout, 'Deep Sea Fishing', res, client, scouters)
 }
 
 export default async (client) => {
