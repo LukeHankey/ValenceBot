@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-octal */
+import { updateAllMemberDataBaseRankRoles } from '../../alt1.js'
 import {
 	updateStockTables,
 	scout,
@@ -62,6 +63,7 @@ export default async (client) => {
 			database: db,
 			tracker: scoutTracker
 		})
+		await updateAllMemberDataBaseRankRoles(client, scout)
 
 		// Daily Reset
 		if (new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
