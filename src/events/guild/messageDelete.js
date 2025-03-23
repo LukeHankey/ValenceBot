@@ -59,7 +59,7 @@ export default async (client, message) => {
 						'merchChannel.otherMessages': { messageID: data.messageID }
 					},
 					$addToSet: {
-						'merchChannel.deletions.messages': { messageID: sentChannel.id, authorID: userID }
+						'merchChannel.deletions.messages': { messageID: sentChannel.id, authorID: userID, eventID: data.eventID }
 					}
 				}
 			)
