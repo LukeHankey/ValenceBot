@@ -15,6 +15,7 @@ const eventTimes = {
 }
 
 export const skullTimer = async (client, message, channel = 'merch') => {
+	await timers.setTimeout(5000)
 	let messageID = message.id
 	const db = client.database.settings
 	const channels = await client.database.channels

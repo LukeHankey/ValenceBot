@@ -190,7 +190,7 @@ export const buttons = async (client, interaction, data, cache) => {
 	// Bot user. This will be overwritten in buttons where userId is required.
 	let guildMember = interaction.guild.members.cache.get('668330399033851924')
 	if (userId) {
-		guildMember = interaction.guild.members.cache.get(userId)
+		guildMember = await interaction.guild.members.fetch(userId)
 		if (guildMember.roles.cache.hasAny('775940649802793000', '775941183716851764')) {
 			generalChannel = interaction.guild.channels.cache.find((c) => c.id === '777598845655842836') // scouters
 		}
