@@ -5,8 +5,8 @@ import {
 	selectMenu,
 	modals,
 	contextMenu,
-	MessageFlags
 } from '../../handlers/interactions/index.js'
+import { MessageFlags } from 'discord.js'
 
 const cache = new Map()
 
