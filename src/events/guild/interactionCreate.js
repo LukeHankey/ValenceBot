@@ -1,4 +1,12 @@
-import { buttons, commands, autoComplete, selectMenu, modals, contextMenu } from '../../handlers/interactions/index.js'
+import {
+	buttons,
+	commands,
+	autoComplete,
+	selectMenu,
+	modals,
+	contextMenu,
+	MessageFlags
+} from '../../handlers/interactions/index.js'
 
 const cache = new Map()
 
@@ -19,7 +27,7 @@ export default async (client, interaction) => {
 		} else if (interaction.isStringSelectMenu()) {
 			await selectMenu(client, interaction, cache)
 		} else if (interaction.isContextMenuCommand()) {
-			await interaction.deferReply({ ephemeral: true })
+			await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 			await contextMenu(client, interaction, data)
 		} else if (interaction.isModalSubmit()) {
 			await modals(client, interaction)

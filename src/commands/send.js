@@ -1,6 +1,6 @@
 import { checkNum, splitMessage } from '../functions.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { ChannelType } from 'discord.js'
+import { ChannelType, MessageFlags } from 'discord.js'
 
 export default {
 	name: 'send',

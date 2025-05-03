@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { EmbedBuilder } from 'discord.js'
+import { EmbedBuilder, MessageFlags } from 'discord.js'
 import Color from '../colors.js'
 
 const data = new SlashCommandBuilder().setName('invite').setDescription('Invite the bot to your server.')
@@ -17,6 +17,6 @@ export default {
 			permissions: 123212262595n
 		})
 		const embed = new EmbedBuilder().setTitle('Here is your invite link.').setURL(invite).setColor(Color.cyan)
-		await interaction.reply({ embeds: [embed], ephemeral: true })
+		await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
 	}
 }

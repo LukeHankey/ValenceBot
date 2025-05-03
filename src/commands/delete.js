@@ -1,4 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
+import { MessageFlags } from 'discord.js'
 
 export default {
 	name: 'delete',
@@ -19,19 +20,19 @@ export default {
 		const channels = await client.database.channels
 
 		if (int > 100 || int < 1) {
-			return interaction.reply({ content: 'Number must be between 1 and 100.', ephemeral: true })
+			return interaction.reply({ content: 'Number must be between 1 and 100.', flags: MessageFlags.Ephemeral })
 		}
 
 		try {
 			interaction.channel.bulkDelete(int, true)
 			return interaction.reply({
 				content: `${int} ${int === 1 ? 'message has' : 'messages have'} been deleted`,
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			})
 		} catch (err) {
 			interaction.channel.send({
 				content: 'There was an error trying to delete messages in this channel since they are older than 2 weeks.',
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			})
 			channels.errors.send(err)
 		}

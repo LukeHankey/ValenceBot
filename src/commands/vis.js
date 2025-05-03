@@ -1,6 +1,6 @@
 /* eslint-disable no-inline-comments */
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { EmbedBuilder } from 'discord.js'
+import { EmbedBuilder, MessageFlags } from 'discord.js'
 import Color from '../colors.js'
 
 const description = [
@@ -125,7 +125,7 @@ export default {
 			if (vis === null) {
 				return interaction.reply({
 					content: "There currently isn't any Vis Wax image uploaded.",
-					ephemeral: true
+					flags: MessageFlags.Ephemeral
 				})
 			} else {
 				await db.updateOne(

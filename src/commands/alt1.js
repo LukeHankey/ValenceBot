@@ -1,4 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
+import { MessageFlags } from 'discord.js'
 
 export default {
 	name: 'alt1',
@@ -20,7 +21,7 @@ export default {
 		if (memberProfile && memberProfile.alt1Code) {
 			await interaction.reply({
 				content: `Your DSF Event Tracker code for alt1 is: \`${memberProfile.alt1Code}\`.`,
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			})
 			if (!memberProfile.author) {
 				await scoutTracker.updateOne(
@@ -33,7 +34,7 @@ export default {
 		} else {
 			await interaction.reply({
 				content: 'You have not requested a verification code with the DSF Event Tracker alt1 app.',
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			})
 		}
 	}
