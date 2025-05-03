@@ -5,8 +5,8 @@
   "main": "./src/index.js",
   "scripts": {
     "start": "node ./src/index.js",
-    "slash": "set NODE_ENV=DEV&&node ./src/slashCommands.js",
-    "dev": "set NODE_ENV=DEV&&node ./src/index.js"
+    "slash": "cross-env NODE_ENV=DEV node ./src/slashCommands.js",
+    "dev": "cross-env NODE_ENV=DEV node ./src/index.js"
   },
   "author": "Luke",
   "license": "ISC",
@@ -30,6 +30,7 @@
     "winston": "^3.8.2"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "eslint": "^8.23.1",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.26.0",
