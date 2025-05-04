@@ -27,7 +27,9 @@ export default {
 				await scoutTracker.updateOne(
 					{ userID: memberDiscordId },
 					{
-						author: interaction.member.nickname ?? interaction.member.displayName
+						$set: {
+							author: interaction.member.nickname ?? interaction.member.displayName
+						}
 					}
 				)
 			}
