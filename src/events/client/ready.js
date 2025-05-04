@@ -103,7 +103,7 @@ export default async (client) => {
 		removeInactives(client, scout, scoutTracker)
 		removeScouters({
 			scoutProfiles: [scout, vScout],
-			database: db,
+			channels,
 			tracker: scoutTracker
 		})
 		await updateAllMemberDataBaseRankRoles(client, scout)

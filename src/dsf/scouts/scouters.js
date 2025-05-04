@@ -49,6 +49,7 @@ const addedRoles = async (name, scoutTracker) => {
 		}
 	})
 }
+
 const removedRoles = async (name, scoutTracker) => {
 	const checkRoles = await name.checkRolesRemoved()
 	checkRoles.map(async (x) => {
@@ -104,8 +105,7 @@ const logRemovedScouts = (allItems, channels) => {
 
 const removeScouters = async (options) => {
 	const THREE_MONTHS = 7.884e9
-	const { scoutProfiles, database, tracker } = options
-	const channels = await database.channels
+	const { scoutProfiles, channels, tracker } = options
 	const scouter = scoutProfiles[0]
 
 	// Includes both scouters and verified
