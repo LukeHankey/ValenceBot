@@ -35,7 +35,8 @@ export default {
 			}
 		} else {
 			await interaction.reply({
-				content: 'You have not requested a verification code with the DSF Event Tracker alt1 app.',
+				content:
+					'You have not requested a verification code with the DSF Event Tracker [alt1 app](https://www.dsfeventtracker.com/).',
 				flags: MessageFlags.Ephemeral
 			})
 		}
