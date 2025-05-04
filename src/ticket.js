@@ -34,7 +34,7 @@ export default class Ticket {
 			newChannel = await this.interaction.channel.threads.create({
 				name: `${this.isApplication() ? 'Application' : 'Ticket'} by ${this.interaction.member.displayName}`,
 				autoArchiveDuration: 1440,
-				type: ChannelType.GuildPrivateThread,
+				type: ChannelType.PrivateThread,
 				invitable: false,
 				reason: !this.isApplication() ? 'Ticket for report.' : 'Application'
 			})

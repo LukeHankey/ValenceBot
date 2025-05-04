@@ -439,7 +439,7 @@ export const buttons = async (client, interaction, data, cache) => {
 					])
 					await interaction.update({ components: [buttonDisabled], fetchReply: true })
 					await interaction.followUp({ content: `Ticket closed by <@!${interaction.member.id}>.` })
-					if (interaction.channel.type === ChannelType.GuildPrivateThread) {
+					if (interaction.channel.type === ChannelType.PrivateThread) {
 						await interaction.channel.setLocked(true)
 						await interaction.channel.setArchived(true)
 					} else {
