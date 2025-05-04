@@ -7,7 +7,8 @@ import {
 	ModalBuilder,
 	TextInputStyle,
 	ChannelType,
-	TextInputBuilder
+	TextInputBuilder,
+	MessageFlags
 } from 'discord.js'
 import Color from '../../colors.js'
 import Ticket from '../../ticket.js'
@@ -415,12 +416,12 @@ export const buttons = async (client, interaction, data, cache) => {
 					if (!ticket.memberIncluded) {
 						interaction.reply({
 							content: `Your ticket has been created at <#${created.id}>`,
-							ephemeral: true
+							flags: MessageFlags.Ephemeral
 						})
 					} else {
 						interaction.reply({
 							content: `Your ticket has been created. Please wait while the <@&${ticket.roleId}> review.`,
-							ephemeral: true
+							flags: MessageFlags.Ephemeral
 						})
 					}
 					if (interaction.guild.id === '420803245758480405') {
@@ -464,7 +465,7 @@ export const buttons = async (client, interaction, data, cache) => {
 					const ticketData = await db.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
 					const ticket = new Ticket(interaction, ticketData, db)
 					if (interaction.member.id !== ticket.currentTicket.ticketStarter) {
-						return interaction.reply({ content: 'You cannot use this button.', ephemeral: true })
+						return interaction.reply({ content: 'You cannot use this button.', flags: MessageFlags.Ephemeral })
 					}
 					const applicationModal = new ModalBuilder().setCustomId('createApplication').setTitle('Create Application')
 

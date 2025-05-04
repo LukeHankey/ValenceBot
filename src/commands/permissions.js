@@ -1,5 +1,5 @@
 /* eslint-disable no-shadow */
-import { EmbedBuilder, ApplicationCommandPermissionType } from 'discord.js'
+import { EmbedBuilder, ApplicationCommandPermissionType, MessageFlags } from 'discord.js'
 import Color from '../colors.js'
 
 export default {
@@ -57,7 +57,7 @@ export default {
 		if (!commandArray.includes(commandName)) {
 			return interaction.reply({
 				content: `There is no command by that name. Try one of: \`${commandArray.join(', ')}\``,
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			})
 		}
 
@@ -118,13 +118,13 @@ export default {
 						const perms = await interaction.guild.commands.permissions.fetch({
 							command: cmd.first().id
 						})
-						return interaction.reply({ embeds: [displayPerms(perms)], ephemeral: true })
+						return interaction.reply({ embeds: [displayPerms(perms)], flags: MessageFlags.Ephemeral })
 					}
 
 					const perms = await interaction.guild.commands.permissions.fetch({
 						command: gcmd.first().id
 					})
-					return interaction.reply({ embeds: [displayPerms(perms)], ephemeral: true })
+					return interaction.reply({ embeds: [displayPerms(perms)], flags: MessageFlags.Ephemeral })
 				} catch (err) {
 					if (err.code === 10066) {
 						const perms = [
@@ -134,12 +134,12 @@ export default {
 								permission: true
 							}
 						]
-						return interaction.reply({ embeds: [displayPerms(perms)], ephemeral: true })
+						return interaction.reply({ embeds: [displayPerms(perms)], flags: MessageFlags.Ephemeral })
 					}
 					channels.errors.send(err)
 					interaction.reply({
 						content: `There was an error fetching the permissions of ${commandName}.`,
-						ephemeral: true
+						flags: MessageFlags.Ephemeral
 					})
 				}
 			}

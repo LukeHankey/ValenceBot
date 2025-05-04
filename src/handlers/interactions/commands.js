@@ -1,4 +1,5 @@
 import { Permissions } from '../../classes.js'
+import { MessageFlags } from 'discord.js'
 
 export const commands = async (client, interaction, data) => {
 	const db = client.database.settings
@@ -36,7 +37,7 @@ export const commands = async (client, interaction, data) => {
 			merchGuilds.includes(interaction.guildId) &&
 			[data.merchChannel.channelID, data.merchChannel.otherChannelID].includes(interaction.channel.id)
 		) {
-			return interaction.reply({ content: 'Please use the bot commands channel.', ephemeral: true })
+			return interaction.reply({ content: 'Please use the bot commands channel.', flags: MessageFlags.Ephemeral })
 		} else {
 			await command.slash(client, interaction, perms)
 		}
@@ -44,7 +45,7 @@ export const commands = async (client, interaction, data) => {
 		channels.errors.send(error)
 		await interaction.reply({
 			content: 'There was an error while executing this command!',
-			ephemeral: true
+			flags: MessageFlags.Ephemeral
 		})
 	}
 }

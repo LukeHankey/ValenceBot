@@ -1,4 +1,4 @@
-import { ButtonStyle, EmbedBuilder } from 'discord.js'
+import { ButtonStyle, EmbedBuilder, MessageFlags } from 'discord.js'
 import { ActionRowBuilder, ButtonBuilder, ModalBuilder } from '@discordjs/builders'
 import Ticket from '../../ticket.js'
 import Color from '../../colors.js'
@@ -17,7 +17,7 @@ export const modals = async (client, interaction) => {
 			if (parsedData.components.length > MAX_COMPONENTS) {
 				return interaction.reply({
 					content: `Only ${MAX_COMPONENTS} fields are allowed, you provided ${parsedData.components.length}.\n\n\`\`\`json\n${unparsedData}\`\`\``,
-					ephemeral: true
+					flags: MessageFlags.Ephemeral
 				})
 			}
 
@@ -25,7 +25,7 @@ export const modals = async (client, interaction) => {
 		} catch (err) {
 			return interaction.reply({
 				content: `It looks like you missed something. \`${err.name}: ${err.message}\``,
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			})
 		}
 	}
@@ -119,7 +119,7 @@ export const modals = async (client, interaction) => {
 
 					await interaction.reply({
 						content: 'Your application is all set up! Click the `Start Application` button to view.',
-						ephemeral: true
+						flags: MessageFlags.Ephemeral
 					})
 
 					await interaction.message.edit({ components: [startApplication] })
@@ -135,7 +135,7 @@ export const modals = async (client, interaction) => {
 				}
 				break
 			case 'startApplication': {
-				await interaction.deferReply({ ephemeral: true })
+				await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 				logger.info(
 					`${interaction.guild.id} | ${interaction.guild.name}: ${interaction.member.displayName} started an application.`
 				)
@@ -166,7 +166,7 @@ export const modals = async (client, interaction) => {
 				}
 				await interaction.editReply({
 					content: `Your application has been submitted and is now being reviewed by <@&${ticket.roleId}>. Thank you!`,
-					ephemeral: true
+					flags: MessageFlags.Ephemeral
 				})
 			}
 		}
