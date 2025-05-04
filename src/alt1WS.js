@@ -43,11 +43,11 @@ class WebSocketClient {
 	async handleMessage(data) {
 		try {
 			const parsedData = JSON.parse(data)
-			console.log('📨 Received:', parsedData)
 			// Ensure we only get the event records
 			if (!('type' in parsedData)) return
 			// Ensure we get only the editEvents and only events where mistyUpdate is true
 			if (parsedData.type !== 'editEvent' || !parsedData.mistyUpdate) return
+			console.log('📨 Received:', parsedData)
 
 			await overrideEventTimer(parsedData.id, parsedData.duration * 1000)
 		} catch (error) {
