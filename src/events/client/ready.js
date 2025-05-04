@@ -10,9 +10,13 @@ import {
 	removedRoles,
 	removeInactives,
 	removeScouters,
-	startupRemoveReactionPermissions
+	startupRemoveReactionPermissions,
+	mistyEventTimer
 } from '../../dsf/index.js'
 import { sendFact } from '../../valence/index.js'
+import { wsClient } from '../../alt1WS.js'
+import { activeTimers } from '../../dsf/calls/eventTimers.js'
+import { setTimeout as delay } from 'timers/promises'
 import cron from 'node-cron'
 
 const initScouterDataBase = async (client, db) => {
@@ -31,6 +35,45 @@ export default async (client) => {
 	await initScouterDataBase(client, db)
 	logger.info('Ready!')
 	const channels = await client.database.channels
+	wsClient.connect()
+
+	const guildId = process.env.NODE_ENV === 'DEV' ? '668330890790699079' : '420803245758480405'
+	const guild = client.guilds.cache.get(guildId)
+
+	const {
+		merchChannel: { channelID, otherChannelID, messages, otherMessages }
+	} = await db.findOne(
+		{ _id: guildId, merchChannel: { $exists: true } },
+		{
+			projection: {
+				'merchChannel.channelID': 1,
+				'merchChannel.otherChannelID': 1,
+				'merchChannel.messages': 1,
+				'merchChannel.otherMessages': 1
+			}
+		}
+	)
+
+	for (const eventMsg of [...messages, ...otherMessages]) {
+		const controller = new AbortController()
+		const durationMs = mistyEventTimer(eventMsg.content)
+		const timeout = delay(durationMs, null, { signal: controller.signal })
+		const channelName = eventMsg.content.toLowerCase().startsWith('m') ? 'merch' : 'other'
+		const database = messages.some((event) => event.eventID === eventMsg.eventID) ? messages : otherMessages
+
+		const msgChannel = guild.channels.cache.get(channelName === 'merch' ? channelID : otherChannelID)
+		const msg = await msgChannel.fetch(eventMsg.messageID)
+		activeTimers.set(String(eventMsg.eventID), {
+			timeout,
+			abortController: controller,
+			startTime: Date.now(),
+			durationMs,
+			client,
+			message: msg,
+			channelName,
+			database
+		})
+	}
 
 	client.user.setPresence({
 		status: 'idle',

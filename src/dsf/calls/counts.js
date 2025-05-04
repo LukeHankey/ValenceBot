@@ -1,9 +1,8 @@
 import { MERCH_REGEX, OTHER_CALLS_REGEX, FOREIGN_WORLD_REGEX } from './constants.js'
 import { checkMemberRole, messageInArray, worldAlreadyCalled } from './merchFunctions.js'
 import { buttonFunctions } from './callCount.js'
-import { v4 as uuid } from 'uuid'
 
-export const addCount = async (client, message, scoutersCollection, channelName) => {
+export const addCount = async (client, message, scoutersCollection, channelName, eventID, alt1Count = false) => {
 	const channels = await client.database.channels
 	const db = client.database.settings
 
@@ -152,18 +151,20 @@ export const addCount = async (client, message, scoutersCollection, channelName)
 					}
 				)
 			} else {
-				await scoutersCollection.updateOne(
-					{ userID: callerProfile.userID },
-					{
-						$inc: increaseCallCountData,
-						$set: {
-							author: callerMember.nickname ?? callerMember.displayName,
-							lastTimestamp: callMessage.createdTimestamp,
-							lastTimestampReadable: new Date(callMessage.createdTimestamp),
-							active: 1
+				if (!alt1Count) {
+					await scoutersCollection.updateOne(
+						{ userID: callerProfile.userID },
+						{
+							$inc: increaseCallCountData,
+							$set: {
+								author: callerMember.nickname ?? callerMember.displayName,
+								lastTimestamp: callMessage.createdTimestamp,
+								lastTimestampReadable: new Date(callMessage.createdTimestamp),
+								active: 1
+							}
 						}
-					}
-				)
+					)
+				}
 			}
 		}
 
@@ -176,7 +177,7 @@ export const addCount = async (client, message, scoutersCollection, channelName)
 		// Add the called world to the messages database
 		const addMessageData = {
 			'merchChannel.messages': {
-				eventID: uuid(),
+				eventID: eventID,
 				messageID: callMessage.id,
 				content: callMessage.content,
 				time: callMessage.createdTimestamp,

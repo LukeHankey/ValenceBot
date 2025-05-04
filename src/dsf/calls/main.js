@@ -1,13 +1,7 @@
-import timers from 'timers/promises'
-import {
-	skullTimer,
-	removeReactPermissions,
-	mistyEventTimer,
-	addCount,
-	getWorldNumber,
-	worldReaction,
-	WORLD_FULL_MESSAGE
-} from '../index.js'
+import { mistyEventTimer, addCount, getWorldNumber, worldReaction, WORLD_FULL_MESSAGE } from '../index.js'
+import { startEventTimer } from './eventTimers.js'
+import { v4 as uuid } from 'uuid'
+import axios from 'axios'
 
 const dsf = async (client, message) => {
 	const db = client.database.settings
@@ -37,7 +31,28 @@ const dsf = async (client, message) => {
 		callDataBaseMessages = otherMessages
 	}
 
-	const success = await addCount(client, message, scouters, channelName)
+	const API_URL = process.env.NODE_ENV === 'DEV' ? 'http:localhost:8000' : 'https://api.dsfeventtracker.com'
+	const worldNumber = getWorldNumber(message.content)
+	let alt1Count = false
+	let eventData = null
+	let eventID = uuid()
+	try {
+		const event = await axios.get(`${API_URL}/worlds/${worldNumber}/event`, {
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		})
+		if (event.data && event.data.message[0]?.status === 'Active') {
+			alt1Count = true
+			eventData = JSON.parse(event.data.message[0].event_record)
+			eventID = eventData.id
+		}
+	} catch (err) {
+		channels.errors.send(err)
+	}
+
+	const success = await addCount(client, message, scouters, channelName, eventID, alt1Count)
+	eventID = eventData ? eventData.id : eventID
 
 	if (success) {
 		if (channelName === 'merch') {
@@ -57,13 +72,21 @@ const dsf = async (client, message) => {
 
 		await worldReaction(message)
 
-		if (getWorldNumber(message.content) === 84) {
+		if (worldNumber === 84) {
 			await message.channel.send({ content: WORLD_FULL_MESSAGE })
 		}
 
-		await timers.setTimeout(mistyEventTimer(message.content))
-		await skullTimer(client, message, channelName)
-		await removeReactPermissions(message, callDataBaseMessages)
+		const durationMs = eventData
+			? eventData.duration * 1000 - (Date.now() - eventData.timestamp)
+			: mistyEventTimer(message.content)
+		startEventTimer({
+			client,
+			message,
+			eventId: eventID,
+			channelName,
+			durationMs,
+			database: callDataBaseMessages
+		})
 	} else {
 		return setTimeout(() => message.delete(), 200)
 	}
