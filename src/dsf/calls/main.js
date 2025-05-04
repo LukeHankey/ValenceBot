@@ -37,7 +37,7 @@ const dsf = async (client, message) => {
 		callDataBaseMessages = otherMessages
 	}
 
-	const success = await addCount(client, message, scouters, channelName)
+	const [success, eventID] = await addCount(client, message, scouters, channelName)
 
 	if (success) {
 		if (channelName === 'merch') {

@@ -6,6 +6,7 @@ import { v4 as uuid } from 'uuid'
 export const addCount = async (client, message, scoutersCollection, channelName) => {
 	const channels = await client.database.channels
 	const db = client.database.settings
+	const eventID = uuid()
 
 	try {
 		// Get fields from database
@@ -48,7 +49,7 @@ export const addCount = async (client, message, scoutersCollection, channelName)
 			await dsfServerErrorChannel.send({
 				content: `Failed to fetch the first message in ${channelName}`
 			})
-			return false
+			return [false, eventID]
 		}
 		const callMessage = firstChannelMessage.first()
 
@@ -86,11 +87,11 @@ export const addCount = async (client, message, scoutersCollection, channelName)
 			if (!callCheckPassed) {
 				if (message.guild.id === '668330890790699079') {
 					await botServerErrorChannel.send(spamOptions)
-					return false
+					return [false, eventID]
 				}
 				client.logger.info(`New & Spam: ${callerMember.displayName} (${message.content}) userId: ${callerMember.id}`)
 				await dsfServerErrorChannel.send(spamOptions)
-				return false
+				return [false, eventID]
 			}
 
 			client.logger.info(`New: ${callerMember.displayName} (${message.content}) userId: ${callerMember.id}`)
@@ -117,11 +118,11 @@ export const addCount = async (client, message, scoutersCollection, channelName)
 			if (!callCheckPassed) {
 				if (message.guild.id === '668330890790699079') {
 					await botServerErrorChannel.send(spamOptions)
-					return false
+					return [false, eventID]
 				}
 				client.logger.info(`Old & Spam: ${callerMember.displayName} (${message.content}) userId: ${callerMember.id}`)
 				await dsfServerErrorChannel.send(spamOptions)
-				return false
+				return [false, eventID]
 			}
 
 			const increaseCallCountData = {
@@ -176,7 +177,7 @@ export const addCount = async (client, message, scoutersCollection, channelName)
 		// Add the called world to the messages database
 		const addMessageData = {
 			'merchChannel.messages': {
-				eventID: uuid(),
+				eventID: eventID,
 				messageID: callMessage.id,
 				content: callMessage.content,
 				time: callMessage.createdTimestamp,
@@ -194,7 +195,7 @@ export const addCount = async (client, message, scoutersCollection, channelName)
 
 		await db.findOneAndUpdate({ _id: message.guild.id }, { $addToSet: addMessageData })
 
-		return callCheckPassed
+		return [callCheckPassed, eventID]
 	} catch (err) {
 		channels.errors.send(err)
 	}
