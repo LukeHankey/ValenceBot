@@ -1,12 +1,10 @@
 import { MERCH_REGEX, OTHER_CALLS_REGEX, FOREIGN_WORLD_REGEX } from './constants.js'
 import { checkMemberRole, messageInArray, worldAlreadyCalled } from './merchFunctions.js'
 import { buttonFunctions } from './callCount.js'
-import { v4 as uuid } from 'uuid'
 
-export const addCount = async (client, message, scoutersCollection, channelName) => {
+export const addCount = async (client, message, scoutersCollection, channelName, eventID, alt1Count = false) => {
 	const channels = await client.database.channels
 	const db = client.database.settings
-	const eventID = uuid()
 
 	try {
 		// Get fields from database
@@ -49,7 +47,7 @@ export const addCount = async (client, message, scoutersCollection, channelName)
 			await dsfServerErrorChannel.send({
 				content: `Failed to fetch the first message in ${channelName}`
 			})
-			return [false, eventID]
+			return false
 		}
 		const callMessage = firstChannelMessage.first()
 
@@ -87,11 +85,11 @@ export const addCount = async (client, message, scoutersCollection, channelName)
 			if (!callCheckPassed) {
 				if (message.guild.id === '668330890790699079') {
 					await botServerErrorChannel.send(spamOptions)
-					return [false, eventID]
+					return false
 				}
 				client.logger.info(`New & Spam: ${callerMember.displayName} (${message.content}) userId: ${callerMember.id}`)
 				await dsfServerErrorChannel.send(spamOptions)
-				return [false, eventID]
+				return false
 			}
 
 			client.logger.info(`New: ${callerMember.displayName} (${message.content}) userId: ${callerMember.id}`)
@@ -118,11 +116,11 @@ export const addCount = async (client, message, scoutersCollection, channelName)
 			if (!callCheckPassed) {
 				if (message.guild.id === '668330890790699079') {
 					await botServerErrorChannel.send(spamOptions)
-					return [false, eventID]
+					return false
 				}
 				client.logger.info(`Old & Spam: ${callerMember.displayName} (${message.content}) userId: ${callerMember.id}`)
 				await dsfServerErrorChannel.send(spamOptions)
-				return [false, eventID]
+				return false
 			}
 
 			const increaseCallCountData = {
@@ -153,18 +151,20 @@ export const addCount = async (client, message, scoutersCollection, channelName)
 					}
 				)
 			} else {
-				await scoutersCollection.updateOne(
-					{ userID: callerProfile.userID },
-					{
-						$inc: increaseCallCountData,
-						$set: {
-							author: callerMember.nickname ?? callerMember.displayName,
-							lastTimestamp: callMessage.createdTimestamp,
-							lastTimestampReadable: new Date(callMessage.createdTimestamp),
-							active: 1
+				if (!alt1Count) {
+					await scoutersCollection.updateOne(
+						{ userID: callerProfile.userID },
+						{
+							$inc: increaseCallCountData,
+							$set: {
+								author: callerMember.nickname ?? callerMember.displayName,
+								lastTimestamp: callMessage.createdTimestamp,
+								lastTimestampReadable: new Date(callMessage.createdTimestamp),
+								active: 1
+							}
 						}
-					}
-				)
+					)
+				}
 			}
 		}
 
@@ -195,7 +195,7 @@ export const addCount = async (client, message, scoutersCollection, channelName)
 
 		await db.findOneAndUpdate({ _id: message.guild.id }, { $addToSet: addMessageData })
 
-		return [callCheckPassed, eventID]
+		return callCheckPassed
 	} catch (err) {
 		channels.errors.send(err)
 	}

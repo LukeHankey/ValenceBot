@@ -1,5 +1,7 @@
 import { mistyEventTimer, addCount, getWorldNumber, worldReaction, WORLD_FULL_MESSAGE } from '../index.js'
 import { startEventTimer } from './eventTimers.js'
+import { v4 as uuid } from 'uuid'
+import axios from 'axios'
 
 const dsf = async (client, message) => {
 	const db = client.database.settings
