@@ -182,6 +182,6 @@ const updateTables = async (client, message, channels, args, document) => {
 			await msg.edit({ embeds: [linkEmbed] })
 		}
 	} catch (err) {
-		console.log(err)
+		console.log('Stock error', err)
 	}
 }
