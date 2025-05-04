@@ -17,7 +17,6 @@ export default {
 	data: new SlashCommandBuilder()
 		.setName('events')
 		.setDescription('Event commands.')
-		.setDefaultPermission(false)
 		.addSubcommand((subcommand) => subcommand.setName('list').setDescription('List the current events.'))
 		.addSubcommand((subcommand) =>
 			subcommand

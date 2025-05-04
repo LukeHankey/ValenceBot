@@ -12,7 +12,6 @@ export default {
 	data: new SlashCommandBuilder()
 		.setName('ticket')
 		.setDescription('Sets up a ticket system using private threads or channels.')
-		.setDefaultPermission(false)
 		.addRoleOption((option) =>
 			option.setName('role').setDescription('The role that will be responding to tickets.').setRequired(true)
 		)

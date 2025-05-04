@@ -11,7 +11,6 @@ export default {
 	data: new SlashCommandBuilder()
 		.setName('delete')
 		.setDescription('Deletes a number of previous messages in the current channel.')
-		.setDefaultPermission(false)
 		.addIntegerOption((option) =>
 			option.setName('value').setDescription('The number of messages to delete.').setRequired(true)
 		),
