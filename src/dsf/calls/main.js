@@ -1,13 +1,5 @@
-import timers from 'timers/promises'
-import {
-	skullTimer,
-	removeReactPermissions,
-	mistyEventTimer,
-	addCount,
-	getWorldNumber,
-	worldReaction,
-	WORLD_FULL_MESSAGE
-} from '../index.js'
+import { mistyEventTimer, addCount, getWorldNumber, worldReaction, WORLD_FULL_MESSAGE } from '../index.js'
+import { startEventTimer } from './eventTimers.js'
 
 const dsf = async (client, message) => {
 	const db = client.database.settings
@@ -61,9 +53,15 @@ const dsf = async (client, message) => {
 			await message.channel.send({ content: WORLD_FULL_MESSAGE })
 		}
 
-		await timers.setTimeout(mistyEventTimer(message.content))
-		await skullTimer(client, message, channelName)
-		await removeReactPermissions(message, callDataBaseMessages)
+		const durationMs = mistyEventTimer(message.content)
+		startEventTimer({
+			client,
+			message,
+			eventId: eventID,
+			channelName,
+			durationMs,
+			database: callDataBaseMessages
+		})
 	} else {
 		return setTimeout(() => message.delete(), 200)
 	}
