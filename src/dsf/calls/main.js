@@ -48,7 +48,9 @@ const dsf = async (client, message) => {
 			eventID = eventData.id
 		}
 	} catch (err) {
-		channels.errors.send(err)
+		if (err.response.data.detail !== 'No active event found for this world') {
+			channels.errors.send(err)
+		}
 	}
 
 	const success = await addCount(client, message, scouters, channelName, eventID, alt1Count)
