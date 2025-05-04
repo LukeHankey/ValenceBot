@@ -1,4 +1,4 @@
-FROM node:18.8.0 as base
+FROM node:22.14.0 as base
 
 WORKDIR /project
 
