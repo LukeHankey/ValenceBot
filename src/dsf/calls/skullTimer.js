@@ -102,7 +102,7 @@ export const startupRemoveReactionPermissions = async (client, db, channel = 'me
 			if (timePassed < TEN_MINUTES) {
 				await timers.setTimeout(TEN_MINUTES - (Date.now() - unwrappedMessageObj.time))
 			}
-			await skullTimer(message, db, channel)
+			await skullTimer(client, message, channel)
 			if (channel !== 'merch') continue
 			await removeReactPermissions(message, messages)
 		} catch (err) {
