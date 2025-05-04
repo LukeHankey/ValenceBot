@@ -1,4 +1,4 @@
-import { EmbedBuilder, Collection } from 'discord.js'
+import { EmbedBuilder, Collection, MessageFlags } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
 import Color from '../colors.js'
 import { randomNum, removeEvents } from '../functions.js'
@@ -215,7 +215,7 @@ export default {
 		if (interaction.channelId !== calChannelId) {
 			return interaction.reply({
 				content: `Try again in the <#${calChannelId}> channel.`,
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			})
 		}
 
@@ -253,7 +253,7 @@ export default {
 					channels.logs.send(`<@${interaction.user.id}> created a new Calendar embed.`)
 
 					monthOption ? await createCalendar(monthOption) : await createCalendar(currentMonth)
-					await interaction.reply({ content: 'Calendar has been created.', ephemeral: true })
+					await interaction.reply({ content: 'Calendar has been created.', flags: MessageFlags.Ephemeral })
 				}
 				break
 			case 'add':
@@ -272,7 +272,7 @@ export default {
 						if (!monthFromDb[0]) {
 							return await interaction.reply({
 								content: 'Unable to find that calendar.',
-								ephemeral: true
+								flags: MessageFlags.Ephemeral
 							})
 						}
 
@@ -291,7 +291,7 @@ export default {
 							await message.edit({ embeds: [calEmbed] })
 							await interaction.reply({
 								content: 'The calendar has been updated with the new event.',
-								ephemeral: true
+								flags: MessageFlags.Ephemeral
 							})
 						} else {
 							calEmbed.addFields({
@@ -303,7 +303,7 @@ export default {
 							await message.edit({ embeds: [calEmbed] })
 							await interaction.reply({
 								content: 'The calendar has been updated with the new event.',
-								ephemeral: true
+								flags: MessageFlags.Ephemeral
 							})
 						}
 
@@ -354,7 +354,7 @@ export default {
 						if (err.name === 'TypeError') {
 							return await interaction.followUp({
 								content: 'Error: Unknown message from Announcement link.',
-								ephemeral: true
+								flags: MessageFlags.Ephemeral
 							})
 						}
 						channels.errors.send(err)
@@ -373,7 +373,7 @@ export default {
 						if (!monthFromDb[0]) {
 							return await interaction.reply({
 								content: 'Unable to find that calendar.',
-								ephemeral: true
+								flags: MessageFlags.Ephemeral
 							})
 						}
 
@@ -452,7 +452,7 @@ export default {
 							}
 						}
 
-						await interaction.reply({ content: 'The calendar has been edited.', ephemeral: true })
+						await interaction.reply({ content: 'The calendar has been edited.', flags: MessageFlags.Ephemeral })
 						channels.logs.send(
 							`Calendar updated - ${interaction.member.displayName} edited an event.\n\n/${interaction.commandName} ${interaction.options._subcommand} position: ${position} field: ${field} value: ${value} month ${month}`
 						)
@@ -467,7 +467,7 @@ export default {
 					if (!monthFromDb[0]) {
 						return await interaction.reply({
 							content: 'Unable to find that calendar.',
-							ephemeral: true
+							flags: MessageFlags.Ephemeral
 						})
 					}
 
@@ -489,7 +489,7 @@ export default {
 
 					await interaction.reply({
 						content: 'That event has been removed from the calendar.',
-						ephemeral: true
+						flags: MessageFlags.Ephemeral
 					})
 
 					for (const item of logValues) {
@@ -587,7 +587,7 @@ export default {
 						await message.edit({ embeds: [calEmbed] })
 					}
 
-					await interaction.reply({ content: 'The event has been moved.', ephemeral: true })
+					await interaction.reply({ content: 'The event has been moved.', flags: MessageFlags.Ephemeral })
 				}
 				break
 		}

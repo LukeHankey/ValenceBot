@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { EmbedBuilder } from 'discord.js'
+import { EmbedBuilder, MessageFlags } from 'discord.js'
 import Color from '../colors.js'
 import { removeEvents } from '../functions.js'
 
@@ -70,7 +70,7 @@ export default {
 
 					if (checkEventExists.length && checkEventExists[0].value) {
 						await removeEvents(client, interaction, 'events', data, tag)
-						return interaction.reply({ content: 'Event has been removed.', ephemeral: true })
+						return interaction.reply({ content: 'Event has been removed.', flags: MessageFlags.Ephemeral })
 					} else {
 						interaction.reply({ content: `There is no event found with ID: \`${tag}\`` })
 					}
