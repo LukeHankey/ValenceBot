@@ -12,7 +12,6 @@ export default {
 	data: new SlashCommandBuilder()
 		.setName('ticket')
 		.setDescription('Sets up a ticket system using private threads or channels.')
-		.setDefaultPermission(false)
 		.addRoleOption((option) =>
 			option.setName('role').setDescription('The role that will be responding to tickets.').setRequired(true)
 		)
@@ -69,7 +68,7 @@ export default {
 			.setColor(Color.aqua)
 			.setTimestamp()
 
-		const message = await interaction.reply({ embeds: [ticketEmbed], components, fetchReply: true })
+		const interactionResponse = await interaction.reply({ embeds: [ticketEmbed], components, withResponse: true })
 
 		await db.updateOne(
 			{ _id: interaction.guild.id },
@@ -84,7 +83,7 @@ export default {
 								ticketStarter: interaction.user.id,
 								guildName: interaction.guild.name,
 								channelId: interaction.channel.id,
-								messageId: message.id,
+								messageId: interactionResponse.resource?.message.id,
 								application
 							}
 						]

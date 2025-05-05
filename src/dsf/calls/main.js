@@ -33,6 +33,7 @@ const dsf = async (client, message) => {
 
 	const API_URL = process.env.NODE_ENV === 'DEV' ? 'http:localhost:8000' : 'https://api.dsfeventtracker.com'
 	const worldNumber = getWorldNumber(message.content)
+	if (!worldNumber) return setTimeout(() => message.delete(), 200)
 	let alt1Count = false
 	let eventData = null
 	let eventID = uuid()

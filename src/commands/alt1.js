@@ -27,13 +27,16 @@ export default {
 				await scoutTracker.updateOne(
 					{ userID: memberDiscordId },
 					{
-						author: interaction.member.nickname ?? interaction.member.displayName
+						$set: {
+							author: interaction.member.nickname ?? interaction.member.displayName
+						}
 					}
 				)
 			}
 		} else {
 			await interaction.reply({
-				content: 'You have not requested a verification code with the DSF Event Tracker alt1 app.',
+				content:
+					'You have not requested a verification code with the DSF Event Tracker [alt1 app](https://www.dsfeventtracker.com/).',
 				flags: MessageFlags.Ephemeral
 			})
 		}

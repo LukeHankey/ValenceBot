@@ -437,13 +437,13 @@ export const buttons = async (client, interaction, data, cache) => {
 							.setLabel('Issue resolved')
 							.setDisabled(true)
 					])
-					await interaction.update({ components: [buttonDisabled], fetchReply: true })
+					const interactionResponse = await interaction.update({ components: [buttonDisabled], withResponse: true })
 					await interaction.followUp({ content: `Ticket closed by <@!${interaction.member.id}>.` })
-					if (interaction.channel.type === ChannelType.GuildPrivateThread) {
+					if (interaction.channel.type === ChannelType.PrivateThread) {
 						await interaction.channel.setLocked(true)
 						await interaction.channel.setArchived(true)
 					} else {
-						const roleId = interaction.message.content.split(' ')[1].slice(3, 21)
+						const roleId = interactionResponse.resource?.message.content.split(' ')[1].slice(3, 21)
 
 						await interaction.channel.permissionOverwrites.set([
 							{

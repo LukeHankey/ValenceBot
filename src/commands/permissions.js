@@ -27,8 +27,7 @@ export default {
 					}
 				]
 			}
-		],
-		default_permission: undefined
+		]
 	},
 	slash: async (client, interaction, perms) => {
 		const channels = await client.database.channels
