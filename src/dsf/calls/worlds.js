@@ -79,7 +79,11 @@ export const worlds = [
 	}
 ]
 
-export const getWorldNumber = (message) => parseInt(/\w?\s?(\d{1,3})/.exec(message)[1])
+export const getWorldNumber = (message) => {
+	const match = /world\s+(\d{1,3})/i.exec(message) || /\w?\s?(\d{1,3})/.exec(message)
+
+	return match ? parseInt(match[1]) : null
+}
 
 export const worldReaction = async (message) => {
 	const worldFound = worlds.filter((item) => item.world === getWorldNumber(message.content))
