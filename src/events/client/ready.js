@@ -102,12 +102,12 @@ export default async (client) => {
 	cron.schedule('0 */6 * * *', async () => {
 		const scoutTracker = client.database.scoutTracker
 		await initScouterDataBase(client, db)
-		;[scout, vScout].forEach((role) => {
-			addedRoles(role, scoutTracker)
-			removedRoles(role, scoutTracker)
+		;[scout, vScout].forEach(async (role) => {
+			await addedRoles(role, scoutTracker)
+			await removedRoles(role, scoutTracker)
 		})
-		removeInactives(client, scout, scoutTracker)
-		removeScouters({
+		await removeInactives(client, scout, scoutTracker)
+		await removeScouters({
 			client,
 			scoutProfiles: [scout, vScout],
 			channels,
