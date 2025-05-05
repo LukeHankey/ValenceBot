@@ -1,4 +1,4 @@
-import { mistyEventTimer, addCount, getWorldNumber, worldReaction, WORLD_FULL_MESSAGE } from '../index.js'
+import { mistyEventTimer, addCount, addMessageToDB, getWorldNumber, worldReaction, WORLD_FULL_MESSAGE } from '../index.js'
 import { startEventTimer } from './eventTimers.js'
 import { v4 as uuid } from 'uuid'
 import axios from 'axios'
@@ -6,7 +6,6 @@ import axios from 'axios'
 const dsf = async (client, message) => {
 	const db = client.database.settings
 	const channels = await client.database.channels
-	const scouters = client.database.scoutTracker
 	const {
 		merchChannel: { channelID, messages, otherMessages }
 	} = await db.findOne(
@@ -20,7 +19,8 @@ const dsf = async (client, message) => {
 		}
 	)
 
-	if (message.author.bot) return
+	const comeViaWebhook = message.author.username === 'Alt1 Tracker'
+	if (message.author.bot && !comeViaWebhook) return
 
 	let channelName, callDataBaseMessages
 	if (message.channel.id === channelID) {
@@ -53,8 +53,10 @@ const dsf = async (client, message) => {
 		}
 	}
 
-	const success = await addCount(client, message, scouters, channelName, eventID, alt1Count)
+	const success = !comeViaWebhook ? await addCount(client, message, channelName, alt1Count) : true
 	eventID = eventData ? eventData.id : eventID
+
+	await addMessageToDB(message, db, eventID, channelName)
 
 	if (success) {
 		if (channelName === 'merch') {
@@ -81,6 +83,7 @@ const dsf = async (client, message) => {
 		const durationMs = eventData
 			? eventData.duration * 1000 - (Date.now() - eventData.timestamp)
 			: mistyEventTimer(message.content)
+
 		startEventTimer({
 			client,
 			message,
