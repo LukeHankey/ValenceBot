@@ -80,7 +80,8 @@ export const worlds = [
 ]
 
 export const getWorldNumber = (message) => {
-	const match = /\w?\s?(\d{1,3})/.exec(message)
+	const match = /world\s+(\d{1,3})/i.exec(message) || /\w?\s?(\d{1,3})/.exec(message)
+
 	return match ? parseInt(match[1]) : null
 }
 

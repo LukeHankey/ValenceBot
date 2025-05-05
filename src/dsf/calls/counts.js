@@ -2,9 +2,10 @@ import { MERCH_REGEX, OTHER_CALLS_REGEX, FOREIGN_WORLD_REGEX } from './constants
 import { checkMemberRole, messageInArray, worldAlreadyCalled } from './merchFunctions.js'
 import { buttonFunctions } from './callCount.js'
 
-export const addCount = async (client, message, scoutersCollection, channelName, eventID, alt1Count = false) => {
+export const addCount = async (client, message, channelName, alt1Count = false) => {
 	const channels = await client.database.channels
 	const db = client.database.settings
+	const scoutersCollection = client.database.scoutTracker
 
 	try {
 		// Get fields from database
@@ -39,17 +40,6 @@ export const addCount = async (client, message, scoutersCollection, channelName,
 
 		const dsfServerErrorChannel = await client.channels.cache.get('794608385106509824') // bot-logs-admin
 		const botServerErrorChannel = await client.channels.cache.get('903432222139355207')
-
-		// Get first channel message
-		const firstChannelMessage = await message.channel.messages.fetch({ limit: 1 })
-		if (!firstChannelMessage.size) {
-			client.logger.info(`Could not fetch the first message of ${channelName}.`)
-			await dsfServerErrorChannel.send({
-				content: `Failed to fetch the first message in ${channelName}`
-			})
-			return false
-		}
-		const callMessage = firstChannelMessage.first()
 
 		const callerMember = message.member
 		const callerProfile = await scoutersCollection.findOne({ userID: callerMember.id })
@@ -96,10 +86,10 @@ export const addCount = async (client, message, scoutersCollection, channelName,
 			const insertData = {
 				userID: callerMember.id,
 				author: callerMember.nickname ?? callerMember.displayName,
-				firstTimestamp: callMessage.createdTimestamp,
-				firstTimestampReadable: new Date(callMessage.createdTimestamp),
-				lastTimestamp: callMessage.createdTimestamp,
-				lastTimestampReadable: new Date(callMessage.createdTimestamp),
+				firstTimestamp: message.createdTimestamp,
+				firstTimestampReadable: new Date(message.createdTimestamp),
+				lastTimestamp: message.createdTimestamp,
+				lastTimestampReadable: new Date(message.createdTimestamp),
 				count: 1,
 				otherCount: 0,
 				active: 1,
@@ -142,10 +132,10 @@ export const addCount = async (client, message, scoutersCollection, channelName,
 						$set: {
 							'oldScout.firstPost': false,
 							author: callerMember.nickname ?? callerMember.displayName,
-							firstTimestamp: callMessage.createdTimestamp,
-							firstTimestampReadable: new Date(callMessage.createdTimestamp),
-							lastTimestamp: callMessage.createdTimestamp,
-							lastTimestampReadable: new Date(callMessage.createdTimestamp),
+							firstTimestamp: message.createdTimestamp,
+							firstTimestampReadable: new Date(message.createdTimestamp),
+							lastTimestamp: message.createdTimestamp,
+							lastTimestampReadable: new Date(message.createdTimestamp),
 							active: 1
 						}
 					}
@@ -158,8 +148,8 @@ export const addCount = async (client, message, scoutersCollection, channelName,
 							$inc: increaseCallCountData,
 							$set: {
 								author: callerMember.nickname ?? callerMember.displayName,
-								lastTimestamp: callMessage.createdTimestamp,
-								lastTimestampReadable: new Date(callMessage.createdTimestamp),
+								lastTimestamp: message.createdTimestamp,
+								lastTimestampReadable: new Date(message.createdTimestamp),
 								active: 1
 							}
 						}
@@ -174,29 +164,30 @@ export const addCount = async (client, message, scoutersCollection, channelName,
 			await callChannel.permissionOverwrites.create(callerMember.id, { AddReactions: true })
 		}
 
-		// Add the called world to the messages database
-		const addMessageData = {
-			'merchChannel.messages': {
-				eventID: eventID,
-				messageID: callMessage.id,
-				content: callMessage.content,
-				time: callMessage.createdTimestamp,
-				author: callerMember.displayName,
-				userID: callerMember.id
-			}
-		}
-
-		if (channelName === 'other') {
-			/* eslint no-useless-computed-key: 0 */
-			delete Object.assign(addMessageData, { ['merchChannel.otherMessages']: addMessageData['merchChannel.messages'] })[
-				'merchChannel.messages'
-			]
-		}
-
-		await db.findOneAndUpdate({ _id: message.guild.id }, { $addToSet: addMessageData })
-
 		return callCheckPassed
 	} catch (err) {
 		channels.errors.send(err)
 	}
+}
+
+export const addMessageToDB = async (message, db, eventID, channelName) => {
+	const addMessageData = {
+		'merchChannel.messages': {
+			eventID: eventID,
+			messageID: message.id,
+			content: message.content,
+			time: message.createdTimestamp,
+			author: message.member?.displayName ?? message.author.username,
+			userID: message.member?.id ?? message.author.id
+		}
+	}
+
+	if (channelName === 'other') {
+		/* eslint no-useless-computed-key: 0 */
+		delete Object.assign(addMessageData, { ['merchChannel.otherMessages']: addMessageData['merchChannel.messages'] })[
+			'merchChannel.messages'
+		]
+	}
+
+	await db.findOneAndUpdate({ _id: message.guild.id }, { $addToSet: addMessageData })
 }
