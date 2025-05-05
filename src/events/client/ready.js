@@ -54,9 +54,15 @@ export default async (client) => {
 		}
 	)
 
+	let durationMs = 0
 	for (const eventMsg of [...messages, ...otherMessages]) {
 		const controller = new AbortController()
-		const durationMs = mistyEventTimer(eventMsg.content)
+		try {
+			durationMs = mistyEventTimer(eventMsg.content)
+		} catch (err) {
+			channels.errors.send(err)
+			continue
+		}
 		const timeout = delay(durationMs, null, { signal: controller.signal })
 		const channelName = eventMsg.content.toLowerCase().startsWith('m') ? 'merch' : 'other'
 		const database = messages.some((event) => event.eventID === eventMsg.eventID) ? messages : otherMessages
