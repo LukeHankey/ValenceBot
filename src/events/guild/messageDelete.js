@@ -1,5 +1,6 @@
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, AuditLogEvent } from 'discord.js'
 import Color from '../../colors.js'
+import { overrideEventTimer } from '../../dsf/calls/eventTimers.js'
 
 export default async (client, message) => {
 	const db = client.database.settings
@@ -107,9 +108,12 @@ export default async (client, message) => {
 			return client.logger.info('Deleted message was not uploaded to the DataBase.')
 		}
 
-		const user = await message.guild.members
-			.fetch(checkDB.userID)
-			.catch((err) => client.logger.error(`5: ${err} \n${deletedBy ? 'message delete' : 'message delete own'}`))
+		const user = await message.guild.members.fetch(checkDB.userID).catch((err) => {
+			client.logger.error(`5: ${err} \n${deletedBy ? 'message delete' : 'message delete own'}`)
+			// Dirty hack to get the user object
+			message.user = message.author
+			return message
+		})
 
 		const embed = messageDeletion(checkDB)
 			// eslint-disable-next-line no-unneeded-ternary
@@ -127,6 +131,8 @@ export default async (client, message) => {
 				return getPerms.delete()
 			}
 		}
+
+		await overrideEventTimer(checkDB.eventID, 0)
 	}
 
 	if (message.guild === null || message.author === null) {
