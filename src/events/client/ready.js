@@ -102,6 +102,7 @@ export default async (client) => {
 		})
 		removeInactives(client, scout, scoutTracker)
 		removeScouters({
+			client,
 			scoutProfiles: [scout, vScout],
 			channels,
 			tracker: scoutTracker

@@ -105,7 +105,8 @@ const logRemovedScouts = (allItems, channels) => {
 
 const removeScouters = async (options) => {
 	const THREE_MONTHS = 7.884e9
-	const { scoutProfiles, channels, tracker } = options
+	const { client, scoutProfiles, database, tracker } = options
+	const channels = await database.channels
 	const scouter = scoutProfiles[0]
 
 	// Includes both scouters and verified
@@ -124,6 +125,7 @@ const removeScouters = async (options) => {
 					role: await scout.role
 				})
 			} catch (err) {
+				client.logger.info(`Profile: ${profile}, Scout: ${scout}`)
 				channels.errors.send(err)
 			}
 		}
