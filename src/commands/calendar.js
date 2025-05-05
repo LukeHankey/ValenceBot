@@ -40,7 +40,6 @@ export default {
 	data: new SlashCommandBuilder()
 		.setName('calendar')
 		.setDescription('Various commands to interact with the calendar.')
-		.setDefaultPermission(false)
 		.addSubcommand((subcommand) =>
 			subcommand
 				.setName('create')
