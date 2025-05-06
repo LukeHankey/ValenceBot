@@ -50,19 +50,18 @@ const dsf = async (client, message) => {
 		}
 	} catch (err) {
 		if (err.response.data.detail !== 'No active event found for this world') {
+			console.log(err.response?.data?.detail)
 			channels.errors.send(err)
 		} else {
-			console.log(err)
-			channels.errors.send(err)
+			console.log(err.status, err.response?.data?.detail)
 		}
 	}
 
 	const success = !comeViaWebhook ? await addCount(client, message, channelName, alt1Count) : true
 	eventID = eventData ? eventData.id : eventID
 
-	await addMessageToDB(message, db, eventID, channelName)
-
 	if (success) {
+		await addMessageToDB(message, db, eventID, channelName)
 		if (channelName === 'merch') {
 			const rolePing = '<@&670842187461820436>'
 			const sentMessage = await message.channel.send(`${rolePing} - ${message.content}`)
