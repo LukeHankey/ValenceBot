@@ -52,7 +52,7 @@ const dsf = async (client, message) => {
 		if (err.response.data.detail !== 'No active event found for this world') {
 			channels.errors.send(err)
 		} else {
-			console.log(err)
+			console.log(err, err.response?.data?.detail)
 			channels.errors.send(err)
 		}
 	}
