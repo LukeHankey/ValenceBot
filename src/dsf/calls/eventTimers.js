@@ -42,12 +42,16 @@ export async function overrideEventTimer(eventId, newDurationMs) {
 	const controller = new AbortController()
 	const timeout = delay(newDurationMs, null, { signal: controller.signal })
 		.then(async () => {
-			activeTimers.delete(String(eventId))
-			await skullTimer(current.client, current.message, current.channelName)
-			await removeReactPermissions(current.message, current.database)
+			try {
+				activeTimers.delete(String(eventId))
+				await skullTimer(current.client, current.message, current.channelName)
+				await removeReactPermissions(current.message, current.database)
+			} catch (err) {
+				console.error(`[${eventId}] ❌ Error in skullTimer or removeReactPermissions:`, err, current)
+			}
 		})
 		.catch((err) => {
-			if (err.name !== 'AbortError') console.log(`[${eventId}] ⛔ Updated timer aborted`)
+			if (err.name !== 'AbortError') console.error(`[${eventId}] ⛔ Updated timer aborted`)
 		})
 
 	activeTimers.set(String(eventId), {
