@@ -60,9 +60,8 @@ const dsf = async (client, message) => {
 	const success = !comeViaWebhook ? await addCount(client, message, channelName, alt1Count) : true
 	eventID = eventData ? eventData.id : eventID
 
-	await addMessageToDB(message, db, eventID, channelName)
-
 	if (success) {
+		await addMessageToDB(message, db, eventID, channelName)
 		if (channelName === 'merch') {
 			const rolePing = '<@&670842187461820436>'
 			const sentMessage = await message.channel.send(`${rolePing} - ${message.content}`)
