@@ -35,13 +35,9 @@ export async function startEventTimer({ client, message, eventId, channelName, d
 	activeTimers.delete(String(eventId))
 }
 
-function updateMessageTimestamp(content, currentDurationMs, newDurationMs) {
+function updateMessageTimestamp(content, newDurationMs) {
 	if (newDurationMs > 0) {
-		const match = content.match(/<t:(\d+):R>/)
-		if (!match) return content // No timestamp found, return as-is
-
-		const originalTimestamp = parseInt(match[1], 10)
-		const adjustedTimestamp = parseInt((originalTimestamp - currentDurationMs / 1000 + newDurationMs / 1000).toString())
+		const adjustedTimestamp = parseInt(Date.now() / 1000 + newDurationMs / 1000)
 		return content.replace(/<t:\d+:R>/, `<t:${adjustedTimestamp}:R>`)
 	} else {
 		return content.replace(/\s\|.*/, '')
@@ -53,6 +49,28 @@ export async function overrideEventTimer(eventId, newDurationMs, mistyUpdate = f
 	if (!current) return
 
 	current.abortController.abort()
+
+	const message = current.message
+	if (message.author.username === 'Alt1 Tracker' && !current.mistyUpdated) {
+		try {
+			const content = message.content
+			const updatedContent = updateMessageTimestamp(content, newDurationMs)
+			const API_URL = process.env.NODE_ENV === 'DEV' ? 'http:localhost:8000' : 'https://api.dsfeventtracker.com'
+			const editWebhookResponse = await axios.patch(`${API_URL}/events/webhook/${message.id}`, {
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				content: updatedContent
+			})
+			if (editWebhookResponse.status !== 200) {
+				console.log('Did not receive the correct response')
+			} else {
+				console.log('Event editted successfully')
+			}
+		} catch (err) {
+			console.error('Failed to edit the webhook', err.response.data.detail)
+		}
+	}
 
 	const controller = new AbortController()
 	const timeout = delay(newDurationMs, null, { signal: controller.signal })
@@ -68,28 +86,6 @@ export async function overrideEventTimer(eventId, newDurationMs, mistyUpdate = f
 		.catch((err) => {
 			if (err.name !== 'AbortError') console.error(`[${eventId}] ⛔ Updated timer aborted`)
 		})
-
-	const message = current.message
-	if (message.author.username === 'Alt1 Tracker' && !mistyUpdate) {
-		try {
-			const content = message.content
-			const updatedContent = updateMessageTimestamp(content, current.durationMs, newDurationMs)
-			const API_URL = process.env.NODE_ENV === 'DEV' ? 'http:localhost:8000' : 'https://api.dsfeventtracker.com'
-			const editWebhookResponse = await axios.patch(`${API_URL}/events/webhook/${message.id}`, {
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				content: updatedContent
-			})
-			if (editWebhookResponse.status !== 200) {
-				console.log('Did not receive the correct response')
-			} else {
-				console.log('Event editted successfully: ', editWebhookResponse)
-			}
-		} catch (err) {
-			console.error('Failed to edit the webhook', err.response.data.detail)
-		}
-	}
 
 	activeTimers.set(String(eventId), {
 		...current,
