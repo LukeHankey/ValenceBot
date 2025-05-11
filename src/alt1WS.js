@@ -49,7 +49,7 @@ class WebSocketClient {
 			if (parsedData.type !== 'editEvent' || !parsedData.mistyUpdate) return
 			console.log('📨 Received:', parsedData)
 
-			await overrideEventTimer(parsedData.id, parsedData.duration * 1000)
+			await overrideEventTimer(parsedData.id, Math.max(parsedData.duration * 1000, 0), parsedData.mistyUpdate)
 		} catch (error) {
 			console.error('⚠️ Failed to parse WebSocket message:', error)
 		}

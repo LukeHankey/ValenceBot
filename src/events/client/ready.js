@@ -68,7 +68,7 @@ export default async (client) => {
 		const database = messages.some((event) => event.eventID === eventMsg.eventID) ? messages : otherMessages
 
 		const msgChannel = guild.channels.cache.get(channelName === 'merch' ? channelID : otherChannelID)
-		const msg = await msgChannel.fetch(eventMsg.messageID)
+		const msg = await msgChannel.messages.fetch(eventMsg.messageID)
 		activeTimers.set(String(eventMsg.eventID), {
 			timeout,
 			abortController: controller,
@@ -77,7 +77,8 @@ export default async (client) => {
 			client,
 			message: msg,
 			channelName,
-			database
+			database,
+			mistyUpdated: false
 		})
 	}
 
