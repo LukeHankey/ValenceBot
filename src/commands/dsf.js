@@ -156,43 +156,33 @@ export default {
 				break
 			case 'view':
 				{
-					let scout = new ScouterCheck('Scouter')
-					let vScout = new ScouterCheck('Verified Scouter')
+					const num = isNaN(parseInt(args[2])) ? (args[1] === 'verified' ? 100 : 40) : parseInt(args[2])
+
+					const scout = new ScouterCheck('Scouter', num)
+					const vScout = new ScouterCheck('Verified Scouter', num)
 
 					const res = await db.find({}).toArray()
-					const scouter = await scouters.find({ count: { $gte: 40 } }).toArray()
+					const scouter = await scouters
+						.find({
+							$expr: {
+								$gte: [
+									{
+										$add: ['$count', '$alt1.merchantCount', '$alt1First.merchantCount']
+									},
+									num
+								]
+							}
+						})
+						.toArray()
 					await classVars(vScout, message.guild.name, res, client, scouter)
 					await classVars(scout, message.guild.name, res, client, scouter)
-					const num = args[2]
 
 					switch (args[1]) {
 						case 'scouter':
-							if (num) {
-								scout = new ScouterCheck('Scouter', parseInt(num))
-								await classVars(scout, message.guild.name, res, client, scouter)
-								scout.send(message.channel.id)
-							} else {
-								const scoutCheck = await scout._checkForScouts()
-								if (!scoutCheck.length) {
-									message.channel.send({ content: 'None found.' })
-								} else {
-									return scout.send(message.channel.id)
-								}
-							}
+							scout.send(message.channel.id)
 							break
 						case 'verified':
-							if (num) {
-								vScout = new ScouterCheck('Verified Scouter', parseInt(num))
-								await classVars(vScout, message.guild.name, res, client, scouter)
-								vScout.send(message.channel.id)
-							} else {
-								const verifiedCheck = await vScout._checkForScouts()
-								if (!verifiedCheck.length) {
-									message.channel.send({ content: 'None found.' })
-								} else {
-									return vScout.send(message.channel.id)
-								}
-							}
+							vScout.send(message.channel.id)
 							break
 						default:
 							return message.channel.send({ content: 'You can view either `scouter` or `verified`' })
