@@ -12,8 +12,6 @@ export const updateAllMemberDataBaseRankRoles = async (client, scoutRole) => {
 const addMemberDataBaseRankRoles = async (client, member, scoutRole) => {
 	const scoutTracker = client.database.scoutTracker
 	const guild = await scoutRole.guild
-	const role = await scoutRole.role
-	const verifiedRole = guild.roles.cache.find((r) => r.name.toLowerCase() === 'verified scouter')
 	const botRole = guild.members.me.roles.cache.find((r) => r.managed)
 
 	const memberAssignedRoles = member.roles.cache
@@ -26,7 +24,7 @@ const addMemberDataBaseRankRoles = async (client, member, scoutRole) => {
 		{
 			$addToSet: {
 				rankRoles: {
-					$each: [role.id, verifiedRole.id, ...memberAssignedRoles]
+					$each: memberAssignedRoles
 				}
 			}
 		}
