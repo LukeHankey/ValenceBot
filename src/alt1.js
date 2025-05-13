@@ -33,7 +33,7 @@ const addMemberDataBaseRankRoles = async (client, member, scoutRole) => {
 	)
 }
 
-const removeMemberDataBaseRankRoles = async (client, member, scoutRole) => {
+export const removeMemberDataBaseRankRoles = async (client, member, scoutRole) => {
 	const scoutTracker = client.database.scoutTracker
 	const guild = await scoutRole.guild
 	const botRole = guild.members.me.roles.cache.find((r) => r.managed)

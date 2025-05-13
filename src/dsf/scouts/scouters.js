@@ -1,6 +1,7 @@
 import { ScouterCheck } from '../../classes.js'
 import { codeBlock } from 'discord.js'
 import { splitMessage } from '../../functions.js'
+import { removeMemberDataBaseRankRoles } from '../../alt1.js'
 const scout = new ScouterCheck('Scouter')
 const vScout = new ScouterCheck('Verified Scouter')
 
@@ -115,6 +116,7 @@ const removeScouters = async (options) => {
 	})
 	const dsfServer = await scouter.guild
 	const allItems = []
+	const scouterNoMoreIds = []
 	for (const profile of scoutersAtRisk) {
 		for (const scout of scoutProfiles) {
 			try {
@@ -155,8 +157,14 @@ const removeScouters = async (options) => {
 				profile.count
 			}). Scouter has been marked as inactive.`
 		)
+		scouterNoMoreIds.push(profile.userID)
 	}
 	logRemovedScouts(allItems, channels)
+
+	const scouterMembersRoleRemove = await dsfServer.members.fetch({ user: scouterNoMoreIds })
+	for (const scouterMember of scouterMembersRoleRemove) {
+		await removeMemberDataBaseRankRoles(client, scouterMember, scout)
+	}
 }
 
 export { scout, vScout, classVars, addedRoles, removedRoles, removeInactives, removeScouters }
