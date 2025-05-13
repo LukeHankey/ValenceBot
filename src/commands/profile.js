@@ -70,9 +70,11 @@ export default {
 						name: `${values.author}`,
 						value: `Merch count: ${values.count} ${
 							oldScoutCheck() ? `(+${values.oldScout.count})` : ''
-						}\nOther count: ${values.otherCount} ${
-							oldScoutCheck() ? `(+${values.oldScout.otherCount})` : ''
-						}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`,
+						}\nAlt1 Merch count: ${values.alt1.merchantCount + values.alt1First.merchantCount}
+						Other count: ${values.otherCount} ${oldScoutCheck() ? `(+${values.oldScout.otherCount})` : ''}\nAlt1 Other count: ${
+							values.alt1.otherCount + values.alt1First.otherCount
+						}
+						\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`,
 						inline: true
 					},
 					{
@@ -93,7 +95,7 @@ export default {
 		}
 
 		const sendRoleInfo = async (id, rData = { scoutTracker: scouters }) => {
-			const roleObj = message.guild.roles.cache.get(id)
+			const roleObj = message.guild.roles.cache.get(id) ?? (await message.guild.roles.fetch(id))
 			const embed = new EmbedBuilder()
 				.setTitle(`Member Profiles - ${roleObj.name}`)
 				.setDescription('Current tracked stats in this server.')
@@ -105,28 +107,23 @@ export default {
 				})
 				.setTimestamp()
 
-			const fetchRole = message.guild.roles.cache.get(id) ?? (await message.guild.roles.fetch(id))
-			const allMem = await message.guild.members.fetch()
-			const fetchAllMem = allMem.filter((mem) => mem.roles.cache.find((r) => r.id === roleObj.id))
-			const me = fetchAllMem.map((mem) => mem.id) || fetchRole.members.map((mem) => mem.id)
+			const me = roleObj.members.map((mem) => mem.id)
 
 			if (botRole.position > roleObj.position) {
 				return message.channel.send({ content: `You can't view the stats for \`${roleObj.name}\`.` })
 			} // Self-assign roles
+
 			if (roleObj.position > memberRoles) {
 				return message.channel.send({
 					content: `You don't have permission to view the stats for \`${roleObj.name}\`.`
 				})
 			} // Only view their own role set
 
-			let newArr = []
 			const fields = []
 			rData = await rData.scoutTracker
-			me.forEach((id) => {
-				const x = rData.findOne({ userID: id })
-				newArr.push(x)
-			})
-			newArr = newArr.flat().sort((a, b) => b.count - a.count)
+			const newArr = await Promise.all(me.map(async (id) => await rData.findOne({ userID: id }))).then((resolvedArr) =>
+				resolvedArr.sort((a, b) => b.count - a.count)
+			)
 
 			for (const values of newArr) {
 				fields.push({
@@ -288,8 +285,11 @@ export default {
 				const page = 0
 				const embeds = paginate(fields, message, capitalise(args[0].toLowerCase()), args[0].toLowerCase())
 
-				message.channel
-					.send({
+				if (embeds.length === 0) {
+					return message.channel.send({ content: `There are no active profiles with the ${args[1]} rank.` })
+				}
+				try {
+					const msg = await message.channel.send({
 						embeds: [
 							embeds[page].setFooter({
 								text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`,
@@ -297,10 +297,10 @@ export default {
 							})
 						]
 					})
-					.then(async (msg) => {
-						await paginateFollowUP(msg, message, page, embeds, client)
-					})
-					.catch(async (err) => channels.errors.send(err))
+					await paginateFollowUP(msg, message, page, embeds, client)
+				} catch (err) {
+					channels.errors.send(err)
+				}
 			} else if (args[0] === 'inactive') {
 				if (memberRoles < botRole.position) return
 				const scoutTracker = await scouters.find({ count: { $gte: 15 } }).toArray()
