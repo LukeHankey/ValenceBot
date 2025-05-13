@@ -162,7 +162,7 @@ const removeScouters = async (options) => {
 	logRemovedScouts(allItems, channels)
 
 	const scouterMembersRoleRemove = await dsfServer.members.fetch({ user: scouterNoMoreIds })
-	for (const scouterMember of scouterMembersRoleRemove) {
+	for (const scouterMember of scouterMembersRoleRemove.values()) {
 		await removeMemberDataBaseRankRoles(client, scouterMember, scout)
 	}
 }
