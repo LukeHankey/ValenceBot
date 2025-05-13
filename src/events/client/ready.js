@@ -22,7 +22,9 @@ import cron from 'node-cron'
 const initScouterDataBase = async (client, db) => {
 	const res = await db.find({}).toArray()
 	const scoutTracker = client.database.scoutTracker
-	const scouters = await scoutTracker.find({ count: { $gte: 40 } }).toArray()
+	const scouters = await scoutTracker
+		.find({ $expr: { $gte: [{ $add: ['$count', '$alt1.merchantCount', '$alt1First.merchantCount'] }, 40] } })
+		.toArray()
 	await classVars(scout, 'Deep Sea Fishing', res, client, scouters)
 	await classVars(vScout, 'Deep Sea Fishing', res, client, scouters)
 }

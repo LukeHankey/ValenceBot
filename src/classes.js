@@ -165,18 +165,16 @@ class ScouterCheck {
 
 	_checkScouts(filter, num, time) {
 		// Just takes merch count, not other count
-		if (
-			(filter.count >= this.count || filter.count >= num) &&
-			filter.lastTimestamp - filter.firstTimestamp >= time &&
-			filter.assigned.length === 0
-		) {
+		const totalMerchCount = filter.count + filter.alt1.merchantCount + filter.alt1First.merchantCount
+		if (totalMerchCount >= num && filter.lastTimestamp - filter.firstTimestamp >= time && filter.assigned.length === 0) {
 			return filter
 		}
 	}
 
 	_checkVerifiedScouts(filter, num, time) {
 		// Just takes merch count, not other count
-		if (filter.count >= this.count || filter.count >= num) {
+		const totalMerchCount = filter.count + filter.alt1.merchantCount + filter.alt1First.merchantCount
+		if (totalMerchCount >= num) {
 			if (filter.lastTimestamp - filter.firstTimestamp >= time) {
 				if (filter.assigned.length > 0 && filter.assigned.length < 2) {
 					return filter
@@ -194,9 +192,11 @@ class ScouterCheck {
 		for (const values of scouts) {
 			fields.push({
 				name: `${values.author}`,
-				value: `ID: ${values.userID}\nMerch Count: ${values.count}\nOther Count: ${values.otherCount}\nActive for: ${ms(
-					values.lastTimestamp - values.firstTimestamp
-				)}`,
+				value: `ID: ${values.userID}\nMerch Count: ${values.count}\nAlt1 Merch Count: ${
+					values.alt1.merchantCount + values.alt1First.merchantCount
+				}\nOther Count: ${values.otherCount}\nAlt1 Other Count: ${
+					values.alt1.otherCount + values.alt1First.otherCount
+				}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`,
 				inline: true
 			})
 		}
@@ -217,9 +217,12 @@ class ScouterCheck {
 
 		const fields = await this._checkForScouts()
 
+		const sendChannel = this._client.channels.cache.get(chan)
 		if (fields.length) {
 			// Perhaps look at adding something if there are > 25
-			return this._client.channels.cache.get(chan).send({ embeds: [embed.addFields(fields)] })
+			return sendChannel.send({ embeds: [embed.addFields(fields)] })
+		} else {
+			return sendChannel.send({ content: 'None found.' })
 		}
 	}
 
