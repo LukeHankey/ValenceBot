@@ -70,9 +70,9 @@ export default {
 						name: `${values.author}`,
 						value: `Merch count: ${values.count} ${
 							oldScoutCheck() ? `(+${values.oldScout.count})` : ''
-						}\nAlt1 Merch count: ${values.alt1.merchantCount + values.alt1First.merchantCount}
+						}\nAlt1 Merch count: ${(values.alt1?.merchantCount ?? 0) + (values.alt1First?.merchantCount ?? 0)}
 						Other count: ${values.otherCount} ${oldScoutCheck() ? `(+${values.oldScout.otherCount})` : ''}\nAlt1 Other count: ${
-							values.alt1.otherCount + values.alt1First.otherCount
+							(values.alt1?.otherCount ?? 0) + (values.alt1First?.otherCount ?? 0)
 						}
 						\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`,
 						inline: true
