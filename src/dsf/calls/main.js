@@ -38,11 +38,7 @@ const dsf = async (client, message) => {
 	let eventData = null
 	let eventID = uuid()
 	try {
-		const event = await axios.get(`${API_URL}/worlds/${worldNumber}/event`, {
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		})
+		const event = await axios.get(`${API_URL}/worlds/${worldNumber}/event`)
 		if (event.data && event.data.message[0]?.status === 'Active') {
 			alt1Count = true
 			eventData = JSON.parse(event.data.message[0].event_record)
