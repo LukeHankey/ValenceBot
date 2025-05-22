@@ -222,7 +222,7 @@ class ScouterCheck {
 			// Perhaps look at adding something if there are > 25
 			return sendChannel.send({ embeds: [embed.addFields(fields)] })
 		} else {
-			return sendChannel.send({ content: 'None found.' })
+			return sendChannel.send({ content: `No ${this.roleName} found.` })
 		}
 	}
 
