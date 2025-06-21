@@ -8,6 +8,7 @@ export async function startEventTimer({ client, message, eventId, channelName, d
 	const controller = new AbortController()
 	const timeout = delay(durationMs, null, { signal: controller.signal })
 		.then(async () => {
+			client.logger.info(`Skulling and removing reaction permissions from ${channelName} for ${message}`)
 			await skullTimer(client, message, channelName)
 			await removeReactPermissions(message, database)
 		})
@@ -30,8 +31,10 @@ export async function startEventTimer({ client, message, eventId, channelName, d
 		database,
 		mistyUpdated: false
 	})
+	client.logger.info(`Adding ${message.content} from ${message.author.username} to activeTimers with mistyUpdated=false.`)
 
 	await timeout
+	client.logger.info(`Deleting event ${eventId}`)
 	activeTimers.delete(String(eventId))
 }
 
@@ -51,7 +54,10 @@ export async function overrideEventTimer(eventId, newDurationMs, mistyUpdate = f
 	current.abortController.abort()
 
 	const message = current.message
-	if (message.author.username === 'Alt1 Tracker' && !current.mistyUpdated) {
+	current.client.logger.info(`Username=${message.author.username}, mistyUpdated=${current.mistyUpdated}`)
+	// Makes sure to only update the timer once with a mistyUpdate
+	// This should also update when the duration comes in as 0
+	if (message.author.username === 'Alt1 Tracker' && (!current.mistyUpdated || newDurationMs === 0)) {
 		try {
 			const content = message.content
 			const updatedContent = updateMessageTimestamp(content, newDurationMs)
@@ -84,9 +90,14 @@ export async function overrideEventTimer(eventId, newDurationMs, mistyUpdate = f
 			}
 		})
 		.catch((err) => {
-			if (err.name !== 'AbortError') console.error(`[${eventId}] ⛔ Updated timer aborted`)
+			if (err.name === 'AbortError') {
+				console.log('Timer was aborted')
+			} else {
+				console.error(`[${eventId}] ⛔ Updated timer aborted`)
+			}
 		})
 
+	current.client.logger.info(`Updating the activeTimer from ${current.durationMs}ms to ${newDurationMs}ms.`)
 	activeTimers.set(String(eventId), {
 		...current,
 		timeout,
