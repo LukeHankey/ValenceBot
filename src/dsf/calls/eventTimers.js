@@ -78,11 +78,15 @@ export async function overrideEventTimer(eventId, newDurationMs, mistyUpdate = f
 		}
 	}
 
+	if (newDurationMs === 0) {
+		activeTimers.delete(String(eventId))
+		return
+	}
+
 	const controller = new AbortController()
 	const timeout = delay(newDurationMs, null, { signal: controller.signal })
 		.then(async () => {
 			try {
-				activeTimers.delete(String(eventId))
 				await skullTimer(current.client, current.message, current.channelName)
 				await removeReactPermissions(current.message, current.database)
 			} catch (err) {
