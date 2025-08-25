@@ -35,7 +35,7 @@ export async function startEventTimer({ client, message, eventId, channelName, d
 
 	await timeout
 	client.logger.info(`Deleting event ${eventId}`)
-	activeTimers.delete(String(eventId))
+	await overrideEventTimer(eventId, 0)
 }
 
 function updateMessageTimestamp(content, newDurationMs) {
@@ -78,11 +78,15 @@ export async function overrideEventTimer(eventId, newDurationMs, mistyUpdate = f
 		}
 	}
 
+	if (newDurationMs === 0) {
+		activeTimers.delete(String(eventId))
+		return
+	}
+
 	const controller = new AbortController()
 	const timeout = delay(newDurationMs, null, { signal: controller.signal })
 		.then(async () => {
 			try {
-				activeTimers.delete(String(eventId))
 				await skullTimer(current.client, current.message, current.channelName)
 				await removeReactPermissions(current.message, current.database)
 			} catch (err) {
