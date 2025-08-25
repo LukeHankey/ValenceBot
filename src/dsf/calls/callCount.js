@@ -65,7 +65,7 @@ export const buttonFunctions = (userN, content) => {
 			.setCustomId('Call Already Posted')
 			.setLabel('Call Already Posted')
 			.setStyle(ButtonStyle.Success)
-			.setEmoji({ name: '©️' }),
+			.setEmoji({ name: '✅' }),
 		new ButtonBuilder()
 			.setCustomId('Show How To React')
 			.setLabel('Show How To React')

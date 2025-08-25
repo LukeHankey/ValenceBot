@@ -66,7 +66,7 @@ export const addCount = async (client, message, channelName, alt1Count = false) 
 			}\n- Timestamp: ${timestamp}\n- Channel: ${callChannel.name}\`\`\``,
 			components: FOREIGN_WORLD_REGEX.test(message.content)
 				? [buttonSelectionForeignWorlds]
-				: worldAlreadyCalled(message, messages)
+				: worldAlreadyCalled(message, messages) || alt1Count
 				? [buttonSelectionAlreadyCalled]
 				: [buttonSelection, buttonSelectionExtra]
 		}

@@ -56,6 +56,7 @@ const dsf = async (client, message) => {
 
 	if (success) {
 		await addMessageToDB(message, db, eventID, channelName)
+		client.logger.info(`Message from ${message.author.username} has been added to the database - ${message.content}`)
 		if (channelName === 'merch') {
 			const rolePing = '<@&670842187461820436>'
 			const sentMessage = await message.channel.send(`${rolePing} - ${message.content}`)
