@@ -167,7 +167,7 @@ export default {
 							$expr: {
 								$gte: [
 									{
-										$add: ['$count', '$alt1.merchantCount', '$alt1First.merchantCount']
+										$sum: ['$count', '$alt1.merchantCount', '$alt1First.merchantCount']
 									},
 									num
 								]

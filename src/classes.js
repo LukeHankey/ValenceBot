@@ -165,7 +165,8 @@ class ScouterCheck {
 
 	_checkScouts(filter, num, time) {
 		// Just takes merch count, not other count
-		const totalMerchCount = filter.count + filter.alt1.merchantCount + filter.alt1First.merchantCount
+		const totalMerchCount = (filter.count ?? 0) + (filter.alt1?.merchantCount ?? 0) + (filter.alt1First?.merchantCount ?? 0)
+
 		if (totalMerchCount >= num && filter.lastTimestamp - filter.firstTimestamp >= time && filter.assigned.length === 0) {
 			return filter
 		}
@@ -173,7 +174,8 @@ class ScouterCheck {
 
 	_checkVerifiedScouts(filter, num, time) {
 		// Just takes merch count, not other count
-		const totalMerchCount = filter.count + filter.alt1.merchantCount + filter.alt1First.merchantCount
+		const totalMerchCount = (filter.count ?? 0) + (filter.alt1?.merchantCount ?? 0) + (filter.alt1First?.merchantCount ?? 0)
+
 		if (totalMerchCount >= num) {
 			if (filter.lastTimestamp - filter.firstTimestamp >= time) {
 				if (filter.assigned.length > 0 && filter.assigned.length < 2) {
@@ -192,11 +194,11 @@ class ScouterCheck {
 		for (const values of scouts) {
 			fields.push({
 				name: `${values.author}`,
-				value: `ID: ${values.userID}\nMerch Count: ${values.count}\nAlt1 Merch Count: ${
-					values.alt1.merchantCount + values.alt1First.merchantCount
-				}\nOther Count: ${values.otherCount}\nAlt1 Other Count: ${
-					values.alt1.otherCount + values.alt1First.otherCount
-				}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`,
+				value: `ID: ${values.userID}\nMerch Count: ${values.count ?? 0}\nAlt1 Merch Count: ${
+					(values.alt1?.merchantCount ?? 0) + (values.alt1First?.merchantCount ?? 0)
+				}\nOther Count: ${values.otherCount ?? 0}\nAlt1 Other Count: ${
+					(values.alt1?.otherCount ?? 0) + (values.alt1First?.otherCount ?? 0)
+				}\nActive for: ${ms((values.lastTimestamp ?? 0) - (values.firstTimestamp ?? 0))}`,
 				inline: true
 			})
 		}
