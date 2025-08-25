@@ -35,7 +35,7 @@ export async function startEventTimer({ client, message, eventId, channelName, d
 
 	await timeout
 	client.logger.info(`Deleting event ${eventId}`)
-	activeTimers.delete(String(eventId))
+	await overrideEventTimer(eventId, 0)
 }
 
 function updateMessageTimestamp(content, newDurationMs) {
