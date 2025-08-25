@@ -2,9 +2,9 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 import { FOREIGN_WORLD_REGEX } from './constants.js'
 
 const foreignWorldFlags = {
-	'🇩🇪': [102, 121],
-	'🇫🇷': [118],
-	'🇧🇷': [47, 75, 101]
+	'🇩🇪': [102, 121, 260],
+	'🇫🇷': [118, 278],
+	'🇧🇷': [47, 75, 101, 299]
 }
 
 export const buttonFunctions = (userN, content) => {
