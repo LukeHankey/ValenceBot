@@ -31,7 +31,7 @@ const dsf = async (client, message) => {
 		callDataBaseMessages = otherMessages
 	}
 
-	const API_URL = process.env.NODE_ENV === 'DEV' ? 'http:localhost:8000' : 'https://api.dsfeventtracker.com'
+	const API_URL = process.env.NODE_ENV === 'DEV' ? 'http://localhost:8000' : 'https://api.dsfeventtracker.com'
 	const worldNumber = getWorldNumber(message.content)
 	if (!worldNumber) return setTimeout(() => message.delete(), 200)
 	let alt1Count = false

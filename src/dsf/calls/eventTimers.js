@@ -83,7 +83,7 @@ export async function overrideEventTimer(eventId, newDurationMs, mistyUpdate = f
 		try {
 			const content = message.content
 			const updatedContent = updateMessageTimestamp(content, newDurationMs)
-			const API_URL = process.env.NODE_ENV === 'DEV' ? 'http:localhost:8000' : 'https://api.dsfeventtracker.com'
+			const API_URL = process.env.NODE_ENV === 'DEV' ? 'http://localhost:8000' : 'https://api.dsfeventtracker.com'
 			const editWebhookResponse = await axios.patch(`${API_URL}/events/webhook/${message.id}`, {
 				headers: {
 					'Content-Type': 'application/json'
