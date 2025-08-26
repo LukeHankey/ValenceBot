@@ -60,8 +60,19 @@ function updateMessageTimestamp(content, newDurationMs) {
 
 export async function overrideEventTimer(eventId, newDurationMs, mistyUpdate = false) {
 	const current = activeTimers.get(String(eventId))
-	if (!current) return
+	if (!current) {
+		console.warn(`[${eventId}] ⚠️ Attempted to override non-existent timer`)
+		return
+	}
 
+	// Prevent race conditions by checking if timer is already being updated
+	if (current.updating) {
+		console.warn(`[${eventId}] ⚠️ Timer update already in progress, skipping`)
+		return
+	}
+
+	// Mark as updating to prevent race conditions
+	current.updating = true
 	current.abortController.abort()
 
 	const message = current.message
@@ -131,6 +142,7 @@ export async function overrideEventTimer(eventId, newDurationMs, mistyUpdate = f
 		startTime: Date.now(),
 		durationMs: newDurationMs,
 		message,
-		mistyUpdated: mistyUpdate
+		mistyUpdated: mistyUpdate,
+		updating: false
 	})
 }
