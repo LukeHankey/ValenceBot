@@ -3,8 +3,8 @@ import { FOREIGN_WORLD_REGEX } from './constants.js'
 
 const foreignWorldFlags = {
 	'🇩🇪': [102, 121, 260],
-	'🇫🇷': [118, 278],
-	'🇧🇷': [47, 75, 101, 299]
+	'🇫🇷': [118, 299],
+	'🇧🇷': [47, 75, 101, 279]
 }
 
 export const buttonFunctions = (userN, content) => {
