@@ -14,7 +14,9 @@ export async function startEventTimer({ client, message, eventId, channelName, d
 	const controller = new AbortController()
 	const timeout = delay(durationMs, null, { signal: controller.signal })
 		.then(async () => {
-			client.logger.info(`Skulling and removing reaction permissions from ${channelName} for message "${message.content}" (ID: ${message.id}) by ${message.author.username}`)
+			client.logger.info(
+				`Skulling and removing reaction permissions from ${channelName} for message "${message.content}" by ${message.author.username}`
+			)
 			try {
 				await skullTimer(client, message, channelName)
 				await removeReactPermissions(message, database)
@@ -115,7 +117,7 @@ export async function overrideEventTimer(eventId, newDurationMs, mistyUpdate = f
 	const timeout = delay(newDurationMs, null, { signal: controller.signal })
 		.then(async () => {
 			current.client.logger.info(
-				`Skulling and removing reaction permissions from ${current.channelName} for ${current.message}`
+				`Skulling and removing reaction permissions from ${current.channelName} for message "${current.message.content}" by ${current.message.author.username}`
 			)
 			try {
 				await skullTimer(current.client, current.message, current.channelName)
