@@ -5,6 +5,12 @@ import axios from 'axios'
 export const activeTimers = new Map()
 
 export async function startEventTimer({ client, message, eventId, channelName, durationMs, database }) {
+	// Validate inputs
+	if (!eventId || !message || !client || durationMs < 0) {
+		console.error('❌ Invalid parameters for startEventTimer:', { eventId, messageId: message?.id, durationMs })
+		return
+	}
+
 	const controller = new AbortController()
 	const timeout = delay(durationMs, null, { signal: controller.signal })
 		.then(async () => {
