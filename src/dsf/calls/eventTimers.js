@@ -15,8 +15,14 @@ export async function startEventTimer({ client, message, eventId, channelName, d
 	const timeout = delay(durationMs, null, { signal: controller.signal })
 		.then(async () => {
 			client.logger.info(`Skulling and removing reaction permissions from ${channelName} for ${message}`)
-			await skullTimer(client, message, channelName)
-			await removeReactPermissions(message, database)
+			try {
+				await skullTimer(client, message, channelName)
+				await removeReactPermissions(message, database)
+			} catch (err) {
+				console.error(`[${eventId}] ❌ Error in timer completion:`, err)
+			} finally {
+				activeTimers.delete(String(eventId))
+			}
 		})
 		.catch((err) => {
 			if (err.name === 'AbortError') {
@@ -40,8 +46,7 @@ export async function startEventTimer({ client, message, eventId, channelName, d
 	client.logger.info(`Adding ${message.content} from ${message.author.username} to activeTimers with mistyUpdated=false.`)
 
 	await timeout
-	client.logger.info(`Deleting event ${eventId}`)
-	await overrideEventTimer(eventId, 0)
+	client.logger.info(`Event ${eventId} timer completed`)
 }
 
 function updateMessageTimestamp(content, newDurationMs) {
@@ -80,11 +85,17 @@ export async function overrideEventTimer(eventId, newDurationMs, mistyUpdate = f
 				console.log('Event editted successfully')
 			}
 		} catch (err) {
-			console.error('Failed to edit the webhook', err.response.data.detail)
+			console.error('Failed to edit the webhook', err.response?.data?.detail || err.message)
 		}
 	}
 
 	if (newDurationMs === 0) {
+		try {
+			await skullTimer(current.client, current.message, current.channelName)
+			await removeReactPermissions(current.message, current.database)
+		} catch (err) {
+			console.error(`[${eventId}] ❌ Error in completion for immediate end:`, err)
+		}
 		activeTimers.delete(String(eventId))
 		return
 	}
@@ -92,11 +103,16 @@ export async function overrideEventTimer(eventId, newDurationMs, mistyUpdate = f
 	const controller = new AbortController()
 	const timeout = delay(newDurationMs, null, { signal: controller.signal })
 		.then(async () => {
+			current.client.logger.info(
+				`Skulling and removing reaction permissions from ${current.channelName} for ${current.message}`
+			)
 			try {
 				await skullTimer(current.client, current.message, current.channelName)
 				await removeReactPermissions(current.message, current.database)
 			} catch (err) {
-				console.error(`[${eventId}] ❌ Error in skullTimer or removeReactPermissions:`, err, current)
+				console.error(`[${eventId}] ❌ Error in updated timer completion:`, err)
+			} finally {
+				activeTimers.delete(String(eventId))
 			}
 		})
 		.catch((err) => {
