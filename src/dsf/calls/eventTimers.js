@@ -14,7 +14,7 @@ export async function startEventTimer({ client, message, eventId, channelName, d
 	const controller = new AbortController()
 	const timeout = delay(durationMs, null, { signal: controller.signal })
 		.then(async () => {
-			client.logger.info(`Skulling and removing reaction permissions from ${channelName} for ${message}`)
+			client.logger.info(`Skulling and removing reaction permissions from ${channelName} for message "${message.content}" (ID: ${message.id}) by ${message.author.username}`)
 			try {
 				await skullTimer(client, message, channelName)
 				await removeReactPermissions(message, database)
