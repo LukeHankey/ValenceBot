@@ -5,12 +5,26 @@ import axios from 'axios'
 export const activeTimers = new Map()
 
 export async function startEventTimer({ client, message, eventId, channelName, durationMs, database }) {
+	// Validate inputs
+	if (!eventId || !message || !client || durationMs < 0) {
+		console.error('❌ Invalid parameters for startEventTimer:', { eventId, messageId: message?.id, durationMs })
+		return
+	}
+
 	const controller = new AbortController()
 	const timeout = delay(durationMs, null, { signal: controller.signal })
 		.then(async () => {
-			client.logger.info(`Skulling and removing reaction permissions from ${channelName} for ${message}`)
-			await skullTimer(client, message, channelName)
-			await removeReactPermissions(message, database)
+			client.logger.info(
+				`Skulling and removing reaction permissions from ${channelName} for message "${message.content}" by ${message.author.username}`
+			)
+			try {
+				await skullTimer(client, message, channelName)
+				await removeReactPermissions(message, database)
+			} catch (err) {
+				console.error(`[${eventId}] ❌ Error in timer completion:`, err)
+			} finally {
+				activeTimers.delete(String(eventId))
+			}
 		})
 		.catch((err) => {
 			if (err.name === 'AbortError') {
@@ -34,8 +48,7 @@ export async function startEventTimer({ client, message, eventId, channelName, d
 	client.logger.info(`Adding ${message.content} from ${message.author.username} to activeTimers with mistyUpdated=false.`)
 
 	await timeout
-	client.logger.info(`Deleting event ${eventId}`)
-	await overrideEventTimer(eventId, 0)
+	client.logger.info(`Event ${eventId} timer completed`)
 }
 
 function updateMessageTimestamp(content, newDurationMs) {
@@ -49,8 +62,19 @@ function updateMessageTimestamp(content, newDurationMs) {
 
 export async function overrideEventTimer(eventId, newDurationMs, mistyUpdate = false) {
 	const current = activeTimers.get(String(eventId))
-	if (!current) return
+	if (!current) {
+		console.warn(`[${eventId}] ⚠️ Attempted to override non-existent timer`)
+		return
+	}
 
+	// Prevent race conditions by checking if timer is already being updated
+	if (current.updating) {
+		console.warn(`[${eventId}] ⚠️ Timer update already in progress, skipping`)
+		return
+	}
+
+	// Mark as updating to prevent race conditions
+	current.updating = true
 	current.abortController.abort()
 
 	const message = current.message
@@ -61,7 +85,7 @@ export async function overrideEventTimer(eventId, newDurationMs, mistyUpdate = f
 		try {
 			const content = message.content
 			const updatedContent = updateMessageTimestamp(content, newDurationMs)
-			const API_URL = process.env.NODE_ENV === 'DEV' ? 'http:localhost:8000' : 'https://api.dsfeventtracker.com'
+			const API_URL = process.env.NODE_ENV === 'DEV' ? 'http://localhost:8000' : 'https://api.dsfeventtracker.com'
 			const editWebhookResponse = await axios.patch(`${API_URL}/events/webhook/${message.id}`, {
 				headers: {
 					'Content-Type': 'application/json'
@@ -74,11 +98,17 @@ export async function overrideEventTimer(eventId, newDurationMs, mistyUpdate = f
 				console.log('Event editted successfully')
 			}
 		} catch (err) {
-			console.error('Failed to edit the webhook', err.response.data.detail)
+			console.error('Failed to edit the webhook', err.response?.data?.detail || err.message)
 		}
 	}
 
 	if (newDurationMs === 0) {
+		try {
+			await skullTimer(current.client, current.message, current.channelName)
+			await removeReactPermissions(current.message, current.database)
+		} catch (err) {
+			console.error(`[${eventId}] ❌ Error in completion for immediate end:`, err)
+		}
 		activeTimers.delete(String(eventId))
 		return
 	}
@@ -86,11 +116,16 @@ export async function overrideEventTimer(eventId, newDurationMs, mistyUpdate = f
 	const controller = new AbortController()
 	const timeout = delay(newDurationMs, null, { signal: controller.signal })
 		.then(async () => {
+			current.client.logger.info(
+				`Skulling and removing reaction permissions from ${current.channelName} for message "${current.message.content}" by ${current.message.author.username}`
+			)
 			try {
 				await skullTimer(current.client, current.message, current.channelName)
 				await removeReactPermissions(current.message, current.database)
 			} catch (err) {
-				console.error(`[${eventId}] ❌ Error in skullTimer or removeReactPermissions:`, err, current)
+				console.error(`[${eventId}] ❌ Error in updated timer completion:`, err)
+			} finally {
+				activeTimers.delete(String(eventId))
 			}
 		})
 		.catch((err) => {
@@ -109,6 +144,7 @@ export async function overrideEventTimer(eventId, newDurationMs, mistyUpdate = f
 		startTime: Date.now(),
 		durationMs: newDurationMs,
 		message,
-		mistyUpdated: mistyUpdate
+		mistyUpdated: mistyUpdate,
+		updating: false
 	})
 }
