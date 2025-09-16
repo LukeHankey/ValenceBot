@@ -8,74 +8,68 @@ const WorldReactions = {
 	twenty_six_plus: '<:2600_total:1023252076324724776>',
 	laggy: '<:lag:1023271186047717406>',
 	dsf: '🎣',
-	sixty_nine: '<:nice:1120443938206122116>'
+	sixty_nine: '<:nice:1120443938206122116>',
+	leagues: '<:leagues:1417397814899642399>'
 }
 
 export const worlds = [
 	{
-		world: 18,
+		worlds: [18, 115, 137],
 		reason: 'legacy',
 		reaction: WorldReactions.legacy
 	},
 	{
-		world: 30,
+		worlds: [30],
 		reason: '2000+',
 		reaction: WorldReactions.twenty_plus
 	},
 	{
-		world: 48,
+		worlds: [48],
 		reason: '2600+',
 		reaction: WorldReactions.twenty_six_plus
 	},
 	{
-		world: 52,
+		worlds: [52],
 		reason: 'vip',
 		reaction: WorldReactions.vip
 	},
 	{
-		world: 66,
+		worlds: [66],
 		reason: 'eoc',
 		reaction: WorldReactions.eoc
 	},
 	{
-		world: 84,
+		worlds: [84],
 		reason: 'laggy',
 		reaction: WorldReactions.laggy
 	},
 	{
-		world: 86,
+		worlds: [86, 114],
 		reason: '1500',
 		reaction: WorldReactions.fifteen_plus
 	},
 	{
-		world: 96,
+		worlds: [96],
 		reason: 'quick chat',
 		reaction: WorldReactions.quick_chat
 	},
 	{
-		world: 114,
-		reason: '1500',
-		reaction: WorldReactions.fifteen_plus
-	},
-	{
-		world: 115,
-		reason: 'legacy',
-		reaction: WorldReactions.legacy
-	},
-	{
-		world: 116,
+		worlds: [116],
 		reason: 'dsf world',
 		reaction: WorldReactions.dsf
 	},
 	{
-		world: 137,
-		reason: 'legacy',
-		reaction: WorldReactions.legacy
-	},
-	{
-		world: 69,
+		worlds: [69],
 		reason: 'Fun',
 		reaction: WorldReactions.sixty_nine
+	},
+	{
+		worlds: [
+			261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 277, 279, 280, 281, 282, 283, 284,
+			285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297, 298
+		],
+		reason: 'leagues',
+		reaction: WorldReactions.leagues
 	}
 ]
 
@@ -86,16 +80,18 @@ export const getWorldNumber = (message) => {
 }
 
 export const worldReaction = async (message) => {
-	const worldFound = worlds.filter((item) => item.world === getWorldNumber(message.content))
-	if (worldFound.length) {
-		if (Array.isArray(worldFound[0].reaction.match(/^<:.*:\d.*>$/))) {
-			const reactionString = worldFound[0].reaction
+	const worldNumber = getWorldNumber(message.content)
+	const worldFound = worlds.find((item) => item.worlds.includes(worldNumber))
+
+	if (worldFound) {
+		if (Array.isArray(worldFound.reaction.match(/^<:.*:\d.*>$/))) {
+			const reactionString = worldFound.reaction
 
 			// Get the emoji Id from the cache
 			const reactionId = reactionString.split(':').at(-1).slice(0, -1)
 			const emoji = message.client.emojis.cache.get(reactionId)
 			return await message.react(emoji)
 		}
-		await message.react(worldFound[0].reaction)
+		await message.react(worldFound.reaction)
 	}
 }
