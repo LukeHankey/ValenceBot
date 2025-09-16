@@ -9,7 +9,7 @@ const WorldReactions = {
 	laggy: '<:lag:1023271186047717406>',
 	dsf: '🎣',
 	sixty_nine: '<:nice:1120443938206122116>',
-	leagues: '<:leagues:1405711886091026604>'
+	leagues: '<:leagues:1417397814899642399>'
 }
 
 export const worlds = [
