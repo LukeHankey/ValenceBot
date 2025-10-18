@@ -1,10 +1,11 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType } from 'discord.js'
 
 export default class Ticket {
-	constructor(interaction, ticketData, database) {
+	constructor(interaction, ticketData, database, category = null) {
 		this.interaction = interaction
 		this.ticketData = ticketData
 		this.database = database
+		this.category = category
 	}
 
 	get currentTicket() {
@@ -113,8 +114,9 @@ export default class Ticket {
 		])
 
 		if (!this.isApplication()) {
+			const categoryText = this.category ? `**Category:** ${this.category}\n\n` : ''
 			channel.send({
-				content: `Hello <@!${memberId}>, a member of <@&${this.roleId}> will be with you shortly.`,
+				content: `${categoryText}Hello <@!${memberId}>, a member of <@&${this.roleId}> will be with you shortly.`,
 				components: [resolveButton]
 			})
 		} else {

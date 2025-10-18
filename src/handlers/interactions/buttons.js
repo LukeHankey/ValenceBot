@@ -442,7 +442,6 @@ export const buttons = async (client, interaction, data, cache) => {
 						// Check if the message starts with "**Category:**"
 						if (messageContent.startsWith('**Category:**')) {
 							// Category is present, role mention is after the newlines
-							// Format: **Category:** <category>\n\nHello <@&roleId>, ...
 							const lines = messageContent.split('\n')
 							const helloLine = lines.find((line) => line.includes('Hello <@&'))
 							if (helloLine) {

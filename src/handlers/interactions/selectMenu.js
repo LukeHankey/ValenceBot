@@ -1,3 +1,6 @@
+import { MessageFlags } from 'discord.js'
+import Ticket from '../../ticket.js'
+
 export const selectMenu = async (client, interaction, cache) => {
 	const db = client.database.settings
 	const channels = await client.database.channels
@@ -29,6 +32,33 @@ export const selectMenu = async (client, interaction, cache) => {
 			} catch (err) {
 				channels.errors.send(err)
 			}
+		}
+	} else if (interaction.customId === 'Ticket Category') {
+		// Handle ticket category selection
+		try {
+			const ticketData = await db.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
+			const selectedCategory = interaction.values[0]
+			const ticket = new Ticket(interaction, ticketData, db, selectedCategory)
+			const created = await ticket.create()
+
+			// Update the message with the same components to reset the select menu
+			await interaction.update({
+				embeds: interaction.message.embeds,
+				components: interaction.message.components
+			})
+
+			await interaction.followUp({
+				content: `Your ticket has been created at <#${created.id}>`,
+				flags: MessageFlags.Ephemeral
+			})
+		} catch (err) {
+			channels.errors.send(err)
+			await interaction
+				.reply({
+					content: 'There was an error creating your ticket. Please try again or contact an administrator.',
+					flags: MessageFlags.Ephemeral
+				})
+				.catch(() => {})
 		}
 	} else {
 		const [...keys] = interaction.values
