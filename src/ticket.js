@@ -42,36 +42,38 @@ export default class Ticket {
 			// Check all threads in the current channel
 			if (threads.size === 0) return null
 
-			// Find matching thread
-			const matchingThread = threads.find((thread) => {
+			// Find all matching threads for this user
+			const matchingThreads = threads.filter((thread) => {
 				if (thread.type !== ChannelType.PrivateThread || thread.archived || thread.locked) return false
 
 				const threadName = thread.name.toLowerCase()
 				return threadName.includes(ticketPrefix) && threadName.includes(userDisplayName)
 			})
 
-			if (!matchingThread) return null
+			if (matchingThreads.size === 0) return null
 
-			// For applications, just return the thread (user isn't a member)
+			// For applications, just return the first thread (user isn't a member)
 			if (this.isApplication()) {
-				return matchingThread
+				return matchingThreads.first()
 			}
 
-			// For regular tickets, check if user is still a member
-			try {
-				const members = await matchingThread.members.fetch()
-				if (!members.has(memberId)) return null
+			// For regular tickets, check each thread for category match
+			for (const [, thread] of matchingThreads) {
+				try {
+					const members = await thread.members.fetch()
+					if (!members.has(memberId)) continue
 
-				// If no category specified, any open ticket counts
-				if (!this.category) return matchingThread
+					// If no category specified, any open ticket counts
+					if (!this.category) return thread
 
-				// Check if category matches by fetching starter message
-				const initialMessage = await matchingThread.fetchStarterMessage()
-				if (initialMessage && initialMessage.content.includes(`**Category:** ${this.category}`)) {
-					return matchingThread
+					// Check if category matches by fetching starter message
+					const initialMessage = await thread.fetchStarterMessage()
+					if (initialMessage && initialMessage.content.includes(`**Category:** ${this.category}`)) {
+						return thread
+					}
+				} catch (e) {
+					continue
 				}
-			} catch (e) {
-				return null
 			}
 
 			return null
@@ -82,36 +84,50 @@ export default class Ticket {
 
 			const parentId = ticketChannel.parentId
 
-			// Find matching channel
-			const matchingChannel = guild.channels.cache.find((channel) => {
+			// Find all matching channels for this user
+			const matchingChannels = guild.channels.cache.filter((channel) => {
 				if (channel.type !== ChannelType.GuildText || channel.parentId !== parentId) return false
 
 				const channelName = channel.name.toLowerCase()
 				return channelName.includes(ticketPrefix) && channelName.includes(userDisplayName)
 			})
 
-			if (!matchingChannel) return null
+			if (matchingChannels.size === 0) return null
 
-			// For applications, just return the channel (user doesn't have permissions)
+			// For applications, just return the first channel (user doesn't have permissions)
 			if (this.isApplication()) {
-				return matchingChannel
+				return matchingChannels.first()
 			}
 
-			// For regular tickets, check if user has ViewChannel permission
-			const hasAccess = matchingChannel.permissionOverwrites.cache.has(memberId)
-			if (!hasAccess) return null
+			// For regular tickets, check each channel for category match
+			for (const [, channel] of matchingChannels) {
+				try {
+					// Check if ticket has been closed by checking the button text
+					const pinnedMessages = await channel.messages.fetchPinned()
+					const initialMessage = pinnedMessages.first()
 
-			const perms = matchingChannel.permissionOverwrites.cache.get(memberId)
-			if (!perms.allow.has('ViewChannel')) return null
+					// If the button says "Issue resolved", the ticket is closed
+					if (initialMessage?.components?.[0]?.components?.[0]?.data?.label === 'Issue resolved') {
+						continue
+					}
 
-			// If no category specified, any open ticket counts
-			if (!this.category) return matchingChannel
+					// Check if user has ViewChannel permission (for open tickets)
+					const hasAccess = channel.permissionOverwrites.cache.has(memberId)
+					if (!hasAccess) continue
 
-			// Check if category matches by fetching pinned messages
-			const pinnedMessages = await matchingChannel.messages.fetchPinned()
-			const initialMessage = pinnedMessages.first()
-			if (initialMessage && initialMessage.content.includes(`**Category:** ${this.category}`)) {
-				return matchingChannel
+					const perms = channel.permissionOverwrites.cache.get(memberId)
+					if (!perms.allow.has('ViewChannel')) continue
+
+					// If no category specified, any open ticket counts
+					if (!this.category) return channel
+
+					// Check if category matches
+					if (initialMessage && initialMessage.content.includes(`**Category:** ${this.category}`)) {
+						return channel
+					}
+				} catch (e) {
+					continue
+				}
 			}
 
 			return null
