@@ -67,6 +67,14 @@ export default {
 		const application = interaction.options.getBoolean('application')
 		const categoriesInput = interaction.options.getString('categories')
 
+		// Validate that application and categories are not both set
+		if (application && categoriesInput) {
+			return interaction.reply({
+				content: 'You cannot use both `application` and `categories` options together. Please choose one or the other.',
+				ephemeral: true
+			})
+		}
+
 		let components
 		let ticketCategories = null
 
