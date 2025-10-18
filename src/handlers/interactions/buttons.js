@@ -412,18 +412,21 @@ export const buttons = async (client, interaction, data, cache) => {
 				{
 					const ticketData = await db.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
 					const ticket = new Ticket(interaction, ticketData, db)
-					const created = await ticket.create()
-					if (!ticket.memberIncluded) {
-						interaction.reply({
-							content: `Your ticket has been created at <#${created.id}>`,
-							flags: MessageFlags.Ephemeral
-						})
-					} else {
-						interaction.reply({
-							content: `Your ticket has been created. Please wait while the <@&${ticket.roleId}> review.`,
+
+					// Check if user already has an open ticket
+					const existingTicket = await ticket.hasOpenTicket()
+					if (existingTicket) {
+						return await interaction.reply({
+							content: `You already have an open ticket at <#${existingTicket.id}>. Please close that ticket before opening a new one.`,
 							flags: MessageFlags.Ephemeral
 						})
 					}
+
+					const created = await ticket.create()
+					await interaction.reply({
+						content: `Your ticket has been created at <#${created.id}>`,
+						flags: MessageFlags.Ephemeral
+					})
 					if (interaction.guild.id === '420803245758480405') {
 						await buttonLogger.upload(interaction.member.id)
 					}
@@ -443,20 +446,37 @@ export const buttons = async (client, interaction, data, cache) => {
 						await interaction.channel.setLocked(true)
 						await interaction.channel.setArchived(true)
 					} else {
-						const roleId = interactionResponse.resource?.message.content.split(' ')[1].slice(3, 21)
+						const messageContent = interactionResponse.resource?.message.content
+						let roleId
 
-						await interaction.channel.permissionOverwrites.set([
-							{
-								id: roleId,
-								allow: 'ViewChannel',
-								type: 'role'
-							},
-							{
-								id: interaction.guild.id,
-								deny: 'ViewChannel',
-								type: 'role'
+						// Check if the message starts with "**Category:**"
+						if (messageContent.startsWith('**Category:**')) {
+							// Category is present, role mention is after the newlines
+							const lines = messageContent.split('\n')
+							const helloLine = lines.find((line) => line.includes('Hello <@&'))
+							if (helloLine) {
+								const roleMatch = helloLine.match(/<@&(\d+)>/)
+								roleId = roleMatch ? roleMatch[1] : null
 							}
-						])
+						} else {
+							// No category, original format: Hello <@&roleId>, ...
+							roleId = messageContent.split(' ')[1].slice(3, 21)
+						}
+
+						if (roleId) {
+							await interaction.channel.permissionOverwrites.set([
+								{
+									id: roleId,
+									allow: 'ViewChannel',
+									type: 'role'
+								},
+								{
+									id: interaction.guild.id,
+									deny: 'ViewChannel',
+									type: 'role'
+								}
+							])
+						}
 					}
 				}
 				break
