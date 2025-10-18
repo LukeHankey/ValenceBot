@@ -67,10 +67,18 @@ export const modals = async (client, interaction) => {
 		}
 
 		for (const values of userData) {
+			const alt1MerchantCount = values.alt1?.merchantCount || 0
+			const alt1FirstMerchantCount = values.alt1First?.merchantCount || 0
+			const totalMerchCount = (values.count || 0) + alt1MerchantCount + alt1FirstMerchantCount
+
+			const alt1OtherCount = values.alt1?.otherCount || 0
+			const alt1FirstOtherCount = values.alt1First?.otherCount || 0
+			const totalOtherCount = (values.otherCount || 0) + alt1OtherCount + alt1FirstOtherCount
+
 			fields.push(
 				{
 					name: `${values.author}`,
-					value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nActive for: ${ms(
+					value: `Merch count: ${totalMerchCount}\nOther count: ${totalOtherCount}\nActive for: ${ms(
 						values.lastTimestamp - values.firstTimestamp
 					)}`,
 					inline: true
