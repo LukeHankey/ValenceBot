@@ -412,6 +412,16 @@ export const buttons = async (client, interaction, data, cache) => {
 				{
 					const ticketData = await db.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
 					const ticket = new Ticket(interaction, ticketData, db)
+
+					// Check if user already has an open ticket
+					const existingTicket = await ticket.hasOpenTicket()
+					if (existingTicket) {
+						return await interaction.reply({
+							content: `You already have an open ticket at <#${existingTicket.id}>. Please close that ticket before opening a new one.`,
+							flags: MessageFlags.Ephemeral
+						})
+					}
+
 					const created = await ticket.create()
 					await interaction.reply({
 						content: `Your ticket has been created at <#${created.id}>`,

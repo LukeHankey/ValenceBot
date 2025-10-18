@@ -39,6 +39,16 @@ export const selectMenu = async (client, interaction, cache) => {
 			const ticketData = await db.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
 			const selectedCategory = interaction.values[0]
 			const ticket = new Ticket(interaction, ticketData, db, selectedCategory)
+
+			// Check if user already has an open ticket of this category
+			const existingTicket = await ticket.hasOpenTicket()
+			if (existingTicket) {
+				return await interaction.reply({
+					content: `You already have an open ticket with this category at <#${existingTicket.id}>. Please close that ticket before opening a new one.`,
+					flags: MessageFlags.Ephemeral
+				})
+			}
+
 			const created = await ticket.create()
 
 			// Update the message with the same components to reset the select menu
