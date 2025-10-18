@@ -413,17 +413,10 @@ export const buttons = async (client, interaction, data, cache) => {
 					const ticketData = await db.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
 					const ticket = new Ticket(interaction, ticketData, db)
 					const created = await ticket.create()
-					if (!ticket.memberIncluded) {
-						interaction.reply({
-							content: `Your ticket has been created at <#${created.id}>`,
-							flags: MessageFlags.Ephemeral
-						})
-					} else {
-						interaction.reply({
-							content: `Your ticket has been created. Please wait while the <@&${ticket.roleId}> review.`,
-							flags: MessageFlags.Ephemeral
-						})
-					}
+					await interaction.reply({
+						content: `Your ticket has been created at <#${created.id}>`,
+						flags: MessageFlags.Ephemeral
+					})
 					if (interaction.guild.id === '420803245758480405') {
 						await buttonLogger.upload(interaction.member.id)
 					}
