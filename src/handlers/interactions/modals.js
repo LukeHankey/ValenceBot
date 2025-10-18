@@ -141,6 +141,16 @@ export const modals = async (client, interaction) => {
 				)
 				const ticketData = await db.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
 				const ticket = new Ticket(interaction, ticketData, db)
+
+				// Check if user already has an open application
+				const existingTicket = await ticket.hasOpenTicket()
+				if (existingTicket) {
+					return await interaction.editReply({
+						content:
+							'You already have an open application under review. Please wait for a response. If you have something further to add, please contact an Administrator.'
+					})
+				}
+
 				const ticketChannel = await ticket.create()
 
 				const currentTicketComponents = ticket.currentTicket.applicationModal.components
