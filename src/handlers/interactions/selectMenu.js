@@ -36,6 +36,7 @@ export const selectMenu = async (client, interaction, cache) => {
 	} else if (interaction.customId === 'Ticket Category') {
 		// Handle ticket category selection
 		try {
+			await interaction.deferUpdate()
 			const ticketData = await db.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
 			const selectedCategory = interaction.values[0]
 			const ticket = new Ticket(interaction, ticketData, db, selectedCategory)
@@ -43,7 +44,7 @@ export const selectMenu = async (client, interaction, cache) => {
 			// Check if user already has an open ticket of this category
 			const existingTicket = await ticket.hasOpenTicket()
 			if (existingTicket) {
-				return await interaction.reply({
+				return await interaction.followUp({
 					content: `You already have an open ticket with this category at <#${existingTicket.id}>. Please close that ticket before opening a new one.`,
 					flags: MessageFlags.Ephemeral
 				})
@@ -52,7 +53,7 @@ export const selectMenu = async (client, interaction, cache) => {
 			const created = await ticket.create()
 
 			// Update the message with the same components to reset the select menu
-			await interaction.update({
+			await interaction.editReply({
 				embeds: interaction.message.embeds,
 				components: interaction.message.components
 			})
@@ -64,7 +65,7 @@ export const selectMenu = async (client, interaction, cache) => {
 		} catch (err) {
 			channels.errors.send(err)
 			await interaction
-				.reply({
+				.followUp({
 					content: 'There was an error creating your ticket. Please try again or contact an administrator.',
 					flags: MessageFlags.Ephemeral
 				})
