@@ -436,20 +436,38 @@ export const buttons = async (client, interaction, data, cache) => {
 						await interaction.channel.setLocked(true)
 						await interaction.channel.setArchived(true)
 					} else {
-						const roleId = interactionResponse.resource?.message.content.split(' ')[1].slice(3, 21)
+						const messageContent = interactionResponse.resource?.message.content
+						let roleId
 
-						await interaction.channel.permissionOverwrites.set([
-							{
-								id: roleId,
-								allow: 'ViewChannel',
-								type: 'role'
-							},
-							{
-								id: interaction.guild.id,
-								deny: 'ViewChannel',
-								type: 'role'
+						// Check if the message starts with "**Category:**"
+						if (messageContent.startsWith('**Category:**')) {
+							// Category is present, role mention is after the newlines
+							// Format: **Category:** <category>\n\nHello <@&roleId>, ...
+							const lines = messageContent.split('\n')
+							const helloLine = lines.find((line) => line.includes('Hello <@&'))
+							if (helloLine) {
+								const roleMatch = helloLine.match(/<@&(\d+)>/)
+								roleId = roleMatch ? roleMatch[1] : null
 							}
-						])
+						} else {
+							// No category, original format: Hello <@&roleId>, ...
+							roleId = messageContent.split(' ')[1].slice(3, 21)
+						}
+
+						if (roleId) {
+							await interaction.channel.permissionOverwrites.set([
+								{
+									id: roleId,
+									allow: 'ViewChannel',
+									type: 'role'
+								},
+								{
+									id: interaction.guild.id,
+									deny: 'ViewChannel',
+									type: 'role'
+								}
+							])
+						}
 					}
 				}
 				break
