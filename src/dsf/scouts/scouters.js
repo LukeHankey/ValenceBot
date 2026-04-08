@@ -30,12 +30,20 @@ const addedRoles = async (name, scoutTracker) => {
 		if (name.roleName === 'Verified Scouter') {
 			const trackerProfile = await scoutTracker.findOne({ userID: x.id })
 			if (trackerProfile.oldScout) {
+				const oldAlt1MerchantCount = trackerProfile.oldScout.alt1?.merchantCount ?? 0
+				const oldAlt1OtherCount = trackerProfile.oldScout.alt1?.otherCount ?? 0
+				const oldAlt1FirstMerchantCount = trackerProfile.oldScout.alt1First?.merchantCount ?? 0
+				const oldAlt1FirstOtherCount = trackerProfile.oldScout.alt1First?.otherCount ?? 0
 				await scoutTracker.updateOne(
 					{ userID: trackerProfile.userID },
 					{
 						$set: {
 							count: trackerProfile.count + trackerProfile.oldScout.count,
 							otherCount: trackerProfile.otherCount + trackerProfile.oldScout.otherCount,
+							'alt1.merchantCount': (trackerProfile.alt1?.merchantCount ?? 0) + oldAlt1MerchantCount,
+							'alt1.otherCount': (trackerProfile.alt1?.otherCount ?? 0) + oldAlt1OtherCount,
+							'alt1First.merchantCount': (trackerProfile.alt1First?.merchantCount ?? 0) + oldAlt1FirstMerchantCount,
+							'alt1First.otherCount': (trackerProfile.alt1First?.otherCount ?? 0) + oldAlt1FirstOtherCount,
 							firstTimestamp: trackerProfile.oldScout.firstTimestamp
 						},
 						$unset: {
