@@ -39,8 +39,9 @@ const dsf = async (client, message) => {
 			eventID = eventData.id
 		}
 	} catch (err) {
-		if (err.response.data.detail !== 'No active event found for this world') {
-			console.log(worldNumber, err.response?.data?.detail)
+		const errorDetail = err?.response?.data?.detail
+		if (errorDetail !== 'No active event found for this world') {
+			console.log(worldNumber, errorDetail ?? err?.message)
 			channels.errors.send(err)
 		}
 	}
