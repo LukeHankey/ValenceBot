@@ -40,6 +40,7 @@ export const addCount = async (client, message, channelName, alt1Count = false) 
 
 		const dsfServerErrorChannel = await client.channels.cache.get('794608385106509824') // bot-logs-admin
 		const botServerErrorChannel = await client.channels.cache.get('903432222139355207')
+		const trackCallCount = channelName === 'other'
 
 		const callerMember = message.member
 		const callerProfile = await scoutersCollection.findOne({ userID: callerMember.id })
@@ -82,26 +83,23 @@ export const addCount = async (client, message, channelName, alt1Count = false) 
 				return false
 			}
 
-			client.logger.info(`New: ${callerMember.displayName} (${message.content}) userId: ${callerMember.id}`)
-			const insertData = {
-				userID: callerMember.id,
-				author: callerMember.nickname ?? callerMember.displayName,
-				firstTimestamp: message.createdTimestamp,
-				firstTimestampReadable: new Date(message.createdTimestamp),
-				lastTimestamp: message.createdTimestamp,
-				lastTimestampReadable: new Date(message.createdTimestamp),
-				count: 1,
-				otherCount: 0,
-				active: 1,
-				assigned: []
-			}
+			if (trackCallCount) {
+				client.logger.info(`New: ${callerMember.displayName} (${message.content}) userId: ${callerMember.id}`)
+				const insertData = {
+					userID: callerMember.id,
+					author: callerMember.nickname ?? callerMember.displayName,
+					firstTimestamp: message.createdTimestamp,
+					firstTimestampReadable: new Date(message.createdTimestamp),
+					lastTimestamp: message.createdTimestamp,
+					lastTimestampReadable: new Date(message.createdTimestamp),
+					count: 0,
+					otherCount: 1,
+					active: 1,
+					assigned: []
+				}
 
-			if (channelName === 'other') {
-				insertData.count = 0
-				insertData.otherCount = 1
+				await scoutersCollection.insertOne(insertData)
 			}
-
-			await scoutersCollection.insertOne(insertData)
 		} else {
 			if (!callCheckPassed) {
 				if (message.guild.id === '668330890790699079') {
@@ -113,22 +111,14 @@ export const addCount = async (client, message, channelName, alt1Count = false) 
 				return false
 			}
 
-			const increaseCallCountData = {
-				count: 1
-			}
-
-			if (channelName === 'other') {
-				delete increaseCallCountData.count
-				increaseCallCountData.otherCount = 1
-			}
-
-			client.logger.info(`Old: ${callerMember.displayName} (${message.content})`)
-			if (callerProfile.oldScout && callerProfile.oldScout.firstPost) {
+			if (trackCallCount && callerProfile.oldScout && callerProfile.oldScout.firstPost) {
 				// If a scouter was inactive and becomes active again, reset fields.
 				await scoutersCollection.updateOne(
 					{ userID: callerProfile.userID },
 					{
-						$inc: increaseCallCountData,
+						$inc: {
+							otherCount: 1
+						},
 						$set: {
 							'oldScout.firstPost': false,
 							author: callerMember.nickname ?? callerMember.displayName,
@@ -140,21 +130,22 @@ export const addCount = async (client, message, channelName, alt1Count = false) 
 						}
 					}
 				)
-			} else {
-				if (!alt1Count) {
-					await scoutersCollection.updateOne(
-						{ userID: callerProfile.userID },
-						{
-							$inc: increaseCallCountData,
-							$set: {
-								author: callerMember.nickname ?? callerMember.displayName,
-								lastTimestamp: message.createdTimestamp,
-								lastTimestampReadable: new Date(message.createdTimestamp),
-								active: 1
-							}
+			} else if (trackCallCount && !alt1Count) {
+				client.logger.info(`Old: ${callerMember.displayName} (${message.content})`)
+				await scoutersCollection.updateOne(
+					{ userID: callerProfile.userID },
+					{
+						$inc: {
+							otherCount: 1
+						},
+						$set: {
+							author: callerMember.nickname ?? callerMember.displayName,
+							lastTimestamp: message.createdTimestamp,
+							lastTimestampReadable: new Date(message.createdTimestamp),
+							active: 1
 						}
-					)
-				}
+					}
+				)
 			}
 		}
 

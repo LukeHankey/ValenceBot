@@ -308,14 +308,6 @@ export const buttons = async (client, interaction, data, cache) => {
 					if (interaction.user.bot) return
 					const item = data.merchChannel.deletions.messages.find((item) => item.messageID === interaction.message.id)
 					if (item) {
-						await scouters.updateOne(
-							{ userID: item.authorID },
-							{
-								$inc: {
-									count: -1
-								}
-							}
-						)
 						await db.updateOne(
 							{ _id: interaction.guild.id },
 							{
@@ -325,7 +317,7 @@ export const buttons = async (client, interaction, data, cache) => {
 							}
 						)
 						const newEmbed = new EmbedBuilder(interaction.message.embeds[0].data)
-						newEmbed.setColor(Color.greenLight).setTitle('Message Deleted - Count Removed')
+						newEmbed.setColor(Color.greenLight).setTitle('Message Deleted - Legacy Count Unchanged')
 						await interaction.message.edit({ embeds: [newEmbed], components: [] })
 					}
 				}

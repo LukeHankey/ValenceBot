@@ -19,8 +19,8 @@ export default {
 		'Displays all of the current stored messages in other-dsf-calls.',
 		'Clears all of the current stored messages in other-dsf-calls.',
 		'Shows the list of potential scouters/verified scouters with the set scout count, or count adjusted.',
-		'Add 1 or <num> merch/other to the member provided.',
-		'Remove 1 or <num> merch/other to the member provided.'
+		'Add 1 or <num> other to the member provided.',
+		'Remove 1 or <num> other to the member provided.'
 	],
 	usage: [
 		'messages',
@@ -28,8 +28,8 @@ export default {
 		'other',
 		'other clear',
 		'view scouter/verified <num (optional)>',
-		'user memberID/@member add <num (optional)> <other>',
-		'user memberID/@member remove <num (optional)> <other>'
+		'user memberID/@member add other|<num> other',
+		'user memberID/@member remove other|<num> other'
 	],
 	guildSpecific: ['668330890790699079', '420803245758480405'],
 	permissionLevel: 'Admin',
@@ -216,16 +216,9 @@ export default {
 				switch (param) {
 					case 'add':
 						if (!num) {
-							await scouters.updateOne(
-								{ userID: userMention },
-								{
-									$inc: {
-										count: 1
-									}
-								}
-							)
-							if (reaction) return message.react('✅')
-							else return message.react('❌')
+							return message.channel.send({
+								content: 'Merchant count is legacy-only and can no longer be adjusted. Use `other`.'
+							})
 						} else if (num === 'other') {
 							await scouters.updateOne(
 								{ userID: userMention },
@@ -256,30 +249,16 @@ export default {
 								if (reaction) return message.react('✅')
 								else return message.react('❌')
 							} else {
-								await scouters.updateOne(
-									{ userID: userMention },
-									{
-										$inc: {
-											count: +num
-										}
-									}
-								)
-								if (reaction) return message.react('✅')
-								else return message.react('❌')
+								return message.channel.send({
+									content: 'Merchant count is legacy-only and can no longer be adjusted. Use `other`.'
+								})
 							}
 						}
 					case 'remove':
 						if (!num) {
-							await scouters.updateOne(
-								{ userID: userMention },
-								{
-									$inc: {
-										count: -1
-									}
-								}
-							)
-							if (reaction) return message.react('✅')
-							else return message.react('❌')
+							return message.channel.send({
+								content: 'Merchant count is legacy-only and can no longer be adjusted. Use `other`.'
+							})
 						} else if (num === 'other') {
 							await scouters.updateOne(
 								{ userID: userMention },
@@ -310,16 +289,9 @@ export default {
 								if (reaction) return message.react('✅')
 								else return message.react('❌')
 							} else {
-								await scouters.updateOne(
-									{ userID: userMention },
-									{
-										$inc: {
-											count: -num
-										}
-									}
-								)
-								if (reaction) return message.react('✅')
-								else return message.react('❌')
+								return message.channel.send({
+									content: 'Merchant count is legacy-only and can no longer be adjusted. Use `other`.'
+								})
 							}
 						}
 					default:
@@ -331,7 +303,7 @@ export default {
 					embeds: [
 						nEmbed(
 							'**DSF Admin Commands List**',
-							"Here's a list of all the DSF commands you can use. Any parameter(s) in `<>` are optional:\n\n`messages|m`\n`messages|m clear`\n`other|o`\n`other|o clear`\n`view scouter <num>`\n`view verified <num>`\n`user memberID/@member add <other> <num>`\n`user memberID/@member remove <other> <num>`",
+							"Here's a list of all the DSF commands you can use. Any parameter(s) in `<>` are optional:\n\n`messages|m`\n`messages|m clear`\n`other|o`\n`other|o clear`\n`view scouter <num>`\n`view verified <num>`\n`user memberID/@member add other|<num> other`\n`user memberID/@member remove other|<num> other`",
 							Color.cyan,
 							client.user.displayAvatarURL()
 						)

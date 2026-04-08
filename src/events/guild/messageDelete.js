@@ -32,14 +32,6 @@ export default async (client, message) => {
 	const botServerChannel = await client.channels.cache.get('784543962174062608')
 	const dsfServerChannel = await client.channels.cache.get('884076361940078682')
 
-	const buttonSelectionMerch = new ActionRowBuilder().addComponents([
-		new ButtonBuilder()
-			.setCustomId('Remove Merch Count')
-			.setLabel('Remove Merch Count')
-			.setStyle(ButtonStyle.Success)
-			.setEmoji({ name: '✅' })
-	])
-
 	const buttonSelectionOther = new ActionRowBuilder().addComponents([
 		new ButtonBuilder()
 			.setCustomId('Remove Other Count')
@@ -48,10 +40,11 @@ export default async (client, message) => {
 			.setEmoji({ name: '✅' })
 	])
 
-	const sendAndUpdate = async (webhook, embed, data, button) => {
-		const sentChannel = await webhook.send({ embeds: [embed], components: [button] })
+	const sendAndUpdate = async (webhook, embed, data, { button, trackDeletion = true } = {}) => {
+		const components = button ? [button] : []
+		const sentChannel = await webhook.send({ embeds: [embed], components })
 		const { userID } = data
-		if (sentChannel.guild.id === message.guild.id) {
+		if (trackDeletion && sentChannel.guild.id === message.guild.id) {
 			await db.updateOne(
 				{ _id: message.guild.id },
 				{
@@ -98,10 +91,16 @@ export default async (client, message) => {
 
 	const handleDeletions = async (channel = 'merch', deletedBy = null) => {
 		let checkDB = fullDB.merchChannel.messages.find((entry) => entry.messageID === message.id)
-		let button = buttonSelectionMerch
+		let button = null
+		let descriptionSuffix = 'log only, no count changes.'
+		let footerText = 'Merchant count is legacy-only and no longer updated.'
+		let trackDeletion = false
 		if (channel === 'other') {
 			checkDB = fullDB.merchChannel.otherMessages.find((entry) => entry.messageID === message.id)
 			button = buttonSelectionOther
+			descriptionSuffix = 'remove other count.'
+			footerText = 'Click the button or use the command to remove other count.'
+			trackDeletion = true
 		}
 
 		if (checkDB === undefined) {
@@ -117,12 +116,12 @@ export default async (client, message) => {
 
 		const embed = messageDeletion(checkDB)
 			// eslint-disable-next-line no-unneeded-ternary
-			.setDescription(`This message was deleted by ${deletedBy ? deletedBy : 'the message author'} - remove merch count.`)
+			.setDescription(`This message was deleted by ${deletedBy ? deletedBy : 'the message author'} - ${descriptionSuffix}`)
 			.setThumbnail(user.user.displayAvatarURL())
-			.setFooter({ text: 'Click the button or use the command to remove merch count.' })
+			.setFooter({ text: footerText })
 
-		await sendAndUpdate(botServerChannel, embed, checkDB, button)
-		await sendAndUpdate(dsfServerChannel, embed, checkDB, button)
+		await sendAndUpdate(botServerChannel, embed, checkDB, { button, trackDeletion })
+		await sendAndUpdate(dsfServerChannel, embed, checkDB, { button, trackDeletion })
 
 		if (channel === 'merch') {
 			const getPerms = await merchChannelID.permissionOverwrites.cache.get(checkDB.userID)
