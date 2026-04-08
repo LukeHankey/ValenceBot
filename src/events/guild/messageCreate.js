@@ -59,7 +59,6 @@ export default async (client, message) => {
 					message.crosspost()
 				}
 				break
-			case channelID:
 			case otherChannelID:
 				return await dsf(client, message)
 		}
