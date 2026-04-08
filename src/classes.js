@@ -140,14 +140,15 @@ class ScouterCheck {
 	}
 
 	get potentialScouts() {
+		const roleId = this._db?.roles?.[this.roleName]?.match(/\d{18,19}/)?.[0]
 		let scout
 		if (this.roleName.toLowerCase() === 'scouter') {
 			scout = this._scouters.filter((val) => {
-				return this._checkScouts(val, this.value ?? 40, this.week)
+				return this._checkScouts(val, this.value ?? 100, this.week) || val.assigned?.includes(roleId)
 			})
 		} else if (this.roleName.toLowerCase() === 'verified scouter') {
 			scout = this._scouters.filter((val) => {
-				return this._checkVerifiedScouts(val, this.value ?? 100, this.month)
+				return this._checkVerifiedScouts(val, this.value ?? 250, this.month) || val.assigned?.includes(roleId)
 			})
 		} else {
 			// If another role

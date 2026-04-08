@@ -156,7 +156,7 @@ export default {
 				break
 			case 'view':
 				{
-					const num = isNaN(parseInt(args[2])) ? (args[1] === 'verified' ? 100 : 40) : parseInt(args[2])
+					const num = isNaN(parseInt(args[2])) ? (args[1] === 'verified' ? 250 : 100) : parseInt(args[2])
 
 					const scout = new ScouterCheck('Scouter', num)
 					const vScout = new ScouterCheck('Verified Scouter', num)
