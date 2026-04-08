@@ -59,7 +59,7 @@ export default async (client, message) => {
 	}
 
 	// Cached messages only show the message object without null //
-	// No DMs and only in other-dsf-calls
+	// No DMs and only in dsf-calls
 	if (!message.guild || message.channel.id !== otherChannelID.id) return
 	const fetchedLogs = await message.guild.fetchAuditLogs({
 		limit: 1,

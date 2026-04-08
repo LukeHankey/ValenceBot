@@ -182,8 +182,7 @@ export const buttons = async (client, interaction, data, cache) => {
 	const scouters = client.database.scoutTracker
 	const buttonLogger = new ButtonWarning(interaction)
 	let generalChannel = interaction.guild.channels.cache.find((c) => c.id === '696375576881004655') // general
-	let [userId, user, content, timestamp, channelName] = interaction.message.content.split('\n').slice(3)
-	if (channelName) channelName = channelName.slice(0, -3).split(': ')[1]
+	let [userId, user, content, timestamp] = interaction.message.content.split('\n').slice(3)
 	if (user) user = user.split(' ').slice(2).join(' ')
 	if (userId) userId = userId.split(' ').slice(3)[0].slice(3, -1)
 	buttonLogger.scouters = scouters
@@ -228,7 +227,7 @@ export const buttons = async (client, interaction, data, cache) => {
 					timestamp = timestamp.split(' ').slice(2).join(' ').slice(0, -3)
 					const serverName = interaction.member.guild.name
 					const potentialPassowrd = content.split(' ').slice(2).join(' ')
-					const passwordDM = `${serverName}\n\nHello.\n\nWe saw you typed into the <#${data.merchChannel.channelID}> channel on ${timestamp} and the Deep Sea Fishing Admins have flagged this as a potential password which is why you are receiving this DM. That specific channel has all messages logged.\n\nYour message content: ${potentialPassowrd}\n\nIf it is a password, then we recommend that you change it ASAP, even though it got deleted straight away. Please respond with one of the selections to let our Admins know if we should also delete that message from our message logs.\n\nDSF Admin Team.`
+					const passwordDM = `${serverName}\n\nHello.\n\nWe saw you typed into the <#${data.merchChannel.otherChannelID}> channel on ${timestamp} and the Deep Sea Fishing Admins have flagged this as a potential password which is why you are receiving this DM. That specific channel has all messages logged.\n\nYour message content: ${potentialPassowrd}\n\nIf it is a password, then we recommend that you change it ASAP, even though it got deleted straight away. Please respond with one of the selections to let our Admins know if we should also delete that message from our message logs.\n\nDSF Admin Team.`
 
 					try {
 						await guildMember.send({ content: passwordDM, components: [menu] })
@@ -266,7 +265,7 @@ export const buttons = async (client, interaction, data, cache) => {
 				break
 			case 'Show How To React':
 				{
-					const reactMessage = `<@!${userId}> Right Click / Long Press the Message > Apps > Mark event as dead.\nFor more information, check the pins in <#${data.merchChannel.channelID}>.`
+					const reactMessage = `<@!${userId}> Right Click / Long Press the Message > Apps > Mark event as dead.\nFor more information, check the pins in <#${data.merchChannel.otherChannelID}>.`
 
 					await generalChannel.send({ content: reactMessage })
 					await interaction.update({ components: [] })
@@ -276,7 +275,7 @@ export const buttons = async (client, interaction, data, cache) => {
 			case 'Eyes on Call Channels':
 				{
 					const welcomeChannel = interaction.guild.channels.cache.find((c) => c.name === 'welcome')
-					const nonsenseMessage = `<@!${userId}>, <#${data.merchChannel.channelID}> and <#${data.merchChannel.otherChannelID}> are for calls only. Please read <#${welcomeChannel.id}> and <#${rulesChannel.id}>.`
+					const nonsenseMessage = `<@!${userId}>, <#${data.merchChannel.otherChannelID}> is for calls only. Please read <#${welcomeChannel.id}> and <#${rulesChannel.id}>.`
 
 					await generalChannel.send({ content: nonsenseMessage })
 					await interaction.update({ components: [] })
@@ -525,7 +524,7 @@ export const buttons = async (client, interaction, data, cache) => {
 				break
 			case 'Read The Pins':
 				await generalChannel.send({
-					content: `<@!${userId}>, invalid call format. Read the pins in <#${data.merchChannel.channelID}> and <#${data.merchChannel.otherChannelID}> for acceptable formats!`
+					content: `<@!${userId}>, invalid call format. Read the pins in <#${data.merchChannel.otherChannelID}> for acceptable formats!`
 				})
 				await interaction.update({ components: [] })
 				await buttonLogger.upload(userId)
@@ -541,9 +540,7 @@ export const buttons = async (client, interaction, data, cache) => {
 				await generalChannel.send({
 					content: `<@${userId}>, thanks for the call but world \`${getWorldNumber(
 						content
-					)}\` has already been posted! <#${
-						channelName === 'other-dsf-calls' ? data.merchChannel.otherChannelID : data.merchChannel.channelID
-					}>`
+					)}\` has already been posted! <#${data.merchChannel.otherChannelID}>`
 				})
 				await interaction.update({ components: [] })
 				break

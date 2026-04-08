@@ -16,8 +16,8 @@ export default {
 	description: [
 		'Displays all of the current stored messages.',
 		'Clears all of the current stored messages.',
-		'Displays all of the current stored messages in other-dsf-calls.',
-		'Clears all of the current stored messages in other-dsf-calls.',
+		'Displays all of the current stored messages in dsf-calls.',
+		'Clears all of the current stored messages in dsf-calls.',
 		'Shows the list of potential scouters/verified scouters with the set scout count, or count adjusted.',
 		'Add 1 or <num> other to the member provided.',
 		'Remove 1 or <num> other to the member provided.'
