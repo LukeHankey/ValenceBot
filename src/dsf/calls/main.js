@@ -13,7 +13,6 @@ const dsf = async (client, message) => {
 		{
 			projection: {
 				'merchChannel.otherChannelID': 1,
-				'merchChannel.messages': 1,
 				'merchChannel.otherMessages': 1
 			}
 		}
