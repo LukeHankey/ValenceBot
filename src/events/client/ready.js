@@ -2,14 +2,11 @@
 /* eslint-disable no-octal */
 import { updateAllMemberDataBaseRankRoles } from '../../alt1.js'
 import {
-	updateStockTables,
 	scout,
 	vScout,
 	classVars,
 	addedRoles,
 	removedRoles,
-	removeInactives,
-	removeScouters,
 	startupRemoveReactionPermissions,
 	mistyEventTimer
 } from '../../dsf/index.js'
@@ -118,26 +115,12 @@ export default async (client) => {
 			await addedRoles(role, scoutTracker)
 			await removedRoles(role, scoutTracker)
 		})
-		await removeInactives(client, scout, scoutTracker)
-		await removeScouters({
-			client,
-			scoutProfiles: [scout, vScout],
-			channels,
-			tracker: scoutTracker
-		})
 		await updateAllMemberDataBaseRankRoles(client, scout)
 
 		// Daily Reset
 		if (new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
-			updateStockTables(client, db)
 			const virtualFisherChannel = client.channels.cache.get('1320188062139158538')
 			await virtualFisherChannel.send('<@&1320188185480925204> Dailies!')
-		}
-
-		// Weekly reset
-		if (new Date().getDay() === 3 && new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
-			scout.send()
-			vScout.send()
 		}
 
 		// Monthly reset
