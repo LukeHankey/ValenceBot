@@ -199,6 +199,7 @@ export const buttons = async (client, interaction, data, cache) => {
 	}
 
 	const rulesChannel = interaction.guild.channels.cache.find((c) => c.name === 'rules')
+	const rulesRef = rulesChannel ? `<#${rulesChannel.id}>` : '`#rules`'
 
 	try {
 		switch (interaction.customId) {
@@ -277,7 +278,8 @@ export const buttons = async (client, interaction, data, cache) => {
 			case 'Eyes on Call Channels':
 				{
 					const welcomeChannel = interaction.guild.channels.cache.find((c) => c.name === 'welcome')
-					const nonsenseMessage = `<@!${userId}>, <#${data.merchChannel.otherChannelID}> is for calls only. Please read <#${welcomeChannel.id}> and <#${rulesChannel.id}>.`
+					const welcomeRef = welcomeChannel ? `<#${welcomeChannel.id}>` : '`#welcome`'
+					const nonsenseMessage = `<@!${userId}>, <#${data.merchChannel.otherChannelID}> is for calls only. Please read ${welcomeRef} and ${rulesRef}.`
 
 					await generalChannel.send({ content: nonsenseMessage })
 					await interaction.update({ components: [] })
@@ -533,7 +535,7 @@ export const buttons = async (client, interaction, data, cache) => {
 				break
 			case 'Foreign World':
 				await generalChannel.send({
-					content: `<@!${userId}>, we don't call foreign server worlds. Please see <#${rulesChannel.id}> 11.`
+					content: `<@!${userId}>, we don't call foreign server worlds. Please see ${rulesRef} 11.`
 				})
 				await interaction.update({ components: [] })
 				await buttonLogger.upload(userId)
