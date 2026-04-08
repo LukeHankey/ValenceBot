@@ -23,23 +23,29 @@ export const skullTimer = async (client, message, channel = 'other') => {
 		await message.react('☠️')
 	} catch (err) {
 		if ([10008, 90001].includes(err.code)) {
-			messageID = err.url.split('/')[8]
+			messageID = err?.url?.split('/')?.[8] ?? messageID
+			const displayName = message.member?.displayName ?? message.author?.username ?? 'Unknown user'
+			const avatarUrl = message.member?.displayAvatarURL?.() ?? message.author?.displayAvatarURL?.()
 
 			const embed = nEmbed(
-				err.rawError.message,
+				err.rawError?.message ?? err.message,
 				err.code === 90001
-					? `${message.member.displayName} has blocked the bot. The bot is unable to react to their messages.`
-					: `${message.member.displayName} message is no longer available to react to.`,
+					? `${displayName} has blocked the bot. The bot is unable to react to their messages.`
+					: `${displayName} message is no longer available to react to.`,
 				Color.redDark,
-				message.member.displayAvatarURL()
+				avatarUrl
 			).addFields({
 				name: 'Message:',
 				value: `https://discord.com/channels/${message.guild.id}/${message.channel.id}/${messageID}`
 			})
 
 			// DSF Bot Logs
-			const botLogsChannel = await client.channels.cache.get('884076361940078682')
-			return await botLogsChannel.send({ embeds: [embed] })
+			const botLogsChannel = client.channels.cache.get('884076361940078682')
+			if (botLogsChannel) {
+				return await botLogsChannel.send({ embeds: [embed] })
+			}
+			logger.warn('DSF bot logs channel not found; unable to send skullTimer notification.')
+			return
 		}
 		channels.errors.send(err)
 	} finally {
