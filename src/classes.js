@@ -164,19 +164,29 @@ class ScouterCheck {
 	}
 
 	_checkScouts(filter, num, time) {
-		// Just takes merch count, not other count
-		const totalMerchCount = (filter.count ?? 0) + (filter.alt1?.merchantCount ?? 0) + (filter.alt1First?.merchantCount ?? 0)
+		const totalCount =
+			(filter.count ?? 0) +
+			(filter.otherCount ?? 0) +
+			(filter.alt1?.merchantCount ?? 0) +
+			(filter.alt1First?.merchantCount ?? 0) +
+			(filter.alt1?.otherCount ?? 0) +
+			(filter.alt1First?.otherCount ?? 0)
 
-		if (totalMerchCount >= num && filter.lastTimestamp - filter.firstTimestamp >= time && filter.assigned.length === 0) {
+		if (totalCount >= num && filter.lastTimestamp - filter.firstTimestamp >= time && filter.assigned.length === 0) {
 			return filter
 		}
 	}
 
 	_checkVerifiedScouts(filter, num, time) {
-		// Just takes merch count, not other count
-		const totalMerchCount = (filter.count ?? 0) + (filter.alt1?.merchantCount ?? 0) + (filter.alt1First?.merchantCount ?? 0)
+		const totalCount =
+			(filter.count ?? 0) +
+			(filter.otherCount ?? 0) +
+			(filter.alt1?.merchantCount ?? 0) +
+			(filter.alt1First?.merchantCount ?? 0) +
+			(filter.alt1?.otherCount ?? 0) +
+			(filter.alt1First?.otherCount ?? 0)
 
-		if (totalMerchCount >= num) {
+		if (totalCount >= num) {
 			if (filter.lastTimestamp - filter.firstTimestamp >= time) {
 				if (filter.assigned.length > 0 && filter.assigned.length < 2) {
 					return filter
