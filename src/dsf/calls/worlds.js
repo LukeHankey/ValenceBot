@@ -85,12 +85,21 @@ export const worldReaction = async (message) => {
 	const worldFound = worlds.find((item) => item.worlds.includes(worldNumber))
 
 	if (worldFound) {
-		if (Array.isArray(worldFound.reaction.match(/^<:.*:\d.*>$/))) {
+		const isCustomEmoji = /^<:.*:\d.*>$/.test(worldFound.reaction)
+
+		// DEV servers usually do not have the production custom emoji set.
+		if (process.env.NODE_ENV === 'DEV' && isCustomEmoji) return
+
+		if (isCustomEmoji) {
 			const reactionString = worldFound.reaction
 
 			// Get the emoji Id from the cache
 			const reactionId = reactionString.split(':').at(-1).slice(0, -1)
 			const emoji = message.client.emojis.cache.get(reactionId)
+			if (!emoji) {
+				message.client.logger?.warn?.(`Emoji ${reactionId} not found in cache. Skipping reaction.`)
+				return
+			}
 			return await message.react(emoji)
 		}
 		await message.react(worldFound.reaction)
