@@ -5,7 +5,6 @@ import { nEmbed } from '../../functions.js'
 import Color from '../../colors.js'
 
 const eventTimes = {
-	merchant: TEN_MINUTES,
 	whirlpool: TEN_MINUTES / 2,
 	sea_monster: TEN_MINUTES / 5,
 	jellyfish: TEN_MINUTES / 5,
@@ -14,7 +13,7 @@ const eventTimes = {
 	arkaneo: 39_000
 }
 
-export const skullTimer = async (client, message, channel = 'merch') => {
+export const skullTimer = async (client, message, channel = 'other') => {
 	await timers.setTimeout(5000)
 	let messageID = message.id
 	const db = client.database.settings
@@ -24,31 +23,33 @@ export const skullTimer = async (client, message, channel = 'merch') => {
 		await message.react('☠️')
 	} catch (err) {
 		if ([10008, 90001].includes(err.code)) {
-			messageID = err.url.split('/')[8]
+			messageID = err?.url?.split('/')?.[8] ?? messageID
+			const displayName = message.member?.displayName ?? message.author?.username ?? 'Unknown user'
+			const avatarUrl = message.member?.displayAvatarURL?.() ?? message.author?.displayAvatarURL?.()
 
 			const embed = nEmbed(
-				err.rawError.message,
+				err.rawError?.message ?? err.message,
 				err.code === 90001
-					? `${message.member.displayName} has blocked the bot. The bot is unable to react to their messages.`
-					: `${message.member.displayName} message is no longer available to react to.`,
+					? `${displayName} has blocked the bot. The bot is unable to react to their messages.`
+					: `${displayName} message is no longer available to react to.`,
 				Color.redDark,
-				message.member.displayAvatarURL()
+				avatarUrl
 			).addFields({
 				name: 'Message:',
 				value: `https://discord.com/channels/${message.guild.id}/${message.channel.id}/${messageID}`
 			})
 
 			// DSF Bot Logs
-			const botLogsChannel = await client.channels.cache.get('884076361940078682')
-			return await botLogsChannel.send({ embeds: [embed] })
+			const botLogsChannel = client.channels.cache.get('884076361940078682')
+			if (botLogsChannel) {
+				return await botLogsChannel.send({ embeds: [embed] })
+			}
+			logger.warn('DSF bot logs channel not found; unable to send skullTimer notification.')
+			return
 		}
 		channels.errors.send(err)
 	} finally {
-		if (channel === 'merch') {
-			await db.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID } } })
-		} else {
-			await db.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.otherMessages': { messageID } } })
-		}
+		await db.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.otherMessages': { messageID } } })
 	}
 }
 
@@ -83,18 +84,14 @@ export const removeReactPermissions = async (message, allMessages) => {
 	}
 }
 
-export const startupRemoveReactionPermissions = async (client, db, channel = 'merch') => {
+export const startupRemoveReactionPermissions = async (client, db) => {
 	const {
-		merchChannel: { channelID, messages, otherMessages, otherChannelID }
-	} = await db.findOne(
-		{ _id: '420803245758480405' },
-		{ projection: { merchChannel: { channelID: 1, messages: 1, otherMessages: 1, otherChannelID: 1 } } }
-	)
+		merchChannel: { otherMessages, otherChannelID }
+	} = await db.findOne({ _id: '420803245758480405' }, { projection: { merchChannel: { otherMessages: 1, otherChannelID: 1 } } })
 
-	const channelObj = client.channels.cache.get(channel === 'merch' ? channelID : otherChannelID)
-	const messageCollection = channel === 'merch' ? messages : otherMessages
+	const channelObj = client.channels.cache.get(otherChannelID)
 
-	for (const messageObj of messageCollection) {
+	for (const messageObj of otherMessages) {
 		const unwrappedMessageObj = (({ messageID, userID, time, author }) => ({ messageID, userID, time, author }))(messageObj)
 		try {
 			const message = await channelObj.messages.fetch(unwrappedMessageObj.messageID)
@@ -102,17 +99,14 @@ export const startupRemoveReactionPermissions = async (client, db, channel = 'me
 			if (timePassed < TEN_MINUTES) {
 				await timers.setTimeout(TEN_MINUTES - (Date.now() - unwrappedMessageObj.time))
 			}
-			await skullTimer(client, message, channel)
-			if (channel !== 'merch') continue
-			await removeReactPermissions(message, messages)
+			await skullTimer(client, message, 'other')
 		} catch (err) {
 			console.log(err)
 			await db.updateOne(
 				{ _id: '420803245758480405' },
 				{
 					$pull: {
-						'merchChannel.otherMessages': { messageID: unwrappedMessageObj.messageID },
-						'merchChannel.messages': { messageID: unwrappedMessageObj.messageID }
+						'merchChannel.otherMessages': { messageID: unwrappedMessageObj.messageID }
 					}
 				}
 			)

@@ -2,28 +2,46 @@
 /* eslint-disable no-octal */
 import { updateAllMemberDataBaseRankRoles } from '../../alt1.js'
 import {
-	updateStockTables,
 	scout,
 	vScout,
 	classVars,
 	addedRoles,
 	removedRoles,
-	removeInactives,
-	removeScouters,
-	startupRemoveReactionPermissions,
-	mistyEventTimer
+	mistyEventTimer,
+	skullTimer,
+	removeReactPermissions
 } from '../../dsf/index.js'
 import { sendFact } from '../../valence/index.js'
 import { wsClient } from '../../alt1WS.js'
-import { activeTimers } from '../../dsf/calls/eventTimers.js'
-import { setTimeout as delay } from 'timers/promises'
+import { startEventTimer } from '../../dsf/calls/eventTimers.js'
 import cron from 'node-cron'
 
 const initScouterDataBase = async (client, db) => {
 	const res = await db.find({}).toArray()
 	const scoutTracker = client.database.scoutTracker
 	const scouters = await scoutTracker
-		.find({ $expr: { $gte: [{ $sum: ['$count', '$alt1.merchantCount', '$alt1First.merchantCount'] }, 40] } })
+		.find({
+			$or: [
+				{
+					$expr: {
+						$gte: [
+							{
+								$sum: [
+									'$count',
+									'$otherCount',
+									'$alt1.merchantCount',
+									'$alt1First.merchantCount',
+									'$alt1.otherCount',
+									'$alt1First.otherCount'
+								]
+							},
+							100
+						]
+					}
+				},
+				{ 'assigned.0': { $exists: true } }
+			]
+		})
 		.toArray()
 	await classVars(scout, 'Deep Sea Fishing', res, client, scouters)
 	await classVars(vScout, 'Deep Sea Fishing', res, client, scouters)
@@ -43,44 +61,65 @@ export default async (client) => {
 	const guild = client.guilds.cache.get(guildId)
 
 	const {
-		merchChannel: { channelID, otherChannelID, messages, otherMessages }
+		merchChannel: { otherChannelID, otherMessages }
 	} = await db.findOne(
 		{ _id: guildId, merchChannel: { $exists: true } },
 		{
 			projection: {
-				'merchChannel.channelID': 1,
 				'merchChannel.otherChannelID': 1,
-				'merchChannel.messages': 1,
 				'merchChannel.otherMessages': 1
 			}
 		}
 	)
 
-	let durationMs = 0
-	for (const eventMsg of [...messages, ...otherMessages]) {
-		const controller = new AbortController()
+	for (const eventMsg of otherMessages) {
+		let durationMs = 0
 		try {
 			durationMs = mistyEventTimer(eventMsg.content)
 		} catch (err) {
 			channels.errors.send(err)
 			continue
 		}
-		const timeout = delay(durationMs, null, { signal: controller.signal })
-		const channelName = eventMsg.content.toLowerCase().startsWith('m') ? 'merch' : 'other'
-		const database = messages.some((event) => event.eventID === eventMsg.eventID) ? messages : otherMessages
 
-		const msgChannel = guild.channels.cache.get(channelName === 'merch' ? channelID : otherChannelID)
-		const msg = await msgChannel.messages.fetch(eventMsg.messageID)
-		activeTimers.set(String(eventMsg.eventID), {
-			timeout,
-			abortController: controller,
-			startTime: Date.now(),
-			durationMs,
+		const elapsedMs = Number.isFinite(eventMsg.time) ? Date.now() - eventMsg.time : 0
+		const remainingMs = Math.max(durationMs - elapsedMs, 0)
+
+		const msgChannel = guild.channels.cache.get(otherChannelID)
+		if (!msgChannel) continue
+
+		let msg
+		try {
+			msg = await msgChannel.messages.fetch(eventMsg.messageID)
+		} catch (err) {
+			// Message was deleted or is otherwise unavailable; remove stale DB entry and continue startup.
+			if (err?.code === 10008) {
+				await db.updateOne(
+					{ _id: guildId },
+					{ $pull: { 'merchChannel.otherMessages': { messageID: eventMsg.messageID } } }
+				)
+				continue
+			}
+			channels.errors.send(err)
+			continue
+		}
+
+		if (remainingMs === 0) {
+			try {
+				await skullTimer(client, msg, 'other')
+				await removeReactPermissions(msg, otherMessages)
+			} catch (err) {
+				channels.errors.send(err)
+			}
+			continue
+		}
+
+		startEventTimer({
 			client,
 			message: msg,
-			channelName,
-			database,
-			mistyUpdated: false
+			eventId: eventMsg.eventID,
+			channelName: 'other',
+			durationMs: remainingMs,
+			database: otherMessages
 		})
 	}
 
@@ -93,14 +132,6 @@ export default async (client) => {
 		sendFact(client)
 	})
 
-	// Startup check for dsf messages:
-	;(async function () {
-		if (process.env.NODE_ENV === 'DEV') return
-		for (const channel of ['merch', 'other']) {
-			await startupRemoveReactionPermissions(client, db, channel)
-		}
-	})()
-
 	// DSF Activity Posts //
 	cron.schedule('0 */6 * * *', async () => {
 		const scoutTracker = client.database.scoutTracker
@@ -109,26 +140,18 @@ export default async (client) => {
 			await addedRoles(role, scoutTracker)
 			await removedRoles(role, scoutTracker)
 		})
-		await removeInactives(client, scout, scoutTracker)
-		await removeScouters({
-			client,
-			scoutProfiles: [scout, vScout],
-			channels,
-			tracker: scoutTracker
-		})
 		await updateAllMemberDataBaseRankRoles(client, scout)
 
 		// Daily Reset
 		if (new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
-			updateStockTables(client, db)
 			const virtualFisherChannel = client.channels.cache.get('1320188062139158538')
 			await virtualFisherChannel.send('<@&1320188185480925204> Dailies!')
 		}
 
 		// Weekly reset
 		if (new Date().getDay() === 3 && new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
-			scout.send()
-			vScout.send()
+			await scout.send()
+			await vScout.send()
 		}
 
 		// Monthly reset
@@ -139,10 +162,6 @@ export default async (client) => {
 		) {
 			client.logger.info('Setting lottoSheet to Null')
 			await db.updateMany({ gSheet: { $exists: true } }, { $set: { lottoSheet: null } })
-
-			// Send message reminder for DSF Verified Scouter draws
-			const dsfOwnersChannel = client.channels.cache.get(channels.dsfOwners.id)
-			await dsfOwnersChannel.send('Reminder to roll the giveaway for Verified Scouters!')
 		}
 	})
 }

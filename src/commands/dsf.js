@@ -14,22 +14,18 @@ import { classVars } from '../dsf/index.js'
 export default {
 	name: 'dsf',
 	description: [
-		'Displays all of the current stored messages.',
-		'Clears all of the current stored messages.',
-		'Displays all of the current stored messages in other-dsf-calls.',
-		'Clears all of the current stored messages in other-dsf-calls.',
+		'Displays all of the current stored messages in dsf-calls.',
+		'Clears all of the current stored messages in dsf-calls.',
 		'Shows the list of potential scouters/verified scouters with the set scout count, or count adjusted.',
-		'Add 1 or <num> merch/other to the member provided.',
-		'Remove 1 or <num> merch/other to the member provided.'
+		'Add 1 or <num> other to the member provided.',
+		'Remove 1 or <num> other to the member provided.'
 	],
 	usage: [
-		'messages',
-		'messages clear',
 		'other',
 		'other clear',
 		'view scouter/verified <num (optional)>',
-		'user memberID/@member add <num (optional)> <other>',
-		'user memberID/@member remove <num (optional)> <other>'
+		'user memberID/@member add other|<num> other',
+		'user memberID/@member remove other|<num> other'
 	],
 	guildSpecific: ['668330890790699079', '420803245758480405'],
 	permissionLevel: 'Admin',
@@ -40,63 +36,6 @@ export default {
 		const scouters = client.database.scoutTracker
 
 		switch (args[0]) {
-			case 'm':
-			case 'messages':
-				switch (args[1]) {
-					// eslint-disable-next-line default-case-last
-					default:
-						try {
-							const {
-								merchChannel: { messages, channelID }
-							} = await db.findOne(
-								{ _id: message.guild.id },
-								{ projection: { 'merchChannel.messages': 1, 'merchChannel.channelID': 1 } }
-							)
-							const fields = []
-							const embed = nEmbed(
-								'List of messages currently stored in the DB',
-								"There shouldn't be too many as they get automatically deleted after 10 minutes. If the bot errors out, please clear all of them using `;dsf messages clear`.",
-								Color.cream,
-								message.member.user.displayAvatarURL(),
-								client.user.displayAvatarURL()
-							)
-
-							for (const values of messages) {
-								let date = new Date(values.time)
-								date = date.toString().split(' ')
-								fields.push({
-									name: `${values.author}`,
-									value: `**Time:** ${date.slice(0, 5).join(' ')}\n**Content:** [${
-										values.content
-									}](https://discordapp.com/channels/${message.guild.id}/${channelID}/${
-										values.messageID
-									} 'Click me to go to the message.')`,
-									inline: false
-								})
-							}
-							return message.channel.send({ embeds: [embed.addFields(fields)] })
-						} catch (e) {
-							if (e.code === 50035) {
-								return message.channel.send({
-									content: 'Too many messages stored. Use the clear command.'
-								})
-							} else {
-								channels.errors.send(e)
-							}
-						}
-						break
-					case 'clear':
-						await db.findOneAndUpdate(
-							{ _id: message.guild.id },
-							{
-								$pull: {
-									'merchChannel.messages': { time: { $gt: 0 } }
-								}
-							}
-						)
-						message.react('✅')
-				}
-				break
 			case 'o':
 			case 'other':
 				switch (args[1]) {
@@ -156,7 +95,7 @@ export default {
 				break
 			case 'view':
 				{
-					const num = isNaN(parseInt(args[2])) ? (args[1] === 'verified' ? 100 : 40) : parseInt(args[2])
+					const num = isNaN(parseInt(args[2])) ? (args[1] === 'verified' ? 250 : 100) : parseInt(args[2])
 
 					const scout = new ScouterCheck('Scouter', num)
 					const vScout = new ScouterCheck('Verified Scouter', num)
@@ -164,14 +103,26 @@ export default {
 					const res = await db.find({}).toArray()
 					const scouter = await scouters
 						.find({
-							$expr: {
-								$gte: [
-									{
-										$sum: ['$count', '$alt1.merchantCount', '$alt1First.merchantCount']
-									},
-									num
-								]
-							}
+							$or: [
+								{
+									$expr: {
+										$gte: [
+											{
+												$sum: [
+													'$count',
+													'$otherCount',
+													'$alt1.merchantCount',
+													'$alt1First.merchantCount',
+													'$alt1.otherCount',
+													'$alt1First.otherCount'
+												]
+											},
+											num
+										]
+									}
+								},
+								{ 'assigned.0': { $exists: true } }
+							]
 						})
 						.toArray()
 					await classVars(vScout, message.guild.name, res, client, scouter)
@@ -179,10 +130,10 @@ export default {
 
 					switch (args[1]) {
 						case 'scouter':
-							scout.send(message.channel.id)
+							await scout.send(message.channel.id, message)
 							break
 						case 'verified':
-							vScout.send(message.channel.id)
+							await vScout.send(message.channel.id, message)
 							break
 						default:
 							return message.channel.send({ content: 'You can view either `scouter` or `verified`' })
@@ -216,16 +167,9 @@ export default {
 				switch (param) {
 					case 'add':
 						if (!num) {
-							await scouters.updateOne(
-								{ userID: userMention },
-								{
-									$inc: {
-										count: 1
-									}
-								}
-							)
-							if (reaction) return message.react('✅')
-							else return message.react('❌')
+							return message.channel.send({
+								content: 'Merchant count is legacy-only and can no longer be adjusted. Use `other`.'
+							})
 						} else if (num === 'other') {
 							await scouters.updateOne(
 								{ userID: userMention },
@@ -256,30 +200,16 @@ export default {
 								if (reaction) return message.react('✅')
 								else return message.react('❌')
 							} else {
-								await scouters.updateOne(
-									{ userID: userMention },
-									{
-										$inc: {
-											count: +num
-										}
-									}
-								)
-								if (reaction) return message.react('✅')
-								else return message.react('❌')
+								return message.channel.send({
+									content: 'Merchant count is legacy-only and can no longer be adjusted. Use `other`.'
+								})
 							}
 						}
 					case 'remove':
 						if (!num) {
-							await scouters.updateOne(
-								{ userID: userMention },
-								{
-									$inc: {
-										count: -1
-									}
-								}
-							)
-							if (reaction) return message.react('✅')
-							else return message.react('❌')
+							return message.channel.send({
+								content: 'Merchant count is legacy-only and can no longer be adjusted. Use `other`.'
+							})
 						} else if (num === 'other') {
 							await scouters.updateOne(
 								{ userID: userMention },
@@ -310,16 +240,9 @@ export default {
 								if (reaction) return message.react('✅')
 								else return message.react('❌')
 							} else {
-								await scouters.updateOne(
-									{ userID: userMention },
-									{
-										$inc: {
-											count: -num
-										}
-									}
-								)
-								if (reaction) return message.react('✅')
-								else return message.react('❌')
+								return message.channel.send({
+									content: 'Merchant count is legacy-only and can no longer be adjusted. Use `other`.'
+								})
 							}
 						}
 					default:
@@ -331,7 +254,7 @@ export default {
 					embeds: [
 						nEmbed(
 							'**DSF Admin Commands List**',
-							"Here's a list of all the DSF commands you can use. Any parameter(s) in `<>` are optional:\n\n`messages|m`\n`messages|m clear`\n`other|o`\n`other|o clear`\n`view scouter <num>`\n`view verified <num>`\n`user memberID/@member add <other> <num>`\n`user memberID/@member remove <other> <num>`",
+							"Here's a list of all the DSF commands you can use. Any parameter(s) in `<>` are optional:\n\n`other|o`\n`other|o clear`\n`view scouter <num>`\n`view verified <num>`\n`user memberID/@member add other|<num> other`\n`user memberID/@member remove other|<num> other`",
 							Color.cyan,
 							client.user.displayAvatarURL()
 						)
