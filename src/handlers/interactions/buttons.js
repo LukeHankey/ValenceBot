@@ -181,7 +181,9 @@ export const buttons = async (client, interaction, data, cache) => {
 	const db = client.database.settings
 	const scouters = client.database.scoutTracker
 	const buttonLogger = new ButtonWarning(interaction)
-	let generalChannel = interaction.guild.channels.cache.find((c) => c.id === '696375576881004655') // general
+	const generalChannelId = process.env.NODE_ENV === 'DEV' ? '903432222139355207' : '696375576881004655'
+	const scoutersChannelId = process.env.NODE_ENV === 'DEV' ? '903432222139355207' : '777598845655842836'
+	let generalChannel = interaction.guild.channels.cache.get(generalChannelId) ?? interaction.channel
 	let [userId, user, content, timestamp] = interaction.message.content.split('\n').slice(3)
 	if (user) user = user.split(' ').slice(2).join(' ')
 	if (userId) userId = userId.split(' ').slice(3)[0].slice(3, -1)
@@ -192,7 +194,7 @@ export const buttons = async (client, interaction, data, cache) => {
 	if (userId) {
 		guildMember = await interaction.guild.members.fetch(userId)
 		if (guildMember.roles.cache.hasAny('775940649802793000', '775941183716851764')) {
-			generalChannel = interaction.guild.channels.cache.find((c) => c.id === '777598845655842836') // scouters
+			generalChannel = interaction.guild.channels.cache.get(scoutersChannelId) ?? generalChannel
 		}
 	}
 
