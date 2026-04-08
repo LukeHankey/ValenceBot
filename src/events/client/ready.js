@@ -83,7 +83,24 @@ export default async (client) => {
 		}
 		const timeout = delay(durationMs, null, { signal: controller.signal })
 		const msgChannel = guild.channels.cache.get(otherChannelID)
-		const msg = await msgChannel.messages.fetch(eventMsg.messageID)
+		if (!msgChannel) continue
+
+		let msg
+		try {
+			msg = await msgChannel.messages.fetch(eventMsg.messageID)
+		} catch (err) {
+			// Message was deleted or is otherwise unavailable; remove stale DB entry and continue startup.
+			if (err?.code === 10008) {
+				await db.updateOne(
+					{ _id: guildId },
+					{ $pull: { 'merchChannel.otherMessages': { messageID: eventMsg.messageID } } }
+				)
+				continue
+			}
+			channels.errors.send(err)
+			continue
+		}
+
 		activeTimers.set(String(eventMsg.eventID), {
 			timeout,
 			abortController: controller,
