@@ -254,7 +254,7 @@ export default {
 					embeds: [
 						nEmbed(
 							'**DSF Admin Commands List**',
-							"Here's a list of all the DSF commands you can use. Any parameter(s) in `<>` are optional:\n\n`messages|m`\n`messages|m clear`\n`other|o`\n`other|o clear`\n`view scouter <num>`\n`view verified <num>`\n`user memberID/@member add other|<num> other`\n`user memberID/@member remove other|<num> other`",
+							"Here's a list of all the DSF commands you can use. Any parameter(s) in `<>` are optional:\n\n`other|o`\n`other|o clear`\n`view scouter <num>`\n`view verified <num>`\n`user memberID/@member add other|<num> other`\n`user memberID/@member remove other|<num> other`",
 							Color.cyan,
 							client.user.displayAvatarURL()
 						)
