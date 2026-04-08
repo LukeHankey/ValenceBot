@@ -59,21 +59,19 @@ export default async (client) => {
 	const guild = client.guilds.cache.get(guildId)
 
 	const {
-		merchChannel: { channelID, otherChannelID, messages, otherMessages }
+		merchChannel: { otherChannelID, otherMessages }
 	} = await db.findOne(
 		{ _id: guildId, merchChannel: { $exists: true } },
 		{
 			projection: {
-				'merchChannel.channelID': 1,
 				'merchChannel.otherChannelID': 1,
-				'merchChannel.messages': 1,
 				'merchChannel.otherMessages': 1
 			}
 		}
 	)
 
 	let durationMs = 0
-	for (const eventMsg of [...messages, ...otherMessages]) {
+	for (const eventMsg of otherMessages) {
 		const controller = new AbortController()
 		try {
 			durationMs = mistyEventTimer(eventMsg.content)
@@ -82,10 +80,7 @@ export default async (client) => {
 			continue
 		}
 		const timeout = delay(durationMs, null, { signal: controller.signal })
-		const channelName = eventMsg.content.toLowerCase().startsWith('m') ? 'merch' : 'other'
-		const database = messages.some((event) => event.eventID === eventMsg.eventID) ? messages : otherMessages
-
-		const msgChannel = guild.channels.cache.get(channelName === 'merch' ? channelID : otherChannelID)
+		const msgChannel = guild.channels.cache.get(otherChannelID)
 		const msg = await msgChannel.messages.fetch(eventMsg.messageID)
 		activeTimers.set(String(eventMsg.eventID), {
 			timeout,
@@ -94,8 +89,8 @@ export default async (client) => {
 			durationMs,
 			client,
 			message: msg,
-			channelName,
-			database,
+			channelName: 'other',
+			database: otherMessages,
 			mistyUpdated: false
 		})
 	}
@@ -109,12 +104,10 @@ export default async (client) => {
 		sendFact(client)
 	})
 
-	// Startup check for dsf messages:
+	// Startup check for DSF messages.
 	;(async function () {
 		if (process.env.NODE_ENV === 'DEV') return
-		for (const channel of ['merch', 'other']) {
-			await startupRemoveReactionPermissions(client, db, channel)
-		}
+		await startupRemoveReactionPermissions(client, db)
 	})()
 
 	// DSF Activity Posts //

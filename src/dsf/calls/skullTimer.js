@@ -83,18 +83,14 @@ export const removeReactPermissions = async (message, allMessages) => {
 	}
 }
 
-export const startupRemoveReactionPermissions = async (client, db, channel = 'merch') => {
+export const startupRemoveReactionPermissions = async (client, db) => {
 	const {
-		merchChannel: { channelID, messages, otherMessages, otherChannelID }
-	} = await db.findOne(
-		{ _id: '420803245758480405' },
-		{ projection: { merchChannel: { channelID: 1, messages: 1, otherMessages: 1, otherChannelID: 1 } } }
-	)
+		merchChannel: { otherMessages, otherChannelID }
+	} = await db.findOne({ _id: '420803245758480405' }, { projection: { merchChannel: { otherMessages: 1, otherChannelID: 1 } } })
 
-	const channelObj = client.channels.cache.get(channel === 'merch' ? channelID : otherChannelID)
-	const messageCollection = channel === 'merch' ? messages : otherMessages
+	const channelObj = client.channels.cache.get(otherChannelID)
 
-	for (const messageObj of messageCollection) {
+	for (const messageObj of otherMessages) {
 		const unwrappedMessageObj = (({ messageID, userID, time, author }) => ({ messageID, userID, time, author }))(messageObj)
 		try {
 			const message = await channelObj.messages.fetch(unwrappedMessageObj.messageID)
@@ -102,17 +98,14 @@ export const startupRemoveReactionPermissions = async (client, db, channel = 'me
 			if (timePassed < TEN_MINUTES) {
 				await timers.setTimeout(TEN_MINUTES - (Date.now() - unwrappedMessageObj.time))
 			}
-			await skullTimer(client, message, channel)
-			if (channel !== 'merch') continue
-			await removeReactPermissions(message, messages)
+			await skullTimer(client, message, 'other')
 		} catch (err) {
 			console.log(err)
 			await db.updateOne(
 				{ _id: '420803245758480405' },
 				{
 					$pull: {
-						'merchChannel.otherMessages': { messageID: unwrappedMessageObj.messageID },
-						'merchChannel.messages': { messageID: unwrappedMessageObj.messageID }
+						'merchChannel.otherMessages': { messageID: unwrappedMessageObj.messageID }
 					}
 				}
 			)
