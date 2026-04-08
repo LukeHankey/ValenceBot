@@ -4,12 +4,17 @@ import { overrideEventTimer } from '../../dsf/calls/eventTimers.js'
 
 export default async (client, message) => {
 	const db = client.database.settings
+	client.logger.debug(`messageDelete start: guild=${message.guild?.id} channel=${message.channel?.id} message=${message.id}`)
 	const ticketData = await db.findOne({ _id: message.guild.id }, { projection: { ticket: 1 } })
 
-	if (!ticketData || !ticketData.ticket) return
+	if (!ticketData || !ticketData.ticket) {
+		client.logger.debug(`messageDelete early return: missing ticket config for guild=${message.guild.id}`)
+		return
+	}
 	const [currentTicket] = ticketData.ticket.filter((t) => t.messageId === message.id)
 	if (currentTicket) {
 		if (message.id === currentTicket.messageId) {
+			client.logger.debug(`messageDelete matched ticket message: ${message.id}`)
 			return await db.findOneAndUpdate(
 				{ _id: message.guild.id },
 				{
@@ -25,11 +30,17 @@ export default async (client, message) => {
 		{ _id: message.guild.id, merchChannel: { $exists: true } },
 		{ projection: { merchChannel: { otherMessages: 1, otherChannelID: 1 } } }
 	)
-	if (!fullDB) return
+	if (!fullDB) {
+		client.logger.debug(`messageDelete early return: no merchChannel data for guild=${message.guild.id}`)
+		return
+	}
 	const otherChannelID = message.guild.channels.cache.get(fullDB.merchChannel.otherChannelID)
+	client.logger.debug(
+		`messageDelete channel check: deletedChannel=${message.channel?.id} configuredOther=${fullDB.merchChannel.otherChannelID} resolvedOther=${otherChannelID?.id}`
+	)
 
-	const botServerChannel = await client.channels.cache.get('784543962174062608')
-	const dsfServerChannel = await client.channels.cache.get('884076361940078682')
+	const botServerChannel = client.channels.cache.get('784543962174062608') ?? message.channel
+	const dsfServerChannel = client.channels.cache.get('884076361940078682') ?? botServerChannel
 
 	const buttonSelectionOther = new ActionRowBuilder().addComponents([
 		new ButtonBuilder()
@@ -40,6 +51,10 @@ export default async (client, message) => {
 	])
 
 	const sendAndUpdate = async (webhook, embed, data, button) => {
+		client.logger.debug(
+			`messageDelete sendAndUpdate: targetChannel=${webhook?.id} eventID=${data.eventID} messageID=${data.messageID}`
+		)
+		if (!webhook) return
 		const components = button ? [button] : []
 		const sentChannel = await webhook.send({ embeds: [embed], components })
 		const { userID } = data
@@ -60,7 +75,10 @@ export default async (client, message) => {
 
 	// Cached messages only show the message object without null //
 	// No DMs and only in dsf-calls
-	if (!message.guild || message.channel.id !== otherChannelID.id) return
+	if (!message.guild || message.channel.id !== otherChannelID.id) {
+		client.logger.debug('messageDelete early return: not a tracked dsf-calls message')
+		return
+	}
 	const fetchedLogs = await message.guild.fetchAuditLogs({
 		limit: 1,
 		type: AuditLogEvent.MessageDelete
@@ -90,6 +108,7 @@ export default async (client, message) => {
 	const handleDeletions = async (deletedBy = null) => {
 		const checkDB = fullDB.merchChannel.otherMessages.find((entry) => entry.messageID === message.id)
 		const button = buttonSelectionOther
+		client.logger.debug(`messageDelete DB lookup: found=${Boolean(checkDB)} deletedBy=${deletedBy ?? 'author'}`)
 
 		if (checkDB === undefined) {
 			return client.logger.info('Deleted message was not uploaded to the DataBase.')
@@ -109,7 +128,9 @@ export default async (client, message) => {
 			.setFooter({ text: 'Click the button or use the command to remove other count.' })
 
 		await sendAndUpdate(botServerChannel, embed, checkDB, button)
-		await sendAndUpdate(dsfServerChannel, embed, checkDB, button)
+		if (dsfServerChannel.id !== botServerChannel.id) {
+			await sendAndUpdate(dsfServerChannel, embed, checkDB, button)
+		}
 
 		await overrideEventTimer(checkDB.eventID, 0)
 	}
@@ -119,7 +140,12 @@ export default async (client, message) => {
 	}
 
 	// No Audit logs
-	if (!deletionLog) return
+	if (!deletionLog) {
+		client.logger.debug('messageDelete no audit log entry found; proceeding without deleter info')
+		if (message.author.id === '668330399033851924') return
+		await handleDeletions(null)
+		return
+	}
 
 	// Self deletion
 	if (!('target' in deletionLog) || deletionLog.target.id !== message.author.id) {
