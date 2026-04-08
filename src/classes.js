@@ -272,19 +272,6 @@ class ScouterCheck {
 			return resolve(membersArray)
 		})
 	}
-
-	async removeInactive(scouters) {
-		return new Promise(async (resolve) => {
-			let merch = await scouters.find({}).toArray()
-			merch = merch.filter((doc) => {
-				const totalCount = doc.count + (doc.otherCount ?? 0) < 10
-				const timeGone = 1000 * 60 * 60 * 24 * 31
-				const timeNoPost = Date.now() - doc.lastTimestamp > timeGone
-				return timeNoPost && totalCount
-			})
-			return resolve(merch)
-		})
-	}
 }
 class GoogleSheet {
 	constructor(gsapi, { spreadsheetId, ranges, valueInputOption = 'USER_ENTERED', resource = {} }) {
