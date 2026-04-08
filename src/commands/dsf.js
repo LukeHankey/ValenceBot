@@ -130,10 +130,10 @@ export default {
 
 					switch (args[1]) {
 						case 'scouter':
-							scout.send(message.channel.id)
+							await scout.send(message.channel.id, message)
 							break
 						case 'verified':
-							vScout.send(message.channel.id)
+							await vScout.send(message.channel.id, message)
 							break
 						default:
 							return message.channel.send({ content: 'You can view either `scouter` or `verified`' })

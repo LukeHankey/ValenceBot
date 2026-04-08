@@ -1,7 +1,7 @@
 /* eslint-disable no-async-promise-executor */
 import { EmbedBuilder } from 'discord.js'
 import Color from './colors.js'
-import { nEmbed } from './functions.js'
+import { nEmbed, paginate, paginateFollowUP } from './functions.js'
 import ms from 'pretty-ms'
 
 class Permissions {
@@ -205,9 +205,9 @@ class ScouterCheck {
 		for (const values of scouts) {
 			fields.push({
 				name: `${values.author}`,
-				value: `ID: ${values.userID}\nMerch Count: ${values.count ?? 0}\nAlt1 Merch Count: ${
+				value: `ID: ${values.userID}\nMerch Count: ${values?.count ?? 0}\nAlt1 Merch Count: ${
 					(values.alt1?.merchantCount ?? 0) + (values.alt1First?.merchantCount ?? 0)
-				}\nOther Count: ${values.otherCount ?? 0}\nAlt1 Other Count: ${
+				}\nOther Count: ${values?.otherCount ?? 0}\nAlt1 Other Count: ${
 					(values.alt1?.otherCount ?? 0) + (values.alt1First?.otherCount ?? 0)
 				}\nActive for: ${ms((values.lastTimestamp ?? 0) - (values.firstTimestamp ?? 0))}`,
 				inline: true
@@ -216,24 +216,65 @@ class ScouterCheck {
 		return fields
 	}
 
-	async send(chan = this._db.channels.adminChannel) {
+	async send(chan = this._db.channels.adminChannel, message = null) {
 		const role = await this.role
-		const embed = new EmbedBuilder()
-			.setTitle(`Potential Scouters - ${this.roleName}`)
-			.setDescription(`List of members who have met the minimum to obtain the <@&${role.id}> role.`)
-			.setColor(Color.orange)
-			.setFooter({
-				text: 'Review these members and manually assign the role to them.',
-				iconURL: this._client.user.displayAvatarURL()
-			})
-			.setTimestamp()
 
 		const fields = await this._checkForScouts()
 
 		const sendChannel = this._client.channels.cache.get(chan)
 		if (fields.length) {
-			// Perhaps look at adding something if there are > 25
-			return sendChannel.send({ embeds: [embed.addFields(fields)] })
+			const buildEmbed = (pageFields, pageNumber = 1, totalPages = 1) =>
+				new EmbedBuilder()
+					.setTitle(`Potential Scouters - ${this.roleName}`)
+					.setDescription(`List of members who have met the minimum to obtain the <@&${role.id}> role.`)
+					.setColor(Color.orange)
+					.setFooter({
+						text: `Page ${pageNumber} of ${totalPages} - Review these members and manually assign the role to them.`,
+						iconURL: this._client.user.displayAvatarURL()
+					})
+					.setTimestamp()
+					.addFields(pageFields)
+
+			if (fields.length > 24 && message) {
+				const embeds = paginate(fields, message, this.roleName)
+				const sentMessage = await sendChannel.send({
+					embeds: [
+						embeds[0].setFooter({
+							text: `Page 1 of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`,
+							iconURL: this._client.user.displayAvatarURL()
+						})
+					]
+				})
+				await paginateFollowUP(sentMessage, message, 0, embeds, this._client)
+				return sentMessage
+			}
+
+			if (fields.length > 24) {
+				const pagedEmbeds = paginate(
+					fields,
+					{ author: { displayAvatarURL: () => this._client.user.displayAvatarURL() } },
+					this.roleName
+				)
+				const sendGroups = []
+				for (let i = 0; i < pagedEmbeds.length; i += 10) {
+					sendGroups.push(pagedEmbeds.slice(i, i + 10))
+				}
+
+				let lastMessage = null
+				for (let i = 0; i < sendGroups.length; i += 1) {
+					const group = sendGroups[i]
+					const pageOffset = i * 10
+					const embedsToSend = group.map((pageEmbed, index) =>
+						buildEmbed(pageEmbed.data.fields, pageOffset + index + 1, pagedEmbeds.length)
+					)
+					lastMessage = await sendChannel.send({ embeds: embedsToSend })
+				}
+				return lastMessage
+			}
+
+			return sendChannel.send({
+				embeds: [buildEmbed(fields)]
+			})
 		} else {
 			return sendChannel.send({ content: `No ${this.roleName} found.` })
 		}
