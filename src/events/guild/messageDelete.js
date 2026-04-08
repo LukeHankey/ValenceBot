@@ -23,7 +23,7 @@ export default async (client, message) => {
 
 	const fullDB = await db.findOne(
 		{ _id: message.guild.id, merchChannel: { $exists: true } },
-		{ projection: { merchChannel: { messages: 1, channelID: 1, otherChannelID: 1, otherMessages: 1 } } }
+		{ projection: { merchChannel: { otherMessages: 1, otherChannelID: 1 } } }
 	)
 	if (!fullDB) return
 	const otherChannelID = message.guild.channels.cache.get(fullDB.merchChannel.otherChannelID)
