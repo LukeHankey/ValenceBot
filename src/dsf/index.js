@@ -6,6 +6,4 @@ export * from './scouts/scouters.js'
 
 export * from './stockTables.js'
 
-export { getAllSlots, stockEmojis } from './merchStock.js'
-
 export { getWorldNumber, worldReaction } from './calls/worlds.js'
