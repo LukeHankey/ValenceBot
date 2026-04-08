@@ -21,21 +21,26 @@ const initScouterDataBase = async (client, db) => {
 	const scoutTracker = client.database.scoutTracker
 	const scouters = await scoutTracker
 		.find({
-			$expr: {
-				$gte: [
-					{
-						$sum: [
-							'$count',
-							'$otherCount',
-							'$alt1.merchantCount',
-							'$alt1First.merchantCount',
-							'$alt1.otherCount',
-							'$alt1First.otherCount'
+			$or: [
+				{
+					$expr: {
+						$gte: [
+							{
+								$sum: [
+									'$count',
+									'$otherCount',
+									'$alt1.merchantCount',
+									'$alt1First.merchantCount',
+									'$alt1.otherCount',
+									'$alt1First.otherCount'
+								]
+							},
+							100
 						]
-					},
-					40
-				]
-			}
+					}
+				},
+				{ 'assigned.0': { $exists: true } }
+			]
 		})
 		.toArray()
 	await classVars(scout, 'Deep Sea Fishing', res, client, scouters)

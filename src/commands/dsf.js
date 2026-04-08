@@ -103,21 +103,26 @@ export default {
 					const res = await db.find({}).toArray()
 					const scouter = await scouters
 						.find({
-							$expr: {
-								$gte: [
-									{
-										$sum: [
-											'$count',
-											'$otherCount',
-											'$alt1.merchantCount',
-											'$alt1First.merchantCount',
-											'$alt1.otherCount',
-											'$alt1First.otherCount'
+							$or: [
+								{
+									$expr: {
+										$gte: [
+											{
+												$sum: [
+													'$count',
+													'$otherCount',
+													'$alt1.merchantCount',
+													'$alt1First.merchantCount',
+													'$alt1.otherCount',
+													'$alt1First.otherCount'
+												]
+											},
+											num
 										]
-									},
-									num
-								]
-							}
+									}
+								},
+								{ 'assigned.0': { $exists: true } }
+							]
 						})
 						.toArray()
 					await classVars(vScout, message.guild.name, res, client, scouter)
