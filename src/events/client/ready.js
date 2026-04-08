@@ -7,13 +7,13 @@ import {
 	classVars,
 	addedRoles,
 	removedRoles,
-	startupRemoveReactionPermissions,
-	mistyEventTimer
+	mistyEventTimer,
+	skullTimer,
+	removeReactPermissions
 } from '../../dsf/index.js'
 import { sendFact } from '../../valence/index.js'
 import { wsClient } from '../../alt1WS.js'
-import { activeTimers } from '../../dsf/calls/eventTimers.js'
-import { setTimeout as delay } from 'timers/promises'
+import { startEventTimer } from '../../dsf/calls/eventTimers.js'
 import cron from 'node-cron'
 
 const initScouterDataBase = async (client, db) => {
@@ -72,16 +72,18 @@ export default async (client) => {
 		}
 	)
 
-	let durationMs = 0
 	for (const eventMsg of otherMessages) {
-		const controller = new AbortController()
+		let durationMs = 0
 		try {
 			durationMs = mistyEventTimer(eventMsg.content)
 		} catch (err) {
 			channels.errors.send(err)
 			continue
 		}
-		const timeout = delay(durationMs, null, { signal: controller.signal })
+
+		const elapsedMs = Number.isFinite(eventMsg.time) ? Date.now() - eventMsg.time : 0
+		const remainingMs = Math.max(durationMs - elapsedMs, 0)
+
 		const msgChannel = guild.channels.cache.get(otherChannelID)
 		if (!msgChannel) continue
 
@@ -101,16 +103,23 @@ export default async (client) => {
 			continue
 		}
 
-		activeTimers.set(String(eventMsg.eventID), {
-			timeout,
-			abortController: controller,
-			startTime: Date.now(),
-			durationMs,
+		if (remainingMs === 0) {
+			try {
+				await skullTimer(client, msg, 'other')
+				await removeReactPermissions(msg, otherMessages)
+			} catch (err) {
+				channels.errors.send(err)
+			}
+			continue
+		}
+
+		startEventTimer({
 			client,
 			message: msg,
+			eventId: eventMsg.eventID,
 			channelName: 'other',
-			database: otherMessages,
-			mistyUpdated: false
+			durationMs: remainingMs,
+			database: otherMessages
 		})
 	}
 
@@ -122,12 +131,6 @@ export default async (client) => {
 	cron.schedule('0 10 * * *', async () => {
 		sendFact(client)
 	})
-
-	// Startup check for DSF messages.
-	;(async function () {
-		if (process.env.NODE_ENV === 'DEV') return
-		await startupRemoveReactionPermissions(client, db)
-	})()
 
 	// DSF Activity Posts //
 	cron.schedule('0 */6 * * *', async () => {
