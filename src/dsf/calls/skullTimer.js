@@ -5,7 +5,6 @@ import { nEmbed } from '../../functions.js'
 import Color from '../../colors.js'
 
 const eventTimes = {
-	merchant: TEN_MINUTES,
 	whirlpool: TEN_MINUTES / 2,
 	sea_monster: TEN_MINUTES / 5,
 	jellyfish: TEN_MINUTES / 5,
@@ -14,7 +13,7 @@ const eventTimes = {
 	arkaneo: 39_000
 }
 
-export const skullTimer = async (client, message, channel = 'merch') => {
+export const skullTimer = async (client, message, channel = 'other') => {
 	await timers.setTimeout(5000)
 	let messageID = message.id
 	const db = client.database.settings
@@ -44,11 +43,7 @@ export const skullTimer = async (client, message, channel = 'merch') => {
 		}
 		channels.errors.send(err)
 	} finally {
-		if (channel === 'merch') {
-			await db.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.messages': { messageID } } })
-		} else {
-			await db.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.otherMessages': { messageID } } })
-		}
+		await db.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.otherMessages': { messageID } } })
 	}
 }
 
