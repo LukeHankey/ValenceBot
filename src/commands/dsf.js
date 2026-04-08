@@ -14,8 +14,6 @@ import { classVars } from '../dsf/index.js'
 export default {
 	name: 'dsf',
 	description: [
-		'Displays all of the current stored messages.',
-		'Clears all of the current stored messages.',
 		'Displays all of the current stored messages in dsf-calls.',
 		'Clears all of the current stored messages in dsf-calls.',
 		'Shows the list of potential scouters/verified scouters with the set scout count, or count adjusted.',
@@ -23,8 +21,6 @@ export default {
 		'Remove 1 or <num> other to the member provided.'
 	],
 	usage: [
-		'messages',
-		'messages clear',
 		'other',
 		'other clear',
 		'view scouter/verified <num (optional)>',
@@ -40,63 +36,6 @@ export default {
 		const scouters = client.database.scoutTracker
 
 		switch (args[0]) {
-			case 'm':
-			case 'messages':
-				switch (args[1]) {
-					// eslint-disable-next-line default-case-last
-					default:
-						try {
-							const {
-								merchChannel: { messages, channelID }
-							} = await db.findOne(
-								{ _id: message.guild.id },
-								{ projection: { 'merchChannel.messages': 1, 'merchChannel.channelID': 1 } }
-							)
-							const fields = []
-							const embed = nEmbed(
-								'List of messages currently stored in the DB',
-								"There shouldn't be too many as they get automatically deleted after 10 minutes. If the bot errors out, please clear all of them using `;dsf messages clear`.",
-								Color.cream,
-								message.member.user.displayAvatarURL(),
-								client.user.displayAvatarURL()
-							)
-
-							for (const values of messages) {
-								let date = new Date(values.time)
-								date = date.toString().split(' ')
-								fields.push({
-									name: `${values.author}`,
-									value: `**Time:** ${date.slice(0, 5).join(' ')}\n**Content:** [${
-										values.content
-									}](https://discordapp.com/channels/${message.guild.id}/${channelID}/${
-										values.messageID
-									} 'Click me to go to the message.')`,
-									inline: false
-								})
-							}
-							return message.channel.send({ embeds: [embed.addFields(fields)] })
-						} catch (e) {
-							if (e.code === 50035) {
-								return message.channel.send({
-									content: 'Too many messages stored. Use the clear command.'
-								})
-							} else {
-								channels.errors.send(e)
-							}
-						}
-						break
-					case 'clear':
-						await db.findOneAndUpdate(
-							{ _id: message.guild.id },
-							{
-								$pull: {
-									'merchChannel.messages': { time: { $gt: 0 } }
-								}
-							}
-						)
-						message.react('✅')
-				}
-				break
 			case 'o':
 			case 'other':
 				switch (args[1]) {
