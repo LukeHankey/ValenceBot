@@ -148,6 +148,12 @@ export default async (client) => {
 			await virtualFisherChannel.send('<@&1320188185480925204> Dailies!')
 		}
 
+		// Weekly reset
+		if (new Date().getDay() === 3 && new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
+			await scout.send()
+			await vScout.send()
+		}
+
 		// Monthly reset
 		if (
 			new Date().getDate() === 1 &&
