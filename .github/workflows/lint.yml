@@ -5,6 +5,7 @@ on:
   push:
 
 permissions:
+  actions: write
   contents: read
 
 jobs:
