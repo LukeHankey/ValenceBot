@@ -65,15 +65,21 @@ export default {
 				if (values === null) {
 					return message.channel.send('There is no profile for that Id.')
 				}
+				const oldScoutAlt1Merchant =
+					(values.oldScout?.alt1?.merchantCount ?? 0) + (values.oldScout?.alt1First?.merchantCount ?? 0)
+				const oldScoutAlt1Other = (values.oldScout?.alt1?.otherCount ?? 0) + (values.oldScout?.alt1First?.otherCount ?? 0)
 				fields.push(
 					{
 						name: `${values.author}`,
 						value: `Merch count: ${values.count} ${
 							oldScoutCheck() ? `(+${values.oldScout.count})` : ''
-						}\nAlt1 Merch count: ${(values.alt1?.merchantCount ?? 0) + (values.alt1First?.merchantCount ?? 0)}
+						}\nAlt1 Merch count: ${(values.alt1?.merchantCount ?? 0) + (values.alt1First?.merchantCount ?? 0)} ${
+							oldScoutCheck() ? `(+${oldScoutAlt1Merchant})` : ''
+						}
 						Other count: ${values.otherCount} ${oldScoutCheck() ? `(+${values.oldScout.otherCount})` : ''}\nAlt1 Other count: ${
 							(values.alt1?.otherCount ?? 0) + (values.alt1First?.otherCount ?? 0)
 						}
+						${oldScoutCheck() ? `(+${oldScoutAlt1Other})` : ''}
 						\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`,
 						inline: true
 					},

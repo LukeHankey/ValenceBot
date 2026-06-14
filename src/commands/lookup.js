@@ -34,6 +34,8 @@ export default {
 
 		const allData = await db.countDocuments({})
 		const oldScoutCheck = () => Boolean(user.oldScout)
+		const oldScoutAlt1Merchant = (user.oldScout?.alt1?.merchantCount ?? 0) + (user.oldScout?.alt1First?.merchantCount ?? 0)
+		const oldScoutAlt1Other = (user.oldScout?.alt1?.otherCount ?? 0) + (user.oldScout?.alt1First?.otherCount ?? 0)
 		const embedFields = [
 			{
 				name: '\u200b',
@@ -43,7 +45,11 @@ export default {
 					user.lastTimestampReadable
 				)}\n**Merch count:** ${user.count} ${oldScoutCheck() ? `(+${user.oldScout.count})` : ''}\n**Other count:** ${
 					user.otherCount
-				} ${oldScoutCheck() ? `(+${user.oldScout.otherCount})` : ''}\n**Active for:** ${ms(
+				} ${oldScoutCheck() ? `(+${user.oldScout.otherCount})` : ''}\n**Alt1 Merch count:** ${
+					(user.alt1?.merchantCount ?? 0) + (user.alt1First?.merchantCount ?? 0)
+				} ${oldScoutCheck() ? `(+${oldScoutAlt1Merchant})` : ''}\n**Alt1 Other count:** ${
+					(user.alt1?.otherCount ?? 0) + (user.alt1First?.otherCount ?? 0)
+				} ${oldScoutCheck() ? `(+${oldScoutAlt1Other})` : ''}\n**Active for:** ${ms(
 					user.lastTimestamp - user.firstTimestamp
 				)}\n**Active:** ${user.active ? 'True' : 'False'}\n**Warnings:** ${user.warnings.length}`,
 				inline: true

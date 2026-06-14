@@ -38,10 +38,10 @@ export default async (client, message) => {
 	// Deep Sea Fishing
 	if (message.guild.id === '420803245758480405' || message.guild.id === '668330890790699079') {
 		const {
-			merchChannel: { channelID, otherChannelID }
+			merchChannel: { otherChannelID }
 		} = await db.findOne(
 			{ _id: message.guild.id, merchChannel: { $exists: true } },
-			{ projection: { 'merchChannel.channelID': 1, 'merchChannel.otherChannelID': 1 } }
+			{ projection: { 'merchChannel.otherChannelID': 1 } }
 		)
 
 		if (message.channel.parent) {
@@ -54,12 +54,6 @@ export default async (client, message) => {
 		}
 
 		switch (message.channel.id) {
-			case '770307127557357648': // Merch stock channel
-				if (message.author.bot && message.crosspostable) {
-					message.crosspost()
-				}
-				break
-			case channelID:
 			case otherChannelID:
 				return await dsf(client, message)
 		}

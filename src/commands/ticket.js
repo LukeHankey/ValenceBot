@@ -1,6 +1,6 @@
 /* eslint-disable no-inline-comments */
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } from 'discord.js'
 import Color from '../colors.js'
 
 export default {
@@ -37,6 +37,14 @@ export default {
 		)
 		.addBooleanOption((option) =>
 			option.setName('application').setDescription('Create a form which interfaces with users who create tickets.')
+		)
+		.addStringOption((option) =>
+			option
+				.setName('categories')
+				.setDescription(
+					'Comma-separated list of ticket categories (e.g., "Report,Other"). Leave empty for simple button.'
+				)
+				.setRequired(false)
 		),
 	slash: async (client, interaction, _) => {
 		const db = client.database.settings
@@ -57,10 +65,57 @@ export default {
 		const role = interaction.options.getRole('role')
 		const prefer = interaction.options.getString('prefer')
 		const application = interaction.options.getBoolean('application')
+		const categoriesInput = interaction.options.getString('categories')
 
-		const components = application
-			? [actionRow.addComponents([applicationButton])]
-			: [actionRow.addComponents([ticketButton])]
+		// Validate that application and categories are not both set
+		if (application && categoriesInput) {
+			return interaction.reply({
+				content: 'You cannot use both `application` and `categories` options together. Please choose one or the other.',
+				ephemeral: true
+			})
+		}
+
+		let components
+		let ticketCategories = null
+
+		if (application) {
+			components = [actionRow.addComponents([applicationButton])]
+		} else if (categoriesInput) {
+			// Parse categories and create select menu
+			ticketCategories = categoriesInput
+				.split(',')
+				.map((cat) => cat.trim())
+				.filter((cat) => cat.length > 0)
+
+			if (ticketCategories.length > 25) {
+				return interaction.reply({
+					content: 'You can only provide up to 25 categories for the select menu.',
+					ephemeral: true
+				})
+			}
+
+			if (ticketCategories.length === 0) {
+				return interaction.reply({
+					content: 'Please provide at least one category or leave the categories field empty to use a button.',
+					ephemeral: true
+				})
+			}
+
+			const selectMenu = new StringSelectMenuBuilder()
+				.setCustomId('Ticket Category')
+				.setPlaceholder('Select a ticket category')
+				.addOptions(
+					ticketCategories.map((category) => ({
+						label: category.length > 100 ? category.substring(0, 97) + '...' : category,
+						value: category.length > 100 ? category.substring(0, 100) : category,
+						description: `Open a ticket for: ${category.length > 50 ? category.substring(0, 47) + '...' : category}`
+					}))
+				)
+
+			components = [actionRow.addComponents([selectMenu])]
+		} else {
+			components = [actionRow.addComponents([ticketButton])]
+		}
 
 		const ticketEmbed = new EmbedBuilder()
 			.setTitle(application ? 'Submit an Application!' : 'Open a Ticket!')
@@ -84,7 +139,8 @@ export default {
 								guildName: interaction.guild.name,
 								channelId: interaction.channel.id,
 								messageId: interactionResponse.resource?.message.id,
-								application
+								application,
+								categories: ticketCategories
 							}
 						]
 					}

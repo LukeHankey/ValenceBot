@@ -45,6 +45,7 @@ class WebSocketClient {
 			const parsedData = JSON.parse(data)
 			// Ensure we only get the event records
 			if (!('type' in parsedData)) return
+
 			// Ensure we get only the editEvents and only events where mistyUpdate is true
 			if (parsedData.type !== 'editEvent' || !parsedData.mistyUpdate) return
 			console.log('📨 Received:', parsedData)
