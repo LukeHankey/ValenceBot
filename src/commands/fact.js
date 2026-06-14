@@ -97,14 +97,18 @@ export default {
 					const newMessage = args.slice(2).join(' ')
 					if (args[1] && args[2]) {
 						await vFactsColl
-							.findOneAndUpdate({ number: Number(args[1]) }, { $set: { Message: newMessage } })
+							.findOneAndUpdate(
+								{ number: Number(args[1]) },
+								{ $set: { Message: newMessage } },
+								{ returnDocument: 'before' }
+							)
 							.then(async (r) => {
-								await vFactsColl.findOne({ number: r.value.number }).then(async (rs) => {
+								await vFactsColl.findOne({ number: r.number }).then(async (rs) => {
 									message.channel.send({
-										content: `Fact #${rs.number} has been edited successfully!\n${code}${r.value.number}. ${r.value.Message} >>> ${rs.Message}${code}`
+										content: `Fact #${rs.number} has been edited successfully!\n${code}${r.number}. ${r.Message} >>> ${rs.Message}${code}`
 									})
 									channels.logs.send(
-										`<@${message.author.id}> edited Fact #${rs.number}: ${code}diff\n- ${r.value.Message}\n+ ${rs.Message}${code}`
+										`<@${message.author.id}> edited Fact #${rs.number}: ${code}diff\n- ${r.Message}\n+ ${rs.Message}${code}`
 									)
 								})
 							})
