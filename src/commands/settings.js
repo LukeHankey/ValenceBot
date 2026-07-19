@@ -275,7 +275,7 @@ export default {
 								? message.channel.send({ content: 'Your Admin Channel is set as: `Null`' })
 								: message.channel.send({
 										content: `Your Admin Channel is set as: <#${adminChannel}>`
-								  })
+									})
 						} else {
 							message.channel.send(
 								nEmbed('Permission Denied', 'You do not have permission to see the Admin Channel!', Color.redDark)
@@ -336,7 +336,7 @@ export default {
 								? message.channel.send({ content: 'Your events Channel is set as: `Null`' })
 								: message.channel.send({
 										content: `Your events Channel is set as: <#${events}>`
-								  })
+									})
 						} else {
 							message.channel.send({
 								embeds: [
