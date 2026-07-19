@@ -15,7 +15,7 @@
     "node": "22.14.0"
   },
   "dependencies": {
-    "@discordjs/rest": "^1.7.1",
+    "@discordjs/rest": "^2.6.1",
     "assert": "^2.1.0",
     "axios": "^1.17.0",
     "camelcase": "^6.3.0",
