@@ -15,17 +15,17 @@
     "node": "22.14.0"
   },
   "dependencies": {
-    "@discordjs/rest": "^1.7.1",
+    "@discordjs/rest": "^2.6.3",
     "assert": "^2.1.0",
-    "axios": "^1.17.0",
+    "axios": "^1.18.1",
     "camelcase": "^6.3.0",
-    "discord.js": "^14.26.4",
+    "discord.js": "^14.27.0",
     "dotenv": "^17.4.2",
     "googleapis": "^64.0.0",
-    "mongodb": "7.3",
-    "node-cron": "^4.2.1",
+    "mongodb": "7.5",
+    "node-cron": "^4.6.0",
     "pretty-ms": "^9.3.0",
-    "uuid": "^11.1.0",
+    "uuid": "^14.0.1",
     "winston": "^3.19.0"
   },
   "devDependencies": {
@@ -35,6 +35,6 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-n": "^15.3.0",
     "eslint-plugin-promise": "^6.6.0",
-    "prettier": "3.8.4"
+    "prettier": "3.9.5"
   }
 }
