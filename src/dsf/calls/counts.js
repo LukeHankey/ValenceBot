@@ -56,8 +56,8 @@ export const addCount = async (client, message, alt1Count = false) => {
 			components: FOREIGN_WORLD_REGEX.test(message.content)
 				? [buttonSelectionForeignWorlds]
 				: worldAlreadyCalled(message, callDataBaseMessages) || alt1Count
-				? [buttonSelectionAlreadyCalled]
-				: [buttonSelection, buttonSelectionExtra]
+					? [buttonSelectionAlreadyCalled]
+					: [buttonSelection, buttonSelectionExtra]
 		}
 
 		if (!callerProfile) {

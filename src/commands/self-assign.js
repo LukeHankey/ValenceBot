@@ -124,17 +124,17 @@ export default {
 								"Can't find the role name? Use `;sa roles` for a full list of self-assignable role names."
 							)
 					]
-			  })
+				})
 			: wrong.length
-			? message.channel.send({
-					embeds: [
-						embed
-							.addFields(fieldsPlus)
-							.setDescription(
-								"Can't find the role name? Use `;sa roles` for a full list of self-assignable role names."
-							)
-					]
-			  })
-			: message.channel.send({ embeds: [embed.addFields(fields)] })
+				? message.channel.send({
+						embeds: [
+							embed
+								.addFields(fieldsPlus)
+								.setDescription(
+									"Can't find the role name? Use `;sa roles` for a full list of self-assignable role names."
+								)
+						]
+					})
+				: message.channel.send({ embeds: [embed.addFields(fields)] })
 	}
 }
