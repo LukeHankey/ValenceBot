@@ -21,7 +21,7 @@
     "camelcase": "^9.0.0",
     "discord.js": "^14.27.0",
     "dotenv": "^17.4.2",
-    "googleapis": "^64.0.0",
+    "googleapis": "^173.0.0",
     "mongodb": "7.5",
     "node-cron": "^4.6.0",
     "pretty-ms": "^9.3.0",
