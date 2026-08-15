@@ -10,14 +10,14 @@ export const addCount = async (client, message, alt1Count = false) => {
 	try {
 		// Get fields from database
 		const {
-			merchChannel: { otherChannelID, otherMessages },
+			eventChannel: { otherChannelID, otherMessages },
 			disallowedWords
 		} = await db.findOne(
 			{ _id: message.guild.id },
 			{
 				projection: {
-					'merchChannel.otherChannelID': 1,
-					'merchChannel.otherMessages': 1,
+					'eventChannel.otherChannelID': 1,
+					'eventChannel.otherMessages': 1,
 					disallowedWords: 1
 				}
 			}
@@ -151,7 +151,7 @@ export const addCount = async (client, message, alt1Count = false) => {
 
 export const addMessageToDB = async (message, db, eventID) => {
 	const addMessageData = {
-		'merchChannel.otherMessages': {
+		'eventChannel.otherMessages': {
 			eventID: eventID,
 			messageID: message.id,
 			content: message.content,

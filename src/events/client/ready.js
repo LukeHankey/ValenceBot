@@ -61,13 +61,13 @@ export default async (client) => {
 	const guild = client.guilds.cache.get(guildId)
 
 	const {
-		merchChannel: { otherChannelID, otherMessages }
+		eventChannel: { otherChannelID, otherMessages }
 	} = await db.findOne(
-		{ _id: guildId, merchChannel: { $exists: true } },
+		{ _id: guildId, eventChannel: { $exists: true } },
 		{
 			projection: {
-				'merchChannel.otherChannelID': 1,
-				'merchChannel.otherMessages': 1
+				'eventChannel.otherChannelID': 1,
+				'eventChannel.otherMessages': 1
 			}
 		}
 	)
@@ -95,7 +95,7 @@ export default async (client) => {
 			if (err?.code === 10008) {
 				await db.updateOne(
 					{ _id: guildId },
-					{ $pull: { 'merchChannel.otherMessages': { messageID: eventMsg.messageID } } }
+					{ $pull: { 'eventChannel.otherMessages': { messageID: eventMsg.messageID } } }
 				)
 				continue
 			}

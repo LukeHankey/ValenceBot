@@ -38,10 +38,10 @@ export default async (client, message) => {
 	// Deep Sea Fishing
 	if (message.guild.id === '420803245758480405' || message.guild.id === '668330890790699079') {
 		const {
-			merchChannel: { otherChannelID }
+			eventChannel: { otherChannelID }
 		} = await db.findOne(
-			{ _id: message.guild.id, merchChannel: { $exists: true } },
-			{ projection: { 'merchChannel.otherChannelID': 1 } }
+			{ _id: message.guild.id, eventChannel: { $exists: true } },
+			{ projection: { 'eventChannel.otherChannelID': 1 } }
 		)
 
 		if (message.channel.parent) {

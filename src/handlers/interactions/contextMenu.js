@@ -5,7 +5,7 @@ export const contextMenu = async (client, interaction, data) => {
 	const dsfServerErrorChannel = client.channels.cache.get('884076361940078682')
 	switch (interaction.commandName) {
 		case 'Mark event as dead.':
-			if (interaction.channel.id === data.merchChannel.otherChannelID) {
+			if (interaction.channel.id === data.eventChannel.otherChannelID) {
 				try {
 					const message = await interaction.channel.messages.fetch(interaction.targetId)
 					// 1st safeguard to check the cache.
