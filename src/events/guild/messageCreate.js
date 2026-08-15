@@ -1,3 +1,4 @@
+import { getEventChannel } from '../../dsf/calls/settingsAccess.js'
 import Color from '../../colors.js'
 import { Permissions } from '../../classes.js'
 import { EmbedBuilder, ChannelType } from 'discord.js'
@@ -37,12 +38,10 @@ export default async (client, message) => {
 
 	// Deep Sea Fishing
 	if (message.guild.id === '420803245758480405' || message.guild.id === '668330890790699079') {
-		const {
-			eventChannel: { otherChannelID }
-		} = await db.findOne(
-			{ _id: message.guild.id, eventChannel: { $exists: true } },
-			{ projection: { 'eventChannel.otherChannelID': 1 } }
-		)
+		// No early return: this branch also handles forum posts and replies that
+		// have nothing to do with the event channel. A null otherChannelID simply
+		// never matches the `case otherChannelID` below.
+		const { otherChannelID } = await getEventChannel(db, message.guild.id)
 
 		if (message.channel.parent) {
 			if (message.channel.parent.type === ChannelType.GuildForum) {

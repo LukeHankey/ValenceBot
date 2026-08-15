@@ -9,19 +9,17 @@ export const addCount = async (client, message, alt1Count = false) => {
 
 	try {
 		// Get fields from database
-		const {
-			eventChannel: { otherChannelID, otherMessages },
-			disallowedWords
-		} = await db.findOne(
-			{ _id: message.guild.id },
-			{
-				projection: {
-					'eventChannel.otherChannelID': 1,
-					'eventChannel.otherMessages': 1,
-					disallowedWords: 1
+		const { eventChannel: { otherChannelID, otherMessages } = { otherChannelID: null, otherMessages: [] }, disallowedWords } =
+			(await db.findOne(
+				{ _id: message.guild.id },
+				{
+					projection: {
+						'eventChannel.otherChannelID': 1,
+						'eventChannel.otherMessages': 1,
+						disallowedWords: 1
+					}
 				}
-			}
-		)
+			)) ?? {}
 
 		const callChannel = client.channels.cache.get(otherChannelID)
 		const callRegex = OTHER_CALLS_REGEX
