@@ -21,6 +21,12 @@ const WorldReactions = {
 	leagues: '<:leagues:1417397814899642399>'
 }
 
+/** The emoji for a registry key, or undefined when the key has none. */
+export const emojiForKey = (key) => WorldReactions[key]
+
+/** The snowflake inside a custom emoji, or null for a unicode one. */
+export const customEmojiId = (reaction) => /^<a?:.*:(\d+)>$/.exec(reaction)?.[1] ?? null
+
 /** How long a loaded registry is reused before re-reading Mongo. */
 const REGISTRY_CACHE_MS = 60_000
 

@@ -16,9 +16,12 @@ import {
 	specialsForWorld,
 	summariseChange
 } from '../dsf/calls/worldRegistry.js'
-import { invalidateRegistryCache } from '../dsf/calls/worlds.js'
+import { customEmojiId, emojiForKey, invalidateRegistryCache } from '../dsf/calls/worlds.js'
 
 const CONFIRM_TIMEOUT_MS = 60_000
+
+/** Discord's hard limit on fields in a single embed. */
+const MAX_EMBED_FIELDS = 25
 
 const worldsOption = (option, description) => option.setName('worlds').setDescription(description).setRequired(true)
 
@@ -135,6 +138,71 @@ export default {
 	}
 }
 
+/** Shown when a group's emoji is unmapped, or missing from this bot's cache. */
+export const FALLBACK_LIST_ICON = '🔹'
+
+/**
+ * The icon for a group in /worlds list: its own emoji where possible.
+ *
+ * Custom emoji are resolved through the bot's cache, because a DEV bot in a
+ * server without the production emoji set would otherwise render the raw
+ * `<:name:id>` text. Unicode emoji need no resolving. Enabled state is carried
+ * by the section a group sits in, not by its icon.
+ */
+export const listIcon = (special, emojiCache) => {
+	const emoji = emojiForKey(special.key)
+	if (!emoji) return FALLBACK_LIST_ICON
+
+	const customId = customEmojiId(emoji)
+	if (!customId) return emoji
+
+	return emojiCache?.get(customId) ? emoji : FALLBACK_LIST_ICON
+}
+
+/**
+ * Embed fields for /worlds list, split into Enabled and Disabled sections.
+ *
+ * A heading is only emitted when that section has groups, so a registry with
+ * everything switched on does not show an empty Disabled block.
+ */
+export const buildListSections = (specials, emojiCache) => {
+	const fields = []
+	let omitted = 0
+
+	for (const [heading, enabled] of [
+		['Enabled', true],
+		['Disabled', false]
+	]) {
+		const section = specials.filter((special) => special.enabled === enabled)
+		if (!section.length) continue
+
+		fields.push({ name: heading, value: '​', inline: false })
+		for (const special of section) {
+			// Discord rejects an embed with more than 25 fields, and adding
+			// groups is exactly what this command is for. Leave room for the
+			// second heading and the notice below.
+			if (fields.length >= MAX_EMBED_FIELDS - 2) {
+				omitted += 1
+				continue
+			}
+
+			fields.push({
+				name: `${listIcon(special, emojiCache)} ${special.label} (\`${special.key}\`)`,
+				value: `${special.worlds.length} world${special.worlds.length === 1 ? '' : 's'}: ${formatWorldList(
+					special.worlds
+				)}`.slice(0, 1024),
+				inline: false
+			})
+		}
+	}
+
+	if (omitted) {
+		fields.push({ name: '​', value: `…and ${omitted} more group${omitted === 1 ? '' : 's'}.`, inline: false })
+	}
+
+	return fields
+}
+
 const replyWithList = (interaction, registry) => {
 	const embed = new EmbedBuilder()
 		.setTitle(`World registry v${registry.version}`)
@@ -144,12 +212,8 @@ const replyWithList = (interaction, registry) => {
 				`and ${registry.specials.filter((special) => special.enabled).length} enabled groups.`
 		)
 
-	for (const special of registry.specials) {
-		embed.addFields({
-			name: `${special.enabled ? '🟢' : '⚪'} ${special.label} (\`${special.key}\`)`,
-			value: `${special.worlds.length} worlds: ${formatWorldList(special.worlds)}`.slice(0, 1024)
-		})
-	}
+	const fields = buildListSections(registry.specials, interaction.client?.emojis?.cache)
+	if (fields.length) embed.addFields(...fields)
 
 	if (registry.version === 0) {
 		embed.setFooter({ text: 'No registry stored yet — these are the bundled defaults. The first change writes them.' })
