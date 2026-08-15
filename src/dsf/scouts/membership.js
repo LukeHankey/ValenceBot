@@ -141,3 +141,15 @@ export const planReportDelivery = (chunks) => {
 
 	return { mode: 'file', content: chunks.join('\n'), chunkCount: chunks.length }
 }
+
+/**
+ * Split a report by who needs to see it.
+ *
+ * Someone holding a scouter role going inactive is a staffing matter, so it
+ * goes to the owners channel — as the old sweep did through logRemovedScouts.
+ * Everyone else is routine and belongs in the log channel.
+ */
+export const splitReportAudience = (entries) => ({
+	owners: entries.filter((entry) => entry.isScouter),
+	general: entries.filter((entry) => !entry.isScouter)
+})

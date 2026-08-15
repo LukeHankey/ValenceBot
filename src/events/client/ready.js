@@ -6,7 +6,8 @@ import {
 	markDepartedInactive,
 	partitionByMembership,
 	planReportDelivery,
-	selectInactiveProfiles
+	selectInactiveProfiles,
+	splitReportAudience
 } from '../../dsf/scouts/membership.js'
 import { getEventChannel } from '../../dsf/calls/settingsAccess.js'
 import { updateAllMemberDataBaseRankRoles } from '../../alt1.js'
@@ -169,33 +170,42 @@ export default async (client) => {
 				)
 			}
 
-			// Chunked: a backlog marked in one run is longer than Discord allows
-			// in a single message.
-			const report = buildInactiveReport([
+			const entries = [
 				...departed.map((userID) => ({
 					author: byId.get(userID)?.author ?? 'unknown',
 					userID,
-					reason: 'left the server'
+					reason: 'left the server',
+					isScouter: (byId.get(userID)?.assigned ?? []).length > 0
 				})),
 				...quiet.map((profile) => ({
 					author: profile.author,
 					userID: profile.userID,
-					reason: `no activity since ${new Date(profile.lastTimestamp).toISOString().slice(0, 10)}`
+					reason: `no activity since ${new Date(profile.lastTimestamp).toISOString().slice(0, 10)}`,
+					isScouter: (profile.assigned ?? []).length > 0
 				}))
-			])
+			]
 
-			const total = departed.length + quiet.length
-			const delivery = planReportDelivery(report)
+			// Scouters going inactive is a staffing matter, so they go to the
+			// owners channel; everyone else is routine and goes to the log
+			// channel. Both are chunked to Discord's message limit, and a large
+			// backlog goes as one attachment rather than dozens of messages.
+			const { owners, general } = splitReportAudience(entries)
 
-			if (delivery.mode === 'messages') {
-				for (const chunk of delivery.chunks) {
-					await channels.logs.send(`${total} profile(s) marked inactive.\n${codeBlock(chunk)}`)
+			for (const [channel, group, label] of [
+				[channels.dsfOwners, owners, 'scouter'],
+				[channels.logs, general, 'profile']
+			]) {
+				const delivery = planReportDelivery(buildInactiveReport(group))
+
+				if (delivery.mode === 'messages') {
+					for (const chunk of delivery.chunks) {
+						await channel.send(`${group.length} ${label}(s) marked inactive.\n${codeBlock(chunk)}`)
+					}
+				} else if (delivery.mode === 'file') {
+					await channel.send(`${group.length} ${label}(s) marked inactive. Full list attached.`, {
+						files: [{ attachment: Buffer.from(delivery.content, 'utf8'), name: `inactive-${label}s.txt` }]
+					})
 				}
-			} else if (delivery.mode === 'file') {
-				// A backlog is far too long for chat: one message, full list attached.
-				await channels.logs.send(`${total} profile(s) marked inactive. Full list attached.`, {
-					files: [{ attachment: Buffer.from(delivery.content, 'utf8'), name: 'inactive-profiles.txt' }]
-				})
 			}
 		} catch (error) {
 			client.logger.error(`Could not reconcile scouter profiles: ${error.message}`)

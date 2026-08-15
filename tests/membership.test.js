@@ -7,7 +7,8 @@ import {
 	markDepartedInactive,
 	selectInactiveProfiles,
 	buildInactiveReport,
-	planReportDelivery
+	planReportDelivery,
+	splitReportAudience
 } from '../src/dsf/scouts/membership.js'
 
 const guildWith = (presentIds) => ({
@@ -273,4 +274,30 @@ test('the file plan keeps every line', () => {
 
 test('nothing to report means nothing to send', () => {
 	assert.equal(planReportDelivery([]).mode, 'none')
+})
+
+test('scouters are reported separately from everyone else', () => {
+	const { owners, general } = splitReportAudience([
+		{ author: 'a', userID: '1', reason: 'left the server', isScouter: true },
+		{ author: 'b', userID: '2', reason: 'left the server', isScouter: false }
+	])
+
+	assert.equal(owners.length, 1)
+	assert.equal(owners[0].userID, '1')
+	assert.equal(general.length, 1)
+	assert.equal(general[0].userID, '2')
+})
+
+test('no scouters means nothing for the owners channel', () => {
+	const { owners, general } = splitReportAudience([{ author: 'b', userID: '2', reason: 'quiet', isScouter: false }])
+
+	assert.deepEqual(owners, [])
+	assert.equal(general.length, 1)
+})
+
+test('entries without the flag are treated as general', () => {
+	const { owners, general } = splitReportAudience([{ author: 'b', userID: '2', reason: 'quiet' }])
+
+	assert.deepEqual(owners, [])
+	assert.equal(general.length, 1)
 })
