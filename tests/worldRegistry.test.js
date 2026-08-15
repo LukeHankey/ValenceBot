@@ -6,11 +6,14 @@ import {
 	validateRegistry,
 	deriveMemberWorlds,
 	specialsForWorld,
+	applyWorldsToBase,
 	applyWorldsToSpecial,
+	removeWorldsFromBase,
 	removeWorldsFromSpecial,
 	setSpecialEnabled,
 	setSpecialWorlds,
 	diffRegistry,
+	summariseChange,
 	REGISTRY_DOCUMENT_ID,
 	MAX_ICONS_PER_WORLD
 } from '../src/dsf/calls/worldRegistry.js'
@@ -336,4 +339,81 @@ test('setSpecialWorlds sorts and deduplicates the new list', () => {
 
 test('setSpecialWorlds rejects an empty list rather than leaving an empty group', () => {
 	assert.throws(() => setSpecialWorlds(registry(), 'leagues', []), /at least one world/)
+})
+
+test('applyWorldsToBase adds worlds to the base list', () => {
+	const next = applyWorldsToBase(registry(), [300, 301])
+
+	assert.ok(next.baseWorlds.includes(300))
+	assert.ok(next.baseWorlds.includes(301))
+})
+
+test('applyWorldsToBase keeps the list sorted and deduplicated', () => {
+	const next = applyWorldsToBase(registry(), [300, 5, 300])
+
+	assert.equal(next.baseWorlds.filter((w) => w === 5).length, 1)
+	assert.deepEqual(
+		next.baseWorlds,
+		[...next.baseWorlds].sort((a, b) => a - b)
+	)
+})
+
+test('applyWorldsToBase does not mutate the input', () => {
+	const before = registry()
+	applyWorldsToBase(before, [300])
+
+	assert.ok(!before.baseWorlds.includes(300))
+})
+
+test('applyWorldsToBase leaves the specials alone', () => {
+	const next = applyWorldsToBase(registry(), [300])
+
+	assert.deepEqual(next.specials, registry().specials)
+})
+
+test('removeWorldsFromBase removes only from the base list', () => {
+	const next = removeWorldsFromBase(registry(), [5])
+
+	assert.ok(!next.baseWorlds.includes(5))
+	assert.deepEqual(next.specials, registry().specials)
+})
+
+test('removeWorldsFromBase refuses to drop below the safety floor', () => {
+	const small = registry({ baseWorlds: Array.from({ length: 51 }, (_, i) => i + 1) })
+
+	assert.throws(() => removeWorldsFromBase(small, [1, 2]), /at least 50/)
+})
+
+test('removeWorldsFromBase allows a removal that stays at the floor', () => {
+	const small = registry({ baseWorlds: Array.from({ length: 51 }, (_, i) => i + 1) })
+
+	assert.equal(removeWorldsFromBase(small, [1]).baseWorlds.length, 50)
+})
+
+test('a base world removed while still in an enabled special stays a member world', () => {
+	const before = registry({
+		specials: [{ key: 'leagues', label: 'Leagues', enabled: true, worlds: [5] }]
+	})
+	const after = removeWorldsFromBase(before, [5])
+
+	assert.ok(deriveMemberWorlds(after).includes(5))
+})
+
+test('summariseChange reports a base world addition', () => {
+	const before = registry()
+	const after = applyWorldsToBase(before, [300])
+
+	const summary = summariseChange(before, after, { action: 'base add', key: 'baseWorlds', worlds: [300] })
+
+	assert.match(summary.text, /300/)
+	assert.match(summary.text, /Base worlds: 60 → 61/)
+})
+
+test('summariseChange reports a base world removal', () => {
+	const before = registry()
+	const after = removeWorldsFromBase(before, [5])
+
+	const summary = summariseChange(before, after, { action: 'base remove', key: 'baseWorlds', worlds: [5] })
+
+	assert.match(summary.text, /Base worlds: 60 → 59/)
 })
