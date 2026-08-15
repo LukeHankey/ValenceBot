@@ -136,3 +136,37 @@ test('a single-world group is not described as "1 worlds"', () => {
 
 	assert.match(fields[1].value, /^1 world:/)
 })
+
+test('buildListSections shows a Base worlds section first', () => {
+	const fields = buildListSections([special('dsf', true)], resolver(), [1, 2, 3])
+
+	assert.equal(fields[0].name, 'Base worlds')
+	assert.match(fields[0].value, /1-3/)
+})
+
+test('the base section reports how many base worlds there are', () => {
+	const fields = buildListSections([special('dsf', true)], resolver(), [1, 2, 3])
+
+	assert.match(fields[0].value, /3 worlds/)
+})
+
+test('base worlds are collapsed into ranges like the groups', () => {
+	const base = Array.from({ length: 40 }, (_, i) => i + 1)
+	const fields = buildListSections([special('dsf', true)], resolver(), base)
+
+	assert.match(fields[0].value, /1-40/)
+	assert.ok(fields[0].value.length <= 1024)
+})
+
+test('the base section is omitted when no base worlds are passed', () => {
+	const fields = buildListSections([special('dsf', true)], resolver())
+
+	assert.ok(!fields.some((field) => field.name === 'Base worlds'))
+})
+
+test('groups still follow the base section', () => {
+	const fields = buildListSections([special('dsf', true)], resolver(), [1, 2])
+
+	assert.equal(fields[0].name, 'Base worlds')
+	assert.equal(fields[1].name, 'Enabled')
+})
