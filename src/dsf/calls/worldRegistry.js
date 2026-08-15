@@ -286,6 +286,21 @@ export const summariseChange = (before, after, { action, key, worlds = [] }) => 
 	const diff = diffRegistry(before, after)
 	const lines = [`**${action}** \`${key}\``, `Member worlds: ${diff.memberCountBefore} → ${diff.memberCountAfter}`]
 
+	// A group's own size changing is worth reporting on its own: editing a
+	// disabled group leaves the member worlds untouched, so without this the
+	// prompt would show no evidence that anything happened at all.
+	const groupBefore = before.specials.find((special) => special.key === key)
+	const groupAfter = after.specials.find((special) => special.key === key)
+	const sizeBefore = groupBefore?.worlds.length ?? 0
+	const sizeAfter = groupAfter?.worlds.length ?? 0
+
+	if (sizeBefore !== sizeAfter) {
+		lines.push(`Group \`${key}\`: ${sizeBefore} → ${sizeAfter} worlds`)
+
+		const stillDisabled = (groupAfter ?? groupBefore)?.enabled === false
+		if (stillDisabled) lines.push('That group is disabled, so the member worlds are untouched.')
+	}
+
 	if (diff.gained.length) lines.push(`Gained: ${formatWorldList(diff.gained)}`)
 	if (diff.lost.length) lines.push(`Dropped from member worlds, polling stops: ${formatWorldList(diff.lost)}`)
 

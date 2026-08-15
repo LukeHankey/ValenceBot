@@ -117,3 +117,41 @@ test('long world lists are summarised as ranges rather than printed in full', ()
 
 	assert.match(summary.text, /261-300/)
 })
+
+test('a removal from a disabled group still reports the group changing size', () => {
+	const before = registry()
+	const after = removeWorldsFromSpecial(before, 'leagues', [211])
+
+	const summary = summariseChange(before, after, { action: 'remove', key: 'leagues', worlds: [211] })
+
+	assert.match(summary.text, /3 → 2 worlds/)
+})
+
+test('a change to a disabled group says the member worlds are untouched', () => {
+	const before = registry()
+	const after = removeWorldsFromSpecial(before, 'leagues', [211])
+
+	const summary = summariseChange(before, after, { action: 'remove', key: 'leagues', worlds: [211] })
+
+	assert.match(summary.text, /disabled/i)
+})
+
+test('a change to an enabled group does not claim to be disabled', () => {
+	const before = registry({
+		specials: [{ key: 'leagues', label: 'Leagues', enabled: true, worlds: [211, 212] }]
+	})
+	const after = removeWorldsFromSpecial(before, 'leagues', [211])
+
+	const summary = summariseChange(before, after, { action: 'remove', key: 'leagues', worlds: [211] })
+
+	assert.doesNotMatch(summary.text, /disabled/i)
+})
+
+test('enabling a group does not report a size change, since its worlds did not move', () => {
+	const before = registry()
+	const after = setSpecialEnabled(before, 'leagues', true)
+
+	const summary = summariseChange(before, after, { action: 'enable', key: 'leagues' })
+
+	assert.doesNotMatch(summary.text, /→ \d+ worlds/)
+})
