@@ -1,4 +1,5 @@
 import { logger } from '../../logging.js'
+import { splitMessage } from '../../functions.js'
 
 /**
  * Guild membership checks for scouter profiles.
@@ -70,4 +71,73 @@ export const markDepartedInactive = async (scoutTracker, departedIds) => {
 
 	if (result.modifiedCount) logger.info(`Marked ${result.modifiedCount} scouter profile(s) inactive: no longer in guild`)
 	return result.modifiedCount
+}
+
+/**
+ * How long a profile may be quiet before it is marked inactive.
+ *
+ * These are the thresholds the bot used before #196 removed the sweep: a plain
+ * profile with almost no activity goes quiet quickly, while someone who holds a
+ * scouter role is given a quarter before being counted out.
+ */
+const IDLE_DAYS = 31
+const SCOUTER_IDLE_DAYS = 90
+const LOW_ACTIVITY_TOTAL = 10
+
+const DAY_MS = 1000 * 60 * 60 * 24
+
+const totalActivity = (profile) =>
+	(profile.count ?? 0) +
+	(profile.otherCount ?? 0) +
+	(profile.alt1?.merchantCount ?? 0) +
+	(profile.alt1?.otherCount ?? 0) +
+	(profile.alt1First?.merchantCount ?? 0) +
+	(profile.alt1First?.otherCount ?? 0)
+
+/**
+ * Profiles that have gone quiet long enough to be marked inactive.
+ *
+ * Nothing is ever deleted. The old sweep removed profiles outright once they
+ * had been inactive for six months, which threw away the record of what someone
+ * did; marking them is enough, and the counts are still there if they return.
+ */
+export const selectInactiveProfiles = (profiles, now = Date.now()) =>
+	profiles.filter((profile) => {
+		if (profile.active !== 1) return false
+
+		const idleMs = now - (profile.lastTimestamp ?? 0)
+		const isScouter = (profile.assigned ?? []).length > 0
+
+		if (isScouter) return idleMs >= SCOUTER_IDLE_DAYS * DAY_MS
+
+		return idleMs >= IDLE_DAYS * DAY_MS && totalActivity(profile) < LOW_ACTIVITY_TOTAL
+	})
+
+/**
+ * The report for the log channel, split to fit Discord's 2000 character limit.
+ *
+ * A backlog of profiles marked in one run is easily longer than a single
+ * message, which is why this returns chunks rather than one string.
+ */
+export const buildInactiveReport = (entries) => {
+	if (!entries.length) return []
+
+	const lines = entries.map((entry) => `${entry.author} - ${entry.userID}: ${entry.reason}`)
+	return splitMessage(lines.join('\n'), { maxLength: 1900 })
+}
+
+/**
+ * How many messages are worth posting before switching to an attachment.
+ *
+ * The first run after a long gap has a backlog: 2362 profiles is 55 chunks,
+ * and posting those one by one would flood the log channel and risk a rate
+ * limit. Past this many, the whole report goes as a single file instead.
+ */
+const MAX_REPORT_MESSAGES = 5
+
+export const planReportDelivery = (chunks) => {
+	if (!chunks.length) return { mode: 'none' }
+	if (chunks.length <= MAX_REPORT_MESSAGES) return { mode: 'messages', chunks }
+
+	return { mode: 'file', content: chunks.join('\n'), chunkCount: chunks.length }
 }

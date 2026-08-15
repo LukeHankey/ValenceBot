@@ -1,6 +1,13 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-octal */
-import { markDepartedInactive, partitionByMembership } from '../../dsf/scouts/membership.js'
+import { codeBlock } from 'discord.js'
+import {
+	buildInactiveReport,
+	markDepartedInactive,
+	partitionByMembership,
+	planReportDelivery,
+	selectInactiveProfiles
+} from '../../dsf/scouts/membership.js'
 import { getEventChannel } from '../../dsf/calls/settingsAccess.js'
 import { updateAllMemberDataBaseRankRoles } from '../../alt1.js'
 import {
@@ -137,19 +144,61 @@ export default async (client) => {
 		})
 		await updateAllMemberDataBaseRankRoles(client, scout)
 
-		// Reconcile profiles against who is actually in the guild. `active` was
-		// only ever written when a profile was created, so nothing had marked a
-		// profile inactive since the bot was written. Profiles are kept, not
-		// deleted: the counts still matter if someone comes back.
+		// Reconcile profiles against who is actually in the guild, and against who
+		// has gone quiet. `active` was only ever set to 1, so nothing had marked a
+		// profile inactive since #196 removed the old sweep. Nothing is deleted:
+		// that sweep dropped profiles outright after six months, throwing away the
+		// record of what someone did.
 		try {
-			const activeProfiles = await scoutTracker.find({ active: 1 }, { projection: { userID: 1 } }).toArray()
+			const channels = await client.database.channels
+			const activeProfiles = await scoutTracker.find({ active: 1 }).toArray()
+			const byId = new Map(activeProfiles.map((profile) => [profile.userID, profile]))
+
 			const { departed } = await partitionByMembership(
 				await scout.guild,
-				activeProfiles.map((p) => p.userID)
+				activeProfiles.map((profile) => profile.userID)
 			)
 			await markDepartedInactive(scoutTracker, departed)
+
+			const stillPresent = activeProfiles.filter((profile) => !departed.includes(profile.userID))
+			const quiet = selectInactiveProfiles(stillPresent)
+			if (quiet.length) {
+				await scoutTracker.updateMany(
+					{ userID: { $in: quiet.map((profile) => profile.userID) }, active: 1 },
+					{ $set: { active: 0, inactiveSince: new Date() } }
+				)
+			}
+
+			// Chunked: a backlog marked in one run is longer than Discord allows
+			// in a single message.
+			const report = buildInactiveReport([
+				...departed.map((userID) => ({
+					author: byId.get(userID)?.author ?? 'unknown',
+					userID,
+					reason: 'left the server'
+				})),
+				...quiet.map((profile) => ({
+					author: profile.author,
+					userID: profile.userID,
+					reason: `no activity since ${new Date(profile.lastTimestamp).toISOString().slice(0, 10)}`
+				}))
+			])
+
+			const total = departed.length + quiet.length
+			const delivery = planReportDelivery(report)
+
+			if (delivery.mode === 'messages') {
+				for (const chunk of delivery.chunks) {
+					await channels.logs.send(`${total} profile(s) marked inactive.\n${codeBlock(chunk)}`)
+				}
+			} else if (delivery.mode === 'file') {
+				// A backlog is far too long for chat: one message, full list attached.
+				await channels.logs.send(`${total} profile(s) marked inactive. Full list attached.`, {
+					files: [{ attachment: Buffer.from(delivery.content, 'utf8'), name: 'inactive-profiles.txt' }]
+				})
+			}
 		} catch (error) {
-			client.logger.error(`Could not reconcile scouter profiles against guild membership: ${error.message}`)
+			client.logger.error(`Could not reconcile scouter profiles: ${error.message}`)
 		}
 
 		// Daily Reset
