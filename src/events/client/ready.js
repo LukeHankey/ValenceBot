@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-octal */
+import { markDepartedInactive, partitionByMembership } from '../../dsf/scouts/membership.js'
 import { getEventChannel } from '../../dsf/calls/settingsAccess.js'
 import { updateAllMemberDataBaseRankRoles } from '../../alt1.js'
 import {
@@ -135,6 +136,21 @@ export default async (client) => {
 			await removedRoles(role, scoutTracker)
 		})
 		await updateAllMemberDataBaseRankRoles(client, scout)
+
+		// Reconcile profiles against who is actually in the guild. `active` was
+		// only ever written when a profile was created, so nothing had marked a
+		// profile inactive since the bot was written. Profiles are kept, not
+		// deleted: the counts still matter if someone comes back.
+		try {
+			const activeProfiles = await scoutTracker.find({ active: 1 }, { projection: { userID: 1 } }).toArray()
+			const { departed } = await partitionByMembership(
+				await scout.guild,
+				activeProfiles.map((p) => p.userID)
+			)
+			await markDepartedInactive(scoutTracker, departed)
+		} catch (error) {
+			client.logger.error(`Could not reconcile scouter profiles against guild membership: ${error.message}`)
+		}
 
 		// Daily Reset
 		if (new Date().getHours() === 0o0 && new Date().getMinutes() === 0o0) {
