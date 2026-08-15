@@ -38,7 +38,11 @@ export const commands = async (client, interaction, data) => {
 			await command.slash(client, interaction, perms)
 		}
 	} catch (error) {
-		channels.errors.send(error)
+		channels.errors.send(error, {
+			command: `/${interaction.commandName}`,
+			user: interaction.user?.tag,
+			guild: interaction.guild?.name
+		})
 		await interaction.reply({
 			content: 'There was an error while executing this command!',
 			flags: MessageFlags.Ephemeral
