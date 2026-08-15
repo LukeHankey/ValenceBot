@@ -27,16 +27,16 @@ export default async (client, message) => {
 	}
 
 	const fullDB = await db.findOne(
-		{ _id: message.guild.id, merchChannel: { $exists: true } },
-		{ projection: { merchChannel: { otherMessages: 1, otherChannelID: 1 } } }
+		{ _id: message.guild.id, eventChannel: { $exists: true } },
+		{ projection: { eventChannel: { otherMessages: 1, otherChannelID: 1 } } }
 	)
 	if (!fullDB) {
-		client.logger.debug(`messageDelete early return: no merchChannel data for guild=${message.guild.id}`)
+		client.logger.debug(`messageDelete early return: no eventChannel data for guild=${message.guild.id}`)
 		return
 	}
-	const otherChannelID = message.guild.channels.cache.get(fullDB.merchChannel.otherChannelID)
+	const otherChannelID = message.guild.channels.cache.get(fullDB.eventChannel.otherChannelID)
 	client.logger.debug(
-		`messageDelete channel check: deletedChannel=${message.channel?.id} configuredOther=${fullDB.merchChannel.otherChannelID} resolvedOther=${otherChannelID?.id}`
+		`messageDelete channel check: deletedChannel=${message.channel?.id} configuredOther=${fullDB.eventChannel.otherChannelID} resolvedOther=${otherChannelID?.id}`
 	)
 
 	const botServerChannel = client.channels.cache.get('784543962174062608') ?? message.channel
@@ -63,10 +63,10 @@ export default async (client, message) => {
 				{ _id: message.guild.id },
 				{
 					$pull: {
-						'merchChannel.otherMessages': { messageID: data.messageID }
+						'eventChannel.otherMessages': { messageID: data.messageID }
 					},
 					$addToSet: {
-						'merchChannel.deletions.messages': { messageID: sentChannel.id, authorID: userID, eventID: data.eventID }
+						'eventChannel.deletions.messages': { messageID: sentChannel.id, authorID: userID, eventID: data.eventID }
 					}
 				}
 			)
@@ -106,7 +106,7 @@ export default async (client, message) => {
 	}
 
 	const handleDeletions = async (deletedBy = null) => {
-		const checkDB = fullDB.merchChannel.otherMessages.find((entry) => entry.messageID === message.id)
+		const checkDB = fullDB.eventChannel.otherMessages.find((entry) => entry.messageID === message.id)
 		const button = buttonSelectionOther
 		client.logger.debug(`messageDelete DB lookup: found=${Boolean(checkDB)} deletedBy=${deletedBy ?? 'author'}`)
 

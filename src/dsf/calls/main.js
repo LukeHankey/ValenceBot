@@ -7,13 +7,13 @@ const dsf = async (client, message) => {
 	const db = client.database.settings
 	const channels = await client.database.channels
 	const {
-		merchChannel: { otherChannelID, otherMessages }
+		eventChannel: { otherChannelID, otherMessages }
 	} = await db.findOne(
-		{ _id: message.guild.id, merchChannel: { $exists: true } },
+		{ _id: message.guild.id, eventChannel: { $exists: true } },
 		{
 			projection: {
-				'merchChannel.otherChannelID': 1,
-				'merchChannel.otherMessages': 1
+				'eventChannel.otherChannelID': 1,
+				'eventChannel.otherMessages': 1
 			}
 		}
 	)
