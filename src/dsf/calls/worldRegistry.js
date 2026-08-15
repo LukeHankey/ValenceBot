@@ -226,6 +226,38 @@ export const setSpecialWorlds = (registry, key, worlds, { label } = {}) => {
 	return next
 }
 
+/**
+ * Add worlds to the permanent base list.
+ *
+ * Base worlds are the ones that exist regardless of any seasonal group, so this
+ * is what to use when Jagex releases a world rather than when a season starts.
+ */
+export const applyWorldsToBase = (registry, worlds) => {
+	const next = cloneRegistry(registry)
+	next.baseWorlds = uniqueSorted([...next.baseWorlds, ...worlds])
+	return next
+}
+
+/**
+ * Remove worlds from the base list.
+ *
+ * Refuses to drop below MIN_BASE_WORLDS here rather than only at write time, so
+ * the command can reject it before showing a confirmation prompt. A removed
+ * world can still be a member world if an enabled special contains it.
+ */
+export const removeWorldsFromBase = (registry, worlds) => {
+	const next = cloneRegistry(registry)
+	const removing = new Set(worlds)
+	const remaining = next.baseWorlds.filter((world) => !removing.has(world))
+
+	if (remaining.length < MIN_BASE_WORLDS) {
+		throw new Error(`That would leave ${remaining.length} base worlds; there must be at least ${MIN_BASE_WORLDS}.`)
+	}
+
+	next.baseWorlds = remaining
+	return next
+}
+
 export const setSpecialEnabled = (registry, key, enabled) => {
 	const next = cloneRegistry(registry)
 	const special = findSpecial(next, key)
@@ -285,6 +317,10 @@ export const summariseChange = (before, after, { action, key, worlds = [] }) => 
 
 	const diff = diffRegistry(before, after)
 	const lines = [`**${action}** \`${key}\``, `Member worlds: ${diff.memberCountBefore} → ${diff.memberCountAfter}`]
+
+	if (before.baseWorlds.length !== after.baseWorlds.length) {
+		lines.push(`Base worlds: ${before.baseWorlds.length} → ${after.baseWorlds.length}`)
+	}
 
 	// A group's own size changing is worth reporting on its own: editing a
 	// disabled group leaves the member worlds untouched, so without this the
