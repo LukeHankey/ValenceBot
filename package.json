@@ -18,7 +18,7 @@
   "dependencies": {
     "@discordjs/rest": "^2.6.3",
     "assert": "^2.1.0",
-    "axios": "^1.18.1",
+    "axios": "^1.19.0",
     "camelcase": "^9.0.0",
     "discord.js": "^14.27.0",
     "dotenv": "^17.4.2",
@@ -36,6 +36,6 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-n": "^15.3.0",
     "eslint-plugin-promise": "^6.6.0",
-    "prettier": "3.9.5"
+    "prettier": "3.9.6"
   }
 }
