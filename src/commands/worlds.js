@@ -11,6 +11,7 @@ import {
 	removeWorldsFromSpecial,
 	saveRegistry,
 	setSpecialEnabled,
+	setSpecialWorlds,
 	sourcesForWorld,
 	specialsForWorld,
 	summariseChange
@@ -26,7 +27,15 @@ const keyOption = (option) => option.setName('key').setDescription('The special 
 export default {
 	name: 'worlds',
 	description: ['Manage the shared world registry: member worlds and special world groups.'],
-	usage: ['list', 'show <world>', 'enable <key>', 'disable <key>', 'add <key> <worlds>', 'remove <key> <worlds>'],
+	usage: [
+		'list',
+		'show <world>',
+		'enable <key>',
+		'disable <key>',
+		'set <key> <worlds>',
+		'add <key> <worlds>',
+		'remove <key> <worlds>'
+	],
 	guildSpecific: ['668330890790699079', '420803245758480405'],
 	permissionLevel: 'Admin',
 	data: new SlashCommandBuilder()
@@ -50,6 +59,16 @@ export default {
 				.setName('disable')
 				.setDescription('Disable a special world group, removing its worlds from the member worlds.')
 				.addStringOption(keyOption)
+		)
+		.addSubcommand((sub) =>
+			sub
+				.setName('set')
+				.setDescription("Replace a group's worlds outright — use this for a new league season.")
+				.addStringOption(keyOption)
+				.addStringOption((option) => worldsOption(option, 'e.g. 13,142,211-219,261-298'))
+				.addStringOption((option) =>
+					option.setName('label').setDescription('Display name, used when creating a new group').setRequired(false)
+				)
 		)
 		.addSubcommand((sub) =>
 			sub
@@ -88,10 +107,11 @@ export default {
 				worlds = registry.specials.find((special) => special.key === key)?.worlds ?? []
 			} else {
 				worlds = parseWorldList(interaction.options.getString('worlds'))
-				next =
-					subcommand === 'add'
-						? applyWorldsToSpecial(registry, key, worlds, { label: interaction.options.getString('label') })
-						: removeWorldsFromSpecial(registry, key, worlds)
+				const label = interaction.options.getString('label')
+
+				if (subcommand === 'set') next = setSpecialWorlds(registry, key, worlds, { label })
+				else if (subcommand === 'add') next = applyWorldsToSpecial(registry, key, worlds, { label })
+				else next = removeWorldsFromSpecial(registry, key, worlds)
 			}
 		} catch (error) {
 			return interaction.reply({ content: `❌ ${error.message}`, flags: MessageFlags.Ephemeral })

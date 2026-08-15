@@ -9,6 +9,7 @@ import {
 	applyWorldsToSpecial,
 	removeWorldsFromSpecial,
 	setSpecialEnabled,
+	setSpecialWorlds,
 	diffRegistry,
 	REGISTRY_DOCUMENT_ID,
 	MAX_ICONS_PER_WORLD
@@ -295,4 +296,44 @@ test('diffRegistry reports the member world counts on both sides', () => {
 	const diff = diffRegistry(before, after)
 
 	assert.equal(diff.memberCountBefore - diff.memberCountAfter, 2)
+})
+
+test('setSpecialWorlds replaces the world list wholesale', () => {
+	const next = setSpecialWorlds(registry(), 'leagues', [301, 302])
+
+	assert.deepEqual(next.specials.find((s) => s.key === 'leagues').worlds, [301, 302])
+})
+
+test('setSpecialWorlds keeps the enabled state and label', () => {
+	const before = registry({
+		specials: [{ key: 'leagues', label: 'Leagues', enabled: false, worlds: [211] }]
+	})
+
+	const next = setSpecialWorlds(before, 'leagues', [301])
+	const leagues = next.specials.find((s) => s.key === 'leagues')
+
+	assert.equal(leagues.enabled, false)
+	assert.equal(leagues.label, 'Leagues')
+})
+
+test('setSpecialWorlds creates the special when the key is unknown', () => {
+	const next = setSpecialWorlds(registry(), 'newthing', [301], { label: 'New Thing' })
+
+	assert.deepEqual(next.specials.find((s) => s.key === 'newthing').worlds, [301])
+})
+
+test('setSpecialWorlds does not touch other specials', () => {
+	const next = setSpecialWorlds(registry(), 'leagues', [301])
+
+	assert.deepEqual(next.specials.find((s) => s.key === 'dsf').worlds, [116])
+})
+
+test('setSpecialWorlds sorts and deduplicates the new list', () => {
+	const next = setSpecialWorlds(registry(), 'leagues', [303, 301, 301])
+
+	assert.deepEqual(next.specials.find((s) => s.key === 'leagues').worlds, [301, 303])
+})
+
+test('setSpecialWorlds rejects an empty list rather than leaving an empty group', () => {
+	assert.throws(() => setSpecialWorlds(registry(), 'leagues', []), /at least one world/)
 })

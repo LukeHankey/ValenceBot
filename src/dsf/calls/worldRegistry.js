@@ -204,6 +204,28 @@ export const removeWorldsFromSpecial = (registry, key, worlds) => {
 	return next
 }
 
+/**
+ * Replace a special's world list outright, creating it when the key is unknown.
+ *
+ * A league season is a fresh set of worlds rather than an addition to last
+ * season's, and `add` unions — so replacing through add/remove would mean
+ * listing every stale world by hand.
+ */
+export const setSpecialWorlds = (registry, key, worlds, { label } = {}) => {
+	if (!worlds.length) throw new Error('A special must contain at least one world.')
+
+	const next = cloneRegistry(registry)
+	const special = findSpecial(next, key)
+
+	if (special) {
+		special.worlds = uniqueSorted(worlds)
+		return next
+	}
+
+	next.specials.push({ key, label: label ?? key, enabled: true, worlds: uniqueSorted(worlds) })
+	return next
+}
+
 export const setSpecialEnabled = (registry, key, enabled) => {
 	const next = cloneRegistry(registry)
 	const special = findSpecial(next, key)
