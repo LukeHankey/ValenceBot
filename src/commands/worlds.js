@@ -3,11 +3,13 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlag
 
 import Color from '../colors.js'
 import {
+	applyWorldsToBase,
 	applyWorldsToSpecial,
 	deriveMemberWorlds,
 	formatWorldList,
 	loadRegistry,
 	parseWorldList,
+	removeWorldsFromBase,
 	removeWorldsFromSpecial,
 	saveRegistry,
 	setSpecialEnabled,
@@ -37,7 +39,9 @@ export default {
 		'Disables a group, removing its worlds from the member worlds.',
 		"Replaces a group's worlds outright. Use this for a new league season.",
 		'Adds worlds to a group, creating the group if the key is new.',
-		'Removes worlds from a group. Other groups keep their copies of those worlds.'
+		'Removes worlds from a group. Other groups keep their copies of those worlds.',
+		'Adds permanent base worlds, e.g. a newly released world.',
+		'Removes permanent base worlds. Refuses to drop below 50.'
 	],
 	usage: [
 		'list',
@@ -46,7 +50,9 @@ export default {
 		'disable <key>',
 		'set <key> <worlds>',
 		'add <key> <worlds>',
-		'remove <key> <worlds>'
+		'remove <key> <worlds>',
+		'base add <worlds>',
+		'base remove <worlds>'
 	],
 	guildSpecific: ['668330890790699079', '420803245758480405'],
 	permissionLevel: 'Admin',
@@ -98,6 +104,23 @@ export default {
 				.setDescription('Remove worlds from a special world group.')
 				.addStringOption(keyOption)
 				.addStringOption((option) => worldsOption(option, 'e.g. 253,254'))
+		)
+		.addSubcommandGroup((group) =>
+			group
+				.setName('base')
+				.setDescription('Edit the permanent base worlds every service polls.')
+				.addSubcommand((sub) =>
+					sub
+						.setName('add')
+						.setDescription('Add permanent worlds, e.g. a newly released world.')
+						.addStringOption((option) => worldsOption(option, 'e.g. 145 or 145-147'))
+				)
+				.addSubcommand((sub) =>
+					sub
+						.setName('remove')
+						.setDescription('Remove permanent worlds, e.g. a retired world.')
+						.addStringOption((option) => worldsOption(option, 'e.g. 145'))
+				)
 		),
 	slash: async (client, interaction, perms) => {
 		if (!perms.admin) return interaction.reply(perms.errorA)
@@ -108,6 +131,36 @@ export default {
 
 		if (subcommand === 'list') return replyWithList(interaction, registry)
 		if (subcommand === 'show') return replyWithWorld(interaction, registry)
+
+		// `/worlds base add|remove` edits baseWorlds rather than a group.
+		if (interaction.options.getSubcommandGroup(false) === 'base') {
+			let baseWorlds
+			let nextBase
+			try {
+				baseWorlds = parseWorldList(interaction.options.getString('worlds'))
+				nextBase =
+					subcommand === 'add' ? applyWorldsToBase(registry, baseWorlds) : removeWorldsFromBase(registry, baseWorlds)
+			} catch (error) {
+				return interaction.reply({ content: `❌ ${error.message}`, flags: MessageFlags.Ephemeral })
+			}
+
+			const baseSummary = summariseChange(registry, nextBase, {
+				action: `base ${subcommand}`,
+				key: 'baseWorlds',
+				worlds: baseWorlds
+			})
+			if (baseSummary.blocked) {
+				return interaction.reply({ content: `❌ ${baseSummary.text}`, flags: MessageFlags.Ephemeral })
+			}
+
+			return confirmAndSave(client, interaction, {
+				collection,
+				registry: nextBase,
+				summary: baseSummary,
+				key: 'baseWorlds',
+				subcommand: `base ${subcommand}`
+			})
+		}
 
 		const key = interaction.options.getString('key')
 
@@ -165,9 +218,19 @@ export const listIcon = (special, emojiCache) => {
  * A heading is only emitted when that section has groups, so a registry with
  * everything switched on does not show an empty Disabled block.
  */
-export const buildListSections = (specials, emojiCache) => {
+export const buildListSections = (specials, emojiCache, baseWorlds = []) => {
 	const fields = []
 	let omitted = 0
+
+	// Base worlds first: they are the bulk of the member worlds and used to be
+	// invisible here, which made the counts in the description hard to check.
+	if (baseWorlds.length) {
+		fields.push({
+			name: 'Base worlds',
+			value: `${baseWorlds.length} worlds: ${formatWorldList(baseWorlds)}`.slice(0, 1024),
+			inline: false
+		})
+	}
 
 	for (const [heading, enabled] of [
 		['Enabled', true],
@@ -212,7 +275,7 @@ const replyWithList = (interaction, registry) => {
 				`and ${registry.specials.filter((special) => special.enabled).length} enabled groups.`
 		)
 
-	const fields = buildListSections(registry.specials, interaction.client?.emojis?.cache)
+	const fields = buildListSections(registry.specials, interaction.client?.emojis?.cache, registry.baseWorlds)
 	if (fields.length) embed.addFields(...fields)
 
 	if (registry.version === 0) {

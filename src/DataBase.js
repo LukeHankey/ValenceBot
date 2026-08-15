@@ -1,7 +1,6 @@
-import Color from './colors.js'
-import { EmbedBuilder } from 'discord.js'
 import pkg from 'mongodb'
 import { logger } from './logging.js'
+import { buildErrorEmbed, originFromStack } from './errorEmbed.js'
 import dotenv from 'dotenv'
 const { MongoClient } = pkg
 dotenv.config()
@@ -67,21 +66,12 @@ export class MongoDataBase {
 				},
 				errors: {
 					id: errors,
-					embed: function (err) {
-						logger.error(`1: ${err.stack}`)
-						const filePath = import.meta.url.split('/')
-						const fileName = filePath[filePath.length - 1]
-						const embed = new EmbedBuilder()
-							.setTitle(`An error occured in ${fileName}`)
-							.setColor(Color.redDark)
-							.addFields({
-								name: `${err.message}`,
-								value: `\`\`\`${err.stack
-									.split('\n')
-									.filter((s) => !s.includes('node_modules'))
-									.join('\n')}\`\`\``
-							})
-						return embed
+					// `context` is optional: pass whatever the call site knows, e.g.
+					// { command: 'worlds', user: interaction.user.tag }.
+					embed: function (err, context) {
+						const origin = originFromStack(err)
+						logger.error(`${err?.stack ?? err} (${origin.path}:${origin.line})`)
+						return buildErrorEmbed(err, context)
 					},
 					send: function (...args) {
 						const channel = client.default.channels.cache.get(this.id)
