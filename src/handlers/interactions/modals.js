@@ -189,6 +189,10 @@ export const modals = async (client, interaction) => {
 			}
 		}
 	} catch (err) {
-		await channels.errors.send(err)
+		await channels.errors.send(err, {
+			modal: interaction.customId,
+			user: interaction.user?.tag,
+			guild: interaction.guild?.name
+		})
 	}
 }
