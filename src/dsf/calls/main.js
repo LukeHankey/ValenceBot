@@ -1,3 +1,4 @@
+import { getEventChannel } from './settingsAccess.js'
 import { mistyEventTimer, addCount, addMessageToDB, getWorldNumber, worldReaction, WORLD_FULL_MESSAGE } from '../index.js'
 import { startEventTimer } from './eventTimers.js'
 import { v4 as uuid } from 'uuid'
@@ -6,17 +7,8 @@ import axios from 'axios'
 const dsf = async (client, message) => {
 	const db = client.database.settings
 	const channels = await client.database.channels
-	const {
-		eventChannel: { otherChannelID, otherMessages }
-	} = await db.findOne(
-		{ _id: message.guild.id, eventChannel: { $exists: true } },
-		{
-			projection: {
-				'eventChannel.otherChannelID': 1,
-				'eventChannel.otherMessages': 1
-			}
-		}
-	)
+	const { otherChannelID, otherMessages, found } = await getEventChannel(db, message.guild.id)
+	if (!found) return
 
 	const comeViaWebhook = message.author.username === 'Alt1 Tracker'
 	if (message.author.bot && !comeViaWebhook) return

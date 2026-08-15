@@ -1,3 +1,4 @@
+import { getEventChannel } from './settingsAccess.js'
 import timers from 'timers/promises'
 import { logger } from '../../logging.js'
 import { TEN_MINUTES, ALL_EVENTS_REGEX } from './constants.js'
@@ -85,9 +86,8 @@ export const removeReactPermissions = async (message, allMessages) => {
 }
 
 export const startupRemoveReactionPermissions = async (client, db) => {
-	const {
-		eventChannel: { otherMessages, otherChannelID }
-	} = await db.findOne({ _id: '420803245758480405' }, { projection: { eventChannel: { otherMessages: 1, otherChannelID: 1 } } })
+	const { otherMessages, otherChannelID, found } = await getEventChannel(db, '420803245758480405')
+	if (!found) return
 
 	const channelObj = client.channels.cache.get(otherChannelID)
 

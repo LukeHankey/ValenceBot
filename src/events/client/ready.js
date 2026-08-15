@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-octal */
+import { getEventChannel } from '../../dsf/calls/settingsAccess.js'
 import { updateAllMemberDataBaseRankRoles } from '../../alt1.js'
 import {
 	scout,
@@ -60,17 +61,10 @@ export default async (client) => {
 	const guildId = process.env.NODE_ENV === 'DEV' ? '668330890790699079' : '420803245758480405'
 	const guild = client.guilds.cache.get(guildId)
 
-	const {
-		eventChannel: { otherChannelID, otherMessages }
-	} = await db.findOne(
-		{ _id: guildId, eventChannel: { $exists: true } },
-		{
-			projection: {
-				'eventChannel.otherChannelID': 1,
-				'eventChannel.otherMessages': 1
-			}
-		}
-	)
+	// No early return: startup continues to setPresence and the cron schedules
+	// below even when a guild has no event channel configured. otherMessages
+	// defaults to [], so the restore loop simply has nothing to do.
+	const { otherChannelID, otherMessages } = await getEventChannel(db, guildId)
 
 	for (const eventMsg of otherMessages) {
 		let durationMs = 0

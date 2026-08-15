@@ -43,11 +43,12 @@ export default {
 					default:
 						try {
 							const {
-								eventChannel: { otherMessages, otherChannelID }
-							} = await db.findOne(
-								{ _id: message.guild.id },
-								{ projection: { 'eventChannel.otherMessages': 1, 'eventChannel.otherChannelID': 1 } }
-							)
+								eventChannel: { otherMessages, otherChannelID } = { otherMessages: [], otherChannelID: null }
+							} =
+								(await db.findOne(
+									{ _id: message.guild.id },
+									{ projection: { 'eventChannel.otherMessages': 1, 'eventChannel.otherChannelID': 1 } }
+								)) ?? {}
 							const fields = []
 							const embed = nEmbed(
 								'List of messages currently stored in the DB',
