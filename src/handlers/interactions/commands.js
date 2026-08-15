@@ -32,7 +32,7 @@ export const commands = async (client, interaction, data) => {
 	}
 
 	try {
-		if (interaction.guildId === '420803245758480405' && interaction.channel.id === data.merchChannel.otherChannelID) {
+		if (interaction.guildId === '420803245758480405' && interaction.channel.id === data.eventChannel.otherChannelID) {
 			return interaction.reply({ content: 'Please use the bot commands channel.', flags: MessageFlags.Ephemeral })
 		} else {
 			await command.slash(client, interaction, perms)

@@ -7,7 +7,7 @@ export default async (client, interaction) => {
 	const db = client.database.settings
 	const data = await db.findOne(
 		{ _id: interaction.guildId },
-		{ projection: { merchChannel: { components: 1, otherChannelID: 1, deletions: 1 } } }
+		{ projection: { eventChannel: { components: 1, otherChannelID: 1, deletions: 1 } } }
 	)
 
 	try {

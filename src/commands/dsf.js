@@ -43,10 +43,10 @@ export default {
 					default:
 						try {
 							const {
-								merchChannel: { otherMessages, otherChannelID }
+								eventChannel: { otherMessages, otherChannelID }
 							} = await db.findOne(
 								{ _id: message.guild.id },
-								{ projection: { 'merchChannel.otherMessages': 1, 'merchChannel.otherChannelID': 1 } }
+								{ projection: { 'eventChannel.otherMessages': 1, 'eventChannel.otherChannelID': 1 } }
 							)
 							const fields = []
 							const embed = nEmbed(
@@ -86,7 +86,7 @@ export default {
 							{ _id: message.guild.id },
 							{
 								$pull: {
-									'merchChannel.otherMessages': { time: { $gt: 0 } }
+									'eventChannel.otherMessages': { time: { $gt: 0 } }
 								}
 							}
 						)

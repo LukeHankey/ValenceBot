@@ -49,7 +49,7 @@ export const skullTimer = async (client, message, channel = 'other') => {
 		}
 		channels.errors.send(err)
 	} finally {
-		await db.updateOne({ _id: message.guild.id }, { $pull: { 'merchChannel.otherMessages': { messageID } } })
+		await db.updateOne({ _id: message.guild.id }, { $pull: { 'eventChannel.otherMessages': { messageID } } })
 	}
 }
 
@@ -73,8 +73,8 @@ export const mistyEventTimer = (content) => {
 }
 
 export const removeReactPermissions = async (message, allMessages) => {
-	const merchChannel = message.channel
-	const channelPermissions = merchChannel.permissionOverwrites.cache.get(message.author.id)
+	const eventChannel = message.channel
+	const channelPermissions = eventChannel.permissionOverwrites.cache.get(message.author.id)
 
 	if (channelPermissions) {
 		const moreThanOnce = allMessages.filter((obj) => obj.userID === message.author.id && obj.messageID !== message.id)
@@ -86,8 +86,8 @@ export const removeReactPermissions = async (message, allMessages) => {
 
 export const startupRemoveReactionPermissions = async (client, db) => {
 	const {
-		merchChannel: { otherMessages, otherChannelID }
-	} = await db.findOne({ _id: '420803245758480405' }, { projection: { merchChannel: { otherMessages: 1, otherChannelID: 1 } } })
+		eventChannel: { otherMessages, otherChannelID }
+	} = await db.findOne({ _id: '420803245758480405' }, { projection: { eventChannel: { otherMessages: 1, otherChannelID: 1 } } })
 
 	const channelObj = client.channels.cache.get(otherChannelID)
 
@@ -106,7 +106,7 @@ export const startupRemoveReactionPermissions = async (client, db) => {
 				{ _id: '420803245758480405' },
 				{
 					$pull: {
-						'merchChannel.otherMessages': { messageID: unwrappedMessageObj.messageID }
+						'eventChannel.otherMessages': { messageID: unwrappedMessageObj.messageID }
 					}
 				}
 			)
