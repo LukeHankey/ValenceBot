@@ -378,7 +378,11 @@ export const buttons = async (client, interaction, data, cache) => {
 								content: `Unable to timeout ${guildMember.displayName}. Missing Permissions.`
 							})
 						} else {
-							channels.errors.send(err)
+							channels.errors.send(err, {
+								button: interaction.customId,
+								user: interaction.user?.tag,
+								guild: interaction.guild?.name
+							})
 							interaction.reply({ content: 'Something went wrong.' })
 						}
 					}
