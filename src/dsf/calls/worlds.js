@@ -1,3 +1,12 @@
+import { loadRegistry, specialsForWorld, FALLBACK_REGISTRY } from './worldRegistry.js'
+
+/**
+ * Discord emoji for each special world key.
+ *
+ * The registry stores keys, not emoji: the same key names a PNG in the Alt1
+ * client and an emoji here, so adding worlds to an existing key needs no code
+ * change in either. A key with no entry here simply gets no reaction.
+ */
 const WorldReactions = {
 	legacy: '<:legacy:1023039209461788794>',
 	vip: '<:VIP_badge:1023040160927055932>',
@@ -12,67 +21,48 @@ const WorldReactions = {
 	leagues: '<:leagues:1417397814899642399>'
 }
 
-export const worlds = [
-	{
-		worlds: [18, 115, 137],
-		reason: 'legacy',
-		reaction: WorldReactions.legacy
-	},
-	{
-		worlds: [30],
-		reason: '2000+',
-		reaction: WorldReactions.twenty_plus
-	},
-	{
-		worlds: [48],
-		reason: '2600+',
-		reaction: WorldReactions.twenty_six_plus
-	},
-	{
-		worlds: [52],
-		reason: 'vip',
-		reaction: WorldReactions.vip
-	},
-	{
-		worlds: [66],
-		reason: 'eoc',
-		reaction: WorldReactions.eoc
-	},
-	{
-		worlds: [84],
-		reason: 'laggy',
-		reaction: WorldReactions.laggy
-	},
-	{
-		worlds: [86, 114],
-		reason: '1500',
-		reaction: WorldReactions.fifteen_plus
-	},
-	{
-		worlds: [96],
-		reason: 'quick chat',
-		reaction: WorldReactions.quick_chat
-	},
-	{
-		worlds: [116],
-		reason: 'dsf world',
-		reaction: WorldReactions.dsf
-	},
-	{
-		worlds: [69],
-		reason: 'Fun',
-		reaction: WorldReactions.sixty_nine
-	},
-	{
-		worlds: [
-			13, 211, 212, 213, 214, 215, 216, 217, 219, 226, 227, 228, 229, 238, 253, 254, 261, 262, 263, 264, 265, 266, 267, 268,
-			269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291,
-			292, 293, 294, 295, 296, 297, 298
-		],
-		reason: 'leagues',
-		reaction: WorldReactions.leagues
-	}
-]
+/** The emoji for a registry key, or undefined when the key has none. */
+export const emojiForKey = (key) => WorldReactions[key]
+
+/** The snowflake inside a custom emoji, or null for a unicode one. */
+export const customEmojiId = (reaction) => /^<a?:.*:(\d+)>$/.exec(reaction)?.[1] ?? null
+
+/** How long a loaded registry is reused before re-reading Mongo. */
+const REGISTRY_CACHE_MS = 60_000
+
+let cachedRegistry = FALLBACK_REGISTRY
+let cachedAt = 0
+
+/**
+ * The registry, re-read at most once a minute.
+ *
+ * Reactions run on every call message, so this avoids a database round trip
+ * per message while still picking up a `/worlds` change within a minute.
+ */
+export const getRegistry = async (collection) => {
+	if (!collection) return cachedRegistry
+	if (Date.now() - cachedAt < REGISTRY_CACHE_MS) return cachedRegistry
+
+	cachedRegistry = await loadRegistry(collection)
+	cachedAt = Date.now()
+	return cachedRegistry
+}
+
+/** Drop the cached registry so the next read hits Mongo. Used after a write. */
+export const invalidateRegistryCache = () => {
+	cachedAt = 0
+}
+
+/**
+ * Every emoji a world should be reacted with, in specials order.
+ *
+ * A world can belong to several enabled specials (leagues on the DSF world,
+ * say), so this returns a list rather than the first match it finds.
+ */
+export const reactionsForWorld = (registry, world) =>
+	specialsForWorld(registry, world)
+		.map((special) => WorldReactions[special.key])
+		.filter(Boolean)
 
 export const getWorldNumber = (message) => {
 	const match = /world\s+(\d{1,3})/i.exec(message) || /\w?\s?(\d{1,3})/.exec(message)
@@ -82,26 +72,27 @@ export const getWorldNumber = (message) => {
 
 export const worldReaction = async (message) => {
 	const worldNumber = getWorldNumber(message.content)
-	const worldFound = worlds.find((item) => item.worlds.includes(worldNumber))
+	if (worldNumber === null) return
 
-	if (worldFound) {
-		const isCustomEmoji = /^<:.*:\d.*>$/.test(worldFound.reaction)
+	const registry = await getRegistry(message.client?.database?.settings)
+
+	for (const reaction of reactionsForWorld(registry, worldNumber)) {
+		const isCustomEmoji = /^<:.*:(\d+)>$/.exec(reaction)
 
 		// DEV servers usually do not have the production custom emoji set.
-		if (process.env.NODE_ENV === 'DEV' && isCustomEmoji) return
+		if (process.env.NODE_ENV === 'DEV' && isCustomEmoji) continue
 
 		if (isCustomEmoji) {
-			const reactionString = worldFound.reaction
-
-			// Get the emoji Id from the cache
-			const reactionId = reactionString.split(':').at(-1).slice(0, -1)
-			const emoji = message.client.emojis.cache.get(reactionId)
+			// Custom emoji have to be resolved from the client cache.
+			const emoji = message.client.emojis.cache.get(isCustomEmoji[1])
 			if (!emoji) {
-				message.client.logger?.warn?.(`Emoji ${reactionId} not found in cache. Skipping reaction.`)
-				return
+				message.client.logger?.warn?.(`Emoji ${isCustomEmoji[1]} not found in cache. Skipping reaction.`)
+				continue
 			}
-			return await message.react(emoji)
+			await message.react(emoji)
+			continue
 		}
-		await message.react(worldFound.reaction)
+
+		await message.react(reaction)
 	}
 }
