@@ -26,7 +26,16 @@ const keyOption = (option) => option.setName('key').setDescription('The special 
 
 export default {
 	name: 'worlds',
-	description: ['Manage the shared world registry: member worlds and special world groups.'],
+	// One description per usage entry: help.js pairs them by index.
+	description: [
+		'Shows every special world group, whether it is enabled, and how many worlds it holds.',
+		'Shows which lists a world belongs to, whether it is a member world, and its icons.',
+		'Enables a group, adding its worlds to the member worlds every service polls.',
+		'Disables a group, removing its worlds from the member worlds.',
+		"Replaces a group's worlds outright. Use this for a new league season.",
+		'Adds worlds to a group, creating the group if the key is new.',
+		'Removes worlds from a group. Other groups keep their copies of those worlds.'
+	],
 	usage: [
 		'list',
 		'show <world>',
