@@ -18,63 +18,8 @@ const checkNum = (id = 0, greaterOrEqualTo = 1, lowerOrEqualTo = Infinity) => {
 		return true
 	}
 }
-const checkDate = (id = 0, greaterOrEqualTo = 0, lowerOrEqualTo = Infinity) => {
-	if (+id !== parseInt(id) || !(id >= greaterOrEqualTo) || !(id <= lowerOrEqualTo)) {
-		return false
-	} else {
-		return true
-	}
-}
-const msCalc = (d, h, m) => {
-	return d * 24 * 60 * 60 * 1000 + h * 60 * 60 * 1000 + m * 60 * 1000
-}
-const doubleDigits = (digit) => {
-	if (digit.length === 2) {
-		return digit
-	} else {
-		const zero = '0'
-		return zero.concat(digit)
-	}
-}
-const nextDay = (d) => {
-	const now = new Date()
-	now.setDate(now.getUTCDate() + ((d + (7 - now.getUTCDay())) % 7))
-	return now
-}
-const newDates = (days, hours, minutes, timer) => {
-	const time = this.msCalc(days, this.doubleDigits(hours), this.doubleDigits(minutes)) + timer
-	return new Date(time).toUTCString()
-}
 const capitalise = (str) => {
 	return str.charAt(0).toUpperCase() + str.slice(1)
-}
-const compressArray = (original) => {
-	const compressed = []
-	// make a copy of the input array
-	const copy = original.slice(0)
-
-	// first loop goes over every element
-	for (let i = 0; i < original.length; i++) {
-		let myCount = 0
-		// loop over every element in the copy and see if it's the same
-		for (let w = 0; w < copy.length; w++) {
-			if (original[i] === copy[w]) {
-				// increase amount of times duplicate is found
-				myCount++
-				// sets item to undefined
-				delete copy[w].id
-			}
-		}
-
-		if (myCount > 0) {
-			const a = {}
-			a.value = original[i]
-			a.count = myCount
-			compressed.push(a)
-		}
-	}
-
-	return compressed
 }
 const randomNum = () => {
 	return Math.round(Math.random() * 10000) + 1
@@ -144,33 +89,6 @@ const removeEvents = async (client, message, module, database, eventTag) => {
 		return channels.errors.send(err)
 	}
 }
-const csvJSON = (csv) => {
-	const lines = csv.split('\n')
-	const result = []
-	const headers = lines[0].split(',')
-
-	for (let i = 1; i < lines.length; i++) {
-		const obj = {}
-		const currentline = lines[i].split(',')
-
-		for (let j = 0; j < headers.length; j++) {
-			obj[headers[j]] = currentline[j]
-		}
-
-		result.push(obj)
-	}
-
-	// return result; // JavaScript object
-	return JSON.parse(JSON.stringify(result))
-}
-const renameKeys = (keysMap, object) =>
-	Object.keys(object).reduce(
-		(acc, key) => ({
-			...acc,
-			...{ [keysMap[key] || key]: object[key] }
-		}),
-		{}
-	)
 const paginate = (data, { author }, text, desc = '') => {
 	const embeds = []
 	let k = 24
@@ -264,24 +182,4 @@ const getRuneDate = () => {
 	return parseInt((now - initialRuneDate) / (1000 * 3600 * 24))
 }
 
-export {
-	nEmbed,
-	checkNum,
-	checkDate,
-	msCalc,
-	doubleDigits,
-	nextDay,
-	newDates,
-	capitalise,
-	compressArray,
-	randomNum,
-	removeEvents,
-	csvJSON,
-	renameKeys,
-	paginate,
-	paginateFollowUP,
-	splitMessage,
-	getRuneDate
-}
-
-export default newDates
+export { nEmbed, checkNum, capitalise, randomNum, removeEvents, paginate, paginateFollowUP, splitMessage, getRuneDate }

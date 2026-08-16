@@ -1,6 +1,6 @@
 import { callRegexFor, foreignWorldRegexFor } from './callRegex.js'
 import { getRegistry } from './worlds.js'
-import { checkMemberRole, messageInArray, worldAlreadyCalled } from './merchFunctions.js'
+import { checkMemberRole, messageInArray, worldAlreadyCalled } from './callFilters.js'
 import { buttonFunctions } from './callCount.js'
 
 export const addCount = async (client, message, alt1Count = false) => {

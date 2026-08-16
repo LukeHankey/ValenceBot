@@ -1,4 +1,3 @@
-import { getEventChannel } from './settingsAccess.js'
 import timers from 'timers/promises'
 import { logger } from '../../logging.js'
 import { TEN_MINUTES, ALL_EVENTS_REGEX } from './constants.js'
@@ -82,34 +81,5 @@ export const removeReactPermissions = async (message, allMessages) => {
 		if (moreThanOnce.length) return
 		logger.info(`Removing ${message.author.username} (${message.author.id}) from channel overrides.`)
 		channelPermissions.delete()
-	}
-}
-
-export const startupRemoveReactionPermissions = async (client, db) => {
-	const { otherMessages, otherChannelID, found } = await getEventChannel(db, '420803245758480405')
-	if (!found) return
-
-	const channelObj = client.channels.cache.get(otherChannelID)
-
-	for (const messageObj of otherMessages) {
-		const unwrappedMessageObj = (({ messageID, userID, time, author }) => ({ messageID, userID, time, author }))(messageObj)
-		try {
-			const message = await channelObj.messages.fetch(unwrappedMessageObj.messageID)
-			const timePassed = Date.now() - unwrappedMessageObj.time
-			if (timePassed < TEN_MINUTES) {
-				await timers.setTimeout(TEN_MINUTES - (Date.now() - unwrappedMessageObj.time))
-			}
-			await skullTimer(client, message, 'other')
-		} catch (err) {
-			console.log(err)
-			await db.updateOne(
-				{ _id: '420803245758480405' },
-				{
-					$pull: {
-						'eventChannel.otherMessages': { messageID: unwrappedMessageObj.messageID }
-					}
-				}
-			)
-		}
 	}
 }
