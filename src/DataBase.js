@@ -53,17 +53,9 @@ export class MongoDataBase {
 		const getChannelsFromDB = async () => {
 			const client = await import('./index.js')
 			const {
-				channels: { vis, errors, logs }
-			} = await this.settings.findOne({ _id: 'Globals' }, { projection: { channels: { vis: 1, errors: 1, logs: 1 } } })
+				channels: { errors, logs }
+			} = await this.settings.findOne({ _id: 'Globals' }, { projection: { channels: { errors: 1, logs: 1 } } })
 			const channels = {
-				vis: {
-					id: vis,
-					// content could be both embed or content
-					send: function (content) {
-						const channel = client.default.channels.cache.get(this.id)
-						return channel.send(content)
-					}
-				},
 				errors: {
 					id: errors,
 					// `context` is optional: pass whatever the call site knows, e.g.
