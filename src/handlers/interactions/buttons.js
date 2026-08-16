@@ -16,7 +16,7 @@ import camelCase from 'camelcase'
 import { logger } from '../../logging.js'
 import { getWorldNumber } from '../../dsf/index.js'
 
-class ButtonWarning {
+export class ButtonWarning {
 	UNLOGGED_NAMES = ['Clear Buttons', 'Foreign World']
 
 	/**
@@ -78,7 +78,11 @@ class ButtonWarning {
 	 * @returns {string} The button name.
 	 */
 	async addCount(userId) {
-		if (this.name in this.UNLOGGED_NAMES) {
+		// `in` on an array tests indices, not values, so this guard never fired
+		// and every "Foreign World" press was logged against the profile of the
+		// person who made the bad call — 13 profiles carry a foreignWorld count
+		// that was never meant to exist.
+		if (this.UNLOGGED_NAMES.includes(this.name)) {
 			return
 		}
 
@@ -151,13 +155,16 @@ class ButtonWarning {
 	_preprocess(data) {
 		for (const [k, v] of Object.entries(data)) {
 			if (typeof v !== 'string') continue
-			if (k === 'content') {
-				data[k] = v.split(':')[1].trim()
-			} else {
-				// eslint-disable-next-line no-unused-vars
-				const [_, ...rest] = v.split(': ')
-				data[k] = rest.join(':')
-			}
+
+			// Everything after the first colon, whatever the field. Three things
+			// were wrong with handling `content` separately:
+			//   "Content: sm 172 1:30"   became "sm 172 1"      — split(':')[1]
+			//   "no colon here"          threw on .trim()       — [1] is undefined
+			//   "Reason: spam: repeated" became "spam:repeated" — join(':') ate the space
+			// A call carrying a time is the common case, and it was the one being
+			// truncated in the record of what someone actually said.
+			const separator = v.indexOf(':')
+			data[k] = separator === -1 ? v.trim() : v.slice(separator + 1).trim()
 		}
 		return data
 	}
