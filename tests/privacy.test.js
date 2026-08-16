@@ -74,3 +74,15 @@ test('opting back in clears the flag rather than leaving it false', async () => 
 	const [write] = db.calls.filter((call) => call.op === 'updateOne')
 	assert.equal(OPT_OUT_FIELD in (write.update.$unset ?? {}), true)
 })
+
+test('a record created by opting out has the shape the rest of the bot expects', async () => {
+	// The weekly potential-scouters sweep reads `assigned` without checking, so
+	// a document holding only a user id and a flag would throw there.
+	const db = collection()
+
+	await setOptOut(db, '1', true)
+
+	const [write] = db.calls.filter((call) => call.op === 'updateOne')
+	assert.deepEqual(write.update.$setOnInsert.assigned, [])
+	assert.equal(write.update.$setOnInsert.active, 0)
+})

@@ -174,7 +174,7 @@ class ScouterCheck {
 			(filter.alt1?.otherCount ?? 0) +
 			(filter.alt1First?.otherCount ?? 0)
 
-		if (totalCount >= num && filter.lastTimestamp - filter.firstTimestamp >= time && filter.assigned.length === 0) {
+		if (totalCount >= num && filter.lastTimestamp - filter.firstTimestamp >= time && (filter.assigned ?? []).length === 0) {
 			return filter
 		}
 	}
@@ -190,9 +190,12 @@ class ScouterCheck {
 
 		if (totalCount >= num) {
 			if (filter.lastTimestamp - filter.firstTimestamp >= time) {
-				if (filter.assigned.length > 0 && filter.assigned.length < 2) {
+				// A document may carry no `assigned` list at all: /privacy optout
+				// upserts a record for someone who has never reported an event.
+				const assigned = filter.assigned ?? []
+				if (assigned.length > 0 && assigned.length < 2) {
 					return filter
-				} else if (filter.assigned.length >= 2) {
+				} else if (assigned.length >= 2) {
 					return undefined
 				}
 			}

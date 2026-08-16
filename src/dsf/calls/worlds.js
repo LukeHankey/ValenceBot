@@ -64,10 +64,28 @@ export const reactionsForWorld = (registry, world) =>
 		.map((special) => WorldReactions[special.key])
 		.filter(Boolean)
 
+/**
+ * The world number a message is about, or null.
+ *
+ * The lookarounds matter: `\d{1,3}` on its own happily takes the first three
+ * digits of a longer run, so "sm 1720" read as world 172 and "world 1720" as
+ * world 172 — a typo silently became a real world. Worlds are 1-999, so a run
+ * of four or more digits is not a world at all.
+ *
+ * This takes the first number in the message, which for a call ("wp 84") is
+ * the world. It does not try to work out which number is meant in a sentence:
+ * whether a message is a call at all is decided by the regexes in
+ * callRegex.js, built from the registry.
+ */
 export const getWorldNumber = (message) => {
-	const match = /world\s+(\d{1,3})/i.exec(message) || /\w?\s?(\d{1,3})/.exec(message)
+	const match = /world\s+(?<!\d)(\d{1,3})(?!\d)/i.exec(message) || /(?<!\d)(\d{1,3})(?!\d)/.exec(message)
+	if (!match) return null
 
-	return match ? parseInt(match[1]) : null
+	const world = parseInt(match[1])
+
+	// World 0 does not exist. Returning it was harmless only because callers
+	// test falsiness, which quietly treats it as "no world".
+	return world > 0 ? world : null
 }
 
 export const worldReaction = async (message) => {
