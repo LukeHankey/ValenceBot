@@ -1,4 +1,5 @@
 /* eslint-disable no-async-promise-executor */
+import { partitionByMembership } from './dsf/scouts/membership.js'
 import { EmbedBuilder } from 'discord.js'
 import Color from './colors.js'
 import { nEmbed, paginate, paginateFollowUP } from './functions.js'
@@ -199,7 +200,19 @@ class ScouterCheck {
 	}
 
 	async _checkForScouts() {
-		const scouts = await this.potentialScouts
+		const candidates = await this.potentialScouts
+
+		// Only list people who are still here. A profile outlives its member, so
+		// without this the same departed users are proposed for the role every
+		// single week. checkRolesAdded/checkRolesRemoved already fetch members
+		// and skip them; this brings the embed in line.
+		const guild = await this.guild
+		const { present } = await partitionByMembership(
+			guild,
+			candidates.map((doc) => doc.userID)
+		)
+		const scouts = candidates.filter((doc) => present.has(doc.userID))
+
 		const fields = []
 
 		for (const values of scouts) {

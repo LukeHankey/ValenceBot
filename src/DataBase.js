@@ -87,9 +87,11 @@ export class MongoDataBase {
 				},
 				dsfOwners: {
 					id: '781145730710503434',
-					send: function (content) {
+					// Takes `rest` like logs.send: without it a caller passing
+					// { files: [...] } would have its attachment silently dropped.
+					send: function (content, rest) {
 						const channel = client.default.channels.cache.get(this.id)
-						return channel.send(content)
+						return channel.send({ content, ...rest })
 					}
 				}
 			}
