@@ -1,5 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 
+import { getWorldNumber } from './worlds.js'
+
 const foreignWorldFlags = {
 	'🇩🇪': [102, 121, 260],
 	'🇫🇷': [118, 299],
@@ -41,19 +43,24 @@ export const buttonFunctions = (userN, content, foreignWorldRegex = null) => {
 			.setEmoji({ name: '📌' })
 	])
 
-	let foreignWorldNumber = 0
-	if (foreignWorldRegex && foreignWorldRegex.test(content)) {
-		foreignWorldNumber = parseInt(/\d{2,3}/.exec(foreignWorldRegex.exec(content)[0]))
-	}
+	// getWorldNumber rather than a second parser: it handles one-digit worlds,
+	// which /\d{2,3}/ could not, and refuses runs of four or more digits.
+	const foreignWorldNumber = foreignWorldRegex?.test(content) ? getWorldNumber(content) : null
+	const flag = Object.keys(foreignWorldFlags).find((key) => foreignWorldFlags[key].includes(foreignWorldNumber))
+
+	const foreignWorldButton = new ButtonBuilder()
+		.setCustomId('Foreign World')
+		.setLabel('Foreign World')
+		.setStyle(ButtonStyle.Success)
+
+	// Only worlds in one of the flag lists get an emoji. Setting it regardless
+	// serialised as `emoji: {}` for every other world — an empty object that
+	// Discord rejects, so the spam report for a call on, say, world 300 could
+	// not be sent at all.
+	if (flag) foreignWorldButton.setEmoji({ name: flag })
 
 	const buttonSelectionForeignWorlds = new ActionRowBuilder().addComponents([
-		new ButtonBuilder()
-			.setCustomId('Foreign World')
-			.setLabel('Foreign World')
-			.setStyle(ButtonStyle.Success)
-			.setEmoji({
-				name: Object.keys(foreignWorldFlags).find((key) => foreignWorldFlags[key].includes(foreignWorldNumber))
-			}),
+		foreignWorldButton,
 		new ButtonBuilder()
 			.setCustomId('Clear Buttons')
 			.setLabel('Clear Buttons')
