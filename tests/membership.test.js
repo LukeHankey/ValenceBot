@@ -301,3 +301,46 @@ test('entries without the flag are treated as general', () => {
 	assert.deepEqual(owners, [])
 	assert.equal(general.length, 1)
 })
+
+// A production sweep logged "Members didn't arrive in time." for a batch of
+// 100. Discord times the request out under load; the whole batch was then
+// written off as unknown, so those profiles went unchecked for six hours.
+const flakyGuild = (presentIds, { failFirstBatchesOfSize = 100 } = {}) => {
+	const attempts = []
+	return {
+		attempts,
+		members: {
+			fetch: async ({ user }) => {
+				attempts.push(user.length)
+				if (user.length >= failFirstBatchesOfSize) {
+					const error = new Error("Members didn't arrive in time.")
+					throw error
+				}
+				const found = user.filter((id) => presentIds.includes(id))
+				return new Map(found.map((id) => [id, { id }]))
+			}
+		}
+	}
+}
+
+test('a timed-out batch is retried in smaller pieces', async () => {
+	const ids = Array.from({ length: 100 }, (_, i) => String(i))
+	const guild = flakyGuild(ids.filter((id) => Number(id) % 2 === 0))
+
+	const { present, departed } = await partitionByMembership(guild, ids)
+
+	// The batch of 100 fails, then the halves succeed.
+	assert.equal(guild.attempts[0], 100)
+	assert.equal(guild.attempts.length > 1, true)
+	assert.equal(present.size, 50)
+	assert.equal(departed.length, 50)
+})
+
+test('a batch that fails however small it gets is left unknown', async () => {
+	const guild = flakyGuild(['1'], { failFirstBatchesOfSize: 1 })
+
+	const { present, departed } = await partitionByMembership(guild, ['1', '2'])
+
+	assert.equal(present.size, 0)
+	assert.deepEqual(departed, [])
+})

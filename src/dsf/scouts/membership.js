@@ -35,6 +35,36 @@ export const chunkIds = (ids, size = MAX_IDS_PER_FETCH) => {
  * profiles inactive because Discord rate limited us would lose data that is
  * expensive to reconstruct.
  */
+/**
+ * Fetch one batch, halving it and retrying when Discord does not answer.
+ *
+ * A production sweep logged "Members didn't arrive in time." for a batch of
+ * 100: the gateway does not always deliver a full batch under load. Writing the
+ * whole batch off as unknown left those profiles unchecked until the next run,
+ * so a batch that fails is split and retried instead. A single id that still
+ * fails is genuinely unknown.
+ */
+const fetchBatch = async (guild, batch, present) => {
+	try {
+		const members = await guild.members.fetch({ user: batch })
+		for (const id of members.keys()) present.add(id)
+		return []
+	} catch (error) {
+		if (batch.length === 1) {
+			logger.error(`Could not check guild membership for ${batch[0]}: ${error.message}`)
+			return batch
+		}
+
+		logger.warn(`Membership check failed for ${batch.length} users (${error.message}); retrying in smaller batches.`)
+		const half = Math.ceil(batch.length / 2)
+		const failed = []
+		for (const smaller of chunkIds(batch, half)) {
+			failed.push(...(await fetchBatch(guild, smaller, present)))
+		}
+		return failed
+	}
+}
+
 export const partitionByMembership = async (guild, ids) => {
 	const present = new Set()
 	if (!ids.length) return { present, departed: [] }
@@ -42,13 +72,7 @@ export const partitionByMembership = async (guild, ids) => {
 	const unknown = new Set()
 
 	for (const batch of chunkIds(ids)) {
-		try {
-			const members = await guild.members.fetch({ user: batch })
-			for (const id of members.keys()) present.add(id)
-		} catch (error) {
-			logger.error(`Could not check guild membership for ${batch.length} users: ${error.message}`)
-			for (const id of batch) unknown.add(id)
-		}
+		for (const id of await fetchBatch(guild, batch, present)) unknown.add(id)
 	}
 
 	const departed = ids.filter((id) => !present.has(id) && !unknown.has(id))

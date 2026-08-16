@@ -11,32 +11,29 @@ const checkMemberRole = async (user, message) => {
 	}
 }
 
+/**
+ * Whether the message contains any of the guild's disallowed words.
+ *
+ * `disallowedWords` is optional in the settings document, so a guild that has
+ * never set one projects as undefined. That threw on every call message.
+ */
 const messageInArray = (msg, array) => {
-	return array.some((value) => msg.includes(value))
+	return (array ?? []).some((value) => msg.includes(value))
 }
+
+/**
+ * Whether this world has already been called in the messages on record.
+ *
+ * getWorldNumber returns null for content with no world in it rather than
+ * throwing, so a message with no world used to match every stored message that
+ * also had none — null === null — and the call was reported as a duplicate.
+ * No world means nothing to compare, so nothing matches.
+ */
 const worldAlreadyCalled = (message, messages) => {
-	let worldNumber
-	try {
-		worldNumber = getWorldNumber(message.content)
-	} catch (err) {
-		// If there is no number in the content
-		return false
-	}
+	const worldNumber = getWorldNumber(message.content)
+	if (worldNumber === null) return false
 
-	const result = messages.filter((obj) => {
-		const numFromDb = getWorldNumber(obj.content)
-		if (numFromDb === worldNumber) {
-			return obj
-		}
-		return null
-	})
-
-	// If already called, result.length > 0. Return false to delete the message.
-	if (result.some((el) => el !== null)) {
-		return true
-	} else {
-		return false
-	}
+	return (messages ?? []).some((obj) => getWorldNumber(obj.content) === worldNumber)
 }
 
 export { checkMemberRole, messageInArray, worldAlreadyCalled }

@@ -2,6 +2,7 @@ import { callRegexFor, foreignWorldRegexFor } from './callRegex.js'
 import { getRegistry } from './worlds.js'
 import { checkMemberRole, messageInArray, worldAlreadyCalled } from './callFilters.js'
 import { buttonFunctions } from './callCount.js'
+import { buildSpamReport } from './spamReport.js'
 
 export const addCount = async (client, message, alt1Count = false) => {
 	const channels = await client.database.channels
@@ -50,11 +51,15 @@ export const addCount = async (client, message, alt1Count = false) => {
 		const callCheckPassed = callCheckPass(message, disallowedWords, callDataBaseMessages, callRegex)
 
 		const spamOptions = {
-			content: `\`\`\`diff\n+ Spam Message ${message.id} - (User has ${
-				callerProfile ? '' : 'not '
-			}posted before)\n\n- User ID: <@!${callerMember.id}>\n- User: ${callerMember.user.username}\n- Content: ${
-				message.content
-			}\n- Timestamp: ${timestamp}\n- Channel: ${callChannel.name}\`\`\``,
+			content: buildSpamReport({
+				messageId: message.id,
+				userId: callerMember.id,
+				username: callerMember.user.username,
+				content: message.content,
+				timestamp,
+				channelName: callChannel?.name,
+				hasPostedBefore: Boolean(callerProfile)
+			}),
 			components: foreignWorldRegex.test(message.content)
 				? [buttonSelectionForeignWorlds]
 				: worldAlreadyCalled(message, callDataBaseMessages) || alt1Count

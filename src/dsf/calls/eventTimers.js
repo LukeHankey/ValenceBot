@@ -4,9 +4,39 @@ import axios from 'axios'
 
 export const activeTimers = new Map()
 
+const apiUrl = () => (process.env.NODE_ENV === 'DEV' ? 'http://localhost:8000' : 'https://api.dsfeventtracker.com')
+
+/**
+ * The parts of the request that edits an event's webhook message.
+ *
+ * The API key belongs in the headers, which is axios' *third* argument. It used
+ * to be passed inside the second — the request body — so it was serialised into
+ * the JSON and never sent as a header, and require_bot_api_key rejected every
+ * edit.
+ */
+export const buildWebhookEditRequest = (messageId, content) => ({
+	url: `${apiUrl()}/events/webhook/${messageId}`,
+	body: { content },
+	config: {
+		headers: {
+			'Content-Type': 'application/json',
+			'X-API-Key': process.env.BOT_API_KEY
+		}
+	}
+})
+
+/**
+ * Whether a duration can be timed.
+ *
+ * mistyEventTimer returns null for content it cannot parse. `null < 0` is
+ * false, so a null slipped past the old check and `delay(null)` resolved
+ * straight away, skulling the event as soon as it was called.
+ */
+export const isValidDuration = (durationMs) => Number.isFinite(durationMs) && durationMs >= 0
+
 export async function startEventTimer({ client, message, eventId, channelName, durationMs, database }) {
 	// Validate inputs
-	if (!eventId || !message || !client || durationMs < 0) {
+	if (!eventId || !message || !client || !isValidDuration(durationMs)) {
 		console.error('❌ Invalid parameters for startEventTimer:', { eventId, messageId: message?.id, durationMs })
 		return
 	}
@@ -85,14 +115,8 @@ export async function overrideEventTimer(eventId, newDurationMs, mistyUpdate = f
 		try {
 			const content = message.content
 			const updatedContent = updateMessageTimestamp(content, newDurationMs)
-			const API_URL = process.env.NODE_ENV === 'DEV' ? 'http://localhost:8000' : 'https://api.dsfeventtracker.com'
-			const editWebhookResponse = await axios.patch(`${API_URL}/events/webhook/${message.id}`, {
-				headers: {
-					'Content-Type': 'application/json',
-					'X-API-Key': process.env.BOT_API_KEY
-				},
-				content: updatedContent
-			})
+			const { url, body, config } = buildWebhookEditRequest(message.id, updatedContent)
+			const editWebhookResponse = await axios.patch(url, body, config)
 			if (editWebhookResponse.status !== 200) {
 				console.log('Did not receive the correct response')
 			} else {

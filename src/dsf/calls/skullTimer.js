@@ -53,23 +53,38 @@ export const skullTimer = async (client, message, channel = 'other') => {
 	}
 }
 
+/**
+ * How long is left of the event a call is about, in milliseconds.
+ *
+ * Returns null for anything that is not a call. The webhook posts events in its
+ * own format ("Jellyfish - World 84 | <t:...:R>"), which ALL_EVENTS_REGEX does
+ * not match; reading .groups off that miss gave undefined, and Object.entries
+ * threw on it. The throw escaped dsf() and abandoned the rest of the message
+ * handling — no reaction, no database entry, no timer.
+ */
 export const mistyEventTimer = (content) => {
 	const timeSplit = /(?<time>\d{1,2}:\d{1,2})/
 	const time = timeSplit.exec(content)?.groups.time
 
 	// Get the type of event and corresponding event duration
 	const callMatch = ALL_EVENTS_REGEX.exec(content)?.groups
+	if (!callMatch) return null
+
 	const maxEventTime = eventTimes[Object.entries(callMatch).find(([key, val]) => val !== undefined)?.[0]]
+	if (maxEventTime === undefined) return null
 
 	// All time values are less than 10 minutes so the format will always be X:XX
 	if (time === undefined || time.length > 4) {
 		return maxEventTime
-	} else {
-		const [minute, seconds] = time.split(':')
-		const totalMilliseconds = (Number(minute) * 60 + Number(seconds)) * 1_000
-
-		return maxEventTime - totalMilliseconds
 	}
+
+	const [minute, seconds] = time.split(':')
+	const totalMilliseconds = (Number(minute) * 60 + Number(seconds)) * 1_000
+
+	// A call reporting more elapsed time than the event lasts has already
+	// finished. A negative duration is rejected by startEventTimer, which would
+	// leave the event unskulled; zero ends it now, which is what was meant.
+	return Math.max(maxEventTime - totalMilliseconds, 0)
 }
 
 export const removeReactPermissions = async (message, allMessages) => {

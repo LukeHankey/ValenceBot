@@ -76,11 +76,12 @@ export default async (client) => {
 	const { otherChannelID, otherMessages } = await getEventChannel(db, guildId)
 
 	for (const eventMsg of otherMessages) {
-		let durationMs = 0
-		try {
-			durationMs = mistyEventTimer(eventMsg.content)
-		} catch (err) {
-			channels.errors.send(err)
+		// null means the stored content is not a call, so there is no duration to
+		// restore. Skip it rather than treating it as zero, which would skull an
+		// event on startup that may still be running.
+		const durationMs = mistyEventTimer(eventMsg.content)
+		if (durationMs === null) {
+			logger.warn(`Skipping restore for ${eventMsg.messageID}: "${eventMsg.content}" is not a call.`)
 			continue
 		}
 
