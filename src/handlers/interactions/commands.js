@@ -1,5 +1,6 @@
 import { Permissions } from '../../classes.js'
 import { MessageFlags } from 'discord.js'
+import { recordCommandUse } from '../../dsf/commandUsage.js'
 
 export const commands = async (client, interaction, data) => {
 	const db = client.database.settings
@@ -36,6 +37,8 @@ export const commands = async (client, interaction, data) => {
 			return interaction.reply({ content: 'Please use the bot commands channel.', flags: MessageFlags.Ephemeral })
 		} else {
 			await command.slash(client, interaction, perms)
+			// After the run, so a command that throws is not counted as used.
+			await recordCommandUse(db, interaction.commandName)
 		}
 	} catch (error) {
 		channels.errors.send(error, {

@@ -4,6 +4,7 @@ import { Permissions } from '../../classes.js'
 import { EmbedBuilder, ChannelType } from 'discord.js'
 import { vEvents } from '../../valence/valenceEvents.js'
 import dsf from '../../dsf/calls/main.js'
+import { recordCommandUse } from '../../dsf/commandUsage.js'
 
 export default async (client, message) => {
 	const channels = await client.database.channels
@@ -55,77 +56,6 @@ export default async (client, message) => {
 		switch (message.channel.id) {
 			case otherChannelID:
 				return await dsf(client, message)
-		}
-	}
-
-	// Daily Vis Wax
-	if (message.guild.id === '668330890790699079' && message.channel.id === '732014449182900247') {
-		if (message.reference?.guildId === '388042222710554624') {
-			// Then msg is from Vis wax server.
-			client.logger.info(`Vis Wax Combinations: ${message.content}`)
-			const contentArr = message.content.split('\n')
-			await db.updateOne(
-				{ _id: 'Globals' },
-				{
-					$set: {
-						vis: null,
-						visContent: contentArr,
-						visTime: message.createdAt
-					}
-				}
-			)
-			const { visCache, visContent } = await db.findOne({ _id: 'Globals' }, { projection: { visCache: 1, visContent: 1 } })
-			const visChannels = new Set()
-			const guilds = new Set()
-			visCache.forEach((obj) => {
-				visChannels.add(obj.channel)
-				guilds.add(obj.guild)
-			})
-
-			const content = visContent.flat()
-			const slotOneIndex = content.findIndex((el) => el.match(/slot/i))
-			const newContent = content.slice(slotOneIndex).map((el) => {
-				const match = el.match(/<:[\w_]{1,14}:\d{1,19}>/g)
-				if (match) {
-					el = el.trim().slice(match[0].length)
-					return `\t${el}`
-				}
-				return el
-			})
-
-			for (const guild of guilds) {
-				const g = client.guilds.cache.get(guild)
-				if (!g) continue
-				for (const channel of visChannels) {
-					const c = g.channels.cache.get(channel)
-					if (!c) continue
-
-					const usersWithSameChannel = visCache
-						.map((o) => {
-							if (o.channel !== c.id) return null
-							return `<@!${o.user}>`
-						})
-						.filter(Boolean)
-					try {
-						await c.send({
-							content: `${usersWithSameChannel.join(
-								', '
-							)}\nSource: Vis Wax Server | <https://discord.gg/wv9Ecs4>\n${newContent.join('\n')}`
-						})
-					} catch (err) {
-						channels.errors.send(err)
-					}
-				}
-			}
-
-			await db.updateOne(
-				{ _id: 'Globals' },
-				{
-					$set: {
-						visCache: []
-					}
-				}
-			)
 		}
 	}
 
@@ -182,14 +112,7 @@ export default async (client, message) => {
 				? command.run(client, message, args, perms)
 				: message.channel.send({ content: 'You cannot use that command in this server.' })
 
-			const lookupCommand = `commands.${commandName}`
-			const dbData = await db.updateOne(
-				{ _id: 'Globals', [lookupCommand]: { $exists: 1 } },
-				{ $inc: { [lookupCommand]: 1 } }
-			)
-			if (!dbData.matchedCount) {
-				await db.updateOne({ _id: 'Globals' }, { $set: { [lookupCommand]: 1 } })
-			}
+			await recordCommandUse(db, commandName)
 		} catch (error) {
 			channels.errors.send(error)
 		}
