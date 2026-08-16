@@ -149,7 +149,11 @@ export default class Ticket {
 
 	async create() {
 		let newChannel
-		if (this.preference === 'Threads' && this._checkThreadsPreference()) {
+		// No boost check: Discord removed the Tier 2 requirement for private
+		// threads in 2022, so every server can create them. Requiring it meant
+		// unboosted servers that asked for Threads silently got Channels, plus a
+		// DM telling them about a restriction that no longer exists.
+		if (this.preference === 'Threads') {
 			newChannel = await this.interaction.channel.threads.create({
 				name: `${this.isApplication() ? 'Application' : 'Ticket'} by ${this.interaction.member.displayName}`,
 				autoArchiveDuration: 1440,
@@ -158,27 +162,6 @@ export default class Ticket {
 				reason: !this.isApplication() ? 'Ticket for report.' : 'Application'
 			})
 		} else {
-			if (this.preference === 'Threads') {
-				const starter = await this.interaction.guild.members.fetch(this.currentTicket.ticketStarter)
-
-				try {
-					starter.send({
-						content: `Hi ${starter.displayName}, your chosen preference for tickets in ${this.currentTicket.guildName} - <#${this.currentTicket.channelId}> was \`Threads\`. However, your server does not meet the required boost level (Tier 2) for private threads so I have switched you over to \`Channels\`. If this changes in the future, you can just re-run the ticket command again.`
-					})
-				} catch (e) {
-					const channels = await this.database.channels
-					channels.errors.send(e)
-				}
-
-				await this.database.collection.findOneAndUpdate(
-					{ _id: this.interaction.guild.id, 'ticket.messageId': this.interaction.message.id },
-					{
-						$set: {
-							'ticket.$.prefer': 'Channels'
-						}
-					}
-				)
-			}
 			const permissionOverwrites = [
 				// Ticket requester
 				{
@@ -216,10 +199,6 @@ export default class Ticket {
 		// Brings in the user and all Staff
 		await this._sendInitialResponse(newChannel, this.interaction.member.id)
 		return newChannel
-	}
-
-	_checkThreadsPreference() {
-		return !![2, 3].includes(this.interaction.guild.premiumTier)
 	}
 
 	async _sendInitialResponse(channel, memberId) {

@@ -110,3 +110,91 @@ test('a channel in another category does not count', async () => {
 
 	assert.equal(await ticket.hasOpenTicket(), null)
 })
+
+// create() picks a private thread or a channel purely from the stored
+// preference. It used to also require guild boost Tier 2 for threads, a
+// Discord restriction removed in 2022 — so an unboosted server that asked for
+// Threads silently got Channels, its setting was rewritten, and the owner was
+// DMed about a limit that no longer exists.
+const creatingTicket = (prefer, premiumTier) => {
+	const created = { threads: [], channels: [] }
+	const sent = { content: null, pinned: false }
+
+	const message = {
+		id: TICKET_MESSAGE,
+		author: { id: 'bot-1' },
+		content: '',
+		pin: async () => {
+			sent.pinned = true
+		}
+	}
+	const newChannel = {
+		send: async ({ content }) => {
+			sent.content = content
+			return message
+		}
+	}
+
+	const interaction = {
+		message,
+		member: { id: 'user-1', displayName: 'someone' },
+		guild: {
+			id: 'guild-1',
+			premiumTier,
+			channels: {
+				create: async (opts) => {
+					created.channels.push(opts)
+					return newChannel
+				}
+			}
+		},
+		channel: {
+			parentId: 'parent-1',
+			threads: {
+				create: async (opts) => {
+					created.threads.push(opts)
+					return newChannel
+				}
+			}
+		}
+	}
+
+	const ticket = new Ticket(interaction, ticketData({ prefer }), {})
+	return { ticket, created, sent }
+}
+
+test('an unboosted server still gets a private thread when it asked for one', async () => {
+	const { ticket, created } = creatingTicket('Threads', 0)
+
+	await ticket.create()
+
+	assert.equal(created.threads.length, 1)
+	assert.equal(created.channels.length, 0)
+	assert.equal(created.threads[0].type, ChannelType.PrivateThread)
+})
+
+test('a boosted server gets a private thread too', async () => {
+	const { ticket, created } = creatingTicket('Threads', 2)
+
+	await ticket.create()
+
+	assert.equal(created.threads.length, 1)
+})
+
+test('a server preferring channels gets a channel', async () => {
+	const { ticket, created } = creatingTicket('Channels', 0)
+
+	await ticket.create()
+
+	assert.equal(created.channels.length, 1)
+	assert.equal(created.threads.length, 0)
+})
+
+test('the opening message is pinned so the ticket can be found again', async () => {
+	const { ticket, sent } = creatingTicket('Channels', 0)
+
+	await ticket.create()
+
+	assert.match(sent.content, /will be with you shortly/)
+	assert.equal(sent.pinned, true)
+})
