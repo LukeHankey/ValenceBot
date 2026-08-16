@@ -93,11 +93,11 @@ export default async (client, message) => {
 			bot: bot.botUser(),
 			admin:
 				message.member.roles.cache.has(aR.memberRole()[0]) ||
-				message.member.roles.cache.has(aR.roleID) ||
+				message.member.roles.cache.has(aR.roleId) ||
 				message.author.id === message.guild.ownerId,
 			mod:
 				message.member.roles.cache.has(mR.memberRole()[0]) ||
-				message.member.roles.cache.has(mR.roleID) ||
+				message.member.roles.cache.has(mR.roleId) ||
 				mR.modPlusRoles() >= mR._role.rawPosition ||
 				message.author.id === message.guild.ownerId,
 			errorO: owner.ownerError(),

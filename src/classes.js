@@ -16,11 +16,22 @@ class Permissions {
 		})
 	}
 
-	// eslint-disable-next-line getter-return
+	/**
+	 * The configured role id, or undefined when there is not one.
+	 *
+	 * Every `?.` here is load-bearing, and the constructor reads this, so a
+	 * throw takes out permission checking for every command in the guild:
+	 *
+	 * - `db?.roles[name]` guarded the document but not the field, so a settings
+	 *   document with no `roles` threw.
+	 * - `.match(...)[0]` threw on a stored value with no id in it.
+	 *
+	 * The range is 17-20 digits rather than 18-19: snowflakes have grown past
+	 * 19 digits, and an id that does not match reads as no role configured,
+	 * which quietly denies permission to everyone.
+	 */
 	get roleId() {
-		if (this.db?.roles[this.name]) {
-			return this.db?.roles[this.name].match(/\d{18,19}/)[0]
-		}
+		return this.db?.roles?.[this.name]?.match(/\d{17,20}/)?.[0]
 	}
 
 	memberRole() {
