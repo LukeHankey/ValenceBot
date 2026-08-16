@@ -37,7 +37,9 @@ export default {
 		'Shows your current choice and what the bot stores.'
 	],
 	usage: ['optout', 'optin', 'status'],
-	guildSpecific: 'all',
+	// The registration script filters on guildSpecific.includes(guildId), so the
+	// string 'all' would match nothing and the command would never publish.
+	guildSpecific: ['668330890790699079', '420803245758480405'],
 	permissionLevel: 'Everyone',
 	data: new SlashCommandBuilder()
 		.setName('privacy')
