@@ -45,6 +45,12 @@ export const isOptedOut = async (scoutTracker, userID) => {
 export const setOptOut = async (scoutTracker, userID, optOut) => {
 	const update = optOut ? { $set: { [OPT_OUT_FIELD]: true } } : { $unset: { [OPT_OUT_FIELD]: '' } }
 
+	// Someone can opt out before ever reporting an event, so this may create the
+	// document. Give it the shape the rest of the bot expects: the weekly
+	// potential-scouters sweep reads `assigned` without checking, and a record
+	// holding only a user id and a flag would have thrown there.
+	update.$setOnInsert = { count: 0, otherCount: 0, assigned: [], active: 0 }
+
 	await scoutTracker.updateOne({ userID }, update, { upsert: true })
 	logger.info(`User ${userID} has opted ${optOut ? 'out of' : 'back in to'} message content tracking.`)
 }

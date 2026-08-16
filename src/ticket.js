@@ -1,5 +1,18 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType } from 'discord.js'
 
+/**
+ * Strip a name to letters and digits for comparison.
+ *
+ * Discord slugifies channel names: "Ticket by Praise Lord Helix" is created as
+ * `ticket-by-praise-lord-helix`, and punctuation is dropped entirely, so
+ * "berx/0 enrage" becomes `berx0-enrage`. Matching a channel name against a
+ * raw display name therefore failed for anyone whose name was not a single
+ * plain word, and they could open a second ticket while one was still open.
+ * Thread names keep their spacing, so this only bit the Channels preference —
+ * comparing compacted forms works for both.
+ */
+const compact = (name) => name.toLowerCase().replace(/[^a-z0-9]/g, '')
+
 export default class Ticket {
 	constructor(interaction, ticketData, database, category = null) {
 		this.interaction = interaction
@@ -33,7 +46,7 @@ export default class Ticket {
 		const guild = this.interaction.guild
 		const memberId = this.member.id
 		const preference = this.preference
-		const userDisplayName = this.member.displayName.toLowerCase()
+		const userDisplayName = compact(this.member.displayName)
 		const ticketPrefix = this.isApplication() ? 'application' : 'ticket'
 
 		// Search based on preference
@@ -46,7 +59,7 @@ export default class Ticket {
 			const matchingThreads = threads.filter((thread) => {
 				if (thread.type !== ChannelType.PrivateThread || thread.archived || thread.locked) return false
 
-				const threadName = thread.name.toLowerCase()
+				const threadName = compact(thread.name)
 				return threadName.includes(ticketPrefix) && threadName.includes(userDisplayName)
 			})
 
@@ -88,7 +101,7 @@ export default class Ticket {
 			const matchingChannels = guild.channels.cache.filter((channel) => {
 				if (channel.type !== ChannelType.GuildText || channel.parentId !== parentId) return false
 
-				const channelName = channel.name.toLowerCase()
+				const channelName = compact(channel.name)
 				return channelName.includes(ticketPrefix) && channelName.includes(userDisplayName)
 			})
 
