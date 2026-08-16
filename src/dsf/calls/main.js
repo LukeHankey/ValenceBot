@@ -1,6 +1,7 @@
 import { getEventChannel } from './settingsAccess.js'
 import { mistyEventTimer, addCount, addMessageToDB, getWorldNumber, worldReaction, WORLD_FULL_MESSAGE } from '../index.js'
 import { startEventTimer } from './eventTimers.js'
+import { isOptedOut } from '../privacy.js'
 import { v4 as uuid } from 'uuid'
 import axios from 'axios'
 
@@ -14,6 +15,15 @@ const dsf = async (client, message) => {
 	if (message.author.bot && !comeViaWebhook) return
 
 	if (message.channel.id !== otherChannelID) return
+
+	// Someone who has opted out is ignored here entirely: before the content is
+	// read for a world number, before it is stored, and before it is counted.
+	// Storing the call text is what makes duplicate detection and the expiry
+	// skull work, so there is no halfway position.
+	if (!comeViaWebhook && (await isOptedOut(client.database.scoutTracker, message.author.id))) {
+		client.logger.info(`Ignoring a call from ${message.author.id}, who has opted out of message content tracking.`)
+		return
+	}
 	const channelName = 'other'
 	const callDataBaseMessages = otherMessages
 
