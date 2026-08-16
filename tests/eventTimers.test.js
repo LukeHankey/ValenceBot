@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { buildWebhookEditRequest, isValidDuration } from '../src/dsf/calls/eventTimers.js'
+import { buildWebhookEditRequest, expiryEdit, isValidDuration } from '../src/dsf/calls/eventTimers.js'
 
 test('the webhook edit sends the API key as a header', () => {
 	// The key used to be passed inside the request body, where axios sends it
@@ -46,4 +46,38 @@ test('a duration that is not a number is rejected', () => {
 	assert.equal(isValidDuration(null), false)
 	assert.equal(isValidDuration(undefined), false)
 	assert.equal(isValidDuration(NaN), false)
+})
+
+// The webhook posts "JF105 (Called by 5Ftx) | Ends <t:1786886538:R>". Discord
+// renders :R> relatively, so once the event is over it reads "3 minutes ago"
+// and keeps counting up. Nothing edited it on natural expiry: the strip existed
+// but was only reachable through overrideEventTimer, which fires on a Misty
+// update or a mod delete, never on an event simply running out.
+const webhookMessage = (content, username = 'Alt1 Tracker') => ({ id: '99', content, author: { username } })
+
+const CALL = 'JF105 (Called by 5Ftx) | Ends <t:1786886538:R>'
+
+test('an expired webhook call has its timer stripped', () => {
+	const edit = expiryEdit(webhookMessage(CALL))
+
+	assert.equal(edit.body.content, 'JF105 (Called by 5Ftx)')
+})
+
+test('the edit targets the message that expired', () => {
+	const edit = expiryEdit(webhookMessage(CALL))
+
+	assert.match(edit.url, /\/events\/webhook\/99$/)
+})
+
+test('a call from a player is left alone', () => {
+	// Only the webhook's own messages can be edited through the API.
+	assert.equal(expiryEdit(webhookMessage(CALL, 'someone')), null)
+})
+
+test('a webhook message with no timer needs no edit', () => {
+	assert.equal(expiryEdit(webhookMessage('JF105 (Called by 5Ftx)')), null)
+})
+
+test('a message with no author is left alone', () => {
+	assert.equal(expiryEdit({ id: '99', content: CALL }), null)
 })

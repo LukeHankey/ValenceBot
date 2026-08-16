@@ -34,6 +34,46 @@ export const buildWebhookEditRequest = (messageId, content) => ({
  */
 export const isValidDuration = (durationMs) => Number.isFinite(durationMs) && durationMs >= 0
 
+/** The webhook posts under this name; only its own messages can be edited. */
+const WEBHOOK_AUTHOR = 'Alt1 Tracker'
+
+/**
+ * The edit that removes the countdown from a call that has just expired, or
+ * null when there is nothing to do.
+ *
+ * The webhook posts "JF105 (Called by 5Ftx) | Ends <t:1786886538:R>". Discord
+ * renders `:R>` relatively, so once the event is over the message reads "3
+ * minutes ago" and keeps counting up for as long as it exists. Stripping the
+ * timer was already written, but only reachable through overrideEventTimer —
+ * a Misty update or a mod delete — so an event that simply ran out kept its
+ * stale countdown next to the skull.
+ */
+export const expiryEdit = (message) => {
+	if (message?.author?.username !== WEBHOOK_AUTHOR) return null
+
+	const content = updateMessageTimestamp(message.content, 0)
+	if (content === message.content) return null
+
+	return buildWebhookEditRequest(message.id, content)
+}
+
+/**
+ * Remove the countdown from an expired call.
+ *
+ * Never throws: the event has ended either way, and a failed tidy-up should not
+ * take out skulling or the reaction permissions cleanup.
+ */
+const stripExpiredTimer = async (message) => {
+	const edit = expiryEdit(message)
+	if (!edit) return
+
+	try {
+		await axios.patch(edit.url, edit.body, edit.config)
+	} catch (error) {
+		console.error('Failed to strip the expired timer:', error.response?.data?.detail || error.message)
+	}
+}
+
 export async function startEventTimer({ client, message, eventId, channelName, durationMs, database }) {
 	// Validate inputs
 	if (!eventId || !message || !client || !isValidDuration(durationMs)) {
@@ -50,6 +90,7 @@ export async function startEventTimer({ client, message, eventId, channelName, d
 			try {
 				await skullTimer(client, message, channelName)
 				await removeReactPermissions(message, database)
+				await stripExpiredTimer(message)
 			} catch (err) {
 				console.error(`[${eventId}] ❌ Error in timer completion:`, err)
 			} finally {
@@ -147,6 +188,7 @@ export async function overrideEventTimer(eventId, newDurationMs, mistyUpdate = f
 			try {
 				await skullTimer(current.client, current.message, current.channelName)
 				await removeReactPermissions(current.message, current.database)
+				await stripExpiredTimer(current.message)
 			} catch (err) {
 				console.error(`[${eventId}] ❌ Error in updated timer completion:`, err)
 			} finally {
