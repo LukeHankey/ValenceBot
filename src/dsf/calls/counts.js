@@ -1,4 +1,5 @@
-import { OTHER_CALLS_REGEX, FOREIGN_WORLD_REGEX } from './constants.js'
+import { callRegexFor, foreignWorldRegexFor } from './callRegex.js'
+import { getRegistry } from './worlds.js'
 import { checkMemberRole, messageInArray, worldAlreadyCalled } from './merchFunctions.js'
 import { buttonFunctions } from './callCount.js'
 
@@ -22,7 +23,10 @@ export const addCount = async (client, message, alt1Count = false) => {
 			)) ?? {}
 
 		const callChannel = client.channels.cache.get(otherChannelID)
-		const callRegex = OTHER_CALLS_REGEX
+		// Built from the registry, so a new league season needs no code change.
+		const registry = await getRegistry(db)
+		const callRegex = callRegexFor(registry)
+		const foreignWorldRegex = foreignWorldRegexFor(registry)
 		const callDataBaseMessages = otherMessages
 
 		const dsfServerErrorChannel = await client.channels.cache.get('794608385106509824') // bot-logs-admin
@@ -33,7 +37,7 @@ export const addCount = async (client, message, alt1Count = false) => {
 		const timestamp = message.createdAt.toString().split(' ').slice(0, 5).join(' ')
 
 		const [buttonSelection, buttonSelectionExtra, buttonSelectionForeignWorlds, buttonSelectionAlreadyCalled] =
-			buttonFunctions(callerMember, message.content)
+			buttonFunctions(callerMember, message.content, foreignWorldRegex)
 
 		const callCheckPass = (message, includedWords, dataBaseMessages, regexCheck) => {
 			return (
@@ -51,7 +55,7 @@ export const addCount = async (client, message, alt1Count = false) => {
 			}posted before)\n\n- User ID: <@!${callerMember.id}>\n- User: ${callerMember.user.username}\n- Content: ${
 				message.content
 			}\n- Timestamp: ${timestamp}\n- Channel: ${callChannel.name}\`\`\``,
-			components: FOREIGN_WORLD_REGEX.test(message.content)
+			components: foreignWorldRegex.test(message.content)
 				? [buttonSelectionForeignWorlds]
 				: worldAlreadyCalled(message, callDataBaseMessages) || alt1Count
 					? [buttonSelectionAlreadyCalled]
