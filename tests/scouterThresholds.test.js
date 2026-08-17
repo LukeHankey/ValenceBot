@@ -82,6 +82,29 @@ test('someone with no roles is not a verified scouter candidate', () => {
 	assert.equal(checker()._checkVerifiedScouts(none, 10, MONTH), undefined)
 })
 
+// Stripping the role on inactivity clears `assigned`, and an ex-scouter's counts
+// are well past the threshold — so without this they come straight back as a
+// "potential scouter" in the next weekly embed.
+test('an inactive profile is not proposed for the scouter role', () => {
+	const stripped = profile({ otherCount: 50, active: 0 })
+
+	assert.equal(checker()._checkScouts(stripped, 10, MONTH), undefined)
+})
+
+test('an inactive profile is not proposed for the verified scouter role', () => {
+	const stripped = profile({ otherCount: 50, assigned: ['Scouter'], active: 0 })
+
+	assert.equal(checker()._checkVerifiedScouts(stripped, 10, MONTH), undefined)
+})
+
+// Only an explicit 0 excludes anyone: documents predating the flag have no
+// `active` field, and they are not inactive.
+test('a profile predating the active flag still qualifies', () => {
+	const legacy = profile({ otherCount: 50 })
+
+	assert.notEqual(checker()._checkScouts(legacy, 10, MONTH), undefined)
+})
+
 test('a profile missing its timestamps is skipped rather than crashing', () => {
 	const undated = { count: 50, assigned: [] }
 

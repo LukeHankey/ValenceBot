@@ -1,7 +1,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { addedRoles, removedRoles } from '../src/dsf/scouts/scouters.js'
+import { setTimeout as delay } from 'node:timers/promises'
+
+import { addedRoles, removedRoles, syncAssignedRoles } from '../src/dsf/scouts/scouters.js'
 
 const checker = (roleName, members, roleId = 'role-1') => ({
 	roleName,
@@ -75,6 +77,48 @@ test('becoming a Verified Scouter restores the counts held in oldScout', async (
 	assert.equal(restore.update.$set.otherCount, 5)
 	assert.equal(restore.update.$set.firstTimestamp, 100)
 	assert.deepEqual(restore.update.$unset, { oldScout: 1 })
+})
+
+// `[scout, vScout].forEach(async ...)` in the cron resolved immediately, so the
+// work sequenced after it read the profiles while these writes were still in
+// flight. Same bug as the one inside addedRoles (#264), one level up.
+const slowChecker = (roleName, members, roleId) => ({
+	roleName,
+	role: Promise.resolve({ id: roleId }),
+	checkRolesAdded: async () => {
+		await delay(5)
+		return members
+	},
+	checkRolesRemoved: async () => {
+		await delay(5)
+		return members
+	}
+})
+
+test('every role is reconciled before the sweep resolves', async () => {
+	const db = tracker()
+
+	await syncAssignedRoles(
+		[slowChecker('Scouter', [{ id: '1' }], 'role-1'), slowChecker('Verified Scouter', [{ id: '1' }], 'role-2')],
+		db
+	)
+
+	// Two roles, each written once by addedRoles and once by removedRoles.
+	assert.equal(db.writes.length, 4)
+})
+
+test('a role is fully reconciled before the next one starts', async () => {
+	const db = tracker()
+
+	await syncAssignedRoles(
+		[slowChecker('Scouter', [{ id: '1' }], 'role-1'), slowChecker('Verified Scouter', [{ id: '1' }], 'role-2')],
+		db
+	)
+
+	assert.deepEqual(
+		db.writes.map((write) => write.update.$addToSet?.assigned ?? write.update.$pull?.assigned),
+		['role-1', 'role-1', 'role-2', 'role-2']
+	)
 })
 
 test('a profile with no oldScout is left alone', async () => {
