@@ -176,7 +176,13 @@ class ScouterCheck {
 		})
 	}
 
+	// An inactive profile has had its roles stripped, so `assigned` is empty
+	// again while the counts stay well past the threshold. Without this, the
+	// weekly embed proposes every ex-scouter the inactivity sweep just removed.
+	// Only an explicit 0 counts: documents predating the flag have no `active`.
 	_checkScouts(filter, num, time) {
+		if (filter.active === 0) return undefined
+
 		const totalCount =
 			(filter.count ?? 0) +
 			(filter.otherCount ?? 0) +
@@ -191,6 +197,8 @@ class ScouterCheck {
 	}
 
 	_checkVerifiedScouts(filter, num, time) {
+		if (filter.active === 0) return undefined
+
 		const totalCount =
 			(filter.count ?? 0) +
 			(filter.otherCount ?? 0) +

@@ -85,4 +85,21 @@ const removedRoles = async (name, scoutTracker) => {
 	)
 }
 
-export { scout, vScout, classVars, addedRoles, removedRoles }
+/**
+ * Reconcile every role's assignments in turn.
+ *
+ * The cron ran this as `[scout, vScout].forEach(async ...)`, which starts both
+ * and resolves straight away — so the rank update sequenced after it read the
+ * profiles while these writes were still in flight, and a failure inside became
+ * an unhandled rejection. Same bug as the one inside addedRoles, one level up.
+ *
+ * Sequential, not Promise.all: both roles write to the same profiles.
+ */
+const syncAssignedRoles = async (roles, scoutTracker) => {
+	for (const role of roles) {
+		await addedRoles(role, scoutTracker)
+		await removedRoles(role, scoutTracker)
+	}
+}
+
+export { scout, vScout, classVars, addedRoles, removedRoles, syncAssignedRoles }

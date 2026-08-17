@@ -44,10 +44,10 @@ export const chunkIds = (ids, size = MAX_IDS_PER_FETCH) => {
  * so a batch that fails is split and retried instead. A single id that still
  * fails is genuinely unknown.
  */
-const fetchBatch = async (guild, batch, present) => {
+const fetchBatch = async (guild, batch, members) => {
 	try {
-		const members = await guild.members.fetch({ user: batch })
-		for (const id of members.keys()) present.add(id)
+		const fetched = await guild.members.fetch({ user: batch })
+		for (const [id, member] of fetched) members.set(id, member)
 		return []
 	} catch (error) {
 		if (batch.length === 1) {
@@ -59,24 +59,30 @@ const fetchBatch = async (guild, batch, present) => {
 		const half = Math.ceil(batch.length / 2)
 		const failed = []
 		for (const smaller of chunkIds(batch, half)) {
-			failed.push(...(await fetchBatch(guild, smaller, present)))
+			failed.push(...(await fetchBatch(guild, smaller, members)))
 		}
 		return failed
 	}
 }
 
+/**
+ * The fetched members come back alongside the partition: removing a role needs
+ * the member object, and re-fetching one per candidate would repeat work this
+ * has already done.
+ */
 export const partitionByMembership = async (guild, ids) => {
-	const present = new Set()
-	if (!ids.length) return { present, departed: [] }
+	const members = new Map()
+	if (!ids.length) return { present: new Set(), departed: [], members }
 
 	const unknown = new Set()
 
 	for (const batch of chunkIds(ids)) {
-		for (const id of await fetchBatch(guild, batch, present)) unknown.add(id)
+		for (const id of await fetchBatch(guild, batch, members)) unknown.add(id)
 	}
 
+	const present = new Set(members.keys())
 	const departed = ids.filter((id) => !present.has(id) && !unknown.has(id))
-	return { present, departed }
+	return { present, departed, members }
 }
 
 /**
@@ -164,6 +170,114 @@ export const planReportDelivery = (chunks) => {
 	if (chunks.length <= MAX_REPORT_MESSAGES) return { mode: 'messages', chunks }
 
 	return { mode: 'file', content: chunks.join('\n'), chunkCount: chunks.length }
+}
+
+/**
+ * Profiles whose Discord roles no longer match their inactive status.
+ *
+ * Marking a profile inactive never touched the roles, so someone could sit at
+ * `active: 0` while still holding Scouter. This covers the profiles this run
+ * marked and the backlog left by earlier runs in one rule.
+ *
+ * Only an explicit 0 qualifies. selectInactiveProfiles can afford to read a
+ * missing `active` field as not-active because the cost is skipping a profile;
+ * here the cost is taking the roles off a working scouter whose document
+ * predates the flag.
+ */
+export const selectStrippable = (profiles) =>
+	profiles.filter((profile) => profile.active === 0 && (profile.assigned ?? []).length > 0)
+
+/**
+ * Roles the bot can actually take off someone.
+ *
+ * Discord checks the position of the *role being changed*, not the target's own
+ * highest role, so the only questions are whether the role sits below the bot
+ * and whether an integration owns it. Filtering once per run turns what would
+ * be a 403 per member into a single warning.
+ */
+export const strippableRoles = (roles) =>
+	roles.filter((role) => {
+		if (role.managed) {
+			logger.warn(`Cannot remove ${role.name}: the role is managed by an integration.`)
+			return false
+		}
+
+		if (!role.editable) {
+			logger.warn(`Cannot remove ${role.name}: the role sits above the bot's highest role.`)
+			return false
+		}
+
+		return true
+	})
+
+const UNKNOWN_MEMBER = 10007
+const MISSING_PERMISSIONS = 50013
+
+const STRIP_REASON = 'Scouter profile marked inactive'
+
+/**
+ * Take the scouter roles off members whose profile is inactive.
+ *
+ * Only what Discord actually accepted is pulled from `assigned`, so a removal
+ * that fails leaves the database agreeing with the guild rather than claiming a
+ * role is gone when it is not.
+ *
+ * Nobody who is absent is written to. A departed member's roles left with them,
+ * and `assigned` is the record of what they held if they return; a member whose
+ * fetch failed is unknown rather than gone, the same way partitionByMembership
+ * treats them.
+ */
+export const stripInactiveRoles = async ({ guild, roles, profiles, scoutTracker }) => {
+	const candidates = selectStrippable(profiles)
+	if (!candidates.length) return []
+
+	const manageable = strippableRoles(roles)
+	if (!manageable.length) return []
+
+	const { members } = await partitionByMembership(
+		guild,
+		candidates.map((profile) => profile.userID)
+	)
+
+	const entries = []
+
+	for (const profile of candidates) {
+		const member = members.get(profile.userID)
+		if (!member) continue
+
+		const removed = []
+
+		for (const role of manageable) {
+			if (!member.roles.cache.has(role.id)) continue
+
+			try {
+				await member.roles.remove(role, STRIP_REASON)
+				removed.push(role)
+			} catch (error) {
+				if (error.code === UNKNOWN_MEMBER) {
+					logger.warn(`${profile.userID} left before their roles could be removed.`)
+					break
+				}
+
+				const detail = error.code === MISSING_PERMISSIONS ? 'missing permissions' : error.message
+				logger.error(`Could not remove ${role.name} from ${profile.userID}: ${detail}`)
+			}
+		}
+
+		if (!removed.length) continue
+
+		await scoutTracker.updateOne({ userID: profile.userID }, { $pullAll: { assigned: removed.map((role) => role.id) } })
+
+		entries.push({
+			author: profile.author,
+			userID: profile.userID,
+			reason: `role(s) removed: ${removed.map((role) => role.name).join(', ')}`,
+			isScouter: true
+		})
+	}
+
+	if (entries.length) logger.info(`Removed scouter roles from ${entries.length} inactive profile(s)`)
+	return entries
 }
 
 /**

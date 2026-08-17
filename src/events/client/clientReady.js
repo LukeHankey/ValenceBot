@@ -7,7 +7,8 @@ import {
 	partitionByMembership,
 	planReportDelivery,
 	selectInactiveProfiles,
-	splitReportAudience
+	splitReportAudience,
+	stripInactiveRoles
 } from '../../dsf/scouts/membership.js'
 import { getEventChannel } from '../../dsf/calls/settingsAccess.js'
 import { updateAllMemberDataBaseRankRoles } from '../../alt1.js'
@@ -15,8 +16,7 @@ import {
 	scout,
 	vScout,
 	classVars,
-	addedRoles,
-	removedRoles,
+	syncAssignedRoles,
 	mistyEventTimer,
 	skullTimer,
 	removeReactPermissions
@@ -140,10 +140,7 @@ export default async (client) => {
 	cron.schedule('0 */6 * * *', async () => {
 		const scoutTracker = client.database.scoutTracker
 		await initScouterDataBase(client, db)
-		;[scout, vScout].forEach(async (role) => {
-			await addedRoles(role, scoutTracker)
-			await removedRoles(role, scoutTracker)
-		})
+		await syncAssignedRoles([scout, vScout], scoutTracker)
 		await updateAllMemberDataBaseRankRoles(client, scout)
 
 		// Reconcile profiles against who is actually in the guild, and against who
@@ -171,6 +168,18 @@ export default async (client) => {
 				)
 			}
 
+			// Marking a profile inactive left the Discord role in place, so an
+			// inactive scouter kept scouter permissions until someone noticed.
+			// This runs after the marking so it covers what this run marked and
+			// the backlog every run before it left behind. Anyone who has left
+			// the guild is skipped: their roles went with them.
+			const stripped = await stripInactiveRoles({
+				guild: await scout.guild,
+				roles: [await scout.role, await vScout.role].filter(Boolean),
+				profiles: await scoutTracker.find({ active: 0, 'assigned.0': { $exists: true } }).toArray(),
+				scoutTracker
+			})
+
 			const entries = [
 				...departed.map((userID) => ({
 					author: byId.get(userID)?.author ?? 'unknown',
@@ -183,7 +192,8 @@ export default async (client) => {
 					userID: profile.userID,
 					reason: `no activity since ${new Date(profile.lastTimestamp).toISOString().slice(0, 10)}`,
 					isScouter: (profile.assigned ?? []).length > 0
-				}))
+				})),
+				...stripped
 			]
 
 			// Scouters going inactive is a staffing matter, so they go to the

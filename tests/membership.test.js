@@ -8,7 +8,10 @@ import {
 	selectInactiveProfiles,
 	buildInactiveReport,
 	planReportDelivery,
-	splitReportAudience
+	splitReportAudience,
+	selectStrippable,
+	strippableRoles,
+	stripInactiveRoles
 } from '../src/dsf/scouts/membership.js'
 
 const guildWith = (presentIds) => ({
@@ -343,4 +346,260 @@ test('a batch that fails however small it gets is left unknown', async () => {
 
 	assert.equal(present.size, 0)
 	assert.deepEqual(departed, [])
+})
+
+// Stripping a role needs the member object, not just the id. Returning what was
+// already fetched keeps it to one round of requests rather than a second fetch
+// per candidate.
+test('partitionByMembership hands back the members it fetched', async () => {
+	const { members } = await partitionByMembership(guildWith(['1', '3']), ['1', '2', '3'])
+
+	assert.deepEqual([...members.keys()].sort(), ['1', '3'])
+	assert.equal(members.get('1').id, '1')
+})
+
+test('selectStrippable picks inactive profiles that still hold a role', () => {
+	const selected = selectStrippable([
+		{ userID: '1', active: 0, assigned: ['r1'] },
+		{ userID: '2', active: 1, assigned: ['r1'] },
+		{ userID: '3', active: 0, assigned: [] }
+	])
+
+	assert.deepEqual(
+		selected.map((profile) => profile.userID),
+		['1']
+	)
+})
+
+// /privacy optout upserts profiles with no assigned list at all.
+test('selectStrippable tolerates a profile with no assigned list', () => {
+	assert.deepEqual(selectStrippable([{ userID: '1', active: 0 }]), [])
+})
+
+// Documents predating the flag have no `active` field. Reading that as inactive
+// would take the roles off scouters who are still working.
+test('selectStrippable leaves a profile predating the active flag alone', () => {
+	assert.deepEqual(selectStrippable([{ userID: '1', assigned: ['r1'] }]), [])
+})
+
+test('strippableRoles keeps roles the bot sits above', () => {
+	const scouter = { id: 'r1', name: 'Scouter', editable: true, managed: false }
+
+	assert.deepEqual(strippableRoles([scouter]), [scouter])
+})
+
+// Every removal would 403. Dropping the role once beats N failed requests.
+test('strippableRoles drops a role positioned above the bot', () => {
+	assert.deepEqual(strippableRoles([{ id: 'r1', name: 'Scouter', editable: false, managed: false }]), [])
+})
+
+test('strippableRoles drops a role Discord manages', () => {
+	assert.deepEqual(strippableRoles([{ id: 'r1', name: 'Booster', editable: true, managed: true }]), [])
+})
+
+const scouterRole = { id: 'r1', name: 'Scouter', editable: true, managed: false }
+const verifiedRole = { id: 'r2', name: 'Verified Scouter', editable: true, managed: false }
+
+const discordError = (code) => Object.assign(new Error(`Discord ${code}`), { code })
+
+const memberWith = (id, roleIds, { failWith = {} } = {}) => {
+	const held = new Set(roleIds)
+	const member = { id, removed: [], reasons: [] }
+	member.roles = {
+		cache: { has: (roleId) => held.has(roleId) },
+		remove: async (role, reason) => {
+			if (failWith[role.id]) throw failWith[role.id]
+			held.delete(role.id)
+			member.removed.push(role.id)
+			member.reasons.push(reason)
+			return member
+		}
+	}
+	return member
+}
+
+const guildOf = (members) => {
+	const guild = { fetches: 0 }
+	guild.members = {
+		fetch: async ({ user }) => {
+			guild.fetches += 1
+			return new Map(user.filter((id) => members[id]).map((id) => [id, members[id]]))
+		}
+	}
+	return guild
+}
+
+const tracker = () => {
+	const writes = []
+	return { writes, updateOne: async (filter, update) => writes.push({ filter, update }) }
+}
+
+test('stripInactiveRoles removes every strippable role the member still holds', async () => {
+	const member = memberWith('1', ['r1', 'r2'])
+	const scoutTracker = tracker()
+
+	await stripInactiveRoles({
+		guild: guildOf({ 1: member }),
+		roles: [scouterRole, verifiedRole],
+		profiles: [{ userID: '1', author: 'a', active: 0, assigned: ['r1', 'r2'] }],
+		scoutTracker
+	})
+
+	assert.deepEqual(member.removed, ['r1', 'r2'])
+})
+
+test('the removal carries a reason for the audit log', async () => {
+	const member = memberWith('1', ['r1'])
+
+	await stripInactiveRoles({
+		guild: guildOf({ 1: member }),
+		roles: [scouterRole],
+		profiles: [{ userID: '1', author: 'a', active: 0, assigned: ['r1'] }],
+		scoutTracker: tracker()
+	})
+
+	assert.equal(typeof member.reasons[0], 'string')
+	assert.match(member.reasons[0], /inactive/i)
+})
+
+test('assigned only loses the roles that came off in Discord', async () => {
+	const member = memberWith('1', ['r1', 'r2'], { failWith: { r2: discordError(50013) } })
+	const scoutTracker = tracker()
+
+	await stripInactiveRoles({
+		guild: guildOf({ 1: member }),
+		roles: [scouterRole, verifiedRole],
+		profiles: [{ userID: '1', author: 'a', active: 0, assigned: ['r1', 'r2'] }],
+		scoutTracker
+	})
+
+	assert.equal(scoutTracker.writes.length, 1)
+	assert.deepEqual(scoutTracker.writes[0].filter, { userID: '1' })
+	assert.deepEqual(scoutTracker.writes[0].update.$pullAll.assigned, ['r1'])
+})
+
+// The role is already gone with them, and `assigned` is the record of what they
+// held if they ever come back.
+test('someone who has left the guild is left completely alone', async () => {
+	const scoutTracker = tracker()
+
+	const entries = await stripInactiveRoles({
+		guild: guildOf({}),
+		roles: [scouterRole],
+		profiles: [{ userID: '1', author: 'a', active: 0, assigned: ['r1'] }],
+		scoutTracker
+	})
+
+	assert.deepEqual(scoutTracker.writes, [])
+	assert.deepEqual(entries, [])
+})
+
+// partitionByMembership calls a failed fetch unknown rather than departed, so a
+// rate limit must not be read as "they left" here either.
+test('a member whose fetch failed is skipped rather than stripped', async () => {
+	const scoutTracker = tracker()
+	const guild = {
+		members: {
+			fetch: async () => {
+				throw new Error('rate limited')
+			}
+		}
+	}
+
+	const entries = await stripInactiveRoles({
+		guild,
+		roles: [scouterRole],
+		profiles: [{ userID: '1', author: 'a', active: 0, assigned: ['r1'] }],
+		scoutTracker
+	})
+
+	assert.deepEqual(scoutTracker.writes, [])
+	assert.deepEqual(entries, [])
+})
+
+test('a member who left between the fetch and the removal is not written back', async () => {
+	const member = memberWith('1', ['r1'], { failWith: { r1: discordError(10007) } })
+	const scoutTracker = tracker()
+
+	await stripInactiveRoles({
+		guild: guildOf({ 1: member }),
+		roles: [scouterRole],
+		profiles: [{ userID: '1', author: 'a', active: 0, assigned: ['r1'] }],
+		scoutTracker
+	})
+
+	assert.deepEqual(scoutTracker.writes, [])
+})
+
+test('a role the member no longer holds is not removed again', async () => {
+	const member = memberWith('1', [])
+	const scoutTracker = tracker()
+
+	await stripInactiveRoles({
+		guild: guildOf({ 1: member }),
+		roles: [scouterRole],
+		profiles: [{ userID: '1', author: 'a', active: 0, assigned: ['r1'] }],
+		scoutTracker
+	})
+
+	assert.deepEqual(member.removed, [])
+	assert.deepEqual(scoutTracker.writes, [])
+})
+
+test('a role the bot cannot manage never reaches Discord', async () => {
+	const member = memberWith('1', ['r1'])
+
+	await stripInactiveRoles({
+		guild: guildOf({ 1: member }),
+		roles: [{ ...scouterRole, editable: false }],
+		profiles: [{ userID: '1', author: 'a', active: 0, assigned: ['r1'] }],
+		scoutTracker: tracker()
+	})
+
+	assert.deepEqual(member.removed, [])
+})
+
+test('nothing to strip means Discord is not asked at all', async () => {
+	const guild = guildOf({})
+
+	const entries = await stripInactiveRoles({
+		guild,
+		roles: [scouterRole],
+		profiles: [{ userID: '1', author: 'a', active: 1, assigned: ['r1'] }],
+		scoutTracker: tracker()
+	})
+
+	assert.equal(guild.fetches, 0)
+	assert.deepEqual(entries, [])
+})
+
+test('an entry names the roles that were taken off', async () => {
+	const entries = await stripInactiveRoles({
+		guild: guildOf({ 1: memberWith('1', ['r1', 'r2']) }),
+		roles: [scouterRole, verifiedRole],
+		profiles: [{ userID: '1', author: 'a', active: 0, assigned: ['r1', 'r2'] }],
+		scoutTracker: tracker()
+	})
+
+	assert.equal(entries.length, 1)
+	assert.equal(entries[0].userID, '1')
+	assert.equal(entries[0].author, 'a')
+	assert.match(entries[0].reason, /Scouter/)
+	assert.match(entries[0].reason, /Verified Scouter/)
+})
+
+// Losing a scouter role is a staffing matter, so the report goes to the owners
+// channel the same way an inactive scouter does.
+test('stripped members are reported to the owners channel', async () => {
+	const entries = await stripInactiveRoles({
+		guild: guildOf({ 1: memberWith('1', ['r1']) }),
+		roles: [scouterRole],
+		profiles: [{ userID: '1', author: 'a', active: 0, assigned: ['r1'] }],
+		scoutTracker: tracker()
+	})
+
+	const { owners, general } = splitReportAudience(entries)
+
+	assert.equal(owners.length, 1)
+	assert.deepEqual(general, [])
 })
