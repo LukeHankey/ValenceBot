@@ -1,5 +1,5 @@
 # Stage 1: Base build with dependencies
-FROM node:22.14.0 AS base
+FROM node:26.13.1 AS base
 
 WORKDIR /project
 
@@ -13,7 +13,7 @@ RUN npm install --omit=dev
 COPY . .
 
 # Stage 2: Production container
-FROM node:22.14.0 AS production
+FROM node:26.13.1 AS production
 
 WORKDIR /project
 
