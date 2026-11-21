@@ -1,70 +1,44 @@
-/* eslint-disable no-useless-escape */
-import { checkNum } from '../functions.js'
+import { SlashCommandBuilder } from '@discordjs/builders'
+import { MessageFlags, PermissionFlagsBits } from 'discord.js'
+
+/** Why `executor` may not kick `target`, or null if they may. */
+export const kickRefusal = ({ guild, executor, target }) => {
+	if (!guild.members.me.permissions.has(PermissionFlagsBits.KickMembers)) {
+		return 'I do not have permission to kick members from this server. I need the Kick Members permission.'
+	}
+	if (target.id === guild.ownerId) return 'You cannot kick the server owner.'
+	if (target.id === executor.id) return 'You cannot kick yourself.'
+	if (target.roles.highest.rawPosition > executor.roles.highest.rawPosition) {
+		return 'You cannot kick someone with a higher role than you.'
+	}
+	if (!target.kickable) return 'I cannot kick that member: their highest role is above mine.'
+	return null
+}
 
 export default {
 	name: 'kick',
-	description: ['Kicks a member from the server by ID or mention.'],
-	usage: ['ID/@mention'],
+	description: ['Kicks a member from the server.'],
+	usage: ['<member> [reason]'],
 	guildSpecific: 'all',
 	permissionLevel: 'Mod',
-	run: async (client, message, args, perms) => {
-		const channels = await client.database.channels
-		if (!perms.mod) return message.channel.send(perms.errorM)
+	data: new SlashCommandBuilder()
+		.setName('kick')
+		.setDescription('Kick a member from the server.')
+		.addUserOption((o) => o.setName('member').setDescription('Member to kick (mention or ID)').setRequired(true))
+		.addStringOption((o) => o.setName('reason').setDescription('Shown in the audit log')),
+	slash: async (client, interaction, perms) => {
+		if (!perms.mod) return interaction.reply({ ...perms.errorM, flags: MessageFlags.Ephemeral })
 
-		const memberToKick = args[0]
-		const executor = message.member.nickname || message.author.username
-		let [...reason] = args.slice(1)
-		reason.splice(0, 0, `Kicked by: ${executor} - `)
-		reason = reason.join(' ')
-		const mentionedMember = message.mentions.members.first()
-		const authorHighestRole = message.member.roles.highest.rawPosition
-
-		const permissionCheck = () => {
-			// Owner check
-			if (message.guild.ownerId === memberToKick) return true
-			// Kicking self by ID
-			if (message.author.id === memberToKick) return true
-			// Kicking owner by Tag
-			if (mentionedMember && message.guild.ownerId === mentionedMember.id) return true
-			// Kicking self by Tag
-			if (mentionedMember && message.author.id === mentionedMember.id) return true
+		const target = interaction.options.getMember('member')
+		if (!target) {
+			return interaction.reply({ content: 'That user is not a member of this server.', flags: MessageFlags.Ephemeral })
 		}
 
-		if (!message.guild.members.me.permissions.has('KickMembers')) {
-			return message.channel.send({
-				content: 'I do not have permission to kick members from this server. I require `KICK_MEMBERS` permission.'
-			})
-		}
-		if (permissionCheck()) return message.react('❌')
+		const refusal = kickRefusal({ guild: interaction.guild, executor: interaction.member, target })
+		if (refusal) return interaction.reply({ content: `❌ ${refusal}`, flags: MessageFlags.Ephemeral })
 
-		if (checkNum(memberToKick, 1, Infinity)) {
-			if (message.guild.members.cache.has(memberToKick)) {
-				const memberObj = message.guild.members.cache.get(memberToKick)
-				if (memberObj.roles.highest.rawPosition > authorHighestRole) return message.react('❌')
-				if (reason) memberObj.kick(reason)
-				else memberObj.kick()
-				return message.react('✅')
-			} else {
-				try {
-					const fetchMember = await message.guild.members.fetch(memberToKick)
-					if (fetchMember.roles.highest.rawPosition > authorHighestRole) return message.react('❌')
-					if (reason) fetchMember.kick(reason)
-					else fetchMember.kick()
-					return message.react('✅')
-				} catch (e) {
-					if (e.code === 10013) {
-						return message.channel.send({
-							content: `There is no member in this server with ID: ${memberToKick}.`
-						})
-					} else {
-						channels.errors.send(e)
-					}
-				}
-			}
-		} else if (message.mentions.members.first()) {
-			if (reason) mentionedMember.kick(reason)
-			else mentionedMember.kick()
-			return message.react('✅')
-		}
+		const reason = interaction.options.getString('reason')
+		await target.kick(`Kicked by: ${interaction.member.displayName}${reason ? ` - ${reason}` : ''}`)
+		return interaction.reply({ content: `✅ Kicked ${target.user.tag}.`, flags: MessageFlags.Ephemeral })
 	}
 }

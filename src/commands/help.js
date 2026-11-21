@@ -1,120 +1,82 @@
+import { SlashCommandBuilder } from '@discordjs/builders'
+import { MessageFlags } from 'discord.js'
 import Color from '../colors.js'
 import { nEmbed, capitalise } from '../functions.js'
 
+const LEVELS = { Everyone: 0, Mod: 1, Admin: 2, Owner: 3 }
+
+/** The highest permission level `perms` grants, as in LEVELS. */
+const levelOf = (perms) => (perms.owner ? 3 : perms.admin ? 2 : perms.mod ? 1 : 0)
+
+/**
+ * Names of the slash commands in this guild that `perms` may use.
+ *
+ * Prefix-only commands are left out: they no longer receive message content,
+ * so listing them would advertise commands that cannot work.
+ */
+export const visibleCommands = (commands, guildId, perms) =>
+	[...commands.values()]
+		.filter((c) => c.slash && (c.guildSpecific === 'all' || c.guildSpecific.includes(guildId)))
+		.filter((c) => (LEVELS[c.permissionLevel] ?? 0) <= levelOf(perms))
+		.map((c) => c.name)
+		.sort()
+
 export default {
 	name: 'help',
-	description: ['List all of my commands or info about a specific command.'],
-	aliases: ['commands'],
-	usage: ['command name'],
+	description: ['Lists the commands you can use, or shows how to use one of them.'],
+	usage: ['[command]'],
 	guildSpecific: 'all',
 	permissionLevel: 'Everyone',
-	run: async (client, message, args, perms) => {
-		const db = client.database.settings
-		const { commands } = message.client
-		const { prefix } = await db.findOne({ _id: message.guild.id }, { projection: { prefix: 1 } })
+	data: new SlashCommandBuilder()
+		.setName('help')
+		.setDescription('List my commands, or show how to use one.')
+		.addStringOption((o) => o.setName('command').setDescription('Command to explain').setAutocomplete(true)),
+	slash: async (client, interaction, perms) => {
+		const name = interaction.options.getString('command')
+		const avatar = interaction.user.displayAvatarURL()
+		const botAvatar = client.user.displayAvatarURL()
 
-		if (!args.length) {
-			// eslint-disable-next-line array-callback-return
-			const slashCommands = []
-			const messageCommands = []
-
-			const cTypePush = (cType, name) => {
-				if (cType === 'slash') {
-					slashCommands.push(name)
-				} else {
-					messageCommands.push(name)
-				}
-			}
-
-			commands.forEach((command) => {
-				if (command.guildSpecific.includes(message.guild.id) || command.guildSpecific === 'all') {
-					const commandType = command.slash ? 'slash' : 'message'
-
-					if (perms.owner) {
-						cTypePush(commandType, `\`${command.name}\``)
-					} else if (perms.admin) {
-						if (
-							command.permissionLevel === 'Admin' ||
-							command.permissionLevel === 'Mod' ||
-							command.permissionLevel === 'Everyone'
-						) {
-							cTypePush(commandType, `\`${command.name}\``)
-						}
-					} else if (perms.mod) {
-						if (command.permissionLevel === 'Mod' || command.permissionLevel === 'Everyone') {
-							cTypePush(commandType, `\`${command.name}\``)
-						}
-					} else if (command.permissionLevel === 'Everyone') {
-						cTypePush(commandType, `\`${command.name}\``)
-					}
-				}
-			})
-			const joinSlash = slashCommands.filter((x) => x).join('|')
-			const joinMessage = messageCommands.filter((x) => x).join('|')
-
-			/**
-			 * Check if permission level of the user using the command is equal to that of the permission level for each command per guild.
-			 */
-
-			message.channel.send({
+		if (!name) {
+			const names = visibleCommands(client.commands, interaction.guildId, perms)
+			return interaction.reply({
 				embeds: [
-					nEmbed(
-						'**Help Commands List**',
-						"Here's a list of all my commands:",
-						Color.cyan,
-						message.author.displayAvatarURL(),
-						client.user.displayAvatarURL()
-					).addFields(
-						{ name: '**Slash Commands (/):**', value: joinSlash, inline: false },
-						{ name: `**Message Commands (${prefix}):**`, value: joinMessage, inline: false },
+					nEmbed('**Help Commands List**', "Here's a list of my commands:", Color.cyan, avatar, botAvatar).addFields(
 						{
-							name: `**The bot prefix is: ${prefix}**`,
-							value: `\nYou can send \`${prefix}help [command name]\` to get info on a specific command!\n\n[Privacy Policy](https://github.com/LukeHankey/ValenceBot/blob/main/PRIVACY_POLICY.md) | [Terms of Service](https://github.com/LukeHankey/ValenceBot/blob/main/TOS.md)`,
+							name: '**Slash Commands (/):**',
+							value: names.map((n) => `\`${n}\``).join(' | ') || 'None',
+							inline: false
+						},
+						{
+							name: '​',
+							value: 'Use `/help command:` to get info on a specific command.\n\n[Privacy Policy](https://github.com/LukeHankey/ValenceBot/blob/main/PRIVACY_POLICY.md) | [Terms of Service](https://github.com/LukeHankey/ValenceBot/blob/main/TOS.md)',
 							inline: false
 						}
 					)
 				]
 			})
-		} else {
-			const name = args[0]
-			const command = commands.get(name) || commands.find((c) => c.aliases && c.aliases.includes(name))
-			if (!command) return
-			const otherView = ['Lotto', 'Profile', 'Dsf', 'Send']
-
-			const cName = capitalise(command.name)
-			const fields = []
-
-			for (let i = 0; i < command.usage.length; i++) {
-				if (otherView.includes(cName)) {
-					const field = {
-						name: `🔹 ${prefix}${cName} ${command.usage[i] || ''}`,
-						value: `${command.description[i]}`,
-						inline: false
-					}
-					fields.push(field)
-				} else {
-					const field = {
-						name: `🔹 ${prefix}${cName} ${command.usage[i] || ''}`,
-						value: `${command.description[i]}`,
-						inline: true
-					}
-					fields.push(field)
-				}
-			}
-
-			message.channel.send({
-				embeds: [
-					nEmbed(
-						`**Command:** ${cName}`,
-						`**Aliases:** ${command.aliases ? command?.aliases.join(', ') : '[NO ALIASES]'}\n**Permission Level:** ${
-							command.permissionLevel
-						}\n**Usage:**`,
-						Color.aqua,
-						message.member.user.displayAvatarURL(),
-						client.user.displayAvatarURL()
-					).addFields(fields)
-				]
-			})
 		}
+
+		const command = client.commands.get(name)
+		if (!command?.slash) {
+			return interaction.reply({ content: `There is no \`/${name}\` command.`, flags: MessageFlags.Ephemeral })
+		}
+
+		const fields = command.usage.map((usage, i) => ({
+			name: `🔹 /${command.name} ${usage || ''}`,
+			value: `${command.description[i] ?? command.description[0]}`,
+			inline: false
+		}))
+
+		return interaction.reply({
+			embeds: [
+				nEmbed(
+					`**Command:** ${capitalise(command.name)}`,
+					`**Permission Level:** ${command.permissionLevel}\n**Usage:**`,
+					Color.aqua,
+					avatar,
+					botAvatar
+				).addFields(fields)
+			]
+		})
 	}
 }

@@ -1,153 +1,130 @@
-import { EmbedBuilder, codeBlock } from 'discord.js'
-import { checkNum, splitMessage } from '../functions.js'
-const randomColor = Math.floor(Math.random() * 16777215).toString(16)
+import { SlashCommandBuilder } from '@discordjs/builders'
+import { EmbedBuilder, MessageFlags, codeBlock } from 'discord.js'
+import { splitMessage } from '../functions.js'
 
 /**
- * 733164313744769024 - Test Server
  * 668330890790699079 - Valence Bot Test
  * 472448603642920973 - Valence
  */
 
+const randomColor = () => Math.floor(Math.random() * 16777215).toString(16)
+
+/**
+ * Delete fact `number` and close the gap in the numbering.
+ *
+ * The prefix command renumbered first and then deleted by number, so for a
+ * moment two facts shared that number and the delete could remove the wrong
+ * one. Delete the exact document, then renumber.
+ */
+export const removeFact = async (facts, number) => {
+	const fact = await facts.findOne({ number })
+	if (!fact) return null
+	await facts.deleteOne({ _id: fact._id })
+	await facts.updateMany({ number: { $gt: number } }, { $inc: { number: -1 } })
+	return fact
+}
+
 export default {
 	name: 'fact',
 	description: [
-		'Displays a random fact about Valence.',
-		'Adds a Valence Fact to the DataBase.',
-		'Removes a specified Fact from the DataBase.',
-		'Edit the message by providing the Fact number.',
-		'Shows the entire list of Facts.'
+		'Posts a random Valence fact in this channel.',
+		'Adds a Valence fact.',
+		'Removes a fact by its number.',
+		'Replaces the text of a fact by its number.',
+		'Shows the entire list of facts.'
 	],
-	aliases: ['f'],
-	usage: ['', 'add <fact>', 'remove <number>', 'edit <number>', 'list'],
+	usage: ['show', 'add <fact>', 'remove <number>', 'edit <number> <fact>', 'list'],
 	guildSpecific: ['668330890790699079', '472448603642920973'],
 	permissionLevel: 'Mod',
-	run: async (client, message, args, perms) => {
-		const db = client.database.settings
+	data: new SlashCommandBuilder()
+		.setName('fact')
+		.setDescription('Valence facts.')
+		.addSubcommand((sub) => sub.setName('show').setDescription('Post a random fact in this channel.'))
+		.addSubcommand((sub) =>
+			sub
+				.setName('add')
+				.setDescription('Add a fact.')
+				.addStringOption((o) => o.setName('fact').setDescription('The fact').setRequired(true))
+		)
+		.addSubcommand((sub) =>
+			sub
+				.setName('remove')
+				.setDescription('Remove a fact.')
+				.addIntegerOption((o) => o.setName('number').setDescription('Fact number').setMinValue(1).setRequired(true))
+		)
+		.addSubcommand((sub) =>
+			sub
+				.setName('edit')
+				.setDescription('Replace the text of a fact.')
+				.addIntegerOption((o) => o.setName('number').setDescription('Fact number').setMinValue(1).setRequired(true))
+				.addStringOption((o) => o.setName('fact').setDescription('The new text').setRequired(true))
+		)
+		.addSubcommand((sub) => sub.setName('list').setDescription('Show every fact.')),
+	slash: async (client, interaction, perms) => {
 		const channels = await client.database.channels
-		const vFactsColl = client.database.facts
-		const { prefix } = await db.findOne({ _id: message.guild.id }, { projection: { prefix: 1 } })
+		const facts = client.database.facts
+		const subcommand = interaction.options.getSubcommand()
+		const user = `<@${interaction.user.id}>`
 
-		const count = await client.database.db
-			.command({ collStats: 'Facts' })
-			.then((r) => r.count)
-			.catch(async (err) => channels.errors.send(err))
-		const random = Math.floor(Math.random() * count + 1)
-		const fact = args.slice(1).join(' ')
-		const code = '```'
-
-		const factEmbed = function (factMessage) {
-			const embed = new EmbedBuilder()
-				.setTitle('**Daily Valence Fact**')
-				.setDescription(factMessage)
-				.setColor(`#${randomColor}`)
-				.addFields({ name: '**Sent By:**', value: '<@&685612946231263232>', inline: true })
-				.setTimestamp()
-			return embed
+		if (subcommand === 'list') {
+			if (!perms.mod) return interaction.reply({ ...perms.errorM, flags: MessageFlags.Ephemeral })
+			const list = (await facts.find({}).sort({ number: 1 }).toArray()).map((f) => `${f.number}. ${f.Message}\n`)
+			if (!list.length) return interaction.reply({ content: 'There are no facts yet.', flags: MessageFlags.Ephemeral })
+			const [first, ...rest] = splitMessage(list.join(''))
+			await interaction.reply({ content: codeBlock(first), flags: MessageFlags.Ephemeral })
+			for (const chunk of rest) await interaction.followUp({ content: codeBlock(chunk), flags: MessageFlags.Ephemeral })
+			return
 		}
 
-		switch (args[0]) {
-			case 'add':
-				if (perms.admin) {
-					if (!args[1]) {
-						message.channel.send({ content: 'Write a message to add to the DataBase.' })
-					} else {
-						await vFactsColl.insertOne({ Message: fact, number: count + 1 })
-						message.channel.send({
-							content: `Fact #${count + 1} has been added to the list!\n${code}${count + 1}. ${fact}${code}`
-						})
-						channels.logs.send(`<@${message.author.id}> added a Fact: ${code}#${count + 1}. ${fact}${code}`)
-					}
-				} else {
-					message.channel.send(perms.errorA)
-				}
-				break
-			case 'remove':
-				if (perms.admin) {
-					if (args[1]) {
-						if (checkNum(args[1], 1, count)) {
-							await vFactsColl
-								.findOne({ number: Number(args[1]) })
-								.then(async (r) => {
-									await vFactsColl.updateMany({ number: { $gt: r.number } }, { $inc: { number: -1 } })
-									message.channel.send({
-										content: `Fact #${r.number} has been deleted from the list!\n${code}${r.number}. ${r.Message}${code}`
-									})
-									channels.logs.send(
-										`<@${message.author.id}> removed a Fact: ${code}#${r.number}. ${r.Message}${code}`
-									)
-								})
-								.catch(async (err) => channels.errors.send(err))
-							await vFactsColl.deleteOne({ number: Number(args[1]) })
-						} else {
-							message.channel.send({
-								content: `Invalid Fact ID! The ID should be between 1 & ${count}.`
-							})
-						}
-					} else {
-						message.channel.send({
-							content: `You must provide a Fact Number to remove. Use \`${prefix}fact list\` to see the number.`
-						})
-					}
-				} else {
-					message.channel.send(perms.errorA)
-				}
-				break
-			case 'edit':
-				if (perms.admin) {
-					const newMessage = args.slice(2).join(' ')
-					if (args[1] && args[2]) {
-						await vFactsColl
-							.findOneAndUpdate(
-								{ number: Number(args[1]) },
-								{ $set: { Message: newMessage } },
-								{ returnDocument: 'before' }
-							)
-							.then(async (r) => {
-								await vFactsColl.findOne({ number: r.number }).then(async (rs) => {
-									message.channel.send({
-										content: `Fact #${rs.number} has been edited successfully!\n${code}${r.number}. ${r.Message} >>> ${rs.Message}${code}`
-									})
-									channels.logs.send(
-										`<@${message.author.id}> edited Fact #${rs.number}: ${code}diff\n- ${r.Message}\n+ ${rs.Message}${code}`
-									)
-								})
-							})
-							.catch(async (err) => channels.errors.send(err))
-					} else if (args[1] === isNaN) {
-						message.channel.send({ content: `"${args[1]}" is not a valid number!` })
-					}
-				} else {
-					message.channel.send(perms.errorA)
-				}
-				break
-			case 'list':
-				if (perms.mod) {
-					const list = []
-					await vFactsColl
-						.find({})
-						.sort({ number: 1 })
-						.forEach((x) => list.push(`${x.number}. ${x.Message}\n`))
-					const split = splitMessage(list.join(''))
-					split.forEach((content) => message.channel.send({ content: codeBlock(content) }))
-				} else {
-					message.channel.send(perms.errorM)
-				}
-				break
-			default:
-				if (perms.admin) {
-					await vFactsColl
-						.findOne({ number: random })
-						.then(async (r) => {
-							message.delete()
-							const sentFact = await message.channel.send({ embeds: [factEmbed(r.Message)] })
-							channels.logs.send(
-								`<@${message.author.id}> used the Fact command in <#${message.channel.id}>. https://discordapp.com/channels/${message.guild.id}/${message.channel.id}/${sentFact.id} ${code}#${r.number}. ${r.Message}${code}`
-							)
-						})
-						.catch(async (err) => channels.errors.send(err))
-				} else {
-					message.channel.send(perms.errorA)
-				}
+		if (!perms.admin) return interaction.reply({ ...perms.errorA, flags: MessageFlags.Ephemeral })
+
+		switch (subcommand) {
+			case 'show': {
+				const [fact] = await facts.aggregate([{ $sample: { size: 1 } }]).toArray()
+				if (!fact) return interaction.reply({ content: 'There are no facts yet.', flags: MessageFlags.Ephemeral })
+				const embed = new EmbedBuilder()
+					.setTitle('**Daily Valence Fact**')
+					.setDescription(fact.Message)
+					.setColor(`#${randomColor().padStart(6, '0')}`)
+					.addFields({ name: '**Sent By:**', value: '<@&685612946231263232>', inline: true })
+					.setTimestamp()
+				const sent = await interaction.reply({ embeds: [embed], withResponse: true })
+				return channels.logs.send(
+					`${user} used the Fact command in <#${interaction.channelId}>. ${sent.resource.message.url} ${codeBlock(
+						`#${fact.number}. ${fact.Message}`
+					)}`
+				)
+			}
+			case 'add': {
+				const text = interaction.options.getString('fact')
+				const number = (await facts.countDocuments()) + 1
+				await facts.insertOne({ Message: text, number })
+				await interaction.reply({
+					content: `Fact #${number} has been added to the list!\n${codeBlock(`${number}. ${text}`)}`
+				})
+				return channels.logs.send(`${user} added a Fact: ${codeBlock(`#${number}. ${text}`)}`)
+			}
+			case 'remove': {
+				const number = interaction.options.getInteger('number')
+				const removed = await removeFact(facts, number)
+				if (!removed) return interaction.reply({ content: `There is no fact #${number}.`, flags: MessageFlags.Ephemeral })
+				await interaction.reply({
+					content: `Fact #${number} has been deleted from the list!\n${codeBlock(`${number}. ${removed.Message}`)}`
+				})
+				return channels.logs.send(`${user} removed a Fact: ${codeBlock(`#${number}. ${removed.Message}`)}`)
+			}
+			case 'edit': {
+				const number = interaction.options.getInteger('number')
+				const text = interaction.options.getString('fact')
+				const before = await facts.findOneAndUpdate({ number }, { $set: { Message: text } }, { returnDocument: 'before' })
+				if (!before) return interaction.reply({ content: `There is no fact #${number}.`, flags: MessageFlags.Ephemeral })
+				await interaction.reply({
+					content: `Fact #${number} has been edited successfully!\n${codeBlock(`${number}. ${before.Message} >>> ${text}`)}`
+				})
+				return channels.logs.send(
+					`${user} edited Fact #${number}: ${codeBlock('diff', `- ${before.Message}\n+ ${text}`)}`
+				)
+			}
 		}
 	}
 }
