@@ -27,6 +27,11 @@ process.on('unhandledRejection', (reason, p) => {
 	logger.error(`Unhandled Rejection at: ${p}\nreason: ${reason}`)
 })
 
-client.login(process.env.NODE_ENV === 'DEV' ? process.env.DEVELOPMENT_BOT : process.env.BOT_TOKEN)
+// A failed login (bad token, disallowed intents) used to exit 0 once the
+// rejection was logged. Exit non-zero so it reads as a crash.
+client.login(process.env.NODE_ENV === 'DEV' ? process.env.DEVELOPMENT_BOT : process.env.BOT_TOKEN).catch((err) => {
+	logger.error(`Login failed: ${err.stack ?? err}`)
+	process.exit(1)
+})
 
 export default client
