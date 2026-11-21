@@ -5,6 +5,15 @@ import { isOptedOut } from '../privacy.js'
 import { v4 as uuid } from 'uuid'
 import axios from 'axios'
 
+/**
+ * The 404s DSF-Server's GET /worlds/{id}/event returns when there is simply no
+ * event to attach the call to (routes/worlds/router.py). They are expected
+ * outcomes, not errors; any other 404, e.g. a renamed route, still is.
+ */
+const NO_EVENT_DETAILS = new Set(['No active event found for this world', 'World not found', 'Stuck event has expired'])
+
+export const isNoEventResponse = (err) => err?.response?.status === 404 && NO_EVENT_DETAILS.has(err.response.data?.detail)
+
 const dsf = async (client, message) => {
 	const db = client.database.settings
 	const channels = await client.database.channels
@@ -46,9 +55,8 @@ const dsf = async (client, message) => {
 			eventID = eventData.id
 		}
 	} catch (err) {
-		const errorDetail = err?.response?.data?.detail
-		if (errorDetail !== 'No active event found for this world') {
-			console.log(worldNumber, errorDetail ?? err?.message)
+		if (!isNoEventResponse(err)) {
+			console.log(worldNumber, err?.response?.data?.detail ?? err?.message)
 			channels.errors.send(err)
 		}
 	}

@@ -4,6 +4,20 @@ import { MessageFlags } from 'discord.js'
 const cache = new Map()
 
 export default async (client, interaction) => {
+	// Global commands can be run in DMs, or in a server that added the app
+	// without the bot user. There is no guild or channel to work with there,
+	// which is what crashed autoComplete.js and commands.js.
+	if (!interaction.inCachedGuild()) {
+		if (interaction.isAutocomplete()) return interaction.respond([])
+		if (interaction.isRepliable()) {
+			return interaction.reply({
+				content: 'Valence Bot only works inside a server it has been added to.',
+				flags: MessageFlags.Ephemeral
+			})
+		}
+		return
+	}
+
 	const db = client.database.settings
 	const data = await db.findOne(
 		{ _id: interaction.guildId },

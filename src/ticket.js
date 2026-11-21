@@ -216,7 +216,11 @@ export default class Ticket {
 				content: `${categoryText}Hello <@!${memberId}>, a member of <@&${this.roleId}> will be with you shortly.`,
 				components: [resolveButton]
 			})
-			await msg.pin()
+			// Pinning needs a permission some servers do not give the bot. The
+			// ticket already exists by now, so a failed pin must not fail it.
+			await msg.pin().catch((err) => {
+				this.interaction.client?.logger?.warn(`Could not pin the ticket message in ${channel.id}: ${err.message}`)
+			})
 		} else {
 			const msg = await channel.send({
 				content: `Hello <@&${this.roleId}>, ${this.interaction.member.displayName} (${memberId}) has submitted a new application! Please review and get back to them ASAP. They have been notified that their application is in review.`
