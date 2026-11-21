@@ -1,4 +1,13 @@
-import { MessageFlags } from 'discord.js'
+import { ApplicationCommandType, ContextMenuCommandBuilder, MessageFlags } from 'discord.js'
+
+/**
+ * The message context menus handled below. They were registered by hand, so
+ * they are defined here to survive the bulk sync in registerCommands.js.
+ */
+export const contextMenuGuilds = ['420803245758480405', '668330890790699079']
+export const contextMenuData = ['Affiliate Events', 'Mark event as dead.'].map((name) =>
+	new ContextMenuCommandBuilder().setName(name).setType(ApplicationCommandType.Message)
+)
 
 export const contextMenu = async (client, interaction, data) => {
 	const channels = await client.database.channels
