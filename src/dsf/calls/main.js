@@ -27,6 +27,11 @@ const dsf = async (client, message) => {
 	const channelName = 'other'
 	const callDataBaseMessages = otherMessages
 
+	// Without the MessageContent intent, Discord sends other people's messages
+	// (webhooks included) with empty content. Unreadable is not invalid, so do
+	// not delete it below as a call with no world number.
+	if (!message.content) return
+
 	const API_URL = process.env.NODE_ENV === 'DEV' ? 'http://localhost:8000' : 'https://api.dsfeventtracker.com'
 	const worldNumber = getWorldNumber(message.content)
 	if (!worldNumber) return setTimeout(() => message.delete(), 200)
