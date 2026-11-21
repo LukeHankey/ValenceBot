@@ -233,15 +233,5 @@ export default async (client) => {
 			await scout.send()
 			await vScout.send()
 		}
-
-		// Monthly reset
-		if (
-			new Date().getDate() === 1 &&
-			(new Date().getHours() === 0o1 || new Date().getHours() === 0o0) &&
-			new Date().getMinutes() === 0o0
-		) {
-			client.logger.info('Setting lottoSheet to Null')
-			await db.updateMany({ gSheet: { $exists: true } }, { $set: { lottoSheet: null } })
-		}
 	})
 }
