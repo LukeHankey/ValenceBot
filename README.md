@@ -74,3 +74,11 @@ Merging to `main` triggers a GitHub webhook to DSF-Server, which queues
 `deploy.sh` on the host: it pulls `main` and rebuilds the container. Nothing
 about the bot itself deploys it, so a failure shows up in
 `journalctl -u valence-deploy-worker` rather than in GitHub.
+
+## Alerting
+
+Both bots (`development` and `messaging`) check the Discord gateway every
+minute. If it has not been Ready for five minutes, they post to the Discord
+webhook in `ALERT_WEBHOOK_URL` (plain HTTP, so it works with the gateway down)
+and exit, and the `unless-stopped` restart policy brings them back. Without
+`ALERT_WEBHOOK_URL` they still exit, but nobody is told.

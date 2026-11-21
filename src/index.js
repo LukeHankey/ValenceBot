@@ -3,6 +3,7 @@ import { Client, Collection } from 'discord.js'
 import { MongoDataBase } from './DataBase.js'
 import { Load } from './handlers/index.js'
 import { logger } from './logging.js'
+import { startHeartbeat } from './heartbeat.js'
 import dotenv from 'dotenv'
 dotenv.config()
 
@@ -34,5 +35,6 @@ client.login(process.env.NODE_ENV === 'DEV' ? process.env.DEVELOPMENT_BOT : proc
 	logger.error(`Login failed: ${err.stack ?? err}`)
 	process.exit(1)
 })
+startHeartbeat(client, 'ValenceBot')
 
 export default client
