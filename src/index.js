@@ -20,6 +20,7 @@ client.logger = logger
 client.commands = new Collection()
 
 const database = new MongoDataBase('Members')
+database.discord = client
 client.database = database
 
 const _ = new Load(client)

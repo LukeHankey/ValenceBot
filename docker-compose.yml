@@ -9,3 +9,14 @@ services:
     env_file:
       - .env
     command: npm run start
+  messaging:
+    # DSFMessaging: reads #dsf-calls with its own app and token (DSF_MESSAGING_TOKEN).
+    tty: true
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    env_file:
+      - .env
+    command: npm run start:messaging
