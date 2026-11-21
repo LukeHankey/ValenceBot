@@ -53,7 +53,7 @@ test('closing produces a closed window', () => {
 })
 
 test('describeWindow reports a timed window with a Discord timestamp', () => {
-	const text = describeWindow(buildWindow({ duration: '48h', reason: 'DXP', userId: '1', now: NOW }))
+	const text = describeWindow(buildWindow({ duration: '48h', reason: 'DXP', userId: '1' }))
 
 	assert.match(text, /open/i)
 	assert.match(text, /<t:\d+:[Rf]>/)
