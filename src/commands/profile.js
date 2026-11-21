@@ -1,363 +1,230 @@
-/* eslint-disable no-shadow */
-/* eslint-disable no-inline-comments */
-import { EmbedBuilder } from 'discord.js'
+import { SlashCommandBuilder } from '@discordjs/builders'
+import { EmbedBuilder, MessageFlags } from 'discord.js'
 import Color from '../colors.js'
 import ms from 'pretty-ms'
-import { checkNum, paginate, paginateFollowUP, capitalise } from '../functions.js'
+import { paginate, paginateFollowUP, capitalise } from '../functions.js'
+
+const ONE_MONTH_MS = 2.628e9
+const LEADERBOARD_MIN_COUNT = 15
+const LEADERBOARD_MAX = 100
+
+/** One embed field per profile, for the leaderboard pages. */
+export const leaderboardFields = (profiles, { lastActive = false } = {}) =>
+	profiles.slice(0, LEADERBOARD_MAX).map((p) => ({
+		name: `${p.author}`,
+		value: `Merch count: ${p.count}\nOther count: ${p.otherCount}\n${
+			lastActive
+				? `Last Active: ${p.lastTimestampReadable.toString().split(' ').slice(1, 5).join(' ')}`
+				: `Active for: ${ms(p.lastTimestamp - p.firstTimestamp)}`
+		}`,
+		inline: true
+	}))
+
+const footer = (client, page, total) => ({
+	text: `Page ${page + 1} of ${total} - Something wrong or missing? Let a Moderator+ know!`,
+	iconURL: client.user.displayAvatarURL()
+})
+
+const codeText = (text) => `\`\`\`fix\n${text}\`\`\``
 
 export default {
 	name: 'profile',
+	// One description per usage entry: help.js pairs them by index.
 	description: [
-		'Displays the members profile if one is found, otherwise has the option of creating one.',
-		'Displays the specified members profile if one is found.',
-		'Displays either the specified members profiile or everyone who has <@role>',
-		'Shows the top 25 in terms of scout count.',
-		'Shows the top 25 in terms of activity within the last 31 days, either altogether or by role.',
-		'Shows the top 25, per page, in terms of inactivity. No calls made within the last 31 days.'
+		'Displays your profile, or the specified member’s profile (Moderator+).',
+		'Displays the profiles of everyone with a role (Moderator+).',
+		'Creates your profile.',
+		'Shows the top scouters by merch count.',
+		'Shows active profiles, optionally only Scouters or Verified Scouters (Moderator+).',
+		'Shows inactive profiles, oldest activity first (Moderator+).',
+		'Lists the members eligible for the monthly raffle.'
 	],
-	aliases: ['p'],
-	usage: ['', '<member ID>', '<@member/@role>', 'all', 'active scouter/verified', 'inactive'],
+	usage: ['view [member]', 'role <role>', 'create', 'all', 'active [rank]', 'inactive', 'raffle'],
 	guildSpecific: ['420803245758480405', '668330890790699079'],
 	permissionLevel: 'Everyone',
-	run: async (client, message, args, perms) => {
-		const scouters = client.database.scoutTracker
-		const channels = await client.database.channels
-		const memberID = message.member.id
-		const data = await scouters.findOne({ userID: memberID })
-		const botRole = message.guild.members.me.roles.cache.find((r) => r.managed)
-		const memberRoles = message.member.roles.highest.position
-
-		const sendUserInfo = async (id = memberID, uData = { scoutTracker: scouters }) => {
-			const fetchedMember = await message.guild.members.fetch(id)
-			const embed = new EmbedBuilder()
-				.setTitle(`Member Profile - ${id}`)
-				.setDescription('Current tracked stats in this server.')
-				.setColor(Color.aqua)
-				.setThumbnail(message.author.displayAvatarURL())
-				.setFooter({
-					text: 'Something wrong or missing? Let a Moderator+ know!',
-					iconURL: client.user.displayAvatarURL()
-				})
-				.setTimestamp()
-			const userData = [await uData.scoutTracker.findOne({ userID: id })]
-			const memberAssignedRoles = fetchedMember.roles.cache
-				.filter((r) => r.id !== message.guild.id && r.position > botRole.position)
-				.sort((a, b) => b.position - a.position)
-				.map((role) => `<@&${role.id}>`)
-			const memberSelfRoles = fetchedMember.roles.cache
-				.filter((r) => r.id !== message.guild.id && r.position < botRole.position)
-				.map((role) => `<@&${role.id}>`)
-			const fields = []
-
-			if (!userData.length) {
-				return message.channel.send({
-					content: `\`${fetchedMember.nickname ?? fetchedMember.user.username}\` does not have a profile.`
-				})
-			}
-
-			function _text(text) {
-				const code = '```'
-				return `${code}fix\n${text}${code}`
-			}
-
-			const oldScoutCheck = () => Boolean(userData[0].oldScout)
-			for (const values of userData) {
-				if (values === null) {
-					return message.channel.send('There is no profile for that Id.')
-				}
-				const oldScoutAlt1Merchant =
-					(values.oldScout?.alt1?.merchantCount ?? 0) + (values.oldScout?.alt1First?.merchantCount ?? 0)
-				const oldScoutAlt1Other = (values.oldScout?.alt1?.otherCount ?? 0) + (values.oldScout?.alt1First?.otherCount ?? 0)
-				fields.push(
-					{
-						name: `${values.author}`,
-						value: `Merch count: ${values.count} ${
-							oldScoutCheck() ? `(+${values.oldScout.count})` : ''
-						}\nAlt1 Merch count: ${(values.alt1?.merchantCount ?? 0) + (values.alt1First?.merchantCount ?? 0)} ${
-							oldScoutCheck() ? `(+${oldScoutAlt1Merchant})` : ''
-						}
-						Other count: ${values.otherCount} ${oldScoutCheck() ? `(+${values.oldScout.otherCount})` : ''}\nAlt1 Other count: ${
-							(values.alt1?.otherCount ?? 0) + (values.alt1First?.otherCount ?? 0)
-						}
-						${oldScoutCheck() ? `(+${oldScoutAlt1Other})` : ''}
-						\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`,
-						inline: true
-					},
-					{
-						name: 'Assigned Roles:',
-						value: `${memberAssignedRoles.join(', ') || _text('None')}`,
-						inline: true
-					},
-					{ name: '\u200B', value: '\u200B', inline: true },
-					{
-						name: 'Self-Assign Roles:',
-						value: `${memberSelfRoles.join(', ') || _text('None')}`,
-						inline: true
-					}
-					// Think about if there is anything else to view in the user profile stats
+	data: new SlashCommandBuilder()
+		.setName('profile')
+		.setDescription('Scouter profiles and leaderboards.')
+		.addSubcommand((sub) =>
+			sub
+				.setName('view')
+				.setDescription('Show your profile, or another member’s.')
+				.addUserOption((o) => o.setName('member').setDescription('Member to look up (Moderator+)'))
+		)
+		.addSubcommand((sub) =>
+			sub
+				.setName('role')
+				.setDescription('Show the profiles of everyone with a role.')
+				.addRoleOption((o) => o.setName('role').setDescription('Role to look up').setRequired(true))
+		)
+		.addSubcommand((sub) => sub.setName('create').setDescription('Create your profile.'))
+		.addSubcommand((sub) => sub.setName('all').setDescription('Top scouters by merch count.'))
+		.addSubcommand((sub) =>
+			sub
+				.setName('active')
+				.setDescription('Active profiles.')
+				.addStringOption((o) =>
+					o
+						.setName('rank')
+						.setDescription('Only this rank')
+						.addChoices({ name: 'Scouter', value: 'scouter' }, { name: 'Verified Scouter', value: 'verified' })
 				)
+		)
+		.addSubcommand((sub) => sub.setName('inactive').setDescription('Inactive profiles, oldest activity first.'))
+		.addSubcommand((sub) => sub.setName('raffle').setDescription('Members eligible for the monthly raffle.')),
+	slash: async (client, interaction) => {
+		const scouters = client.database.scoutTracker
+		const subcommand = interaction.options.getSubcommand()
+		const { guild, member, user } = interaction
+
+		if (subcommand === 'create') {
+			if (await scouters.findOne({ userID: user.id })) {
+				return interaction.reply({ content: 'You already have a profile.', flags: MessageFlags.Ephemeral })
 			}
-			return message.channel.send({ embeds: [embed.addFields(fields)] })
+			const now = Date.now()
+			await scouters.insertOne({
+				userID: user.id,
+				author: member.nickname ?? user.username,
+				firstTimestamp: now,
+				firstTimestampReadable: new Date(now),
+				lastTimestamp: now,
+				lastTimestampReadable: new Date(now),
+				count: 0,
+				active: 1,
+				otherCount: 0,
+				assigned: []
+			})
+			return interaction.reply({ content: 'Your profile has been created. Use `/profile view` to see it.' })
 		}
 
-		const sendRoleInfo = async (id, rData = { scoutTracker: scouters }) => {
-			const roleObj = message.guild.roles.cache.get(id) ?? (await message.guild.roles.fetch(id))
-			const embed = new EmbedBuilder()
-				.setTitle(`Member Profiles - ${roleObj.name}`)
-				.setDescription('Current tracked stats in this server.')
-				.setColor(Color.aqua)
-				.setThumbnail(message.author.displayAvatarURL())
-				.setFooter({
-					text: 'Something wrong or missing? Let a Moderator+ know!',
-					iconURL: client.user.displayAvatarURL()
-				})
-				.setTimestamp()
+		await interaction.deferReply()
 
-			const me = roleObj.members.map((mem) => mem.id)
+		const botRole = guild.members.me.roles.cache.find((r) => r.managed)
+		const memberRoles = member.roles.highest.position
+		const isStaff = memberRoles > botRole.position
+		const noPermission = () => interaction.editReply({ content: "You don't have permission to use this command." })
 
-			if (botRole.position > roleObj.position) {
-				return message.channel.send({ content: `You can't view the stats for \`${roleObj.name}\`.` })
-			} // Self-assign roles
-
-			if (roleObj.position > memberRoles) {
-				return message.channel.send({
-					content: `You don't have permission to view the stats for \`${roleObj.name}\`.`
-				})
-			} // Only view their own role set
-
-			const fields = []
-			rData = await rData.scoutTracker
-			const newArr = await Promise.all(me.map(async (id) => await rData.findOne({ userID: id }))).then((resolvedArr) =>
-				resolvedArr.sort((a, b) => b.count - a.count)
-			)
-
-			for (const values of newArr) {
-				fields.push({
-					name: `${values.author}`,
-					value: `Scout count: ${values.count}\nActive for: ${ms(values.lastTimestamp - values.firstTimestamp)}`,
-					inline: true
-				})
-			}
-			return message.channel.send({ embeds: [embed.addFields(fields)] })
+		const sendPages = async (fields, title, desc = '') => {
+			if (!fields.length) return interaction.editReply({ content: 'There are no matching profiles.' })
+			const embeds = paginate(fields, { author: user }, title, desc)
+			const msg = await interaction.editReply({ embeds: [embeds[0].setFooter(footer(client, 0, embeds.length))] })
+			if (embeds.length > 1) await paginateFollowUP(msg, { author: user }, 0, embeds, client)
 		}
 
-		if (!args.length) {
-			if (data) {
-				sendUserInfo()
-			} else {
-				message.channel.send({
-					content: "You don't currently have a profile. Would you like to set one up? `Yes/No`"
-				})
-				const filter = (m) => ['yes', 'no'].includes(m.content.toLowerCase()) && m.member.id === message.member.id
-				message.channel
-					.awaitMessages({ filter, max: 1, time: 60000, errors: ['time'] })
-					.then(async (col) => {
-						col = col.first()
-						if (col.content === 'yes') {
-							await scouters.insertOne({
-								userID: col.author.id,
-								author: col.member.nickname ?? col.author.username,
-								firstTimestamp: col.createdTimestamp,
-								firstTimestampReadable: new Date(col.createdTimestamp),
-								lastTimestamp: col.createdTimestamp,
-								lastTimestampReadable: new Date(col.createdTimestamp),
-								count: 0,
-								active: 1,
-								otherCount: 0,
-								assigned: []
-							})
-							return (
-								(await col.react('✅')) &&
-								(await message.channel.send({
-									content: 'Your profile has been created. Re-use the command to view.'
-								}))
-							)
-						}
+		switch (subcommand) {
+			case 'view': {
+				const target = interaction.options.getUser('member') ?? user
+				if (target.id !== user.id && !isStaff) return noPermission()
+
+				const profile = await scouters.findOne({ userID: target.id })
+				if (!profile) {
+					return interaction.editReply({
+						content:
+							target.id === user.id
+								? "You don't have a profile yet. Use `/profile create` to make one."
+								: `\`${target.username}\` does not have a profile.`
 					})
-					.catch(() => {
-						message.channel.send({
-							content: 'Timed out. You took too long to respond - No profile has been created.'
-						})
+				}
+
+				const fetchedMember = await guild.members.fetch(target.id)
+				const roles = fetchedMember.roles.cache.filter((r) => r.id !== guild.id)
+				const assigned = roles
+					.filter((r) => r.position > botRole.position)
+					.sort((a, b) => b.position - a.position)
+					.map((r) => `<@&${r.id}>`)
+				const selfAssigned = roles.filter((r) => r.position < botRole.position).map((r) => `<@&${r.id}>`)
+
+				const old = profile.oldScout
+				const bonus = (n) => (old ? `(+${n})` : '')
+				const alt1Merch = (profile.alt1?.merchantCount ?? 0) + (profile.alt1First?.merchantCount ?? 0)
+				const alt1Other = (profile.alt1?.otherCount ?? 0) + (profile.alt1First?.otherCount ?? 0)
+				const oldAlt1Merch = (old?.alt1?.merchantCount ?? 0) + (old?.alt1First?.merchantCount ?? 0)
+				const oldAlt1Other = (old?.alt1?.otherCount ?? 0) + (old?.alt1First?.otherCount ?? 0)
+
+				const embed = new EmbedBuilder()
+					.setTitle(`Member Profile - ${target.id}`)
+					.setDescription('Current tracked stats in this server.')
+					.setColor(Color.aqua)
+					.setThumbnail(target.displayAvatarURL())
+					.setFooter({
+						text: 'Something wrong or missing? Let a Moderator+ know!',
+						iconURL: client.user.displayAvatarURL()
 					})
+					.setTimestamp()
+					.addFields(
+						{
+							name: `${profile.author}`,
+							value: [
+								`Merch count: ${profile.count} ${bonus(old?.count)}`,
+								`Alt1 Merch count: ${alt1Merch} ${bonus(oldAlt1Merch)}`,
+								`Other count: ${profile.otherCount} ${bonus(old?.otherCount)}`,
+								`Alt1 Other count: ${alt1Other} ${bonus(oldAlt1Other)}`,
+								`Active for: ${ms(profile.lastTimestamp - profile.firstTimestamp)}`
+							].join('\n'),
+							inline: true
+						},
+						{ name: 'Assigned Roles:', value: assigned.join(', ') || codeText('None'), inline: true },
+						{ name: '​', value: '​', inline: true },
+						{ name: 'Self-Assign Roles:', value: selfAssigned.join(', ') || codeText('None'), inline: true }
+					)
+				return interaction.editReply({ embeds: [embed] })
 			}
-		} else {
-			let userID
-			let roleMention
-			let userMention
 
-			if (checkNum(args[0])) {
-				try {
-					userID = message.guild.members.cache.get(args[0]) ?? (await message.guild.members.fetch(args[0]))
-				} catch (err) {
-					channels.errors.send(err)
+			case 'role': {
+				if (!isStaff) return noPermission()
+				const role = interaction.options.getRole('role')
+				if (botRole.position > role.position) {
+					return interaction.editReply({ content: `You can't view the stats for \`${role.name}\`.` })
 				}
-			} else {
-				roleMention = message.guild.roles.cache.has(args[0].slice(3, 21))
-				userMention = message.mentions.members.first()
+				if (role.position > memberRoles) {
+					return interaction.editReply({ content: `You don't have permission to view the stats for \`${role.name}\`.` })
+				}
+				const profiles = (await scouters.find({ userID: { $in: role.members.map((m) => m.id) } }).toArray()).sort(
+					(a, b) => b.count - a.count
+				)
+				return sendPages(leaderboardFields(profiles), role.name)
 			}
 
-			if (userID) {
-				memberRoles > botRole.position // members highest role > bots managed role
-					? sendUserInfo(args[0])
-					: message.channel.send({ content: "You don't have permission to use this command." })
-			} else if (roleMention) {
-				const roleID = args[0].slice(3, 21)
-				memberRoles > botRole.position
-					? sendRoleInfo(roleID)
-					: message.channel.send({ content: "You don't have permission to use this command." })
-			} else if (userMention) {
-				memberRoles > botRole.position
-					? sendUserInfo(userMention.id)
-					: message.channel.send({ content: "You don't have permission to use this command." })
-			} else if (args[0] === 'all') {
-				const scoutTracker = await scouters.find({ count: { $gte: 15 } }).toArray()
-				const items = scoutTracker.sort((a, b) => b.count - a.count)
-				let fields = []
+			case 'all': {
+				const profiles = (await scouters.find({ count: { $gte: LEADERBOARD_MIN_COUNT } }).toArray()).sort(
+					(a, b) => b.count - a.count
+				)
+				return sendPages(leaderboardFields(profiles), 'All')
+			}
 
-				for (const values of items) {
-					fields.push({
-						name: `${values.author}`,
-						value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nActive for: ${ms(
-							values.lastTimestamp - values.firstTimestamp
-						)}`,
-						inline: true
-					})
+			case 'active': {
+				if (!isStaff) return noPermission()
+				const rank = interaction.options.getString('rank')
+				let query = { count: { $gte: LEADERBOARD_MIN_COUNT } }
+				if (rank === 'scouter') {
+					const scouter = guild.roles.cache.find((r) => r.name.toLowerCase() === 'scouter')
+					query = { 'assigned.0': scouter.id, active: 1 }
+				} else if (rank === 'verified') {
+					const verified = guild.roles.cache.find((r) => r.name.toLowerCase() === 'verified scouter')
+					query = { 'assigned.1': verified.id, active: 1, lastTimestamp: { $gte: Date.now() - ONE_MONTH_MS } }
 				}
-				fields = fields.slice(0, 100)
-				const page = 0
-				const embeds = paginate(fields, message, capitalise(args[0].toLowerCase()))
+				const profiles = (await scouters.find(query).toArray()).filter((p) => p.active).sort((a, b) => b.count - a.count)
+				return sendPages(leaderboardFields(profiles), 'Active', rank ? capitalise(rank) : '')
+			}
 
-				message.channel
-					.send({
-						embeds: [
-							embeds[page].setFooter({
-								text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`,
-								iconURL: client.user.displayAvatarURL()
-							})
-						]
-					})
-					.then(async (msg) => {
-						await paginateFollowUP(msg, message, page, embeds, client)
-					})
-					.catch(async (err) => channels.errors.send(err))
-			} else if (args[0] === 'active') {
-				if (memberRoles < botRole.position) return
-				let scoutTracker = null
-				if (args[1]) {
-					switch (args[1].toLowerCase()) {
-						case 'scouter':
-							{
-								const scouter = message.guild.roles.cache.find((r) => r.name.toLowerCase() === 'scouter')
-								scoutTracker = await scouters.find({ 'assigned.0': scouter.id, active: 1 }).toArray()
-							}
-							break
-						case 'verified scouter':
-						case 'verified':
-							{
-								const oneMonth = 2.628e9
-								const verified = message.guild.roles.cache.find(
-									(r) => r.name.toLowerCase() === 'verified scouter'
-								)
-								scoutTracker = await scouters
-									.find({
-										'assigned.1': verified.id,
-										active: 1,
-										lastTimestamp: { $gte: Date.now() - oneMonth }
-									})
-									.toArray()
-							}
-							break
-						default:
-							return message.channel.send(
-								`There only criteria to check are the Scouter and Verified Scouter roles, not ${args[1]}.`
-							)
-					}
-				} else {
-					scoutTracker = await scouters.find({ count: { $gte: 15 } }).toArray()
-				}
-				const items = scoutTracker.filter((profile) => profile.active).sort((a, b) => b.count - a.count)
-				let fields = []
+			case 'inactive': {
+				if (!isStaff) return noPermission()
+				const profiles = (await scouters.find({ count: { $gte: LEADERBOARD_MIN_COUNT } }).toArray())
+					.filter((p) => !p.active)
+					.sort((a, b) => a.lastTimestamp - b.lastTimestamp)
+				return sendPages(leaderboardFields(profiles, { lastActive: true }), 'Inactive', 'inactive')
+			}
 
-				for (const values of items) {
-					fields.push({
-						name: `${values.author}`,
-						value: `Merch count: ${values.count}\nOther count: ${values.otherCount}\nActive for: ${ms(
-							values.lastTimestamp - values.firstTimestamp
-						)}`,
-						inline: true
-					})
-				}
-				fields = fields.slice(0, 100)
-				const page = 0
-				const embeds = paginate(fields, message, capitalise(args[0].toLowerCase()), args[0].toLowerCase())
-
-				if (embeds.length === 0) {
-					return message.channel.send({ content: `There are no active profiles with the ${args[1]} rank.` })
-				}
-				try {
-					const msg = await message.channel.send({
-						embeds: [
-							embeds[page].setFooter({
-								text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`,
-								iconURL: client.user.displayAvatarURL()
-							})
-						]
-					})
-					await paginateFollowUP(msg, message, page, embeds, client)
-				} catch (err) {
-					channels.errors.send(err)
-				}
-			} else if (args[0] === 'inactive') {
-				if (memberRoles < botRole.position) return
-				const scoutTracker = await scouters.find({ count: { $gte: 15 } }).toArray()
-				const items = scoutTracker.filter((profile) => !profile.active).sort((a, b) => a.lastTimestamp - b.lastTimestamp)
-				let fields = []
-
-				for (const values of items) {
-					fields.push({
-						name: `${values.author}`,
-						value: `Merch count: ${values.count}\nOther count: ${
-							values.otherCount
-						}\nLast Active: ${values.lastTimestampReadable.toString().split(' ').slice(1, 5).join(' ')}`,
-						inline: true
-					})
-				}
-				fields = fields.slice(0, 100)
-				const page = 0
-				const embeds = paginate(fields, message, capitalise(args[0].toLowerCase()), args[0].toLowerCase())
-
-				message.channel
-					.send({
-						embeds: [
-							embeds[page].setFooter({
-								text: `Page ${page + 1} of ${embeds.length} - Something wrong or missing? Let a Moderator+ know!`,
-								iconURL: client.user.displayAvatarURL()
-							})
-						]
-					})
-					.then(async (msg) => {
-						await paginateFollowUP(msg, message, page, embeds, client)
-					})
-					.catch(async (err) => channels.errors.send(err))
-			} else if (args[0] === 'raffle') {
-				const oneMonth = 2.628e9
-				const verified = message.guild.roles.cache.find((r) => r.name.toLowerCase() === 'verified scouter')
-				const scoutTracker = await scouters
-					.find({
-						'assigned.1': verified.id,
-						active: 1,
-						lastTimestamp: { $gte: Date.now() - oneMonth }
-					})
-					.toArray()
-
-				const sortedTracker = scoutTracker.filter((profile) => profile.active).sort((a, b) => b.count - a.count)
-				const names = sortedTracker.map((profile) => profile.author)
-
-				await message.channel.send({ content: `List of eligible members for the monthly raffle!\n${names.join('\n')}` })
-			} else {
-				message.channel.send({
-					content: `Unable to find \`${args[0]}\` as a member ID/mention or role mention.`
-				})
+			case 'raffle': {
+				const verified = guild.roles.cache.find((r) => r.name.toLowerCase() === 'verified scouter')
+				const names = (
+					await scouters
+						.find({ 'assigned.1': verified.id, active: 1, lastTimestamp: { $gte: Date.now() - ONE_MONTH_MS } })
+						.toArray()
+				)
+					.sort((a, b) => b.count - a.count)
+					.map((p) => p.author)
+				return interaction.editReply({ content: `List of eligible members for the monthly raffle!\n${names.join('\n')}` })
 			}
 		}
 	}
