@@ -16,6 +16,13 @@ import camelCase from 'camelcase'
 import { logger } from '../../logging.js'
 import { getWorldNumber } from '../../dsf/index.js'
 
+/** What to tell someone whose ticket could not be created. */
+export const ticketFailureMessage = (err) =>
+	// 50013 Missing Permissions, 50001 Missing Access
+	[50013, 50001].includes(err?.code)
+		? "I couldn't create your ticket because I'm missing permissions in this server. Please let a moderator know."
+		: 'Something went wrong creating your ticket. Please let a moderator know.'
+
 export class ButtonWarning {
 	UNLOGGED_NAMES = ['Clear Buttons', 'Foreign World']
 
@@ -397,23 +404,29 @@ export const buttons = async (client, interaction, data, cache) => {
 				break
 			case 'Open Ticket':
 				{
+					// Answer straight away: looking for an open ticket and creating the
+					// channel can take longer than the 3 seconds Discord waits.
+					await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 					const ticketData = await db.findOne({ _id: interaction.guild.id }, { projection: { ticket: 1 } })
 					const ticket = new Ticket(interaction, ticketData, db)
 
 					// Check if user already has an open ticket
 					const existingTicket = await ticket.hasOpenTicket()
 					if (existingTicket) {
-						return await interaction.reply({
-							content: `You already have an open ticket at <#${existingTicket.id}>. Please close that ticket before opening a new one.`,
-							flags: MessageFlags.Ephemeral
+						return await interaction.editReply({
+							content: `You already have an open ticket at <#${existingTicket.id}>. Please close that ticket before opening a new one.`
 						})
 					}
 
-					const created = await ticket.create()
-					await interaction.reply({
-						content: `Your ticket has been created at <#${created.id}>`,
-						flags: MessageFlags.Ephemeral
-					})
+					let created
+					try {
+						created = await ticket.create()
+					} catch (err) {
+						// Tell the person who clicked, then let the error reach the error channel.
+						await interaction.editReply({ content: ticketFailureMessage(err) })
+						throw err
+					}
+					await interaction.editReply({ content: `Your ticket has been created at <#${created.id}>` })
 					if (interaction.guild.id === '420803245758480405') {
 						await buttonLogger.upload(interaction.member.id)
 					}
