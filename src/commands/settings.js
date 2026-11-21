@@ -1,437 +1,127 @@
-/* eslint no-mixed-spaces-and-tabs: 0 */
-
+import { SlashCommandBuilder } from '@discordjs/builders'
+import { ChannelType, EmbedBuilder, MessageFlags, PermissionFlagsBits } from 'discord.js'
 import Color from '../colors.js'
-import { nEmbed, checkNum } from '../functions.js'
+
+/**
+ * What each role setting needs to be allowed. A role without these could not
+ * do the job the bot would then trust it with.
+ */
+const ROLE_SETTINGS = {
+	'admin-role': {
+		field: 'adminRole',
+		label: 'Admin Role',
+		needs: [PermissionFlagsBits.Administrator],
+		needsText: 'Administrator'
+	},
+	'mod-role': {
+		field: 'modRole',
+		label: 'Mod Role',
+		needs: [PermissionFlagsBits.KickMembers, PermissionFlagsBits.BanMembers],
+		needsText: 'Kick Members and Ban Members'
+	}
+}
+
+/** Why `role` cannot be the `subcommand` role, or null if it can. */
+export const roleProblem = (subcommand, role, guildId) => {
+	const { label, needs, needsText } = ROLE_SETTINGS[subcommand]
+	if (role.id === guildId) return `@everyone cannot be the ${label}.`
+	if (role.managed) return `${role.name} belongs to an integration and cannot be the ${label}.`
+	if (!role.permissions.has(needs)) return `The ${label} must have the ${needsText} permission${needs.length > 1 ? 's' : ''}.`
+	return null
+}
+
+const show = (value, format) => (value ? format(value) : '`Not set`')
 
 export default {
 	name: 'settings',
 	description: [
-		'Displays the db.collection that you can change.',
-		'Shows the current prefix.',
-		'Sets the new prefix in the server.',
-		'Shows the current admin role.',
-		'Sets the new admin role in the server.',
-		'Shows the current mod role.',
-		'Sets the new mod role in the server.',
-		'Shows the current admin channel.',
-		'Sets the current admin channel.'
+		'Shows the current Admin Role, Mod Role and Admin Channel.',
+		'Sets the Admin Role. It must have the Administrator permission.',
+		'Sets the Mod Role. It must have the Kick Members and Ban Members permissions.',
+		'Sets the Admin Channel.'
 	],
-	aliases: ['s'],
-	usage: [
-		'',
-		'prefix',
-		'prefix set <new prefix>',
-		'adminRole',
-		'adminRole set <new role>',
-		'modRole',
-		'modRole set <new role>',
-		'adminChannel',
-		'adminChannel set <channel>'
-	],
+	usage: ['view', 'admin-role <role>', 'mod-role <role>', 'admin-channel <channel>'],
 	guildSpecific: 'all',
 	permissionLevel: 'Admin',
-	run: async (client, message, args, perms) => {
-		const db = client.database.settings
-		const dbChannels = await client.database.channels
-		if (!perms.admin) return message.channel.send(perms.errorA)
-		const {
-			prefix,
-			roles: { modRole, adminRole },
-			channels: { adminChannel, events, mod }
-		} = await db.findOne({ _id: message.guild.id }, { projection: { prefix: 1, roles: 1, channels: 1 } })
-		const [...rName] = args.slice(2)
-		const roleName = message.guild.roles.cache.find((role) => role.name === rName.join(' '))
-		const channelTag = []
+	data: new SlashCommandBuilder()
+		.setName('settings')
+		.setDescription('View or change the bot settings for this server.')
+		.addSubcommand((sub) => sub.setName('view').setDescription('Show the current settings.'))
+		.addSubcommand((sub) =>
+			sub
+				.setName('admin-role')
+				.setDescription('Set the role allowed to use admin commands.')
+				.addRoleOption((o) => o.setName('role').setDescription('Must have Administrator').setRequired(true))
+		)
+		.addSubcommand((sub) =>
+			sub
+				.setName('mod-role')
+				.setDescription('Set the role allowed to use mod commands.')
+				.addRoleOption((o) => o.setName('role').setDescription('Must have Kick and Ban Members').setRequired(true))
+		)
+		.addSubcommand((sub) =>
+			sub
+				.setName('admin-channel')
+				.setDescription('Set the channel for admin reports.')
+				.addChannelOption((o) =>
+					o.setName('channel').setDescription('Text channel').addChannelTypes(ChannelType.GuildText).setRequired(true)
+				)
+		),
+	slash: async (client, interaction, perms) => {
+		if (!perms.admin) return interaction.reply({ ...perms.errorA, flags: MessageFlags.Ephemeral })
 
-		switch (args[0]) {
-			case 'prefix':
-				switch (args[1]) {
-					case 'set':
-						args[2]
-							? db
-									.findOneAndUpdate(
-										{ _id: message.guild.id },
-										{ $set: { prefix: args[2] } },
-										{ returnDocument: 'before' }
-									)
-									.then(async (r) => {
-										message.channel.send({
-											content: `Prefix has been changed from \`${r.prefix}\` to \`${args[2]}\``
-										})
-										dbChannels.send(
-											`<@${message.author.id}> changed the bot Prefix in server: **${message.guild.name}**\n\`\`\`diff\n- ${r.prefix}\n+ ${args[2]}\`\`\``
-										)
-									})
-									.catch(async (err) => {
-										dbChannels.errors.send(err)
-									})
-							: message.channel.send({ content: 'What do you want to set the prefix to?' })
-						break
-					default:
-						if (!args[1]) {
-							message.channel.send({ content: `Your prefix is set as: \`${prefix}\`` })
-						}
-				}
-				break
-			case 'adminRole':
-				switch (args[1]) {
-					case 'set':
-						if (
-							checkNum(args[2], 1, Infinity) &&
-							message.guild.roles.cache.has(args[2]) &&
-							message.guild.id !== args[2] &&
-							message.guild.roles.cache.get(`${args[2]}`).permissions.has('Administrator')
-						) {
-							// Setting role by ID
-							const found = await db.findOneAndUpdate(
-								{ _id: message.guild.id },
-								{ $set: { 'roles.adminRole': `<@&${args[2]}>` } },
-								{ returnDocument: 'before' }
-							)
-							message.channel.send({
-								content: `The Admin Role has been changed to: <@&${args[2]}>`,
-								allowedMentions: { parse: [] }
-							})
-							dbChannels.send(
-								`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n\`\`\`diff\n- ${found.roles.adminRole}\n+ <@&${args[2]}>\`\`\``
-							)
-						} else if (roleName && message.guild.roles.cache.get(roleName.id).permissions.has('Administrator')) {
-							// Setting role by name
-							const found = await db.findOneAndUpdate(
-								{ _id: message.guild.id },
-								{ $set: { 'roles.adminRole': `<@&${roleName.id}>` } },
-								{ returnDocument: 'before' }
-							)
-							message.channel.send({
-								content: `The Admin Role has been changed to: <@&${roleName.id}>`,
-								allowedMentions: { parse: [] }
-							})
-							dbChannels.send(
-								`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n\`\`\`diff\n- ${found.roles.adminRole}\n+ ${roleName.id}\`\`\``
-							)
-						} else if (
-							message.mentions.roles.first() &&
-							message.guild.roles.cache.get(message.mentions.roles.first().id).permissions.has('Administrator')
-						) {
-							// Setting role by mention
-							const found = await db.findOneAndUpdate(
-								{ _id: message.guild.id },
-								{ $set: { 'roles.adminRole': args[2] } },
-								{ returnDocument: 'before' }
-							)
-							message.channel.send({
-								content: `The Admin Role has been changed to: ${args[2]}`,
-								allowedMentions: { parse: [] }
-							})
-							dbChannels.send(
-								`<@${message.author.id}> changed the adminRole in server: **${message.guild.name}**\n\`\`\`diff\n- ${found.roles.adminRole}\n+ ${args[2]}\`\`\``
-							)
-						} else {
-							message.channel.send({
-								content: 'What do you want to set the Admin Role to? Acceptable values:'
-							})
-							message.channel.send({
-								content:
-									'```diff\n+ Role ID\n+ Tagging the role\n+ Role Name\n\nNOTE:\n- If specifying a Role Name, make sure the Role Name is unique!\n- All roles must have the ADMINISTRATOR permission set.```'
-							})
-						}
-						break
-					default:
-						if (!args[1]) {
-							message.channel.send({
-								content: `Your Admin Role is set as: ${adminRole}`,
-								allowedMentions: { parse: [] }
-							})
-						}
-				}
-				break
-			case 'modRole':
-				switch (args[1]) {
-					case 'set':
-						if (
-							checkNum(args[2], 1, Infinity) &&
-							message.guild.roles.cache.has(args[2]) &&
-							message.guild.id !== args[2] &&
-							message.guild.roles.cache.get(`${args[2]}`).permissions.has(['KickMembers', 'BanMembers'])
-						) {
-							// Setting role by ID
-							const found = await db.findOneAndUpdate(
-								{ _id: message.guild.id },
-								{ $set: { 'roles.modRole': `<@&${args[2]}>` } },
-								{ returnDocument: 'before' }
-							)
-							message.channel.send({
-								content: `The Mod Role has been changed to: <@&${args[2]}>`,
-								allowedMentions: { parse: [] }
-							})
-							dbChannels.send(
-								`<@${message.author.id}> changed the modRole in server: **${message.guild.name}**\n\`\`\`diff\n- ${found.roles.modRole}\n+ <@&${args[2]}>\`\`\``
-							)
-						} else if (
-							roleName &&
-							message.guild.roles.cache.get(roleName.id).permissions.has(['KickMembers', 'BanMembers'])
-						) {
-							// Setting role by name
-							const found = await db.findOneAndUpdate(
-								{ _id: message.guild.id },
-								{ $set: { 'roles.modRole': `<@&${roleName.id}>` } },
-								{ returnDocument: 'before' }
-							)
-							message.channel.send({
-								content: `The Mod Role has been changed to: <@&${roleName.id}>`,
-								allowedMentions: { parse: [] }
-							})
-							dbChannels.send(
-								`<@${message.author.id}> changed the modRole in server: **${message.guild.name}**\n\`\`\`diff\n- ${found.roles.modRole}\n+ ${roleName}\`\`\``
-							)
-						} else if (
-							message.mentions.roles.first() &&
-							message.guild.roles.cache
-								.get(message.mentions.roles.first().id)
-								.permissions.has(['KickMembers', 'BanMembers'])
-						) {
-							// Setting role by mention
-							const found = await db.findOneAndUpdate(
-								{ _id: message.guild.id },
-								{ $set: { 'roles.modRole': args[2] } },
-								{ returnDocument: 'before' }
-							)
-							message.channel.send({
-								content: `The Mod Role has been changed to: ${args[2]}`,
-								allowedMentions: { parse: [] }
-							})
-							dbChannels.send(
-								`<@${message.author.id}> changed the modRole in server: **${message.guild.name}**\n\`\`\`diff\n- ${found.roles.modRole}\n+ ${args[2]}\`\`\``
-							)
-						} else {
-							message.channel.send({
-								content: 'What do you want to set the Mod Role to? Acceptable values:'
-							})
-							message.channel.send({
-								content:
-									'```diff\n+ Role ID\n+ Tagging the role\n+ Role Name\n\nNOTE:\n- If specifying a Role Name, make sure the Role Name is unique!\n- All roles must have the KICK_MEMBERS & BAN_MEMBERS permission set.```'
-							})
-						}
-						break
-					default:
-						if (!args[1]) {
-							message.channel.send({
-								content: `Your Mod Role is set as: ${modRole}`,
-								allowedMentions: { parse: [] }
-							})
-						}
-				}
-				break
-			case 'adminChannel':
-				switch (args[1]) {
-					case 'set':
-						if (args[2] === undefined) {
-							channelTag.push('false')
-						} else {
-							channelTag.push(args[2].slice(2, 20))
-						}
-						if (
-							checkNum(args[2], 1, Infinity) &&
-							message.guild.channels.cache.has(args[2]) &&
-							message.guild.id !== args[2]
-						) {
-							// Check by ID
-							const found = await db.findOneAndUpdate(
-								{ _id: message.guild.id },
-								{ $set: { 'channels.adminChannel': args[2] } },
-								{ returnDocument: 'before' }
-							)
-							message.channel.send({
-								content: `The Admin Channel has been set to: <#${args[2]}>`
-							})
-							dbChannels.send(
-								`<@${message.author.id}> set the Admin Channel in server: **${message.guild.name}** from <#${found.channels.adminChannel}> to <#${args[2]}>`
-							)
-						} else if (checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) {
-							// Check by #Channel
-							const found = await db.findOneAndUpdate(
-								{ _id: message.guild.id },
-								{ $set: { 'channels.adminChannel': channelTag[0] } },
-								{ returnDocument: 'before' }
-							)
-							message.channel.send({
-								content: `The Admin Channel has been set to: <#${channelTag[0]}>`
-							})
-							dbChannels.send(
-								`<@${message.author.id}> set the Admin Channel in server: **${message.guild.name}** from <#${found.channels.adminChannel}> to <#${channelTag[0]}>`
-							)
-						} else {
-							message.channel.send({
-								content: 'What do you want to set the Admin Channel to? Acceptable values:'
-							})
-							message.channel.send({
-								content: '```diff\n+ Channel ID (18/19 Digits)\n+ Channel tag (#<Channel name>)```'
-							})
-						}
-						break
-					default:
-						if (!args[1]) {
-							adminChannel === null
-								? message.channel.send({ content: 'Your Admin Channel is set as: `Null`' })
-								: message.channel.send({
-										content: `Your Admin Channel is set as: <#${adminChannel}>`
-									})
-						} else {
-							message.channel.send(
-								nEmbed('Permission Denied', 'You do not have permission to see the Admin Channel!', Color.redDark)
-							)
-						}
-				}
-				break
-			case 'eventsChannel':
-				switch (args[1]) {
-					case 'set':
-						if (args[2] === undefined) {
-							channelTag.push('false')
-						} else {
-							channelTag.push(args[2].slice(2, 20))
-						}
-						if (
-							checkNum(args[2], 1, Infinity) &&
-							message.guild.channels.cache.has(args[2]) &&
-							message.guild.id !== args[2]
-						) {
-							// Check by ID
-							const found = await db.findOneAndUpdate(
-								{ _id: message.guild.id },
-								{ $set: { 'channels.events': args[2] } },
-								{ returnDocument: 'before' }
-							)
-							message.channel.send({
-								content: `The Events Channel has been set to: <#${args[2]}>`
-							})
-							dbChannels.send(
-								`<@${message.author.id}> set the Events Channel in server: **${message.guild.name}** from <#${found.channels.events}> to <#${args[2]}>`
-							)
-						} else if (checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) {
-							// Check by #Channel
-							const found = await db.findOneAndUpdate(
-								{ _id: message.guild.id },
-								{ $set: { 'channels.events': channelTag[0] } },
-								{ returnDocument: 'before' }
-							)
-							message.channel.send({
-								content: `The Events Channel has been set to: <#${channelTag[0]}>`
-							})
-							dbChannels.send(
-								`<@${message.author.id}> set the Events Channel in server: **${message.guild.name}** from <#${found.channels.events}> to <#${channelTag[0]}>`
-							)
-						} else {
-							message.channel.send({
-								content: 'What do you want to set the Events Channel to? Acceptable values:'
-							})
-							message.channel.send({
-								content: '```diff\n+ Channel ID (18/19 Digits)\n+ Channel tag (#<Channel name>)```'
-							})
-						}
-						break
-					default:
-						if (!args[1]) {
-							events === null || events === undefined
-								? message.channel.send({ content: 'Your events Channel is set as: `Null`' })
-								: message.channel.send({
-										content: `Your events Channel is set as: <#${events}>`
-									})
-						} else {
-							message.channel.send({
-								embeds: [
-									nEmbed(
-										'Permission Denied',
-										'You do not have permission to see the Admin Channel!',
-										Color.redDark
-									)
-								]
-							})
-						}
-				}
-				break
-			case 'modChannel':
-				switch (args[1]) {
-					case 'set':
-						if (args[2] === undefined) {
-							channelTag.push('false')
-						} else {
-							channelTag.push(args[2].slice(2, 20))
-						}
-						if (
-							checkNum(args[2], 1, Infinity) &&
-							message.guild.channels.cache.has(args[2]) &&
-							message.guild.id !== args[2]
-						) {
-							// Check by ID
-							const found = await db.findOneAndUpdate(
-								{ _id: message.guild.id },
-								{ $set: { 'channels.mod': args[2] } },
-								{ returnDocument: 'before' }
-							)
-							message.channel.send({
-								content: `The Mod Channel has been set to: <#${args[2]}>`
-							})
-							dbChannels.send(
-								`<@${message.author.id}> set the Mod Channel in server: **${message.guild.name}** from <#${found.channels.mod}> to <#${args[2]}>`
-							)
-						} else if (checkNum(channelTag[0], 1, Infinity) && message.guild.channels.cache.has(channelTag[0])) {
-							// Check by #Channel
-							const found = await db.findOneAndUpdate(
-								{ _id: message.guild.id },
-								{ $set: { 'channels.mod': channelTag[0] } },
-								{ returnDocument: 'before' }
-							)
-							message.channel.send({
-								content: `The Mod Channel has been set to: <#${channelTag[0]}>`
-							})
-							dbChannels.send(
-								`<@${message.author.id}> set the Mod Channel in server: **${message.guild.name}** from <#${found.channels.mod}> to <#${channelTag[0]}>`
-							)
-						} else {
-							message.channel.send({
-								content: 'What do you want to set the Mod Channel to? Acceptable values:'
-							})
-							message.channel.send({
-								content: '```diff\n+ Channel ID (18/19 Digits)\n+ Channel tag (#<Channel name>)```'
-							})
-						}
-						break
-					default:
-						if (!args[1]) {
-							mod === null || mod === undefined
-								? message.channel.send({ content: 'Your Mod Channel is set as: `Null`' })
-								: message.channel.send({ content: `Your Mod Channel is set as: <#${mod}>` })
-						} else {
-							message.channel.send({
-								embeds: [
-									nEmbed(
-										'Permission Denied',
-										'You do not have permission to see the Admin Channel!',
-										Color.redDark
-									)
-								]
-							})
-						}
-				}
-				break
-			default:
-				if (!args[0]) {
-					message.channel.send({
-						embeds: [
-							nEmbed(
-								'**Settings List**',
-								"Here's a list of all the db collections you can change:",
-								Color.cyan,
-								client.user.displayAvatarURL()
-							).addFields({
-								name: '**Settings**',
-								value: '`prefix`\n`adminRole`\n`modRole`\n`adminChannel`\n`eventsChannel`\n`modChannel`',
-								inline: false
-							})
-						]
-					})
-				}
+		const db = client.database.settings
+		const channels = await client.database.channels
+		const subcommand = interaction.options.getSubcommand()
+		const guildId = interaction.guildId
+
+		if (subcommand === 'view') {
+			const current = await db.findOne({ _id: guildId }, { projection: { roles: 1, channels: 1 } })
+			return interaction.reply({
+				embeds: [
+					new EmbedBuilder()
+						.setTitle('Settings')
+						.setColor(Color.cyan)
+						.addFields(
+							{ name: 'Admin Role', value: show(current?.roles?.adminRole, (r) => r), inline: true },
+							{ name: 'Mod Role', value: show(current?.roles?.modRole, (r) => r), inline: true },
+							{
+								name: 'Admin Channel',
+								value: show(current?.channels?.adminChannel, (c) => `<#${c}>`),
+								inline: true
+							}
+						)
+				],
+				allowedMentions: { parse: [] },
+				flags: MessageFlags.Ephemeral
+			})
 		}
+
+		let field, label, value, display
+		if (subcommand === 'admin-channel') {
+			const channel = interaction.options.getChannel('channel')
+			;[field, label, value, display] = ['channels.adminChannel', 'Admin Channel', channel.id, `<#${channel.id}>`]
+		} else {
+			const role = interaction.options.getRole('role')
+			const problem = roleProblem(subcommand, role, guildId)
+			if (problem) return interaction.reply({ content: `❌ ${problem}`, flags: MessageFlags.Ephemeral })
+			const setting = ROLE_SETTINGS[subcommand]
+			;[field, label, value, display] = [`roles.${setting.field}`, setting.label, `<@&${role.id}>`, `<@&${role.id}>`]
+		}
+
+		const before = await db.findOneAndUpdate({ _id: guildId }, { $set: { [field]: value } }, { returnDocument: 'before' })
+		const [group, key] = field.split('.')
+		const old = before?.[group]?.[key]
+		const oldDisplay = old ? (group === 'channels' ? `<#${old}>` : old) : 'Not set'
+
+		await interaction.reply({
+			content: `The ${label} has been set to ${display}.`,
+			allowedMentions: { parse: [] },
+			flags: MessageFlags.Ephemeral
+		})
+		return channels.logs.send({
+			content: `<@${interaction.user.id}> changed the ${label} in **${interaction.guild.name}** from ${oldDisplay} to ${display}.`,
+			allowedMentions: { parse: [] }
+		})
 	}
 }
