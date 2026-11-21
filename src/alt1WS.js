@@ -19,7 +19,6 @@ class WebSocketClient {
 	}
 
 	connect() {
-		/* eslint-disable no-undef */
 		this.socket = new WebSocket(this.url)
 
 		this.socket.onopen = async () => {

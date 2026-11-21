@@ -1,4 +1,3 @@
-/* eslint-disable no-inline-comments */
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } from 'discord.js'
 import Color from '../colors.js'
