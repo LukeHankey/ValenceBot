@@ -10,3 +10,6 @@ archived
 # Runtime logs. combined.log was tracked, which broke the production deploy:
 # git pull refused to overwrite the running bot's local copy.
 *.log
+
+# Drafts for Discord's privileged intent review; kept locally, not in the repo
+INTENT_REVIEW_*.md
