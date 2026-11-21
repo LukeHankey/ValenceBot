@@ -7,7 +7,7 @@ export const commands = async (client, interaction, data) => {
 	const channels = await client.database.channels
 	// guildId and channelId are always on the interaction; interaction.channel
 	// is null when the channel is not cached, e.g. a thread the bot has not seen.
-	const commandDB = await db.findOne({ _id: interaction.guildId }, { projection: { prefix: 1, roles: 1 } })
+	const commandDB = await db.findOne({ _id: interaction.guildId }, { projection: { roles: 1 } })
 	const command = client.commands.get(interaction.commandName)
 	if (!command) return
 

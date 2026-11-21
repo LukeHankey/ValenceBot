@@ -1,266 +1,158 @@
-/* eslint-disable no-shadow */
-/* eslint-disable no-useless-escape */
-import { nEmbed, checkNum } from '../functions.js'
+import { SlashCommandBuilder } from '@discordjs/builders'
+import { MessageFlags } from 'discord.js'
+import { nEmbed } from '../functions.js'
 import Color from '../colors.js'
 import { ScouterCheck } from '../classes.js'
 import { classVars } from '../dsf/index.js'
 
-/**
- * 733164313744769024 - Test Server
- * 668330890790699079 - Valence Bot Test
- * 420803245758480405 - DSF
- */
+/** An embed holds at most 25 fields. */
+const MAX_FIELDS = 25
+const DEFAULT_MINIMUM = { scouter: 100, verified: 250 }
+
+/** One embed field per call stored for #dsf-calls. */
+export const storedCallFields = (otherMessages, guildId, channelId) =>
+	otherMessages.map((call) => ({
+		name: `${call.author}`,
+		value: `**Time:** ${new Date(call.time).toString().split(' ').slice(0, 5).join(' ')}\n**Content:** [${
+			call.content
+		}](https://discord.com/channels/${guildId}/${channelId}/${call.messageID})`,
+		inline: false
+	}))
 
 export default {
 	name: 'dsf',
 	description: [
-		'Displays all of the current stored messages in dsf-calls.',
-		'Clears all of the current stored messages in dsf-calls.',
-		'Shows the list of potential scouters/verified scouters with the set scout count, or count adjusted.',
-		'Add 1 or <num> other to the member provided.',
-		'Remove 1 or <num> other to the member provided.'
+		'Shows the calls currently stored for #dsf-calls.',
+		'Clears every stored call. Use it if the bot gets stuck on old calls.',
+		'Lists members who have reached the count for Scouter or Verified Scouter.',
+		'Adds to (or, with a negative amount, takes from) a member’s other count.'
 	],
-	usage: [
-		'other',
-		'other clear',
-		'view scouter/verified <num (optional)>',
-		'user memberID/@member add other|<num> other',
-		'user memberID/@member remove other|<num> other'
-	],
+	usage: ['calls', 'calls-clear', 'view <rank> [minimum]', 'adjust <member> <amount>'],
 	guildSpecific: ['668330890790699079', '420803245758480405'],
 	permissionLevel: 'Admin',
-	run: async (client, message, args, perms) => {
-		if (!perms.admin) return message.channel.send(perms.errorA)
+	data: new SlashCommandBuilder()
+		.setName('dsf')
+		.setDescription('DSF admin tools.')
+		.addSubcommand((sub) => sub.setName('calls').setDescription('Show the calls stored for #dsf-calls.'))
+		.addSubcommand((sub) => sub.setName('calls-clear').setDescription('Clear every stored call.'))
+		.addSubcommand((sub) =>
+			sub
+				.setName('view')
+				.setDescription('Members who have reached the count for a rank.')
+				.addStringOption((o) =>
+					o
+						.setName('rank')
+						.setDescription('Which rank')
+						.setRequired(true)
+						.addChoices({ name: 'Scouter', value: 'scouter' }, { name: 'Verified Scouter', value: 'verified' })
+				)
+				.addIntegerOption((o) => o.setName('minimum').setDescription('Count needed (default 100 / 250)').setMinValue(1))
+		)
+		.addSubcommand((sub) =>
+			sub
+				.setName('adjust')
+				.setDescription('Change a member’s other count.')
+				.addUserOption((o) => o.setName('member').setDescription('Member (mention or ID)').setRequired(true))
+				.addIntegerOption((o) =>
+					o.setName('amount').setDescription('How much to add; negative to remove').setRequired(true)
+				)
+		),
+	slash: async (client, interaction, perms) => {
+		if (!perms.admin) return interaction.reply({ ...perms.errorA, flags: MessageFlags.Ephemeral })
+
 		const db = client.database.settings
-		const channels = await client.database.channels
 		const scouters = client.database.scoutTracker
+		const guildId = interaction.guildId
 
-		switch (args[0]) {
-			case 'o':
-			case 'other':
-				switch (args[1]) {
-					// eslint-disable-next-line default-case-last
-					default:
-						try {
-							const {
-								eventChannel: { otherMessages, otherChannelID } = { otherMessages: [], otherChannelID: null }
-							} =
-								(await db.findOne(
-									{ _id: message.guild.id },
-									{ projection: { 'eventChannel.otherMessages': 1, 'eventChannel.otherChannelID': 1 } }
-								)) ?? {}
-							const fields = []
-							const embed = nEmbed(
-								'List of messages currently stored in the DB',
-								"There shouldn't be too many as they get automatically deleted after 10 minutes. If the bot errors out, please clear all of them using `;dsf other clear`.",
-								Color.cream,
-								message.member.user.displayAvatarURL(),
-								client.user.displayAvatarURL()
-							)
+		switch (interaction.options.getSubcommand()) {
+			case 'calls': {
+				const stored = await db.findOne(
+					{ _id: guildId },
+					{ projection: { 'eventChannel.otherMessages': 1, 'eventChannel.otherChannelID': 1 } }
+				)
+				const { otherMessages = [], otherChannelID = null } = stored?.eventChannel ?? {}
+				const fields = storedCallFields(otherMessages, guildId, otherChannelID)
+				const more = fields.length > MAX_FIELDS ? ` Showing ${MAX_FIELDS} of ${fields.length}.` : ''
+				const embed = nEmbed(
+					'Calls stored for #dsf-calls',
+					`These are removed automatically when their timer ends. If the bot gets stuck on old calls, use \`/dsf calls-clear\`.${more}`,
+					Color.cream,
+					interaction.user.displayAvatarURL(),
+					client.user.displayAvatarURL()
+				).addFields(fields.slice(0, MAX_FIELDS))
+				return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
+			}
 
-							for (const values of otherMessages) {
-								let date = new Date(values.time)
-								date = date.toString().split(' ')
-								fields.push({
-									name: `${values.author}`,
-									value: `**Time:** ${date.slice(0, 5).join(' ')}\n**Content:** [${
-										values.content
-									}](https://discordapp.com/channels/${message.guild.id}/${otherChannelID}/${
-										values.messageID
-									} 'Click me to go to the message.')`,
-									inline: false
-								})
-							}
-							return message.channel.send({ embeds: [embed.addFields(fields)] })
-						} catch (e) {
-							if (e.code === 50035) {
-								return message.channel.send({
-									content: 'Too many messages stored. Use the clear command.'
-								})
-							} else {
-								channels.errors.send(e)
-							}
-						}
-						break
-					case 'clear':
-						await db.findOneAndUpdate(
-							{ _id: message.guild.id },
+			case 'calls-clear': {
+				await db.updateOne({ _id: guildId }, { $set: { 'eventChannel.otherMessages': [] } })
+				return interaction.reply({ content: '✅ Cleared every stored call.', flags: MessageFlags.Ephemeral })
+			}
+
+			case 'view': {
+				const rank = interaction.options.getString('rank')
+				const minimum = interaction.options.getInteger('minimum') ?? DEFAULT_MINIMUM[rank]
+				await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+
+				const check = new ScouterCheck(rank === 'verified' ? 'Verified Scouter' : 'Scouter', minimum)
+				const settings = await db.find({}).toArray()
+				const candidates = await scouters
+					.find({
+						$or: [
 							{
-								$pull: {
-									'eventChannel.otherMessages': { time: { $gt: 0 } }
+								$expr: {
+									$gte: [
+										{
+											$sum: [
+												'$count',
+												'$otherCount',
+												'$alt1.merchantCount',
+												'$alt1First.merchantCount',
+												'$alt1.otherCount',
+												'$alt1First.otherCount'
+											]
+										},
+										minimum
+									]
 								}
-							}
-						)
-						message.react('✅')
+							},
+							{ 'assigned.0': { $exists: true } }
+						]
+					})
+					.toArray()
+				await classVars(check, interaction.guild.name, settings, client, candidates)
+				// ScouterCheck posts the list in the channel, paged for whoever ran it.
+				await check.send(interaction.channelId, { author: interaction.user })
+				return interaction.editReply({ content: 'Posted below.' })
+			}
+
+			case 'adjust': {
+				const member = interaction.options.getUser('member')
+				const amount = interaction.options.getInteger('amount')
+				if (amount === 0) {
+					return interaction.reply({ content: 'An amount of 0 changes nothing.', flags: MessageFlags.Ephemeral })
 				}
-				break
-			case 'view':
-				{
-					const num = isNaN(parseInt(args[2])) ? (args[1] === 'verified' ? 250 : 100) : parseInt(args[2])
 
-					const scout = new ScouterCheck('Scouter', num)
-					const vScout = new ScouterCheck('Verified Scouter', num)
-
-					const res = await db.find({}).toArray()
-					const scouter = await scouters
-						.find({
-							$or: [
-								{
-									$expr: {
-										$gte: [
-											{
-												$sum: [
-													'$count',
-													'$otherCount',
-													'$alt1.merchantCount',
-													'$alt1First.merchantCount',
-													'$alt1.otherCount',
-													'$alt1First.otherCount'
-												]
-											},
-											num
-										]
-									}
-								},
-								{ 'assigned.0': { $exists: true } }
-							]
-						})
-						.toArray()
-					await classVars(vScout, message.guild.name, res, client, scouter)
-					await classVars(scout, message.guild.name, res, client, scouter)
-
-					switch (args[1]) {
-						case 'scouter':
-							await scout.send(message.channel.id, message)
-							break
-						case 'verified':
-							await vScout.send(message.channel.id, message)
-							break
-						default:
-							return message.channel.send({ content: 'You can view either `scouter` or `verified`' })
-					}
-				}
-				break
-			case 'user': {
-				// eslint-disable-next-line prefer-const
-				let [userID, param, num] = args.slice(1)
-				const cacheCheck = async (user) => {
-					if (!message.guild.members.cache.has(user)) {
-						return await message.guild.members
-							.fetch(user)
-							.then(() => true)
-							.catch(() => false)
-					} else {
-						return true
-					}
-				}
-				const checkMem = cacheCheck(userID)
-				const reaction = await checkMem
-				// eslint-disable-next-line no-self-assign
-				checkNum(userID) && checkMem ? (userID = userID) : (userID = undefined)
-				const userMention = message.mentions.members.first()?.user.id ?? userID
-
-				if (userMention === undefined) {
-					return message.channel.send({
-						content: 'Please provide a valid member ID or member mention.'
+				const result = await scouters.updateOne({ userID: member.id }, { $inc: { otherCount: amount } })
+				if (!result.matchedCount) {
+					return interaction.reply({
+						content: `<@${member.id}> has no profile, so there is no count to change.`,
+						allowedMentions: { parse: [] },
+						flags: MessageFlags.Ephemeral
 					})
 				}
-				switch (param) {
-					case 'add':
-						if (!num) {
-							return message.channel.send({
-								content: 'Merchant count is legacy-only and can no longer be adjusted. Use `other`.'
-							})
-						} else if (num === 'other') {
-							await scouters.updateOne(
-								{ userID: userMention },
-								{
-									$inc: {
-										otherCount: 1
-									}
-								}
-							)
-							if (reaction) return message.react('✅')
-							else return message.react('❌')
-						} else {
-							if (isNaN(parseInt(num))) {
-								return message.channel.send({ content: `\`${num}\` is not a number.` })
-							} else {
-								num = +num
-							}
-							const other = args.slice(4)
-							if (other[0] === 'other') {
-								await scouters.updateOne(
-									{ userID: userMention },
-									{
-										$inc: {
-											otherCount: +num
-										}
-									}
-								)
-								if (reaction) return message.react('✅')
-								else return message.react('❌')
-							} else {
-								return message.channel.send({
-									content: 'Merchant count is legacy-only and can no longer be adjusted. Use `other`.'
-								})
-							}
-						}
-					case 'remove':
-						if (!num) {
-							return message.channel.send({
-								content: 'Merchant count is legacy-only and can no longer be adjusted. Use `other`.'
-							})
-						} else if (num === 'other') {
-							await scouters.updateOne(
-								{ userID: userMention },
-								{
-									$inc: {
-										otherCount: -1
-									}
-								}
-							)
-							if (reaction) return message.react('✅')
-							else return message.react('❌')
-						} else {
-							if (isNaN(parseInt(num))) {
-								return message.channel.send(`\`${num}\` is not a number.`)
-							} else {
-								num = +num
-							}
-							const other = args.slice(4)
-							if (other[0] === 'other') {
-								await scouters.updateOne(
-									{ userID: userMention },
-									{
-										$inc: {
-											otherCount: -num
-										}
-									}
-								)
-								if (reaction) return message.react('✅')
-								else return message.react('❌')
-							} else {
-								return message.channel.send({
-									content: 'Merchant count is legacy-only and can no longer be adjusted. Use `other`.'
-								})
-							}
-						}
-					default:
-						return message.channel.send({ content: 'Valid params are `add` or `remove`.' })
-				}
-			}
-			default:
-				return message.channel.send({
-					embeds: [
-						nEmbed(
-							'**DSF Admin Commands List**',
-							"Here's a list of all the DSF commands you can use. Any parameter(s) in `<>` are optional:\n\n`other|o`\n`other|o clear`\n`view scouter <num>`\n`view verified <num>`\n`user memberID/@member add other|<num> other`\n`user memberID/@member remove other|<num> other`",
-							Color.cyan,
-							client.user.displayAvatarURL()
-						)
-					]
+				const channels = await client.database.channels
+				await channels.logs.send({
+					content: `<@${interaction.user.id}> ${amount > 0 ? 'added' : 'removed'} ${Math.abs(amount)} other count ${
+						amount > 0 ? 'to' : 'from'
+					} <@${member.id}>.`,
+					allowedMentions: { parse: [] }
 				})
+				return interaction.reply({
+					content: `✅ ${amount > 0 ? 'Added' : 'Removed'} ${Math.abs(amount)} other count ${amount > 0 ? 'to' : 'from'} <@${member.id}>.`,
+					allowedMentions: { parse: [] },
+					flags: MessageFlags.Ephemeral
+				})
+			}
 		}
 	}
 }

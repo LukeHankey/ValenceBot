@@ -10,6 +10,18 @@ const dataBaseOptions = {
 }
 const dataBaseURI = process.env.DB_URI
 
+/**
+ * Send to a log-style channel. Takes `(text, options)` or a whole message
+ * object: callers used both, and an object passed as the text was sent as
+ * `content`, which Discord rejects. Logs instead when the channel is not
+ * visible to this bot.
+ */
+export const sendText = (channel, content, rest = {}) => {
+	const message = typeof content === 'string' ? { content, ...rest } : { ...content, ...rest }
+	if (!channel) return logger.info(message.content ?? JSON.stringify(message))
+	return channel.send(message)
+}
+
 export class MongoDataBase {
 	constructor(databaseName) {
 		this.databaseName = databaseName
@@ -77,9 +89,7 @@ export class MongoDataBase {
 				logs: {
 					id: logs,
 					send: function (content, rest) {
-						const channel = discord.channels.cache.get(this.id)
-						if (!channel) return logger.info(typeof content === 'string' ? content : JSON.stringify(content))
-						return channel.send({ content, ...rest })
+						return sendText(discord.channels.cache.get(this.id), content, rest)
 					}
 				},
 				dsfOwners: {
@@ -87,9 +97,7 @@ export class MongoDataBase {
 					// Takes `rest` like logs.send: without it a caller passing
 					// { files: [...] } would have its attachment silently dropped.
 					send: function (content, rest) {
-						const channel = discord.channels.cache.get(this.id)
-						if (!channel) return logger.info(typeof content === 'string' ? content : JSON.stringify(content))
-						return channel.send({ content, ...rest })
+						return sendText(discord.channels.cache.get(this.id), content, rest)
 					}
 				}
 			}
