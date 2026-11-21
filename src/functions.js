@@ -11,13 +11,6 @@ const nEmbed = (title, description, color = Color.cyan, thumbnail = null, guildI
 		.setFooter({ text: 'Valence Bot created by luke.h', iconURL: guildIcon })
 	return embed
 }
-const checkNum = (id = 0, greaterOrEqualTo = 1, lowerOrEqualTo = Infinity) => {
-	if (+id !== parseInt(id) || !(id >= greaterOrEqualTo) || !(id <= lowerOrEqualTo)) {
-		return false
-	} else {
-		return true
-	}
-}
 const capitalise = (str) => {
 	return str.charAt(0).toUpperCase() + str.slice(1)
 }
@@ -114,4 +107,4 @@ const getRuneDate = () => {
 	return parseInt((now - initialRuneDate) / (1000 * 3600 * 24))
 }
 
-export { nEmbed, checkNum, capitalise, paginate, paginateFollowUP, splitMessage, getRuneDate }
+export { nEmbed, capitalise, paginate, paginateFollowUP, splitMessage, getRuneDate }

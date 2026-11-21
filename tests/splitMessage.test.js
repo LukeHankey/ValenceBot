@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { splitMessage, checkNum, capitalise } from '../src/functions.js'
+import { splitMessage, capitalise } from '../src/functions.js'
 
 test('a short message is left whole', () => {
 	assert.deepEqual(splitMessage('hello'), ['hello'])
@@ -31,23 +31,6 @@ test('a single line longer than the limit is refused', () => {
 
 test('an empty message produces no chunks', () => {
 	assert.deepEqual(splitMessage(''), [''])
-})
-
-test('checkNum accepts a number in range', () => {
-	assert.equal(checkNum(5, 1, 10), true)
-	assert.equal(checkNum('5', 1, 10), true)
-})
-
-test('checkNum rejects a number out of range', () => {
-	assert.equal(checkNum(0, 1, 10), false)
-	assert.equal(checkNum(11, 1, 10), false)
-})
-
-test('checkNum rejects things that are not whole numbers', () => {
-	assert.equal(checkNum('abc', 1, 10), false)
-	assert.equal(checkNum('5abc', 1, 10), false)
-	assert.equal(checkNum(5.5, 1, 10), false)
-	assert.equal(checkNum('', 1, 10), false)
 })
 
 test('capitalise raises the first letter only', () => {
