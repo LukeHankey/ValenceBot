@@ -27,9 +27,12 @@ const PRIVILEGED = [
  * The prefix command listed roles by these per-server rules but assigned any
  * role below the bot's own, so in DSF anyone could take roles between the
  * ceiling role and the bot's. Listing and assigning now share this one rule.
+ *
+ * `blocked` is the server's own list, set by admins with /self-assign-block.
  */
-export const isSelfAssignable = (role, guild, botRole) => {
+export const isSelfAssignable = (role, guild, botRole, blocked = []) => {
 	if (role.id === guild.id || role.managed) return false
+	if (blocked.includes(role.id)) return false
 	if (role.position >= botRole.position) return false
 	if (PRIVILEGED.some((p) => role.permissions.has(p))) return false
 	if (guild.id === VALENCE) return role.position < VALENCE_CEILING_POSITION
@@ -39,6 +42,12 @@ export const isSelfAssignable = (role, guild, botRole) => {
 	}
 	return true
 }
+
+/** Settings field holding the role ids a server's admins have blocked. */
+export const BLOCKED_FIELD = 'selfAssignBlocked'
+
+export const blockedRoles = async (settings, guildId) =>
+	(await settings.findOne({ _id: guildId }, { projection: { [BLOCKED_FIELD]: 1 } }))?.[BLOCKED_FIELD] ?? []
 
 export default {
 	name: 'self-assign',
@@ -59,6 +68,7 @@ export default {
 	slash: async (client, interaction) => {
 		const { guild, member } = interaction
 		const botRole = guild.members.me.roles.cache.find((r) => r.managed) ?? guild.members.me.roles.highest
+		const blocked = await blockedRoles(client.database.settings, guild.id)
 		const embed = new EmbedBuilder()
 			.setTitle('Self-Assigned Information')
 			.setTimestamp()
@@ -66,7 +76,7 @@ export default {
 
 		if (interaction.options.getSubcommand() === 'list') {
 			const names = guild.roles.cache
-				.filter((r) => isSelfAssignable(r, guild, botRole))
+				.filter((r) => isSelfAssignable(r, guild, botRole, blocked))
 				.map((r) => `\`${r.name}\``)
 				.sort()
 			if (!names.length) {
@@ -82,7 +92,7 @@ export default {
 		}
 
 		const role = interaction.options.getRole('role')
-		if (!isSelfAssignable(role, guild, botRole)) {
+		if (!isSelfAssignable(role, guild, botRole, blocked)) {
 			return interaction.reply({
 				content: `You can't give yourself ${role.name}. Use \`/self-assign list\` to see the roles you can.`,
 				flags: MessageFlags.Ephemeral

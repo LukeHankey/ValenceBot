@@ -71,3 +71,8 @@ test('lookup shows counts, with old scout totals in brackets when there are any'
 	assert.match(withOld, /\*\*Merch count:\*\* 5 \(\+7\)/)
 	assert.match(withOld, /\*\*Alt1 Merch count:\*\* 3 \(\+4\)/)
 })
+
+test('a role the server has blocked is not self-assignable', () => {
+	assert.equal(isSelfAssignable(role('r', 10), guild('other'), bot, ['r']), false)
+	assert.equal(isSelfAssignable(role('r', 10), guild('other'), bot, ['someone-else']), true)
+})
