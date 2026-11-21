@@ -4,7 +4,6 @@ import { MessageFlags } from 'discord.js'
 export default {
 	name: 'delete',
 	description: ['Deletes a number of previous messages in the current channel.'],
-	aliases: ['del'],
 	usage: ['<number>'],
 	guildSpecific: 'all',
 	permissionLevel: 'Mod',
