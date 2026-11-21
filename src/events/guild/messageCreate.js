@@ -2,7 +2,6 @@ import { getEventChannel } from '../../dsf/calls/settingsAccess.js'
 import Color from '../../colors.js'
 import { Permissions } from '../../classes.js'
 import { EmbedBuilder, ChannelType } from 'discord.js'
-import { vEvents } from '../../valence/valenceEvents.js'
 import dsf from '../../dsf/calls/main.js'
 import { recordCommandUse } from '../../dsf/commandUsage.js'
 
@@ -61,7 +60,7 @@ export default async (client, message) => {
 
 	if (message.author.bot) return
 
-	// Valence Events Channel
+	// Valence
 	if (message.guild.id === '472448603642920973' || message.guild.id === '668330890790699079') {
 		// Valence - Filter
 		const filterWords = ['retard', 'nigger']
@@ -70,7 +69,6 @@ export default async (client, message) => {
 		})
 
 		if (blocked.length > 0) message.delete()
-		await vEvents(client, message)
 	}
 
 	try {
