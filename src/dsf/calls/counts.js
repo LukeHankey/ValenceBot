@@ -159,7 +159,7 @@ export const addCount = async (client, message, alt1Count = false) => {
 export const addMessageToDB = async (message, db, eventID) => {
 	const addMessageData = {
 		'eventChannel.otherMessages': {
-			eventID: eventID,
+			eventID,
 			messageID: message.id,
 			content: message.content,
 			time: message.createdTimestamp,
