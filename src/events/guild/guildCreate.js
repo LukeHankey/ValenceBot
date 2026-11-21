@@ -4,7 +4,6 @@ export default async (client, guild) => {
 		{
 			_id: `${guild.id}`,
 			serverName: `${guild.name}`,
-			prefix: ';',
 			roles: {
 				modRole: `${guild.roles.highest}`,
 				adminRole: `${guild.roles.highest}`,
