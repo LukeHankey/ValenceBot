@@ -1,70 +1,61 @@
+import { SlashCommandBuilder } from '@discordjs/builders'
+import { MessageFlags } from 'discord.js'
 import { nEmbed } from '../functions.js'
 import Color from '../colors.js'
 import ms from 'pretty-ms'
 
-/**
- * 668330890790699079 - Valence Bot Server
- * 733164313744769024 - Test Server
- */
+const readable = (when) => new Date(when).toString().split(' ').slice(0, 5).join(' ')
+
+/** The lookup embed's one field, for a ScoutTracker profile. */
+export const lookupText = (user) => {
+	const old = user.oldScout
+	const bonus = (n) => (old ? ` (+${n})` : '')
+	const sum = (s, key) => (s?.alt1?.[key] ?? 0) + (s?.alt1First?.[key] ?? 0)
+	return [
+		`**firstTimestamp:** ${user.firstTimestamp}`,
+		`**firstTimestampReadable:** ${readable(user.firstTimestampReadable)}`,
+		`**lastTimestamp:** ${user.lastTimestamp}`,
+		`**lastTimestampReadable:** ${readable(user.lastTimestampReadable)}`,
+		`**Merch count:** ${user.count}${bonus(old?.count)}`,
+		`**Other count:** ${user.otherCount}${bonus(old?.otherCount)}`,
+		`**Alt1 Merch count:** ${sum(user, 'merchantCount')}${bonus(sum(old, 'merchantCount'))}`,
+		`**Alt1 Other count:** ${sum(user, 'otherCount')}${bonus(sum(old, 'otherCount'))}`,
+		`**Active for:** ${ms(user.lastTimestamp - user.firstTimestamp)}`,
+		`**Active:** ${user.active ? 'True' : 'False'}`,
+		`**Warnings:** ${user.warnings?.length ?? 0}`
+	].join('\n')
+}
 
 export default {
 	name: 'lookup',
-	description: [''],
-	aliases: ['lu'],
-	usage: [''],
+	description: ['Shows a member’s record in the Scouter database.'],
+	usage: ['<user>'],
 	guildSpecific: ['420803245758480405', '668330890790699079'],
 	permissionLevel: 'Admin',
-	run: async (client, message, args, perms) => {
+	data: new SlashCommandBuilder()
+		.setName('lookup')
+		.setDescription('Show a member’s record in the Scouter database.')
+		.addUserOption((o) => o.setName('user').setDescription('Member to look up (mention or ID)').setRequired(true)),
+	slash: async (client, interaction, perms) => {
+		if (!perms.admin) return interaction.reply({ ...perms.errorA, flags: MessageFlags.Ephemeral })
+
 		const db = client.database.scoutTracker
-		if (!perms.admin) return message.channel.send(perms.errorA)
-		if (!args[0]) return message.channel.send({ content: 'Please provide a User ID' })
-
-		const date = (when) => {
-			let date = new Date(when)
-			date = date.toString().split(' ')
-			return date.slice(0, 5).join(' ')
+		const target = interaction.options.getUser('user')
+		const user = await db.findOne({ userID: target.id }, { projection: { _id: 0 } })
+		if (!user) {
+			return interaction.reply({
+				content: `<@${target.id}> is not in the database.`,
+				allowedMentions: { parse: [] },
+				flags: MessageFlags.Ephemeral
+			})
 		}
 
-		const user = await db.findOne({ userID: args[0] }, { projection: { _id: 0 } })
-		if (!user) return message.channel.send({ content: `<@!${args[0]}> is not in the database.` })
-
-		if (!user.warnings) {
-			user.warnings = []
-		}
-
-		const allData = await db.countDocuments({})
-		const oldScoutCheck = () => Boolean(user.oldScout)
-		const oldScoutAlt1Merchant = (user.oldScout?.alt1?.merchantCount ?? 0) + (user.oldScout?.alt1First?.merchantCount ?? 0)
-		const oldScoutAlt1Other = (user.oldScout?.alt1?.otherCount ?? 0) + (user.oldScout?.alt1First?.otherCount ?? 0)
-		const embedFields = [
-			{
-				name: '\u200b',
-				value: `**firstTimestamp:** ${user.firstTimestamp}\n**firstTimestampReadable:** ${date(
-					user.firstTimestampReadable
-				)}\n**lastTimestamp:** ${user.lastTimestamp}\n**lastTimestampReadable:** ${date(
-					user.lastTimestampReadable
-				)}\n**Merch count:** ${user.count} ${oldScoutCheck() ? `(+${user.oldScout.count})` : ''}\n**Other count:** ${
-					user.otherCount
-				} ${oldScoutCheck() ? `(+${user.oldScout.otherCount})` : ''}\n**Alt1 Merch count:** ${
-					(user.alt1?.merchantCount ?? 0) + (user.alt1First?.merchantCount ?? 0)
-				} ${oldScoutCheck() ? `(+${oldScoutAlt1Merchant})` : ''}\n**Alt1 Other count:** ${
-					(user.alt1?.otherCount ?? 0) + (user.alt1First?.otherCount ?? 0)
-				} ${oldScoutCheck() ? `(+${oldScoutAlt1Other})` : ''}\n**Active for:** ${ms(
-					user.lastTimestamp - user.firstTimestamp
-				)}\n**Active:** ${user.active ? 'True' : 'False'}\n**Warnings:** ${user.warnings.length}`,
-				inline: true
-			}
-		]
-
-		if (user) {
-			const embed = nEmbed(
-				`DB Lookup - ${user.author} [${allData}]`,
-				'Lookup user info for DSF in the Scouter DataBase.',
-				Color.gold
-			)
-			return message.channel.send({ embeds: [embed.addFields(embedFields)] })
-		} else {
-			message.channel.send({ content: 'No profile found for this ID.' })
-		}
+		const total = await db.countDocuments({})
+		const embed = nEmbed(
+			`DB Lookup - ${user.author} [${total}]`,
+			'Lookup user info for DSF in the Scouter DataBase.',
+			Color.gold
+		).addFields({ name: '​', value: lookupText(user), inline: true })
+		return interaction.reply({ embeds: [embed] })
 	}
 }
