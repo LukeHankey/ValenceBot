@@ -1,6 +1,7 @@
 services:
   development:
     tty: true
+    restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile
