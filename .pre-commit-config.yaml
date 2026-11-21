@@ -18,14 +18,14 @@ repos:
         entry: node node_modules/prettier/bin/prettier.cjs --write
         language: system
         types: [javascript]
--   repo: https://github.com/pre-commit/mirrors-eslint
-    rev: 'v10.15.0'
+# eslint runs from node_modules for the same reason as prettier above. The
+# mirrors-eslint hook built its own Node with nodeenv, which tried to download
+# the newest Node release and failed on its pre-release version string, and
+# it linted with pinned plugin versions that differed from package.json.
+-   repo: local
     hooks:
     -   id: eslint
-        additional_dependencies:
-          - eslint@8.44.0
-          - eslint-config-standard@17.1.0
-          - eslint-plugin-import@2.27.5
-          - eslint-plugin-n@16.0.1
-          - eslint-plugin-promise@6.1.1
-          - eslint-config-prettier@8.8.0
+        name: eslint
+        entry: node node_modules/eslint/bin/eslint.js
+        language: system
+        types: [javascript]
