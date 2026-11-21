@@ -19,6 +19,7 @@ const setup = () => {
 	}
 	const interaction = {
 		customId: 'Open Ticket',
+		client: { user: { id: 'bot' } },
 		message: { id: 'panel', content: '' },
 		member: { id: 'member-1' },
 		user: { id: 'member-1' },

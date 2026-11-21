@@ -50,8 +50,11 @@ export class MongoDataBase {
 	 * @returns {Promise<Object>}
 	 */
 	get channels() {
+		// The Discord client this database belongs to. It used to be found by
+		// importing ./index.js, which would start ValenceBot inside any other
+		// process that used the database, such as DSFMessaging.
+		const discord = this.discord
 		const getChannelsFromDB = async () => {
-			const client = await import('./index.js')
 			const {
 				channels: { errors, logs }
 			} = await this.settings.findOne({ _id: 'Globals' }, { projection: { channels: { errors: 1, logs: 1 } } })
@@ -66,14 +69,16 @@ export class MongoDataBase {
 						return buildErrorEmbed(err, context)
 					},
 					send: function (...args) {
-						const channel = client.default.channels.cache.get(this.id)
-						return channel.send({ embeds: [this.embed(...args)] })
+						const embed = this.embed(...args) // also logs the error
+						// A bot that is not in the error channel's server has nothing to post to.
+						return discord.channels.cache.get(this.id)?.send({ embeds: [embed] })
 					}
 				},
 				logs: {
 					id: logs,
 					send: function (content, rest) {
-						const channel = client.default.channels.cache.get(this.id)
+						const channel = discord.channels.cache.get(this.id)
+						if (!channel) return logger.info(typeof content === 'string' ? content : JSON.stringify(content))
 						return channel.send({ content, ...rest })
 					}
 				},
@@ -82,7 +87,8 @@ export class MongoDataBase {
 					// Takes `rest` like logs.send: without it a caller passing
 					// { files: [...] } would have its attachment silently dropped.
 					send: function (content, rest) {
-						const channel = client.default.channels.cache.get(this.id)
+						const channel = discord.channels.cache.get(this.id)
+						if (!channel) return logger.info(typeof content === 'string' ? content : JSON.stringify(content))
 						return channel.send({ content, ...rest })
 					}
 				}

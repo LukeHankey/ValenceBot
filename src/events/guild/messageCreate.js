@@ -1,8 +1,6 @@
-import { getEventChannel } from '../../dsf/calls/settingsAccess.js'
 import Color from '../../colors.js'
 import { Permissions } from '../../classes.js'
-import { EmbedBuilder, ChannelType } from 'discord.js'
-import dsf from '../../dsf/calls/main.js'
+import { EmbedBuilder } from 'discord.js'
 import { recordCommandUse } from '../../dsf/commandUsage.js'
 
 export default async (client, message) => {
@@ -36,27 +34,7 @@ export default async (client, message) => {
 		return client.channels.cache.get('788525524782940187').send({ embeds: [embed] })
 	}
 
-	// Deep Sea Fishing
-	if (message.guild.id === '420803245758480405' || message.guild.id === '668330890790699079') {
-		// No early return: this branch also handles forum posts and replies that
-		// have nothing to do with the event channel. A null otherChannelID simply
-		// never matches the `case otherChannelID` below.
-		const { otherChannelID } = await getEventChannel(db, message.guild.id)
-
-		if (message.channel.parent) {
-			if (message.channel.parent.type === ChannelType.GuildForum) {
-				// Suggestions
-				if (message.channel.parent.id === '1064189568695423117') {
-					// Do nothing. Might think of something later such as @bot close, @bot pin
-				}
-			}
-		}
-
-		switch (message.channel.id) {
-			case otherChannelID:
-				return await dsf(client, message)
-		}
-	}
+	// #dsf-calls is handled by DSFMessaging (src/messaging), which can read it.
 
 	if (message.author.bot) return
 
