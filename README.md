@@ -75,6 +75,16 @@ Merging to `main` triggers a GitHub webhook to DSF-Server, which queues
 about the bot itself deploys it, so a failure shows up in
 `journalctl -u valence-deploy-worker` rather than in GitHub.
 
+## Slash commands
+
+Commands register themselves on every start, from the files in
+`src/commands/`: `guildSpecific: 'all'` goes global, a guild ID or list goes to
+those guilds. Registration replaces the whole list, so a command deleted from
+the code disappears from Discord on the next deploy. The message context menus
+("Affiliate Events", "Mark event as dead.") are defined in
+`src/handlers/interactions/contextMenu.js` for the same reason. There is no
+manual registration step.
+
 ## Alerting
 
 Both bots (`development` and `messaging`) check the Discord gateway every
