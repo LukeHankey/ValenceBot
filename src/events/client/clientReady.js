@@ -12,6 +12,7 @@ import { updateAllMemberDataBaseRankRoles } from '../../alt1.js'
 import { scout, vScout, classVars, syncAssignedRoles } from '../../dsf/index.js'
 import { sendFact } from '../../valence/index.js'
 import cron from 'node-cron'
+import { registerCommands } from '../../registerCommands.js'
 
 const initScouterDataBase = async (client, db) => {
 	const res = await db.find({}).toArray()
@@ -45,6 +46,8 @@ const initScouterDataBase = async (client, db) => {
 }
 
 export default async (client) => {
+	await client.commandsLoaded
+	await registerCommands(client)
 	await client.database.connect()
 
 	const db = client.database.settings

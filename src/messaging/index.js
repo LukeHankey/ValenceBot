@@ -10,6 +10,7 @@ import { Client, Collection } from 'discord.js'
 import dotenv from 'dotenv'
 import { MongoDataBase } from '../DataBase.js'
 import { logger } from '../logging.js'
+import { startHeartbeat } from '../heartbeat.js'
 import { onReady, onMessageCreate, onMessageDelete } from './handlers.js'
 import interactionCreate from '../events/guild/interactionCreate.js'
 import shardDisconnect from '../events/client/shardDisconnect.js'
@@ -49,5 +50,6 @@ client.login(token).catch((err) => {
 	logger.error(`DSFMessaging login failed: ${err.stack ?? err}`)
 	process.exit(1)
 })
+startHeartbeat(client, 'DSFMessaging')
 
 export default client

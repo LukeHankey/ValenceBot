@@ -9,7 +9,8 @@ export class Load {
 		this.client = client
 		this.init('events', 'client')
 		this.init('events', 'guild')
-		this.init('commands')
+		// clientReady registers commands with Discord, so it waits on this.
+		client.commandsLoaded = this.init('commands')
 	}
 
 	async init(handler, sub) {
