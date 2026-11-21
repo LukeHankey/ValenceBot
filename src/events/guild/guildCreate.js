@@ -11,9 +11,7 @@ export default async (client, guild) => {
 				defaultAdminRole: `${guild.roles.highest}`
 			},
 			channels: {
-				adminChannel: null,
-				modChannel: null,
-				eventsChannel: null
+				adminChannel: null
 			}
 		},
 		{ forceServerObjectId: true }
