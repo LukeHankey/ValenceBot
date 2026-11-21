@@ -79,7 +79,7 @@ export default {
 			const name = args[0]
 			const command = commands.get(name) || commands.find((c) => c.aliases && c.aliases.includes(name))
 			if (!command) return
-			const otherView = ['Lotto', 'Calendar', 'Profile', 'Dsf', 'Send']
+			const otherView = ['Lotto', 'Profile', 'Dsf', 'Send']
 
 			const cName = capitalise(command.name)
 			const fields = []

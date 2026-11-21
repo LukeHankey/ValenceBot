@@ -1,4 +1,4 @@
-import { EmbedBuilder, Collection } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 import Color from './colors.js'
 
 const nEmbed = (title, description, color = Color.cyan, thumbnail = null, guildIcon) => {
@@ -20,74 +20,6 @@ const checkNum = (id = 0, greaterOrEqualTo = 1, lowerOrEqualTo = Infinity) => {
 }
 const capitalise = (str) => {
 	return str.charAt(0).toUpperCase() + str.slice(1)
-}
-const randomNum = () => {
-	return Math.round(Math.random() * 10000) + 1
-}
-const removeEvents = async (client, message, module, database, eventTag) => {
-	const db = client.database.settings
-	const channels = await client.database.channels
-	try {
-		const eventsChannel = message.guild.channels.cache.get(database.channels.events)
-		const [eventMessageCheck] = database.events.filter((event) => {
-			if (event.eventTag === eventTag) {
-				return event
-			} else return undefined
-		})
-
-		// Remove from events
-		await db.updateOne({ _id: message.guild.id }, { $pull: { events: { eventTag } } })
-
-		// Remove from calendar
-		await db.findOneAndUpdate(
-			{ _id: message.guild.id, 'calendarID.messageID': eventMessageCheck.calendarID },
-			{ $pull: { 'calendarID.$.events': { eventTag } } }
-		)
-
-		const calChannel = message.guild.channels.cache.get(database.channels.calendar)
-
-		if (eventMessageCheck.messageID) {
-			// Fetch the event message and remove reactions from event post
-			const eventMessage = await eventsChannel.messages.fetch(eventMessageCheck.messageID)
-			await eventMessage.reactions.removeAll()
-		}
-
-		if (module === 'calendar') return
-
-		// Remove the post from the calendar
-		const currentYear = new Date().getFullYear()
-		const [calendarMessage] = database.calendarID.filter((month) => {
-			if (month.month === eventMessageCheck.month && month.year === currentYear) {
-				return month
-			} else return undefined
-		})
-		let calMessage = await calChannel.messages.fetch(calendarMessage.messageID)
-		calMessage = calMessage instanceof Collection ? calMessage.first() : calMessage
-		const fields = calMessage.embeds[0].data.fields
-
-		const foundIndex = fields.findIndex((field) => {
-			const eventItems = field.value.split('\n')
-			const title = eventItems[0].slice(7)
-			const messageId = eventItems[2].split('/')[6].slice(0, -1)
-			const date = field.name
-
-			return (
-				title === eventMessageCheck.title &&
-				messageId === eventMessageCheck.messageID &&
-				date === eventMessageCheck.dateEnd
-			)
-		})
-
-		const removedItem = [fields[foundIndex]].map((obj) => `${obj.name}\n${obj.value}`)
-		const updateEmbed = new EmbedBuilder(calMessage.embeds[0].data)
-		updateEmbed.spliceFields(foundIndex, 1)
-		calMessage.edit({ embeds: [updateEmbed] })
-		return channels.logs.send(
-			`Calendar updated - ${message.member.displayName} removed event: \`\`\`diff\n- Removed\n${removedItem.join()}\`\`\``
-		)
-	} catch (err) {
-		return channels.errors.send(err)
-	}
 }
 const paginate = (data, { author }, text, desc = '') => {
 	const embeds = []
@@ -182,4 +114,4 @@ const getRuneDate = () => {
 	return parseInt((now - initialRuneDate) / (1000 * 3600 * 24))
 }
 
-export { nEmbed, checkNum, capitalise, randomNum, removeEvents, paginate, paginateFollowUP, splitMessage, getRuneDate }
+export { nEmbed, checkNum, capitalise, paginate, paginateFollowUP, splitMessage, getRuneDate }
