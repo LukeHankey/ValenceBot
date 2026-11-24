@@ -24,7 +24,7 @@
     "dotenv": "^17.4.2",
     "mongodb": "7.8",
     "node-cron": "^4.6.0",
-    "pretty-ms": "^9.3.0",
+    "pretty-ms": "^10.0.0",
     "uuid": "^14.0.3",
     "winston": "^3.19.0"
   },
